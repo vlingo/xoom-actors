@@ -7,12 +7,17 @@
 
 package io.vlingo.actors.plugin.mailbox.testkit;
 
+import java.util.Arrays;
+import java.util.List;
+
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 import io.vlingo.actors.testkit.TestWorld;
 
 public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
+  
+  private final List<String> lifecycleMessages = Arrays.asList("__internalOnlyBeforeStart", "afterStop", "beforeRestart", "afterRestart");
 
   public TestMailbox() { }
   
@@ -38,7 +43,9 @@ public class TestMailbox implements Mailbox {
   @Override
   public void send(final Message message) {
     try {
-      TestWorld.track(message);
+      if (!lifecycleMessages.contains(message.method.getName())) {
+        TestWorld.track(message);
+      }
       message.deliver();
     } catch (Throwable t) {
       throw new RuntimeException(t.getMessage(), t);

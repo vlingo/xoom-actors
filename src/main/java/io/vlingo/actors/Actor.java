@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import java.lang.reflect.Method;
 import java.util.ListIterator;
 
 import io.vlingo.actors.testkit.TestState;
@@ -32,8 +33,7 @@ public abstract class Actor implements Stoppable, TestStateView {
   @Override
   public void stop() {
     if (!isStopped()) {
-      final String name = environment.definition.actorName();
-      if (name != null && !name.equals(World.DEADLETTERS_NAME)) {
+      if (environment.address.id() != World.DEADLETTERS_ID) {
         environment.stage.stop(this);
       }
     }
@@ -136,6 +136,7 @@ public abstract class Actor implements Stoppable, TestStateView {
     this.environment = ActorFactory.threadLocalEnvironment.get();
     ActorFactory.threadLocalEnvironment.set(null);
     this.flags = FLAG_RESET;
+    __internalOnlySendBeforeStart();
   }
 
   protected void __internalOnlyAddChild(final Actor child) {
@@ -196,6 +197,16 @@ public abstract class Actor implements Stoppable, TestStateView {
     flags |= FLAG_SECURED;
   }
 
+  private void __internalOnlySendBeforeStart() {
+    try {
+      final Method method = Actor.class.getDeclaredMethod("__internalOnlyBeforeStart", new Class[] {});
+      final Message message = new Message(this, method, new Object[] { });
+      environment.mailbox.send(message);
+    } catch (Exception e) {
+      __internalOnlyBeforeStart();
+    }
+  }
+
   private boolean __internalOnlyIsStopped() {
     return (flags & FLAG_STOPPED) == FLAG_STOPPED;
   }
@@ -208,8 +219,8 @@ public abstract class Actor implements Stoppable, TestStateView {
     final ListIterator<Actor> iterator = environment.children.listIterator();
     while (iterator.hasNext()) {
       final Actor child = iterator.next();
-      iterator.remove();
       child.selfAs(Stoppable.class).stop();
+      iterator.remove();
     }
   }
 }

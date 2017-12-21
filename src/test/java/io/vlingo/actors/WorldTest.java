@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class WorldTest {
+public class WorldTest extends ActorsTest {
   private World world;
   
   @Test
@@ -39,7 +39,7 @@ public class WorldTest {
     
     simple.simpleSay();
     
-    try { Thread.sleep(100); } catch (Exception e) { }
+    pause();
     
     assertTrue(SimpleActor.invoked);
   }
