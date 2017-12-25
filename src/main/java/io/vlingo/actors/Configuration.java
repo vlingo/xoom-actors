@@ -7,6 +7,12 @@
 
 package io.vlingo.actors;
 
+import java.util.function.Supplier;
+
 public class Configuration {
   public Configuration() { }
+
+  public Supplier<Logger> logger() {
+    return SystemOutLogger::new;
+  }
 }
