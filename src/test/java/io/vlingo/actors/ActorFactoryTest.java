@@ -40,13 +40,13 @@ public class ActorFactoryTest {
     assertEquals(world.stage(), actor.stage());
     assertNotNull(actor.parent());
     assertEquals(world.defaultParent(), actor.parent());
-    assertNotNull(actor.__internalOnlyEnvironment());
-    assertNotNull(actor.__internalOnlyEnvironment().definition);
-    assertEquals(definition, actor.__internalOnlyEnvironment().definition);
-    assertNotNull(actor.__internalOnlyEnvironment().address);
-    assertEquals(address, actor.__internalOnlyEnvironment().address);
-    assertNotNull(actor.__internalOnlyEnvironment().mailbox);
-    assertEquals(mailbox, actor.__internalOnlyEnvironment().mailbox);
+    assertNotNull(actor.__internal__Environment());
+    assertNotNull(actor.__internal__Environment().definition);
+    assertEquals(definition, actor.__internal__Environment().definition);
+    assertNotNull(actor.__internal__Environment().address);
+    assertEquals(address, actor.__internal__Environment().address);
+    assertNotNull(actor.__internal__Environment().mailbox);
+    assertEquals(mailbox, actor.__internal__Environment().mailbox);
   }
 
   @Test
@@ -79,13 +79,13 @@ public class ActorFactoryTest {
     assertEquals(world.stage(), actor.stage());
     assertNotNull(actor.parent());
     assertEquals(ParentInterfaceActor.parent, actor.parent());
-    assertNotNull(actor.__internalOnlyEnvironment());
-    assertNotNull(actor.__internalOnlyEnvironment().definition);
-    assertEquals(definition, actor.__internalOnlyEnvironment().definition);
-    assertNotNull(actor.__internalOnlyEnvironment().address);
-    assertEquals(address, actor.__internalOnlyEnvironment().address);
-    assertNotNull(actor.__internalOnlyEnvironment().mailbox);
-    assertEquals(mailbox, actor.__internalOnlyEnvironment().mailbox);
+    assertNotNull(actor.__internal__Environment());
+    assertNotNull(actor.__internal__Environment().definition);
+    assertEquals(definition, actor.__internal__Environment().definition);
+    assertNotNull(actor.__internal__Environment().address);
+    assertEquals(address, actor.__internal__Environment().address);
+    assertNotNull(actor.__internal__Environment().mailbox);
+    assertEquals(mailbox, actor.__internal__Environment().mailbox);
   }
 
   @Before

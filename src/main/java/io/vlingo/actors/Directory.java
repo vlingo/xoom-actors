@@ -29,7 +29,7 @@ public final class Directory {
     for (final Map<Address, Actor> map : maps) {
       for (final Actor actor : map.values()) {
         final Address address = actor.address();
-        final Address parent = actor.__internalOnlyParent() == null ? new Address(0, "NONE") : actor.__internalOnlyParent().address();
+        final Address parent = actor.__internal__Environment() == null ? new Address(0, "NONE") : actor.__internal__Environment().address;
         System.out.println("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent);
       }
     }

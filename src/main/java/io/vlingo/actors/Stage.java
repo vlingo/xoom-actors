@@ -91,7 +91,7 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final T protocolActor = ActorProxy.createFor(protocol, actor, actor.__internalOnlyEnvironment().mailbox);
+      final T protocolActor = ActorProxy.createFor(protocol, actor, actor.__internal__Environment().mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
@@ -110,7 +110,7 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final Object protocolActor = ActorProxy.createFor(protocols, actor, actor.__internalOnlyEnvironment().mailbox);
+      final Object protocolActor = ActorProxy.createFor(protocols, actor, actor.__internal__Environment().mailbox);
       return new ActorProtocolActor<Object>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
@@ -124,7 +124,7 @@ public class Stage implements Stoppable {
     final Actor removedActor = directory.remove(actor.address());
     
     if (actor == removedActor) {
-      removedActor.__internalOnlyStop();
+      removedActor.__internal__Stop();
     }
   }
 
@@ -153,7 +153,7 @@ public class Stage implements Stoppable {
 
     directory.register(actor.address(), actor);
 
-    actor.__internalOnlyBeforeStart();
+    actor.__internal__BeforeStart();
 
     return actor;
   }

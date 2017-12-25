@@ -40,7 +40,7 @@ public class ActorFactory {
     }
     
     if (parent != null) {
-      parent.__internalOnlyAddChild(actor);
+      parent.__internal__Environment().addChild(actor);
     }
     
     return actor;

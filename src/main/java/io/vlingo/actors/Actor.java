@@ -8,18 +8,12 @@
 package io.vlingo.actors;
 
 import java.lang.reflect.Method;
-import java.util.ListIterator;
 
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 
 public abstract class Actor implements Stoppable, TestStateView {
-  private static final byte FLAG_RESET = 0x00;
-  private static final byte FLAG_STOPPED = 0x01;
-  private static final byte FLAG_SECURED = 0x02;
-  
   private final Environment environment;
-  private byte flags;
 
   public Address address() {
     return environment.address;
@@ -27,7 +21,7 @@ public abstract class Actor implements Stoppable, TestStateView {
 
   @Override
   public boolean isStopped() {
-    return __internalOnlyIsStopped();
+    return environment.isStopped();
   }
 
   @Override
@@ -68,21 +62,21 @@ public abstract class Actor implements Stoppable, TestStateView {
   }
 
   protected Definition definition() {
-    if (__internalOnlyIsSecured()) {
+    if (environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its definition.");
     }
-    return __internalOnlyDefinition();
+    return environment.definition;
   }
 
   protected Actor parent() {
-    if (__internalOnlyIsSecured()) {
+    if (environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its parent.");
     }
-    return __internalOnlyParent();
+    return environment.parent;
   }
 
   protected void secure() {
-    __internalOnlySetSecured();
+    environment.setSecured();
   }
 
   protected <T extends Object> T selfAs(final Class<T> protocol) {
@@ -96,14 +90,14 @@ public abstract class Actor implements Stoppable, TestStateView {
   }
 
   protected final Stage stage() {
-    if (__internalOnlyIsSecured()) {
+    if (environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its stage.");
     }
-    return __internalOnlyStage();
+    return environment.stage;
   }
 
   protected Stage stageNamed(final String name) {
-    return __internalOnlyStage().world().stageNamed(name);
+    return environment.stage.world().stageNamed(name);
   }
 
   //=======================================
@@ -133,41 +127,25 @@ public abstract class Actor implements Stoppable, TestStateView {
   //=======================================
 
   protected Actor() {
-    this.environment = ActorFactory.threadLocalEnvironment.get();
+    final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
+    this.environment = maybeEnvironment != null ? maybeEnvironment : new Environment();
     ActorFactory.threadLocalEnvironment.set(null);
-    this.flags = FLAG_RESET;
-    __internalOnlySendBeforeStart();
+    __internal__SendBeforeStart();
   }
 
-  protected void __internalOnlyAddChild(final Actor child) {
-    environment.children.add(child);
-  }
-
-  protected Definition __internalOnlyDefinition() {
-    return environment.definition;
-  }
-
-  protected Environment __internalOnlyEnvironment() {
+  protected Environment __internal__Environment() {
     return environment;
   }
 
-  protected Actor __internalOnlyParent() {
-    return environment.parent;
+  protected void __internal__Stop() {
+    environment.stopChildren();
+
+    environment.setStopped();
+
+    __internal__AfterStop();
   }
 
-  protected final Stage __internalOnlyStage() {
-    return environment.stage;
-  }
-
-  protected void __internalOnlyStop() {
-    __internalOnlyStopChildren();
-
-    __internalOnlySetStopped();
-
-    __internalOnlyAfterStop();
-  }
-
-  private void __internalOnlyAfterStop() {
+  private void __internal__AfterStop() {
     try {
       afterStop();
     } catch (Throwable t) {
@@ -178,7 +156,7 @@ public abstract class Actor implements Stoppable, TestStateView {
     }
   }
 
-  protected void __internalOnlyBeforeStart() {
+  protected void __internal__BeforeStart() {
     try {
       beforeStart();
     } catch (Throwable t) {
@@ -189,38 +167,13 @@ public abstract class Actor implements Stoppable, TestStateView {
     }
   }
 
-  private boolean __internalOnlyIsSecured() {
-    return (flags & FLAG_SECURED) == FLAG_SECURED;
-  }
-
-  private void __internalOnlySetSecured() {
-    flags |= FLAG_SECURED;
-  }
-
-  private void __internalOnlySendBeforeStart() {
+  private void __internal__SendBeforeStart() {
     try {
-      final Method method = Actor.class.getDeclaredMethod("__internalOnlyBeforeStart", new Class[] {});
+      final Method method = Actor.class.getDeclaredMethod("__internal__BeforeStart", new Class[] {});
       final Message message = new Message(this, method, new Object[] { });
       environment.mailbox.send(message);
     } catch (Exception e) {
-      __internalOnlyBeforeStart();
-    }
-  }
-
-  private boolean __internalOnlyIsStopped() {
-    return (flags & FLAG_STOPPED) == FLAG_STOPPED;
-  }
-
-  private void __internalOnlySetStopped() {
-    flags |= FLAG_STOPPED;
-  }
-
-  private void __internalOnlyStopChildren() {
-    final ListIterator<Actor> iterator = environment.children.listIterator();
-    while (iterator.hasNext()) {
-      final Actor child = iterator.next();
-      child.selfAs(Stoppable.class).stop();
-      iterator.remove();
+      __internal__BeforeStart();
     }
   }
 }

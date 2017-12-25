@@ -9,14 +9,31 @@ package io.vlingo.actors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class Environment {
+  private static final byte FLAG_RESET = 0x00;
+  private static final byte FLAG_STOPPED = 0x01;
+  private static final byte FLAG_SECURED = 0x02;
+  
   protected final Address address;
   protected final List<Actor> children;
   protected final Definition definition;
+  private byte flags;
   protected final Mailbox mailbox;
   protected final Actor parent;
   protected final Stage stage;
+  
+  protected Environment() {
+    // for testing
+    this.address = Address.from("test");
+    this.children = new ArrayList<Actor>(1);
+    this.definition = Definition.has(null, Definition.NoParameters);
+    this.flags = FLAG_RESET;
+    this.mailbox = null;
+    this.parent = null;
+    this.stage = null;
+  }
   
   protected Environment(
           final Stage stage,
@@ -34,6 +51,37 @@ public class Environment {
     this.parent = parent;
     assert(mailbox != null);
     this.mailbox = mailbox;
-    this.children = new ArrayList<Actor>(2);
+    this.children = new ArrayList<Actor>(1);
+    
+    this.flags = FLAG_RESET;
+  }
+
+  protected void addChild(final Actor child) {
+    children.add(child);
+  }
+
+  protected boolean isSecured() {
+    return (flags & FLAG_SECURED) == FLAG_SECURED;
+  }
+
+  protected void setSecured() {
+    flags |= FLAG_SECURED;
+  }
+
+  protected boolean isStopped() {
+    return (flags & FLAG_STOPPED) == FLAG_STOPPED;
+  }
+
+  protected void setStopped() {
+    flags |= FLAG_STOPPED;
+  }
+
+  protected void stopChildren() {
+    final ListIterator<Actor> iterator = children.listIterator();
+    while (iterator.hasNext()) {
+      final Actor child = iterator.next();
+      child.selfAs(Stoppable.class).stop();
+      iterator.remove();
+    }
   }
 }

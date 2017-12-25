@@ -24,7 +24,7 @@ public final class Message {
   public void deliver() {
     if (actor.isStopped()) {
       final DeadLetter deadLetter  = new DeadLetter(actor, method, args);
-      final DeadLetters deadLetters = actor.__internalOnlyStage().world().deadLetters();
+      final DeadLetters deadLetters = actor.__internal__Environment().stage.world().deadLetters();
       if (deadLetters != null) {
         deadLetters.failedDelivery(deadLetter);
       } else {

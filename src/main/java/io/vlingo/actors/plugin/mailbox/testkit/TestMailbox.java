@@ -17,7 +17,7 @@ import io.vlingo.actors.testkit.TestWorld;
 public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
   
-  private final List<String> lifecycleMessages = Arrays.asList("__internalOnlyBeforeStart", "afterStop", "beforeRestart", "afterRestart");
+  private final List<String> lifecycleMessages = Arrays.asList("__internal__BeforeStart", "afterStop", "beforeRestart", "afterRestart");
 
   public TestMailbox() { }
   
