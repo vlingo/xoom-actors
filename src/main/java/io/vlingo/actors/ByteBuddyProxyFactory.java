@@ -1,3 +1,10 @@
+// Copyright © 2012-2017 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors;
 
 import net.bytebuddy.ByteBuddy;
@@ -8,7 +15,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class ByteBuddyProxyFactory implements ProxyFactory {
 
   @SuppressWarnings("unchecked")
-@Override
+  @Override
   public <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     try {
       final ActorProxyInvocationHandler invocationHandler = new ActorProxyInvocationHandler(actor, mailbox);
