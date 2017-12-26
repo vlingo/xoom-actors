@@ -14,7 +14,9 @@ public class Stage implements Stoppable {
   private final Directory directory;
   private final String name;
   private boolean stopped;
+  private final Logger logger;
   private final World world;
+  private final ProxyFactory proxyFactory;
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
     return actorFor(definition, protocol, definition.parentOr(world.defaultParent()));
@@ -24,7 +26,7 @@ public class Stage implements Stoppable {
     return actorFor(definition, protocols, definition.parentOr(world.defaultParent()));
   }
 
-  public <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
+  public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
     final Definition redefinition =
             Definition.has(
                     definition.type(),
@@ -35,12 +37,22 @@ public class Stage implements Stoppable {
     return actorFor(redefinition, protocol, definition.parentOr(world.defaultParent()), null, null).toTestActor();
   }
 
+  public final <T> T createActorFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
+    return proxyFactory.createFor(protocol, actor, mailbox);
+  }
+
+  public final Object createActorFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
+    return proxyFactory.createFor(protocol, actor, mailbox);
+  }
+
   public int count() {
     return directory.count();
   }
 
   public void dump() {
-    System.out.println("STAGE: " + name);
+    if (logger.isEnabled()) {
+      logger.log("STAGE: " + name);
+    }
     directory.dump();
   }
 
@@ -70,7 +82,9 @@ public class Stage implements Stoppable {
   protected Stage(final World world, final String name) {
     this.world = world;
     this.name = name;
-    this.directory = new Directory();
+    this.logger = world.configuration().logger().get();
+    this.directory = new Directory(logger);
+    this.proxyFactory = world.configuration().proxyFactory().get();
     this.stopped = false;
   }
 
@@ -95,7 +109,9 @@ public class Stage implements Stoppable {
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
-      System.out.println("vlingo/actors: FAILED: " + e.getMessage());
+      if (logger.isEnabled()) {
+        logger.log("vlingo/actors: FAILED: " + e.getMessage());
+      }
       e.printStackTrace();
       return null;
     }
@@ -114,7 +130,9 @@ public class Stage implements Stoppable {
       return new ActorProtocolActor<Object>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
-      System.out.println("vlingo/actors: FAILED: " + e.getMessage());
+      if (logger.isEnabled()) {
+        logger.log("vlingo/actors: FAILED: " + e.getMessage());
+      }
       e.printStackTrace();
       return null;
     }

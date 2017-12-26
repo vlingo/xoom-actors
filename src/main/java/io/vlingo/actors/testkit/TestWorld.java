@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.vlingo.actors.Address;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Message;
@@ -20,7 +21,7 @@ import io.vlingo.actors.Stage;
 import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailboxPlugin;
 
-public class TestWorld {
+public class TestWorld implements AutoCloseable {
   private static final Map<Integer, List<Message>> actorMessages = new HashMap<>();
   
   private final MailboxProvider mailboxProvider;
@@ -36,13 +37,13 @@ public class TestWorld {
     return new TestWorld(name);
   }
 
+  public static TestWorld start(final String name, final Configuration configuration) {
+        return new TestWorld(name, configuration);
+    }
+
   public static void track(final Message message) {
     final int id = message.actor.address().id();
-    List<Message> messages = actorMessages.get(id);
-    if (messages == null) {
-      messages = new ArrayList<>();
-      actorMessages.put(id, messages);
-    }
+    final List<Message> messages = actorMessages.computeIfAbsent(id, k -> new ArrayList<>());
     messages.add(message);
   }
 
@@ -78,8 +79,23 @@ public class TestWorld {
     return this.mailboxProvider;
   }
 
+  public void clearTrackedMessages() {
+    actorMessages.clear();
+  }
+
   private TestWorld(final String name) {
-    this.world = World.start(name);
+      this(name, new Configuration());
+  }
+
+  private TestWorld(final String name, final Configuration configuration) {
+    this.world = World.start(name, configuration);
     this.mailboxProvider = new TestMailboxPlugin(this.world);
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (!isTerminated()) {
+      terminate();
+    }
   }
 }

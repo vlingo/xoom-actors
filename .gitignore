@@ -5,7 +5,3 @@ target/
 .settings
 .DS_Store
 *.log
-
-# IntelliJ specific
-*.iml
-.idea/

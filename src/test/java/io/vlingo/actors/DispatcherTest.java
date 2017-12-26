@@ -64,7 +64,7 @@ public class DispatcherTest {
     world.terminate();
   }
   
-  public static interface TellAll {
+  public interface TellAll {
     void tellWhatITellYou(final int value);
   }
   
@@ -81,7 +81,7 @@ public class DispatcherTest {
     }
   }
 
-  public static interface TellSomething {
+  public interface TellSomething {
     void tellMeSomething(final String something, final int value);
   }
 
