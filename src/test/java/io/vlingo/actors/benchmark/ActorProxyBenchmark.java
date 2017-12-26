@@ -1,14 +1,12 @@
 package io.vlingo.actors.benchmark;
 
+import io.vlingo.actors.ByteBuddyProxyFactory;
+import io.vlingo.actors.Configuration;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.DispatcherTest;
@@ -31,29 +29,38 @@ public class ActorProxyBenchmark {
   @Fork(value = 1, warmups = 2)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.SECONDS)
-  public void originalActorProxy(BenchmarkState state) {
-    final TestActor<DispatcherTest.TellSomething> test = state.world.actorFor(
-            Definition.has(DispatcherTest.TellSomethingActor.class, Definition.NoParameters, "test"),
-            DispatcherTest.TellSomething.class);
+  public void jdkProxyFactory() throws Exception {
+    try (final TestWorld world = TestWorld.start("test")) {
+      final TestActor<DispatcherTest.TellSomething> test = world.actorFor(
+              Definition.has(DispatcherTest.TellSomethingActor.class, Definition.NoParameters, "test"),
+              DispatcherTest.TellSomething.class);
 
-    for (int i = 0; i < total100Thousand; ++i) {
-      test.actor().tellMeSomething("Hello!", i);
+      for (int i = 0; i < total100Thousand; ++i) {
+        test.actor().tellMeSomething("Hello!", i);
+      }
+
+      world.clearTrackedMessages();
     }
   }
 
-  @State(Scope.Benchmark)
-  public static class BenchmarkState {
+  //@Benchmark
+  @Fork(value = 1, warmups = 2)
+  @BenchmarkMode(Mode.Throughput)
+  @OutputTimeUnit(TimeUnit.SECONDS)
+  public void byteBuddyProxyFactory() throws Exception {
+    final Configuration configuration = new Configuration();
+    configuration.setProxyFactory(ByteBuddyProxyFactory::new);
 
-    public TestWorld world;
+    try (final TestWorld world = TestWorld.start("test")) {
+      final TestActor<DispatcherTest.TellSomething> test = world.actorFor(
+              Definition.has(DispatcherTest.TellSomethingActor.class, Definition.NoParameters, "test"),
+              DispatcherTest.TellSomething.class);
 
-    @Setup
-    public void setUp() {
-      world = TestWorld.start("test");
-    }
+      for (int i = 0; i < total100Thousand; ++i) {
+        test.actor().tellMeSomething("Hello!", i);
+      }
 
-    @TearDown
-    public void tearDown() {
-      world.terminate();
+      world.clearTrackedMessages();
     }
   }
 }

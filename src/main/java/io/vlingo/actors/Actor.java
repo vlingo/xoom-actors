@@ -85,13 +85,13 @@ public abstract class Actor implements Stoppable, TestStateView {
     __internalOnlySetSecured();
   }
 
-  protected <T extends Object> T selfAs(final Class<T> protocol) {
-    return ActorProxy.createFor(protocol, this, environment.mailbox);
+  protected <T> T selfAs(final Class<T> protocol) {
+    return environment.stage.createActorFor(protocol, this, environment.mailbox);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   protected OutcomeInterest selfAsOutcomeInterest(final Object reference) {
-    final OutcomeAware outcomeAware = ActorProxy.createFor(OutcomeAware.class, this, environment.mailbox);
+    final OutcomeAware outcomeAware = environment.stage.createActorFor(OutcomeAware.class, this, environment.mailbox);
     return new OutcomeInterestActorProxy(outcomeAware, reference);
   }
 
@@ -199,8 +199,8 @@ public abstract class Actor implements Stoppable, TestStateView {
 
   private void __internalOnlySendBeforeStart() {
     try {
-      final Method method = Actor.class.getDeclaredMethod("__internalOnlyBeforeStart", new Class[] {});
-      final Message message = new Message(this, method, new Object[] { });
+      final Method method = Actor.class.getDeclaredMethod("__internalOnlyBeforeStart");
+      final Message message = new Message(this, method, null);
       environment.mailbox.send(message);
     } catch (Exception e) {
       __internalOnlyBeforeStart();

@@ -12,9 +12,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Directory {
   private final Map<Address, Actor>[] maps;
+  private final Logger logger;
 
   protected Directory() {
+    this(new NoOpLogger());
+  }
+
+  protected Directory(final Logger logger) {
     this.maps = build();
+    this.logger = logger;
   }
 
   protected int count() {
@@ -26,11 +32,13 @@ public final class Directory {
   }
 
   protected void dump() {
-    for (final Map<Address, Actor> map : maps) {
-      for (final Actor actor : map.values()) {
-        final Address address = actor.address();
-        final Address parent = actor.__internalOnlyParent() == null ? new Address(0, "NONE") : actor.__internalOnlyParent().address();
-        System.out.println("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent);
+    if (logger.isEnabled()) {
+      for (final Map<Address, Actor> map : maps) {
+        for (final Actor actor : map.values()) {
+          final Address address = actor.address();
+          final Address parent = actor.__internalOnlyParent() == null ? new Address(0, "NONE") : actor.__internalOnlyParent().address();
+          logger.log("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent);
+        }
       }
     }
   }
@@ -55,7 +63,7 @@ public final class Directory {
     final Map<Address, Actor>[] tempMaps = new ConcurrentHashMap[20];
 
     for (int idx = 0; idx < tempMaps.length; ++idx) {
-      tempMaps[idx] = new ConcurrentHashMap<Address, Actor>(16, 0.75f, 16);  // TODO: base this on scheduler/dispatcher
+      tempMaps[idx] = new ConcurrentHashMap<>(16, 0.75f, 16);  // TODO: base this on scheduler/dispatcher
     }
 
     return tempMaps;

@@ -16,7 +16,7 @@ import org.junit.Test;
 public class DirectoryTest {
 
   @Test
-  public void testDirectoryRegister() throws Exception {
+  public void testDirectoryRegister() {
     final Directory directory = new Directory();
     
     final Address address = Address.from("test-actor");
@@ -31,8 +31,8 @@ public class DirectoryTest {
   }
 
   @Test
-  public void testDirectoryRemove() throws Exception {
-    final Directory directory = new Directory();
+  public void testDirectoryRemove() {
+    final Directory directory = new Directory(new NoOpLogger());
     
     final Address address = Address.from("test-actor");
     
@@ -48,8 +48,8 @@ public class DirectoryTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testDirectoryAlreadyRegistered() throws Exception {
-    final Directory directory = new Directory();
+  public void testDirectoryAlreadyRegistered() {
+    final Directory directory = new Directory(new NoOpLogger());
     
     final Address address = Address.from("test-actor");
     
@@ -60,7 +60,7 @@ public class DirectoryTest {
     directory.register(address, new TestInterfaceActor());
   }
   
-  public static interface TestInterface { }
+  public interface TestInterface { }
   
   public static class TestInterfaceActor extends Actor implements TestInterface { }
 }

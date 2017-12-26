@@ -16,6 +16,7 @@ public class Stage implements Stoppable {
   private boolean stopped;
   private final Logger logger;
   private final World world;
+  private final ProxyFactory proxyFactory;
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
     return actorFor(definition, protocol, definition.parentOr(world.defaultParent()));
@@ -25,7 +26,7 @@ public class Stage implements Stoppable {
     return actorFor(definition, protocols, definition.parentOr(world.defaultParent()));
   }
 
-  public <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
+  public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
     final Definition redefinition =
             Definition.has(
                     definition.type(),
@@ -34,6 +35,14 @@ public class Stage implements Stoppable {
                     definition.actorName());
     
     return actorFor(redefinition, protocol, definition.parentOr(world.defaultParent()), null, null).toTestActor();
+  }
+
+  public final <T> T createActorFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
+    return proxyFactory.createFor(protocol, actor, mailbox);
+  }
+
+  public final Object createActorFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
+    return proxyFactory.createFor(protocol, actor, mailbox);
   }
 
   public int count() {
@@ -73,9 +82,10 @@ public class Stage implements Stoppable {
   protected Stage(final World world, final String name) {
     this.world = world;
     this.name = name;
-    this.directory = new Directory();
-    this.stopped = false;
     this.logger = world.configuration().logger().get();
+    this.directory = new Directory(logger);
+    this.proxyFactory = world.configuration().proxyFactory().get();
+    this.stopped = false;
   }
 
   protected <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent) {
@@ -95,8 +105,8 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final T protocolActor = ActorProxy.createFor(protocol, actor, actor.__internalOnlyEnvironment().mailbox);
-      return new ActorProtocolActor<T>(actor, protocolActor);
+      final T protocolActor = proxyFactory.createFor(protocol, actor, actor.__internalOnlyEnvironment().mailbox);
+      return new ActorProtocolActor<>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
       if (logger.isEnabled()) {
@@ -116,8 +126,8 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final Object protocolActor = ActorProxy.createFor(protocols, actor, actor.__internalOnlyEnvironment().mailbox);
-      return new ActorProtocolActor<Object>(actor, protocolActor);
+      final Object protocolActor = proxyFactory.createFor(protocols, actor, actor.__internalOnlyEnvironment().mailbox);
+      return new ActorProtocolActor<>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
       if (logger.isEnabled()) {

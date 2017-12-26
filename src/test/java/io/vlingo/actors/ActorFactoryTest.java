@@ -98,7 +98,7 @@ public class ActorFactoryTest {
     world.terminate();
   }
 
-  public static interface ParentInterface { }
+  public interface ParentInterface { }
   
   public static class ParentInterfaceActor extends Actor implements ParentInterface {
     public static ParentInterfaceActor parent;
@@ -106,7 +106,7 @@ public class ActorFactoryTest {
     public ParentInterfaceActor() { parent = this; }
   }
   
-  public static interface TestInterface { }
+  public interface TestInterface { }
   
   public static class TestInterfaceActor extends Actor implements TestInterface { }
   

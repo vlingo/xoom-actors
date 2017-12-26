@@ -34,6 +34,6 @@ public class Environment {
     this.parent = parent;
     assert(mailbox != null);
     this.mailbox = mailbox;
-    this.children = new ArrayList<Actor>(2);
+    this.children = new ArrayList<>(2);
   }
 }
