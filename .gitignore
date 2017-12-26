@@ -1,3 +1,4 @@
+# General
 bin/
 target/
 .classpath
@@ -5,3 +6,8 @@ target/
 .settings
 .DS_Store
 *.log
+
+# Intellij
+.idea/
+*.iml
+*.iws
