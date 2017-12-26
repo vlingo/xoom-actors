@@ -5,7 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-package io.vlingo.actors.plugin.logging;
+package io.vlingo.actors;
 
 import io.vlingo.actors.plugin.logging.jdk.JDKLogger;
 import io.vlingo.actors.plugin.logging.noop.NoOpLogger;

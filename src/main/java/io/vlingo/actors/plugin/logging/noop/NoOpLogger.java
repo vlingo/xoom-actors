@@ -7,7 +7,7 @@
 
 package io.vlingo.actors.plugin.logging.noop;
 
-import io.vlingo.actors.plugin.logging.Logger;
+import io.vlingo.actors.Logger;
 
 public class NoOpLogger implements Logger {
 

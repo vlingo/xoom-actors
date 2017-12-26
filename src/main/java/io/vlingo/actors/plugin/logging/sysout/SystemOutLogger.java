@@ -7,7 +7,7 @@
 
 package io.vlingo.actors.plugin.logging.sysout;
 
-import io.vlingo.actors.plugin.logging.Logger;
+import io.vlingo.actors.Logger;
 
 public class SystemOutLogger implements Logger {
 

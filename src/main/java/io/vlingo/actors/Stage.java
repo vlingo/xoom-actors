@@ -7,7 +7,6 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.logging.Logger;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 

@@ -10,8 +10,6 @@ package io.vlingo.actors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.vlingo.actors.plugin.logging.Logger;
-
 public final class Directory {
   private final Map<Address, Actor>[] maps;
 

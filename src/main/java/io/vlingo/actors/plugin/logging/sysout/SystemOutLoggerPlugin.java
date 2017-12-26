@@ -7,11 +7,11 @@
 
 package io.vlingo.actors.plugin.logging.sysout;
 
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.logging.Logger;
 
 public class SystemOutLoggerPlugin implements Plugin, LoggerProvider {
   private final Logger logger;

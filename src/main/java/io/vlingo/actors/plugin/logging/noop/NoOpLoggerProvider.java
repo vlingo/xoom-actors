@@ -7,8 +7,8 @@
 
 package io.vlingo.actors.plugin.logging.noop;
 
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
-import io.vlingo.actors.plugin.logging.Logger;
 
 public class NoOpLoggerProvider implements LoggerProvider {
   private final Logger logger;

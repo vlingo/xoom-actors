@@ -9,11 +9,11 @@ package io.vlingo.actors.plugin.logging.jdk;
 
 import java.util.Properties;
 
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.logging.Logger;
 
 public class JDKLoggerPlugin implements Plugin, LoggerProvider {
   private JDKLogger logger;

@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.vlingo.actors.plugin.PluginLoader;
-import io.vlingo.actors.plugin.logging.Logger;
 
 public final class World implements Registrar {
   private static final Configuration defaultConfiguration = new Configuration();

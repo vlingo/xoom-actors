@@ -12,11 +12,11 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.logging.Logger;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 
 public class JDKLoggerTest {

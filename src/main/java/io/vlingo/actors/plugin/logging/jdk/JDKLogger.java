@@ -7,7 +7,7 @@
 
 package io.vlingo.actors.plugin.logging.jdk;
 
-import io.vlingo.actors.plugin.logging.Logger;
+import io.vlingo.actors.Logger;
 
 public class JDKLogger implements Logger {
   private final java.util.logging.Logger logger;

@@ -1,6 +1,5 @@
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.logging.Logger;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 import io.vlingo.actors.plugin.logging.noop.NoOpLoggerProvider;
 import io.vlingo.actors.plugin.logging.sysout.SystemOutLoggerPlugin;
