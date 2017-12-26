@@ -10,17 +10,13 @@ package io.vlingo.actors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.vlingo.actors.plugin.logging.Logger;
+
 public final class Directory {
   private final Map<Address, Actor>[] maps;
-  private final Logger logger;
 
   protected Directory() {
-    this(new NoOpLogger());
-  }
-
-  protected Directory(final Logger logger) {
     this.maps = build();
-    this.logger = logger;
   }
 
   protected int count() {
@@ -31,7 +27,7 @@ public final class Directory {
     return count;
   }
 
-  protected void dump() {
+  protected void dump(final Logger logger) {
     if (logger.isEnabled()) {
       for (final Map<Address, Actor> map : maps) {
         for (final Actor actor : map.values()) {

@@ -7,9 +7,9 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public class DirectoryTest {
 
   @Test
   public void testDirectoryRemove() {
-    final Directory directory = new Directory(new NoOpLogger());
+    final Directory directory = new Directory();
     
     final Address address = Address.from("test-actor");
     
@@ -49,7 +49,7 @@ public class DirectoryTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testDirectoryAlreadyRegistered() {
-    final Directory directory = new Directory(new NoOpLogger());
+    final Directory directory = new Directory();
     
     final Address address = Address.from("test-actor");
     

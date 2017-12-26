@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.plugin.logging.Logger;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 
@@ -14,7 +15,6 @@ public class Stage implements Stoppable {
   private final Directory directory;
   private final String name;
   private boolean stopped;
-  private final Logger logger;
   private final World world;
   private final ProxyFactory proxyFactory;
 
@@ -50,10 +50,11 @@ public class Stage implements Stoppable {
   }
 
   public void dump() {
+    final Logger logger = this.world.findDefaultLogger();
     if (logger.isEnabled()) {
       logger.log("STAGE: " + name);
+      directory.dump(logger);
     }
-    directory.dump();
   }
 
   @Override
@@ -82,8 +83,7 @@ public class Stage implements Stoppable {
   protected Stage(final World world, final String name) {
     this.world = world;
     this.name = name;
-    this.logger = world.configuration().logger().get();
-    this.directory = new Directory(logger);
+    this.directory = new Directory();
     this.proxyFactory = world.configuration().proxyFactory().get();
     this.stopped = false;
   }
@@ -109,6 +109,7 @@ public class Stage implements Stoppable {
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
+      final Logger logger = this.world.findDefaultLogger();
       if (logger.isEnabled()) {
         logger.log("vlingo/actors: FAILED: " + e.getMessage());
       }
@@ -130,6 +131,7 @@ public class Stage implements Stoppable {
       return new ActorProtocolActor<Object>(actor, protocolActor);
     } catch (Exception e) {
       // TODO: deal with this
+      final Logger logger = this.world.findDefaultLogger();
       if (logger.isEnabled()) {
         logger.log("vlingo/actors: FAILED: " + e.getMessage());
       }

@@ -10,18 +10,9 @@ package io.vlingo.actors;
 import java.util.function.Supplier;
 
 public class Configuration {
-  private Supplier<Logger> logger = SystemOutLogger::new;
   private Supplier<ProxyFactory> proxyFactory = JdkProxyFactory::new;
 
   public Configuration() { }
-
-  public Supplier<Logger> logger() {
-    return logger;
-  }
-
-  public void setLogger(final Supplier<Logger> logger) {
-    this.logger = logger;
-  }
 
   public Supplier<ProxyFactory> proxyFactory() {
     return proxyFactory;

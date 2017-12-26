@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.vlingo.actors.Address;
-import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Message;
 import io.vlingo.actors.Stage;
@@ -34,12 +34,12 @@ public class TestWorld implements AutoCloseable {
   }
 
   public static TestWorld start(final String name) {
-    return new TestWorld(name);
+    return new TestWorld(name, LoggerProvider.systemOutLoggerProvider());
   }
 
-  public static TestWorld start(final String name, final Configuration configuration) {
-        return new TestWorld(name, configuration);
-    }
+  public static TestWorld start(final String name, final LoggerProvider loggerProvider) {
+    return new TestWorld(name, loggerProvider);
+  }
 
   public static void track(final Message message) {
     final int id = message.actor.address().id();
@@ -83,12 +83,9 @@ public class TestWorld implements AutoCloseable {
     actorMessages.clear();
   }
 
-  private TestWorld(final String name) {
-      this(name, new Configuration());
-  }
-
-  private TestWorld(final String name, final Configuration configuration) {
-    this.world = World.start(name, configuration);
+  private TestWorld(final String name, final LoggerProvider loggerProvider) {
+    this.world = World.start(name);
+    this.world.register(name + "-logger", true, loggerProvider);
     this.mailboxProvider = new TestMailboxPlugin(this.world);
   }
 

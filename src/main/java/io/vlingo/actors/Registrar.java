@@ -9,4 +9,5 @@ package io.vlingo.actors;
 
 public interface Registrar {
   void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider);
+  void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider);
 }

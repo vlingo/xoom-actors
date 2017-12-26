@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.vlingo.actors.plugin.PluginLoader;
+import io.vlingo.actors.plugin.logging.Logger;
 
 public final class World implements Registrar {
   private static final Configuration defaultConfiguration = new Configuration();
@@ -25,12 +26,14 @@ public final class World implements Registrar {
   private static final String DEFAULT_STAGE = "__defaultStage";
 
   private final Configuration configuration;
+  private final LoggerProviderKeeper loggerProviderKeeper;
   private final MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
   private final Scheduler scheduler;
   private final Map<String,Stage> stages;
   
   private DeadLetters deadLetters;
+  private Logger defaultLogger;
   private Actor defaultParent;
   private Stoppable privateRoot;
   private Stoppable publicRoot;
@@ -77,6 +80,13 @@ public final class World implements Registrar {
     return name;
   }
 
+  @Override
+  public void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider) {
+    loggerProviderKeeper().keep(name, isDefault, loggerProvider);
+    
+    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+  }
+
   public void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider) {
     mailboxProviderKeeper().keep(name, isDefault, mailboxProvider);
   }
@@ -112,6 +122,7 @@ public final class World implements Registrar {
         stage.stop();
       }
       
+      loggerProviderKeeper.close();
       mailboxProviderKeeper.close();
     }
   }
@@ -128,6 +139,20 @@ public final class World implements Registrar {
     } else {
       return findDefaultMailboxName();
     }
+  }
+
+  protected Logger findDefaultLogger() {
+    if (this.defaultLogger != null) {
+      return defaultLogger;
+    }
+    
+    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+    
+    return this.defaultLogger;
+  }
+
+  protected Logger findLogger(final String name) {
+    return loggerProviderKeeper().findNamed(name).logger();
   }
 
   protected String findDefaultMailboxName() {
@@ -184,6 +209,7 @@ public final class World implements Registrar {
     this.name = name;
     this.configuration = configuration;
     this.scheduler = new Scheduler();
+    this.loggerProviderKeeper = new LoggerProviderKeeper();
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
     this.stages = new HashMap<>();
 
@@ -201,8 +227,80 @@ public final class World implements Registrar {
             null);
   }
 
+  private LoggerProviderKeeper loggerProviderKeeper() {
+    return loggerProviderKeeper;
+  }
+  
   private MailboxProviderKeeper mailboxProviderKeeper() {
     return mailboxProviderKeeper;
+  }
+
+  private class LoggerProviderKeeper {
+    private final Map<String, LoggerProviderInfo> loggerProviderInfos;
+    
+    private LoggerProviderKeeper() {
+      this.loggerProviderInfos = new HashMap<>();
+    }
+    
+    private void close() {
+      for (final LoggerProviderInfo info : loggerProviderInfos.values()) {
+        info.loggerProvider.close();
+      }
+    }
+    
+    private LoggerProvider findDefault() {
+      for (final LoggerProviderInfo info : loggerProviderInfos.values()) {
+        if (info.isDefault) {
+          return info.loggerProvider;
+        }
+      }
+
+      throw new IllegalStateException("No registered default LoggerProvider.");
+    }
+
+    private LoggerProvider findNamed(final String name) {
+      final LoggerProviderInfo info = loggerProviderInfos.get(name);
+      
+      if (info != null) {
+        return info.loggerProvider;
+      }
+      
+      throw new IllegalStateException("No registered LoggerProvider named: " + name);
+    }
+
+    private void keep(final String name, boolean isDefault, final LoggerProvider loggerProvider) {
+      if (loggerProviderInfos.isEmpty()) {
+        isDefault = true;
+      }
+      
+      if (isDefault) {
+        undefaultCurrentDefault();
+      }
+
+      loggerProviderInfos.put(name, new LoggerProviderInfo(name, loggerProvider, isDefault));
+    }
+
+    private void undefaultCurrentDefault() {
+      for (final String key : loggerProviderInfos.keySet()) {
+        final LoggerProviderInfo info = loggerProviderInfos.get(key);
+
+        if (info.isDefault) {
+          loggerProviderInfos.put(key, new LoggerProviderInfo(info.name, info.loggerProvider, false));
+        }
+      }
+    }
+  }
+
+  private class LoggerProviderInfo {
+    private final boolean isDefault;
+    private final LoggerProvider loggerProvider;
+    private final String name;
+
+    private LoggerProviderInfo(final String name, final LoggerProvider loggerProvider, final boolean isDefault) {
+      this.name = name;
+      this.loggerProvider = loggerProvider;
+      this.isDefault = isDefault;
+    }
   }
 
   private class MailboxProviderKeeper {
