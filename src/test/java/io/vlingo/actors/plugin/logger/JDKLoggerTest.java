@@ -7,47 +7,123 @@
 
 package io.vlingo.actors.plugin.logger;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 
 public class JDKLoggerTest {
-  private Logger logger;
+  boolean registered;
   
+  final Registrar registrar = new Registrar() {
+    @Override
+    public void register(String name, boolean isDefault, MailboxProvider mailboxProvider) {
+    }
+
+    @Override
+    public void register(String name, boolean isDefault, LoggerProvider loggerProvider) {
+      registered = true;
+    }
+  };
+
   @Test
-  public void testLog() throws Exception {
-    logger.log("TEST");
-  }
-  
-  @Before
-  public void setUp() {
+  public void testLoggedMessagesCount() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("plugin.name.jdkLogger", "true");
     properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
-    properties.setProperty("plugin.jdkLogger.defaulLogger", "true");
-    
-    final Registrar registrar = new Registrar() {
-      @Override
-      public void register(String name, boolean isDefault, MailboxProvider mailboxProvider) {
-      }
-
-      @Override
-      public void register(String name, boolean isDefault, LoggerProvider loggerProvider) {
-        System.out.println("REGISTERED LOGGER PROVIDER: " + loggerProvider.getClass().getName());
-      }
-    };
+    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
+    properties.setProperty("plugin.jdkLogger.handler.classname", "java.util.logging.MemoryHandler");
+    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
+    properties.setProperty("plugin.jdkLogger.memoryhandler.target", "io.vlingo.actors.plugin.logger.MockHandler");
+    properties.setProperty("plugin.jdkLogger.memoryhandler.size", "1024");
+    properties.setProperty("plugin.jdkLogger.memoryhandler.pushLevel", "ALL");
     
     JDKLoggerPlugin plugin = new JDKLoggerPlugin();
-    plugin.start(registrar, "jdkLogger", new PluginProperties("jdkLogger", properties));
     
-    logger = plugin.logger();
+    plugin.start(registrar, "testLoggedMessagesCount", new PluginProperties("jdkLogger", properties));
+    
+    final Logger logger = plugin.logger();
+    
+    assertEquals("testLoggedMessagesCount", plugin.logger().name());
+
+    MockHandler.logMessagesCount = 0;
+    
+    logger.log("TEST:1 1");
+    logger.log("TEST:1 2");
+    logger.log("TEST:1 3");
+    
+    assertEquals(3, MockHandler.logMessagesCount);
+  }
+
+  @Test
+  public void testNamedHandler() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty("plugin.name.jdkLogger", "true");
+    properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
+    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
+    properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logger.MockHandler");
+    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
+    
+    JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    
+    plugin.start(registrar, "testNamedHandler", new PluginProperties("jdkLogger", properties));
+    
+    final Logger logger = plugin.logger();
+    
+    assertEquals("testNamedHandler", plugin.logger().name());
+
+    MockHandler.logMessagesCount = 0;
+    
+    logger.log("TEST:2 1");
+    logger.log("TEST:2 2");
+    logger.log("TEST:2 3");
+    
+    assertEquals(3, MockHandler.logMessagesCount);
+  }
+
+  @Test
+  public void testRegistration() throws Exception {
+    registered = false;
+    
+    JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    
+    plugin.start(registrar, "testRegistration", new PluginProperties("jdkLogger", new Properties()));
+    
+    assertTrue(registered);
+    
+    // although unnamed, the default log handler type will be used: ConsoleHandler
+    final Logger logger = plugin.logger();
+    
+    assertNotNull(logger);
+    assertEquals("testRegistration", plugin.logger().name());
+    
+    logger.log("TEST:3 1");
+    logger.log("TEST:3 2");
+    logger.log("TEST:3 3");
+  }
+  
+  @Test
+  public void testStandardLogger() {
+    final World world = World.start("test-standard-logger");
+    
+    final Logger logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
+    
+    assertNotNull(logger);
+    assertEquals("testStandardLogger", logger.name());
+    
+    logger.log("TEST:4 1");
+    logger.log("TEST:4 2");
+    logger.log("TEST:4 3");
   }
 }

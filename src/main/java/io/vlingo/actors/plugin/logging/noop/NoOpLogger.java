@@ -12,6 +12,10 @@ import io.vlingo.actors.Logger;
 public class NoOpLogger implements Logger {
 
   @Override
+  public void close() {
+  }
+
+  @Override
   public boolean isEnabled() {
     return false;
   }

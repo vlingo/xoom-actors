@@ -19,6 +19,7 @@ public interface Logger {
     return JDKLogger.testInstance();
   }
 
+  void close();
   boolean isEnabled();
   void log(String message);
   String name();

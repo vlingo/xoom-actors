@@ -19,16 +19,21 @@ public class JDKLoggerPlugin implements Plugin, LoggerProvider {
   private JDKLogger logger;
   private String name;
   
-  public static LoggerProvider registerTestLogger(final Registrar registrar) {
+  public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
     Properties properties = new Properties();
     properties.setProperty("plugin.jdkLogger.defaulLogger", "true");
+    properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logging.jdk.DefaultHandler");
+    properties.setProperty("plugin.jdkLogger.handler.name", name);
+    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
     JDKLoggerPlugin plugin = new JDKLoggerPlugin();
-    plugin.start(registrar, "jdkLogger", new PluginProperties("jdkLogger", properties));
+    plugin.start(registrar, name, new PluginProperties("jdkLogger", properties));
     return plugin;
   }
   
   @Override
-  public void close() { }
+  public void close() {
+    logger.close();
+  }
 
   @Override
   public String name() {
@@ -38,9 +43,9 @@ public class JDKLoggerPlugin implements Plugin, LoggerProvider {
   @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     this.name = name;
-    this.logger = new JDKLogger(name, "vlingo");
+    this.logger = new JDKLogger(name, properties);
     
-    registrar.register(name, properties.getBoolean("defaulLogger", true), this);
+    registrar.register(name, properties.getBoolean("defaultLogger", true), this);
   }
 
   @Override

@@ -34,11 +34,12 @@ public class TestWorld implements AutoCloseable {
   }
 
   public static TestWorld start(final String name) {
-    return new TestWorld(name, LoggerProvider.systemOutLoggerProvider());
+    final World world = World.start(name);
+    return new TestWorld(world, name, LoggerProvider.standardLoggerProvider(world, name));
   }
 
   public static TestWorld start(final String name, final LoggerProvider loggerProvider) {
-    return new TestWorld(name, loggerProvider);
+    return new TestWorld(World.start(name), name, loggerProvider);
   }
 
   public static void track(final Message message) {
@@ -83,8 +84,8 @@ public class TestWorld implements AutoCloseable {
     actorMessages.clear();
   }
 
-  private TestWorld(final String name, final LoggerProvider loggerProvider) {
-    this.world = World.start(name);
+  private TestWorld(final World world, final String name, final LoggerProvider loggerProvider) {
+    this.world = world;
     this.world.register(name + "-logger", true, loggerProvider);
     this.mailboxProvider = new TestMailboxPlugin(this.world);
   }
