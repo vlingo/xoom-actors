@@ -12,16 +12,25 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements Dispatcher {
   private final Backoff backoff;
-  private volatile boolean closed;
   private final Mailbox mailbox;
   private final boolean requiresExecutionNotification;
   private final int throttlingCount;
+  private final AtomicBoolean closed = new AtomicBoolean(false);
+
+  protected ManyToOneConcurrentArrayQueueDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount, final int totalSendRetries) {
+    this.backoff = fixedBackoff == 0L ? new Backoff() : new Backoff(fixedBackoff);
+    this.requiresExecutionNotification = fixedBackoff == 0L;
+    this.mailbox = new ManyToOneConcurrentArrayQueueMailbox(this, mailboxSize, totalSendRetries);
+    this.throttlingCount = throttlingCount;
+  }
 
   @Override
   public void close() {
-    closed = true;
+    closed.set(true);
   }
 
   @Override
@@ -36,40 +45,31 @@ public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements D
 
   @Override
   public void run() {
-    while (!closed) {
+    while (!closed.get()) {
       if (!deliver()) {
         backoff.now();
       }
     }
-  }
-  protected ManyToOneConcurrentArrayQueueDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount, final int totalSendRetries) {
-    this.backoff = fixedBackoff == 0L ? new Backoff() : new Backoff(fixedBackoff);
-    this.requiresExecutionNotification = fixedBackoff == 0L;
-    this.mailbox = new ManyToOneConcurrentArrayQueueMailbox(this, mailboxSize, totalSendRetries);
-    this.throttlingCount = throttlingCount;
   }
 
   protected Mailbox mailbox() {
     return mailbox;
   }
 
+  /**
+   * Delivers messages in the mailbox, up to throttling count, as long as no null messages found.
+   *
+   * @return boolean if at least one message was delivered.
+   */
   private boolean deliver() {
-    Message message = mailbox.receive();
-    if (message != null && throttlingCount == 1) {
-      message.deliver();
-      return true;
-    } else if (message != null) {
-      message.deliver();
-      for (int idx = 1; idx < throttlingCount; ++idx) {
-        message = mailbox.receive();
-        if (message == null) {
-          break;
-        }
+    for (int idx = 0; idx < throttlingCount; ++idx) {
+      final Message message = mailbox.receive();
+      if (message == null) {
+        return idx > 0; // we delivered at least one message
+      } else {
         message.deliver();
       }
-      return true;
-    } else {
-      return false;
     }
+    return true;
   }
 }

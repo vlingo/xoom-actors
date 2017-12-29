@@ -59,9 +59,12 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
     this.queue = new ManyToOneConcurrentArrayQueue<>(mailboxSize);
     this.totalSendRetries = totalSendRetries;
   }
-  
+
   private void delay() {
     // TODO: support configurable delay strategy
-    for (int idx = 0; idx < Integer.MAX_VALUE; ++idx); // spin for approximately 1-2 milliseconds
+    try {
+      Thread.sleep(2); // sleep for 2 milliseconds
+    } catch (InterruptedException ignored) {
+    }
   }
 }
