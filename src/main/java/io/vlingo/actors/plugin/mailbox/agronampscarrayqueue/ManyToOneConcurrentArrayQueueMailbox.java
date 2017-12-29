@@ -43,8 +43,6 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
     for (int tries = 0; tries < totalSendRetries; ++tries) {
       if (queue.offer(message)) {
         break;
-      } else {
-        delay();
       }
     }
   }
@@ -58,10 +56,5 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
     this.dispatcher = dispatcher;
     this.queue = new ManyToOneConcurrentArrayQueue<>(mailboxSize);
     this.totalSendRetries = totalSendRetries;
-  }
-  
-  private void delay() {
-    // TODO: support configurable delay strategy
-    for (int idx = 0; idx < Integer.MAX_VALUE; ++idx); // spin for approximately 1-2 milliseconds
   }
 }

@@ -29,7 +29,7 @@ public class ActorFactory {
     
     threadLocalEnvironment.set(environment);
     
-    Actor actor = null;
+    final Actor actor;
     
     if (definition.internalParameters().isEmpty()) {
       actor = definition.type().newInstance();

@@ -27,7 +27,7 @@ public class Environment {
   protected Environment() {
     // for testing
     this.address = Address.from("test");
-    this.children = new ArrayList<Actor>(1);
+    this.children = new ArrayList<>(1);
     this.definition = Definition.has(null, Definition.NoParameters);
     this.flags = FLAG_RESET;
     this.mailbox = null;
@@ -77,11 +77,7 @@ public class Environment {
   }
 
   protected void stopChildren() {
-    final ListIterator<Actor> iterator = children.listIterator();
-    while (iterator.hasNext()) {
-      final Actor child = iterator.next();
-      child.selfAs(Stoppable.class).stop();
-      iterator.remove();
-    }
+    children.forEach(child -> child.selfAs(Stoppable.class).stop());
+    children.clear();
   }
 }

@@ -108,7 +108,7 @@ public class SharedRingBufferMailbox implements Mailbox {
     public void run() {
       while (open) {
         if (canSend()) {
-          Message delayed = messages.poll();
+          final Message delayed = messages.poll();
           if (delayed != null) {
             backoff.reset();
             send(delayed);

@@ -12,15 +12,17 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class RingBufferDispatcher extends Thread implements Dispatcher {
   private final Backoff backoff;
-  private volatile boolean closed;
+  private final AtomicBoolean closed = new AtomicBoolean(false);
   private final Mailbox mailbox;
   private final boolean requiresExecutionNotification;
   private final int throttlingCount;
 
   public void close() {
-    closed = true;
+    closed.set(true);
   }
 
   public void execute(final Mailbox mailbox) {
@@ -33,7 +35,7 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
 
   @Override
   public void run() {
-    while (!closed) {
+    while (!closed.get()) {
       if (!deliver()) {
         backoff.now();
       }
@@ -52,22 +54,14 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
   }
 
   private boolean deliver() {
-    Message message = mailbox.receive();
-    if (message != null && throttlingCount == 1) {
-      message.deliver();
-      return true;
-    } else if (message != null) {
-      message.deliver();
-      for (int idx = 1; idx < throttlingCount; ++idx) {
-        message = mailbox.receive();
-        if (message == null) {
-          break;
-        }
+    for (int idx = 0; idx < throttlingCount; ++idx) {
+      final Message message = mailbox.receive();
+      if (message == null) {
+        return idx > 0; // we delivered at least one message
+      } else {
         message.deliver();
       }
-      return true;
-    } else {
-      return false;
     }
+    return true;
   }
 }
