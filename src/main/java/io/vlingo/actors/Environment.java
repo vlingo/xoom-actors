@@ -9,7 +9,6 @@ package io.vlingo.actors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 public class Environment {
   private static final byte FLAG_RESET = 0x00;
