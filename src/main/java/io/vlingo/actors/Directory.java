@@ -54,10 +54,28 @@ public final class Directory {
 
   @SuppressWarnings("unchecked")
   private Map<Address, Actor>[] build() {
-    final Map<Address, Actor>[] tempMaps = new ConcurrentHashMap[20];
+    
+    // This particular tuning is based on relatively few actors being spread
+    // across 32 buckets with only 32 pre-allocated elements, for a total of
+    // 1024 actors. This hard-coded configuration will have good performance
+    // up to around 75% of 1024 actors, but very average if not poor performance
+    // following that.
+    //
+    // TODO: Changed to configuration based values to enable the
+    // application to estimate how many actors are likely to exist at
+    // any one time. For example, there will be very few actors in some
+    // "applications" such as vlingo/cluster, but then the application
+    // running on the cluster itself may have many, many actors. These
+    // run on a different stage, and thus should be tuned separately.
+    // For example, preallocate 128 buckets that each have a Map of 16K
+    // elements in initial capacity (and probably no greater than that).
+    // This will support 2 million actors with an average of a few hundred
+    // less than 16K actors in each bucket.
+    
+    final Map<Address, Actor>[] tempMaps = new ConcurrentHashMap[32];
 
     for (int idx = 0; idx < tempMaps.length; ++idx) {
-      tempMaps[idx] = new ConcurrentHashMap<>(16, 0.75f, 16);  // TODO: base this on scheduler/dispatcher
+      tempMaps[idx] = new ConcurrentHashMap<>(32, 0.75f, 16);  // TODO: base this on scheduler/dispatcher
     }
 
     return tempMaps;
