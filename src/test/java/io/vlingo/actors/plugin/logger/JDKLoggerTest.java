@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Test;
 
 import io.vlingo.actors.Logger;
@@ -24,7 +25,9 @@ import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 
 public class JDKLoggerTest {
-  boolean registered;
+  private Logger logger;
+  private boolean registered;
+  private World world;
   
   final Registrar registrar = new Registrar() {
     @Override
@@ -53,7 +56,7 @@ public class JDKLoggerTest {
     
     plugin.start(registrar, "testLoggedMessagesCount", new PluginProperties("jdkLogger", properties));
     
-    final Logger logger = plugin.logger();
+    logger = plugin.logger();
     
     assertEquals("testLoggedMessagesCount", plugin.logger().name());
 
@@ -79,7 +82,7 @@ public class JDKLoggerTest {
     
     plugin.start(registrar, "testNamedHandler", new PluginProperties("jdkLogger", properties));
     
-    final Logger logger = plugin.logger();
+    logger = plugin.logger();
     
     assertEquals("testNamedHandler", plugin.logger().name());
 
@@ -103,7 +106,7 @@ public class JDKLoggerTest {
     assertTrue(registered);
     
     // although unnamed, the default log handler type will be used: ConsoleHandler
-    final Logger logger = plugin.logger();
+    logger = plugin.logger();
     
     assertNotNull(logger);
     assertEquals("testRegistration", plugin.logger().name());
@@ -115,9 +118,9 @@ public class JDKLoggerTest {
   
   @Test
   public void testStandardLogger() {
-    final World world = World.start("test-standard-logger");
+    world = World.start("test-standard-logger");
     
-    final Logger logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
+    logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
     
     assertNotNull(logger);
     assertEquals("testStandardLogger", logger.name());
@@ -125,5 +128,14 @@ public class JDKLoggerTest {
     logger.log("TEST:4 1");
     logger.log("TEST:4 2");
     logger.log("TEST:4 3");
+  }
+  
+  @After
+  public void tearDown() {
+    logger.close();
+    
+    if (world != null) {
+      world.terminate();
+    }
   }
 }
