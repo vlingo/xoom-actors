@@ -138,6 +138,8 @@ public abstract class Actor implements Stoppable, TestStateView {
   }
 
   protected void __internal__Stop() {
+    environment.mailbox.close();
+    
     environment.stopChildren();
 
     environment.setStopped();
