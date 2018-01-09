@@ -24,6 +24,11 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   }
 
   @Override
+  public boolean isClosed() {
+    return dispatcher.isClosed();
+  }
+
+  @Override
   public boolean isDelivering() {
     throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
   }

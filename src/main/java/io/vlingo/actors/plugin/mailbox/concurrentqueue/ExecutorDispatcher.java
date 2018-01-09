@@ -30,6 +30,11 @@ public class ExecutorDispatcher implements Dispatcher {
     executor.shutdown();
   }
 
+  @Override
+  public boolean isClosed() {
+    return closed.get();
+  }
+
   public void execute(final Mailbox mailbox) {
     if (!closed.get()) {
       if (mailbox.delivering(true)) {

@@ -96,6 +96,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     @Override
+    public boolean isClosed() {
+      return false;
+    }
+
+    @Override
     public boolean isDelivering() {
       return false;
     }

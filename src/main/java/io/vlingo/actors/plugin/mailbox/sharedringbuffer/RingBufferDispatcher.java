@@ -25,6 +25,11 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
     closed.set(true);
   }
 
+  @Override
+  public boolean isClosed() {
+    return closed.get();
+  }
+
   public void execute(final Mailbox mailbox) {
     interrupt();
   }

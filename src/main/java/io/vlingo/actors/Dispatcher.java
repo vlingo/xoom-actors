@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 public interface Dispatcher {
   void close();
+  boolean isClosed();
   void execute(final Mailbox mailbox);
   boolean requiresExecutionNotification();
 }

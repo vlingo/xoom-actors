@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 public interface Mailbox extends Runnable {
   void close();
+  boolean isClosed();
   boolean isDelivering();
   boolean delivering(final boolean flag);
   void send(final Message message);

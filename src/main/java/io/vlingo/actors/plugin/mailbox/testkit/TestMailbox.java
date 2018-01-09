@@ -18,7 +18,8 @@ public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
   
   private final List<String> lifecycleMessages = Arrays.asList("__internal__BeforeStart", "afterStop", "beforeRestart", "afterRestart");
-
+  private boolean closed;
+  
   public TestMailbox() { }
   
   @Override
@@ -28,6 +29,12 @@ public class TestMailbox implements Mailbox {
 
   @Override
   public void close() {
+    closed = true;
+  }
+
+  @Override
+  public boolean isClosed() {
+    return closed;
   }
 
   @Override

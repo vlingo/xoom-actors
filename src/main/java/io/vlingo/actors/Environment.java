@@ -71,11 +71,19 @@ public class Environment {
     return (flags & FLAG_STOPPED) == FLAG_STOPPED;
   }
 
-  protected void setStopped() {
+  protected void stop() {
+    mailbox.close();
+    
+    stopChildren();
+
+    setStopped();
+  }
+
+  private void setStopped() {
     flags |= FLAG_STOPPED;
   }
 
-  protected void stopChildren() {
+  private void stopChildren() {
     // TODO: re-implement as: children.forEach(child -> selfAs(Stoppable.class).stop());
     children.forEach(child -> child.stop());
     children.clear();

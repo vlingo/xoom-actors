@@ -61,6 +61,25 @@ public class ActorEnvironmentTest {
     assertNull(state.valueOf("stage"));
   }
   
+  @Test
+  public void testStop() {
+    final Definition definition = Definition.has(StopTesterActor.class, Definition.parameters(0), "test-stop");
+
+    final TestActor<StopTester> stoptest = world.actorFor(definition, StopTester.class);
+    
+    final Environment env = stoptest.viewTestState().valueOf("env");
+    
+    assertEquals(1, env.children.size());
+    assertFalse(env.isStopped());
+    assertFalse(env.mailbox.isClosed());
+    
+    stoptest.actor().stop();
+    
+    assertEquals(0, env.children.size());
+    assertTrue(env.isStopped());
+    assertTrue(env.mailbox.isClosed());
+  }
+  
   @Before
   public void setUp() {
     world = TestWorld.start("test-world");
@@ -120,6 +139,22 @@ public class ActorEnvironmentTest {
       }
 
       return state;
+    }
+  }
+
+  public static interface StopTester extends Stoppable { }
+  
+  public static class StopTesterActor extends Actor implements StopTester {
+    
+    public StopTesterActor(final int count) {
+      if (count == 0) {
+        childActorFor(Definition.has(StopTesterActor.class, Definition.parameters(1), "test-stop-1"), StopTester.class);
+      }
+    }
+    
+    @Override
+    public TestState viewTestState() {
+      return new TestState().putValue("env", __internal__Environment());
     }
   }
 }

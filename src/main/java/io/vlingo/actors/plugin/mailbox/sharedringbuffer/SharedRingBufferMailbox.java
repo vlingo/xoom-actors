@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class SharedRingBufferMailbox implements Mailbox {
+  private boolean closed;
   private final Dispatcher dispatcher;
   private final int mailboxSize;
   private final Message[] messages;
@@ -24,9 +25,17 @@ public class SharedRingBufferMailbox implements Mailbox {
   private int receiveIndex;
 
   public void close() {
-    dispatcher.close();
-    overflowQueue.close();
-    clear();
+    if (!closed) {
+      closed = true;
+      dispatcher.close();
+      overflowQueue.close();
+      clear();
+    }
+  }
+
+  @Override
+  public boolean isClosed() {
+    return closed;
   }
 
   public boolean isDelivering() {

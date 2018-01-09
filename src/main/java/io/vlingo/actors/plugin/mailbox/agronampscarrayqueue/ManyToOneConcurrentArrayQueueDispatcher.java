@@ -34,6 +34,11 @@ public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements D
   }
 
   @Override
+  public boolean isClosed() {
+    return closed.get();
+  }
+
+  @Override
   public void execute(final Mailbox mailbox) {
     interrupt();
   }
