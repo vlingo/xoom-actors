@@ -37,7 +37,11 @@ public final class DeadLetter {
       if (idx > 0) {
         builder.append(", ");
       }
-      builder.append(args[idx].toString());
+      try {
+        builder.append(args[idx].toString());
+      } catch (Exception e) {
+        builder.append("(null)");
+      }
     }
     
     if (max < args.length) {
