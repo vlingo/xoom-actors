@@ -66,7 +66,7 @@ public class Stage implements Stoppable {
     sweep();
     
     // TODO: remove...
-    dump();
+    //dump();
     int retries = 0;
     while (count() > 1 && ++retries < 10) {
       try { Thread.sleep(10L); } catch (Exception e) {}
