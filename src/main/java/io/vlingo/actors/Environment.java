@@ -76,7 +76,8 @@ public class Environment {
   }
 
   protected void stopChildren() {
-    children.forEach(child -> child.selfAs(Stoppable.class).stop());
+    // TODO: re-implement as: children.forEach(child -> selfAs(Stoppable.class).stop());
+    children.forEach(child -> child.stop());
     children.clear();
   }
 }
