@@ -29,14 +29,21 @@ public class ActorFactory {
     
     threadLocalEnvironment.set(environment);
     
-    final Actor actor;
+    Actor actor = null;
     
     if (definition.internalParameters().isEmpty()) {
       actor = definition.type().newInstance();
     } else {
-      // currently supports only one constructor
-      final Constructor<?> ctor = definition.type().getConstructors()[0];
-      actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
+      for (final Constructor<?> ctor : definition.type().getConstructors()) {
+        if (ctor.getParameterCount() == definition.internalParameters().size()) {
+          actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
+          break;
+        }
+      }
+    }
+    
+    if (actor == null) {
+      throw new IllegalArgumentException("No constructor matches the given number of parameters.");
     }
     
     if (parent != null) {
