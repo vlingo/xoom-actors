@@ -115,14 +115,13 @@ public final class World implements Registrar {
 
   public void terminate() {
     if (!isTerminated()) {
-      scheduler.close();
-      
       for (final Stage stage : stages.values()) {
         stage.stop();
       }
       
       loggerProviderKeeper.close();
       mailboxProviderKeeper.close();
+      scheduler.close();
     }
   }
 
