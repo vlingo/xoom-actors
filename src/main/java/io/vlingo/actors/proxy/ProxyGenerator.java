@@ -18,6 +18,7 @@ import static io.vlingo.actors.proxy.ProxyNaming.fullyQualifiedClassnameFor;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -157,7 +158,8 @@ public class ProxyGenerator implements AutoCloseable {
   private String methodDefinition(final Class<?> protocolInterface, final Method method, final int count) {
     final StringBuilder builder = new StringBuilder();
     
-    final String methodSignature = MessageFormat.format("  public {0} {1}({2})", method.getReturnType(), method.getName(), parametersFor(method));
+    final String methodSignature = MessageFormat.format("  public {0}{1} {2}({3})", passedGenericTypes(method), method.getReturnType().getName(), method.getName(), parametersFor(method));
+    final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
@@ -167,7 +169,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);
     
     builder
-      .append(methodSignature).append(" {\n")
+      .append(methodSignature).append(throwsExceptions).append(" {\n")
       .append(ifNotStopped).append("\n")
       .append(consumerStatement).append("\n")
       .append(mailboxSendStatement).append("\n")
@@ -186,7 +188,9 @@ public class ProxyGenerator implements AutoCloseable {
     int count = 0;
     
     for (final Method method : methods) {
-      builder.append(methodDefinition(protocolInterface, method, ++count));
+      if (!Modifier.isStatic(method.getModifiers())) {
+        builder.append(methodDefinition(protocolInterface, method, ++count));
+      }
     }
     
     return builder.toString();
@@ -249,6 +253,33 @@ public class ProxyGenerator implements AutoCloseable {
     return builder.toString();
   }
 
+  private Object passedGenericTypes(final Method method) {
+    final StringBuilder builder = new StringBuilder();
+    
+    final Parameter[] parameters = method.getParameters();
+    
+    boolean first = true;
+
+    for (final Parameter parameter : parameters) {
+      final String parameterizedType = parameter.getParameterizedType().getTypeName();
+      final String parameterType = parameter.getType().getTypeName();
+      
+      if (parameterType.equals("java.lang.Object") && !parameterizedType.equals(parameterType)) {
+        if (first) {
+          builder.append("<");
+        } else {
+          builder.append(", ");
+        }
+        builder.append(parameterizedType);
+        first = false;
+      }
+    }
+    
+    if (builder.length() > 0) builder.append("> ");
+    
+    return builder.toString();
+  }
+
   private File persistProxyClassSource(final String actorProtocol, final String relativePathToClass, final String proxyClassSource) throws Exception {
     final String pathToGeneratedSource = toPackagePath(actorProtocol);
     new File(rootOfGenerated + pathToGeneratedSource).mkdirs();
@@ -286,14 +317,16 @@ public class ProxyGenerator implements AutoCloseable {
     int count = 0;
     
     for (final Method method : methods) {
-      final String statement =
-              MessageFormat.format(
-                      "  private static final String {0}Representation{1} = \"{0}({2})\";\n",
-                      method.getName(),
-                      ++count,
-                      parameterTypesFor(method));
-      
-      builder.append(statement);
+      if (!Modifier.isStatic(method.getModifiers())) {
+        final String statement =
+                MessageFormat.format(
+                        "  private static final String {0}Representation{1} = \"{0}({2})\";\n",
+                        method.getName(),
+                        ++count,
+                        parameterTypesFor(method));
+        
+        builder.append(statement);
+      }
     }
     
     return builder.toString();
@@ -319,5 +352,25 @@ public class ProxyGenerator implements AutoCloseable {
       }
     }
     return "null";
+  }
+
+  private String throwsExceptions(final Method method) {
+    final StringBuilder builder = new StringBuilder();
+    
+    boolean first = true;
+    
+    for (final Class<?> exceptionType : method.getExceptionTypes()) {
+      if (first) {
+        builder.append(" throws ");
+      } else {
+        builder.append(", ");
+      }
+      
+      first = false;
+      
+      builder.append(exceptionType.getName());
+    }
+    
+    return builder.toString();
   }
 }
