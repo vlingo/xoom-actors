@@ -44,6 +44,7 @@ public class ProxyClassLoaderTest extends ProxyTest {
                     source,
                     ProxyFile.persistProxyClassSource(pathToSource, source),
                     classLoader,
+                    ProxyType.Test,
                     false);
     
     new ProxyCompiler().compile(input);

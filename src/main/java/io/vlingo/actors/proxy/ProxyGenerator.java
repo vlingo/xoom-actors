@@ -27,8 +27,6 @@ import java.net.URLClassLoader;
 import java.text.MessageFormat;
 
 public class ProxyGenerator implements AutoCloseable {
-  private static enum ProxyGeneratorType { Main, Test };
-  
   public static class Result {
     public final String classname;
     public final String fullyQualifiedClassname;
@@ -47,15 +45,15 @@ public class ProxyGenerator implements AutoCloseable {
   private final String rootOfClasses;
   private final String rootOfGenerated;
   private final File targetClassesPath;
-  private final ProxyGeneratorType type;
+  private final ProxyType type;
   private final URLClassLoader urlClassLoader;
   
   public static ProxyGenerator forMain(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfMainClasses, ProxyGeneratorType.Main, persist);
+    return new ProxyGenerator(RootOfMainClasses, ProxyType.Main, persist);
   }
   
   public static ProxyGenerator forTest(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfTestClasses, ProxyGeneratorType.Test, persist);
+    return new ProxyGenerator(RootOfTestClasses, ProxyType.Test, persist);
   }
 
   @Override
@@ -64,7 +62,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   public Result generateFor(final String actorProtocol) {
-    System.out.println("vlingo/actors: Generating proxy for " + (type == ProxyGeneratorType.Main ? "main":"test") + ": " + actorProtocol);
+    System.out.println("vlingo/actors: Generating proxy for " + (type == ProxyType.Main ? "main":"test") + ": " + actorProtocol);
     
     final String relativePathToClass = toFullPath(actorProtocol);
     final String relativePathToClassFile = rootOfClasses + relativePathToClass + ".class";
@@ -86,13 +84,17 @@ public class ProxyGenerator implements AutoCloseable {
     }
   }
 
+  public ProxyType type() {
+    return type;
+  }
+
   public URLClassLoader urlClassLoader() {
     return urlClassLoader;
   }
 
-  private ProxyGenerator(final String rootOfClasses, final ProxyGeneratorType type, final boolean persist) throws Exception {
+  private ProxyGenerator(final String rootOfClasses, final ProxyType type, final boolean persist) throws Exception {
     this.rootOfClasses = rootOfClasses;
-    this.rootOfGenerated = type == ProxyGeneratorType.Main ? GeneratedSources : GeneratedTestSources;
+    this.rootOfGenerated = type == ProxyType.Main ? GeneratedSources : GeneratedTestSources;
     this.type = type;
     this.persist = persist;
     this.targetClassesPath = new File(rootOfClasses);

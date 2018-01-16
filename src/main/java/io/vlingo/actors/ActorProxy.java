@@ -81,7 +81,7 @@ public final class ActorProxy {
           final String targetClassname) {
     try {
       final Result result = generator.generateFor(protocol.getName());
-      final Input input = new Input(protocol, targetClassname, result.source, result.sourceFile, classLoader, false);
+      final Input input = new Input(protocol, targetClassname, result.source, result.sourceFile, classLoader, generator.type(), true);
       final Class<T> proxyClass = proxyCompiler.compile(input);
       return tryCreateWithProxyClass(proxyClass, actor, mailbox);
     } catch (Exception e) {

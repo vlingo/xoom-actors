@@ -16,6 +16,15 @@ public class ProxyFile {
   public static final String RootOfMainClasses = "target/classes/";
   public static final String RootOfTestClasses = "target/test-classes/";
   
+  public static File persistProxyClass(final String pathToClass, final byte[] proxyClass) throws Exception {
+    final File pathToClassFile = new File(pathToClass);
+    
+    try (final FileOutputStream stream = new FileOutputStream(pathToClassFile)) {
+      stream.write(proxyClass);
+      return pathToClassFile;
+    }
+  }
+
   public static File persistProxyClassSource(final String pathToSource, final String proxyClassSource) throws Exception {
     final File pathToSourceFile = new File(pathToSource);
     
