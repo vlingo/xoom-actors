@@ -7,18 +7,6 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Supplier;
-
 public class Configuration {
-  private Supplier<ProxyFactory> proxyFactory = JdkProxyFactory::new;
-
   public Configuration() { }
-
-  public Supplier<ProxyFactory> proxyFactory() {
-    return proxyFactory;
-  }
-
-  public void setProxyFactory(final Supplier<ProxyFactory> proxyFactory) {
-    this.proxyFactory = proxyFactory;
-  }
 }

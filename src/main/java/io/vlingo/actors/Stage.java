@@ -1,4 +1,4 @@
-// Copyright 2012-2018 For Comprehension, Inc.
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -15,7 +15,6 @@ public class Stage implements Stoppable {
   private final String name;
   private boolean stopped;
   private final World world;
-  private final ProxyFactory proxyFactory;
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
     return actorFor(definition, protocol, definition.parentOr(world.defaultParent()));
@@ -37,11 +36,11 @@ public class Stage implements Stoppable {
   }
 
   public final <T> T createActorFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
-    return proxyFactory.createFor(protocol, actor, mailbox);
+    return ActorProxy.createFor(protocol, actor, mailbox);
   }
 
   public final Object createActorFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    return proxyFactory.createFor(protocol, actor, mailbox);
+    return ActorProxy.createFor(protocol, actor, mailbox);
   }
 
   public int count() {
@@ -83,7 +82,6 @@ public class Stage implements Stoppable {
     this.world = world;
     this.name = name;
     this.directory = new Directory();
-    this.proxyFactory = world.configuration().proxyFactory().get();
     this.stopped = false;
   }
 

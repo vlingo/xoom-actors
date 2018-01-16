@@ -9,9 +9,9 @@ package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,9 +20,8 @@ import org.junit.Test;
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Dispatcher;
+import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.MessageTest;
 
 public class ConcurrentQueueMailboxTest extends ActorsTest {
   private static int Total = 10_000;
@@ -32,18 +31,19 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   
   @Test
   public void testMailboxSendReceive() throws Exception {
-    final Actor actor = new NotEvenAnActor();
-    final Method method = NotEvenAnActor.class.getMethod("take", new Class[] {int.class});
+    final CountTakerActor actor = new CountTakerActor();
     
     for (int count = 0; count < Total; ++count) {
-      final Message message = MessageTest.testMessageFrom(actor, method, new Object[] { count });
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
       mailbox.send(message);
     }
     
     pause();
     
     for (int idx = 0; idx < Total; ++idx) {
-      assertEquals(idx, (int) NotEvenAnActor.counts.get(idx));
+      assertEquals(idx, (int) CountTakerActor.counts.get(idx));
     }
   }
   
@@ -60,9 +60,14 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     dispatcher.close();
   }
   
-  public static class NotEvenAnActor extends Actor {
-    public static final List<Integer> counts = new ArrayList<>();
+  public static interface CountTaker {
+    void take(final int count);
+  }
+  
+  public static class CountTakerActor extends Actor implements CountTaker {
+    public static final List<Integer> counts = new ArrayList<>();    
     
+    @Override
     public void take(final int count) {
       counts.add(count);
     }

@@ -43,7 +43,7 @@ public class TestWorld implements AutoCloseable {
   }
 
   public static void track(final Message message) {
-    final int id = message.actor.address().id();
+    final int id = message.actor().address().id();
     final List<Message> messages = actorMessages.computeIfAbsent(id, k -> new ArrayList<>());
     messages.add(message);
   }

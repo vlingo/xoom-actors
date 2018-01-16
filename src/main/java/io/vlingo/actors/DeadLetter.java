@@ -7,48 +7,17 @@
 
 package io.vlingo.actors;
 
-import java.lang.reflect.Method;
-
 public final class DeadLetter {
   public final Actor actor;
-  public final String methodName;
-  public final Object[] args;
+  public final String representation;
+
+  public DeadLetter(final Actor actor, final String representation) {
+    this.actor = actor;
+    this.representation = representation;
+  }
 
   @Override
   public String toString() {
-    return "DeadLetter[" + actor + "#" + methodName + argsToInvocation(args) + "]";
-  }
-
-  protected DeadLetter(final Actor actor, final Method method, final Object[] args) {
-    this.actor = actor;
-    this.methodName = method.getName();
-    this.args = args;
-  }
-  
-  private String argsToInvocation(final Object[] args) {
-    if (args == null) {
-      return "()";
-    }
-    
-    final StringBuilder builder = new StringBuilder("(");
-    final int max = Math.min(10, args.length);
-    
-    for (int idx = 0; idx < max; ++idx) {
-      if (idx > 0) {
-        builder.append(", ");
-      }
-      try {
-        builder.append(args[idx].toString());
-      } catch (Exception e) {
-        builder.append("(null)");
-      }
-    }
-    
-    if (max < args.length) {
-      builder.append(", ...");
-    }
-    builder.append(")");
-    
-    return builder.toString();
+    return "DeadLetter[" + actor + "." + representation + "]";
   }
 }

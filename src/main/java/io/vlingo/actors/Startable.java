@@ -8,6 +8,5 @@
 package io.vlingo.actors;
 
 public interface Startable {
-  boolean isStarted();
   void start();
 }

@@ -35,11 +35,8 @@ public class DeadLettersTest {
     
     assertEquals(3, DeadLettersListenerActor.deadLetters.size());
     
-    int argValue = 1;
     for (final DeadLetter deadLetter : DeadLettersListenerActor.deadLetters) {
-      assertEquals("doNothing", deadLetter.methodName);
-      assertEquals(1, deadLetter.args.length);
-      assertEquals(argValue++, (int) deadLetter.args[0]);
+      assertEquals("doNothing(int)", deadLetter.representation);
     }
   }
   
@@ -65,7 +62,7 @@ public class DeadLettersTest {
         if (deadLetters.size() >= count) {
           return;
         } else {
-          try { Thread.sleep(100L); } catch (Exception e) { }
+          try { Thread.sleep(10L); } catch (Exception e) { }
         }
       }
     }
@@ -75,7 +72,7 @@ public class DeadLettersTest {
   public void setUp() {
     world = TestWorld.start("test-dead-letters");
     nothing = world.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
-    listener = world.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.NoParameters), DeadLettersListener.class);
+    listener = world.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.NoParameters, "deadletters-listener"), DeadLettersListener.class);
     world.world().deadLetters().registerListener(listener.actor());
   }
   

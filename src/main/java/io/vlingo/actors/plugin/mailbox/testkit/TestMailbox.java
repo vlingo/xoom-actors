@@ -24,7 +24,7 @@ public class TestMailbox implements Mailbox {
   
   @Override
   public void run() {
-    throw new UnsupportedOperationException("TesterMailbox does not support this operation.");
+    throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
 
   @Override
@@ -39,20 +39,23 @@ public class TestMailbox implements Mailbox {
 
   @Override
   public boolean isDelivering() {
-    throw new UnsupportedOperationException("TesterMailbox does not support this operation.");
+    throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
 
   @Override
   public boolean delivering(final boolean flag) {
-    throw new UnsupportedOperationException("TesterMailbox does not support this operation.");
+    throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
 
   @Override
   public void send(final Message message) {
     try {
-      if (!lifecycleMessages.contains(message.method.getName())) {
-        TestWorld.track(message);
+      if (!message.actor().isStopped()) {
+        if (!isLifecycleMessage(message)) {
+          TestWorld.track(message);
+        }
       }
+
       message.deliver();
     } catch (Throwable t) {
       throw new RuntimeException(t.getMessage(), t);
@@ -61,6 +64,12 @@ public class TestMailbox implements Mailbox {
 
   @Override
   public Message receive() {
-    throw new UnsupportedOperationException("TesterMailbox does not support this operation.");
+    throw new UnsupportedOperationException("TestMailbox does not support this operation.");
+  }
+  
+  private boolean isLifecycleMessage(final Message message) {
+    final String representation = message.representation();
+    final int openParenIndex = representation.indexOf("(");
+    return lifecycleMessages.contains(representation.substring(0, openParenIndex));
   }
 }

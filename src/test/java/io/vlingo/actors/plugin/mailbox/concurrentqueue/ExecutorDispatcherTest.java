@@ -7,22 +7,24 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Dispatcher;
+import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
-import io.vlingo.actors.MessageTest;
 
 public class ExecutorDispatcherTest extends ActorsTest {
   private static int Total = 10_000;
@@ -32,14 +34,22 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
   @Test
   public void testClose() throws Exception {
+    final CountTakerActor actor = new CountTakerActor();
+    
     for (int count = 0; count < 3; ++count) {
-      mailbox.send(MessageTest.testMessageFrom(null, null, new Integer[] { count }));
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      mailbox.send(message);
       dispatcher.execute(mailbox);
     }
 
     dispatcher.close();
     
-    mailbox.send(MessageTest.testMessageFrom(null, null, new Integer[] { 10 }));
+    final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
+    final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+    
+    mailbox.send(message);
     
     dispatcher.execute(mailbox);
     
@@ -54,8 +64,13 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
   @Test
   public void testExecute() throws Exception {
+    final CountTakerActor actor = new CountTakerActor();
+    
     for (int count = 0; count < Total; ++count) {
-      mailbox.send(MessageTest.testMessageFrom(null, null, new Integer[] { count }));
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      mailbox.send(message);
       dispatcher.execute(mailbox);
     }
     
@@ -75,8 +90,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void setUp() {
     dispatcher = new ExecutorDispatcher(1, 1.0f);
     mailbox = new TestMailbox();
+    CountTakerActor.highest = 0;
   }
-  
+
   public static class TestMailbox implements Mailbox {
     public final List<Integer> counts = new ArrayList<>();
     private final Queue<Message> queue = new ConcurrentLinkedQueue<>();
@@ -86,7 +102,8 @@ public class ExecutorDispatcherTest extends ActorsTest {
       final Message message = receive();
       
       if (message != null) {
-        counts.add((Integer) message.args[0]);
+        message.deliver();
+        counts.add((Integer) CountTakerActor.highest);
       }
     }
 
@@ -118,6 +135,19 @@ public class ExecutorDispatcherTest extends ActorsTest {
     @Override
     public Message receive() {
       return queue.poll();
+    }
+  }
+  
+  public static interface CountTaker {
+    void take(final int count);
+  }
+  
+  public static class CountTakerActor extends Actor implements CountTaker {
+    public static int highest;
+    
+    @Override
+    public void take(final int count) {
+      if (count > highest) highest = count;
     }
   }
 }

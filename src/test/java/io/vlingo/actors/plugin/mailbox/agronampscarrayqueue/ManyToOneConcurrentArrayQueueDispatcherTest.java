@@ -9,16 +9,15 @@ package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Method;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
+import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.MessageTest;
 
 public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
@@ -35,10 +34,10 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
-    final Method method = CountTakerActor.class.getMethod("take", new Class[] {int.class});
-    
     for (int count = 1; count <= mailboxSize; ++count) {
-      final Message message = MessageTest.testMessageFrom(actor, method, new Object[] { count });
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -50,7 +49,9 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     final int neverRevieved = mailboxSize * 2;
     
     for (int count = mailboxSize + 1; count <= neverRevieved; ++count) {
-      final Message message = MessageTest.testMessageFrom(actor, method, new Object[] { count });
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -73,10 +74,10 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
-    final Method method = CountTakerActor.class.getMethod("take", new Class[] {int.class});
-    
     for (int count = 1; count <= mailboxSize; ++count) {
-      final Message message = MessageTest.testMessageFrom(actor, method, new Object[] { count });
+      final int countParam = count;
+      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
       
       mailbox.send(message);
     }

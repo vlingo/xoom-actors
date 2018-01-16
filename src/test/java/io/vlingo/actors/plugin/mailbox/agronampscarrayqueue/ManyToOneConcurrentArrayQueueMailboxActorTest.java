@@ -58,6 +58,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
       countTaker.take(count);
     }
     
+    delay = 500L;
     pause();
     
     assertEquals(MaxCount, CountTakerActor.highest);

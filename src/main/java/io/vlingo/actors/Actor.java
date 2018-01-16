@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.lang.reflect.Method;
+import java.util.function.Consumer;
 
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
@@ -17,6 +17,10 @@ public abstract class Actor implements Stoppable, TestStateView {
 
   public Address address() {
     return environment.address;
+  }
+
+  public DeadLetters deadLetters() {
+    return environment.stage.world().deadLetters();
   }
 
   @Override
@@ -167,8 +171,8 @@ public abstract class Actor implements Stoppable, TestStateView {
 
   private void __internal__SendBeforeStart() {
     try {
-	  final Method method = Actor.class.getDeclaredMethod("__internal__BeforeStart", new Class[] {});
-	  final Message message = new Message(this, method, new Object[] { });
+      final Consumer<Actor> consumer = (actor) -> actor.__internal__BeforeStart();
+	  final Message message = new LocalMessage<Actor>(this, this, consumer, "__internal__BeforeStart()");
       environment.mailbox.send(message);
     } catch (Exception e) {
       __internal__BeforeStart();
