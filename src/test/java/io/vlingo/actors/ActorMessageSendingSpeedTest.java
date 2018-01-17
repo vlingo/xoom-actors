@@ -17,20 +17,23 @@ public class ActorMessageSendingSpeedTest {
   
   @Test
   public void test100millionSendsOnQueueMailbox() throws Exception {
-    runWith("queueMailbox");
+    // uncomment to run (too slow for build testing)
+    // runWith("queueMailbox");
   }
   
   @Test
   public void test100millionSendsOnSharedRingBufferMailbox() throws Exception {
-    runWith("ringMailbox");
+    // uncomment to run (too slow for build testing)
+    // runWith("ringMailbox");
   }
   
   @Test
   public void test100millionSendsOnArrayQueueMailbox() throws Exception {
-    runWith("arrayQueueMailbox");
+    // uncomment to run (too slow for build testing)
+    // runWith("arrayQueueMailbox");
   }
   
-  private void runWith(final String mailboxType) throws Exception {
+  protected void runWith(final String mailboxType) throws Exception {
     final World world = World.start("speed-test");
     
     final SingleOperation actor =
