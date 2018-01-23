@@ -76,6 +76,20 @@ public final class World implements Registrar {
     return deadLetters;
   }
 
+  public Logger defaultLogger() {
+    if (this.defaultLogger != null) {
+      return defaultLogger;
+    }
+    
+    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+    
+    if (this.defaultLogger == null) {
+      this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
+    }
+    
+    return this.defaultLogger;
+  }
+
   public Actor defaultParent() {
     return defaultParent;
   }
@@ -91,21 +105,7 @@ public final class World implements Registrar {
     return name;
   }
 
-  public Logger findDefaultLogger() {
-    if (this.defaultLogger != null) {
-      return defaultLogger;
-    }
-    
-    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
-    
-    if (this.defaultLogger == null) {
-      this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
-    }
-    
-    return this.defaultLogger;
-  }
-
-  public Logger findLogger(final String name) {
+  public Logger logger(final String name) {
     return loggerProviderKeeper().findNamed(name).logger();
   }
 
@@ -129,9 +129,9 @@ public final class World implements Registrar {
       final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       final Supervisor common = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
       stage.registerCommonSupervisor(fullyQualifiedProtocol, common);
-      findDefaultLogger().log("REGISTERED COMMON: stage=" + stageName + " name=" + name + " fullyQualifiedProtocol=" + fullyQualifiedProtocol + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
+      defaultLogger().log("REGISTERED COMMON: stage=" + stageName + " name=" + name + " fullyQualifiedProtocol=" + fullyQualifiedProtocol + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
     } catch (Exception e) {
-      findDefaultLogger().log("vlingo/actors: World cannot register common supervisor: " + fullyQualifiedSupervisor, e);
+      defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + fullyQualifiedSupervisor, e);
     }
   }
 
@@ -143,9 +143,9 @@ public final class World implements Registrar {
       final Stage stage = stageNamed(actualStageName);
       final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       defaultSupervisor = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
-      findDefaultLogger().log("REGISTERED OVERRIDE: stage=" + stageName + " name=" + name + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
+      defaultLogger().log("REGISTERED OVERRIDE: stage=" + stageName + " name=" + name + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
     } catch (Exception e) {
-      findDefaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + fullyQualifiedSupervisor, e);
+      defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + fullyQualifiedSupervisor, e);
       e.printStackTrace();
     }
   }
@@ -266,7 +266,7 @@ public final class World implements Registrar {
             Address.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
             null,
             null,
-            findDefaultLogger());
+            defaultLogger());
     
     PluginLoader.loadPlugins(this, 2);
   }

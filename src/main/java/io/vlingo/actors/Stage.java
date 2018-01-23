@@ -30,7 +30,7 @@ public class Stage implements Stoppable {
             protocol,
             definition.parentOr(world.defaultParent()),
             definition.supervisor(),
-            definition.loggerOr(world.findDefaultLogger()));
+            definition.loggerOr(world.defaultLogger()));
   }
 
   public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
@@ -40,7 +40,7 @@ public class Stage implements Stoppable {
                     protocols,
                     definition.parentOr(world.defaultParent()),
                     definition.supervisor(),
-                    definition.loggerOr(world.findDefaultLogger())));
+                    definition.loggerOr(world.defaultLogger())));
   }
 
   public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
@@ -58,7 +58,7 @@ public class Stage implements Stoppable {
             null,
             null,
             definition.supervisor(),
-            definition.loggerOr(world.findDefaultLogger())
+            definition.loggerOr(world.defaultLogger())
             ).toTestActor();
   }
 
@@ -78,7 +78,7 @@ public class Stage implements Stoppable {
                     null,
                     null,
                     definition.supervisor(),
-                    definition.loggerOr(world.findDefaultLogger()));
+                    definition.loggerOr(world.defaultLogger()));
     
     return new Protocols(ActorProtocolActor.toTestActors(all));
   }
@@ -102,7 +102,7 @@ public class Stage implements Stoppable {
   }
 
   public void dump() {
-    final Logger logger = this.world.findDefaultLogger();
+    final Logger logger = this.world.defaultLogger();
     if (logger.isEnabled()) {
       logger.log("STAGE: " + name);
       directory.dump(logger);
@@ -169,7 +169,7 @@ public class Stage implements Stoppable {
       final T protocolActor = actorProxyFor(protocol, actor, actor.__internal__Environment().mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
-      world.findDefaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
   }
@@ -188,7 +188,7 @@ public class Stage implements Stoppable {
       final Object[] protocolActors = actorProxyFor(protocols, actor, actor.__internal__Environment().mailbox);
       return ActorProtocolActor.allOf(actor, protocolActors);
     } catch (Exception e) {
-      world.findDefaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
   }

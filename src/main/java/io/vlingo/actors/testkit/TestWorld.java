@@ -72,12 +72,12 @@ public class TestWorld implements AutoCloseable {
     return world.stage().testActorFor(definition, protocols);
   }
 
-  public Logger findDefaultLogger() {
-    return world.findDefaultLogger();
+  public Logger defaultLogger() {
+    return world.defaultLogger();
   }
 
-  public Logger findLogger(final String name) {
-    return world.findLogger(name);
+  public Logger logger(final String name) {
+    return world.logger(name);
   }
 
   public Stage stage() {

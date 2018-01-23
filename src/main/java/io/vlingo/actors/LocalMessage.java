@@ -71,7 +71,7 @@ public class LocalMessage<T> implements Message {
     if (deadLetters != null) {
       deadLetters.failedDelivery(deadLetter);
     } else {
-      actor.stage().world().findDefaultLogger().log("vlingo/actors: MISSING DEAD LETTERS FOR: " + deadLetter);
+      actor.logger().log("vlingo/actors: MISSING DEAD LETTERS FOR: " + deadLetter);
     }
   }
 
@@ -87,8 +87,7 @@ public class LocalMessage<T> implements Message {
       try {
         consumer.accept((T) actor);
       } catch (Throwable t) {
-        actor.stage().world().findDefaultLogger().log(
-                "Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
+        actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
         actor.stage().handleFailureOf(new StageSupervisedActor(protocol, actor, t));
       }
     }

@@ -35,7 +35,7 @@ public class ActorFactoryTest {
                     address,
                     mailbox,
                     null,
-                    world.findDefaultLogger());
+                    world.defaultLogger());
     
     assertNotNull(actor);
     assertNotNull(actor.stage());
@@ -76,7 +76,7 @@ public class ActorFactoryTest {
                     address,
                     mailbox,
                     null,
-                    world.findDefaultLogger());
+                    world.defaultLogger());
     
     assertNotNull(actor);
     assertNotNull(actor.stage());
