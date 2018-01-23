@@ -17,7 +17,7 @@ import io.vlingo.actors.proxy.ProxyGenerator;
 import io.vlingo.actors.proxy.ProxyGenerator.Result;
 
 public final class ActorProxy {
-  private static final ProxyClassLoader classLoader = new ProxyClassLoader(ClassLoader.getSystemClassLoader());
+  private static final ProxyClassLoader classLoader = new ProxyClassLoader(ActorProxy.class.getClassLoader());
   private static final ProxyCompiler proxyCompiler = new ProxyCompiler();
   
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
