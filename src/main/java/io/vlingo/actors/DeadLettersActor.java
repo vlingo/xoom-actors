@@ -20,14 +20,14 @@ public class DeadLettersActor extends Actor implements DeadLetters {
   }
 
   public void failedDelivery(final DeadLetter deadLetter) {
-    // TODO: Use logging
-    System.out.println("vlingo/actors: " + deadLetter);
+    stage().world().findDefaultLogger().log("vlingo/actors: " + deadLetter);
 
     for (final DeadLettersListener listener : listeners) {
       try {
         listener.handle(deadLetter);
-      } catch (Exception e) {
-        // ignore (log?)
+      } catch (Throwable t) {
+        // ignore, but log
+        logger().log("DeadLetters listener failed to handle: " + deadLetter, t);
       }
     }
   }

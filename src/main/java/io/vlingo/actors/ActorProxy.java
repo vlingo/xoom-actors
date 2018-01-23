@@ -23,21 +23,23 @@ public final class ActorProxy {
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final String proxyClassname = fullyQualifiedClassnameFor(protocol);
     
-    try {
-      return tryCreate(protocol, actor, mailbox, proxyClassname);
-    } catch (Exception e) {
-      return tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
-    }
-  }
-
-  public static Object[] createFor(final Class<?>[] protocols, final Actor actor, final Mailbox mailbox) {
-    final Object[] proxies = new Object[protocols.length];
+    final T maybeProxy = actor.__internal__Environment().lookUpProxy(protocol);
     
-    for (int idx = 0; idx < protocols.length; ++idx) {
-      proxies[idx] = createFor(protocols[idx], actor, mailbox);
+    if (maybeProxy != null) {
+      return maybeProxy;
     }
-
-    return proxies;
+    
+    T newProxy;
+    
+    try {
+      newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
+    } catch (Exception e) {
+      newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
+    }
+    
+    actor.__internal__Environment().cacheProxy(newProxy);
+    
+    return newProxy;
   }
 
   @SuppressWarnings("unchecked")

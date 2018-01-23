@@ -11,18 +11,16 @@ import java.util.function.Consumer;
 
 public class Startable__Proxy implements Startable {
   private final Actor actor;
-  private final Startable typedActor;
   private final Mailbox mailbox;
 
   public Startable__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (Startable) actor;
     this.mailbox = mailbox;
   }
 
   @Override
   public void start() {
     final Consumer<Startable> consumer = (actor) -> actor.start();
-    mailbox.send(new LocalMessage<Startable>(actor, typedActor, consumer, "start()"));
+    mailbox.send(new LocalMessage<Startable>(actor, Startable.class, consumer, "start()"));
   }
 }

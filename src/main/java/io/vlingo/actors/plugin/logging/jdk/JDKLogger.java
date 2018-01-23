@@ -55,7 +55,16 @@ public class JDKLogger implements Logger {
 
   @Override
   public void log(final String message) {
-    logger.log(this.level, message);
+    if (isEnabled()) {
+      logger.log(this.level, message);
+    }
+  }
+
+  @Override
+  public void log(final String message, final Throwable throwable) {
+    if (isEnabled()) {
+      logger.log(this.level, message, throwable);
+    }
   }
 
   @Override

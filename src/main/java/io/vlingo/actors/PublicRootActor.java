@@ -7,18 +7,54 @@
 
 package io.vlingo.actors;
 
-public class PublicRootActor extends Actor implements Stoppable {
+public class PublicRootActor extends Actor implements Stoppable, Supervisor {
+  private final Supervisor self;
+  private final SupervisionStrategy supervisionStrategy =
+          new SupervisionStrategy() {
+            @Override
+            public int intensity() {
+              return ForeverIntensity;
+            }
+
+            @Override
+            public long period() {
+              return ForeverPeriod;
+            }
+
+            @Override
+            public Scope scope() {
+              return Scope.One;
+            }
+          };
+  
   public PublicRootActor() {
+    this.self = selfAs(Supervisor.class);
+    
     stage().world().setDefaultParent(this);
     stage().world().setPublicRoot(selfAs(Stoppable.class));
   }
 
-  // TODO: implement top-level supervision
-  
   @Override
   protected void afterStop() {
     stage().world().setDefaultParent(null);
     stage().world().setPublicRoot(null);
     super.afterStop();
+  }
+
+  @Override
+  public void inform(final Throwable throwable, final Supervised supervised) {
+    logger().log("PublicRootActor: Failure of: " + supervised.address() + ": Restarting.", throwable);
+    supervised.restartWithin(supervisionStrategy.period(), supervisionStrategy.intensity(), supervisionStrategy.scope());
+  }
+
+  @Override
+  public SupervisionStrategy supervisionStrategy() {
+    return supervisionStrategy;
+  }
+
+  @Override
+  public Supervisor supervisor() {
+    // this currently should never be invoked because I always restart() the Supervised.
+    return self;
   }
 }

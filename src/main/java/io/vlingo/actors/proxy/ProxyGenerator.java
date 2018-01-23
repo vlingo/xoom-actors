@@ -113,7 +113,6 @@ public class ProxyGenerator implements AutoCloseable {
     builder
       .append(signature).append("{\n")
       .append("    this.actor = actor;").append("\n")
-      .append(MessageFormat.format("    this.typedActor = ({0}) actor;", protocolInterface.getSimpleName())).append("\n")
       .append("    this.mailbox = mailbox;").append("\n")
       .append("  }\n");
 
@@ -151,7 +150,6 @@ public class ProxyGenerator implements AutoCloseable {
     
     builder
       .append("  private final Actor actor;").append("\n")
-      .append(MessageFormat.format("  private final {0} typedActor;", protocolInterface.getSimpleName())).append("\n")
       .append("  private final Mailbox mailbox;").append("\n");
     
     return builder.toString();
@@ -165,7 +163,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
-    final String mailboxSendStatement = MessageFormat.format("      mailbox.send(new LocalMessage<{0}>(actor, typedActor, consumer, {1}));", protocolInterface.getSimpleName(), representationName);
+    final String mailboxSendStatement = MessageFormat.format("      mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}));", protocolInterface.getSimpleName(), representationName);
     final String elseDead = MessageFormat.format("      actor.deadLetters().failedDelivery(new DeadLetter(actor, {0}));", representationName);
     final String returnValue = returnValue(method.getReturnType());
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);

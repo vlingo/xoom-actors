@@ -14,13 +14,10 @@ public class OutcomeAware__Proxy<O, R> implements OutcomeAware<O, R> {
   private static final String successfulOutcomeRepesentation2 = "successfulOutcome(Outcome<O>, R)";
   
   private final Actor actor;
-  private final OutcomeAware<O, R> typedActor;
   private final Mailbox mailbox;
 
-  @SuppressWarnings("unchecked")
   public OutcomeAware__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (OutcomeAware<O, R>) actor;
     this.mailbox = mailbox;
   }
 
@@ -29,7 +26,7 @@ public class OutcomeAware__Proxy<O, R> implements OutcomeAware<O, R> {
   public void failureOutcome(final Outcome<O> outcome, R reference) {
     if (!actor.isStopped()) {
       final Consumer<OutcomeAware<O, R>> consumer = (actor) -> actor.failureOutcome(outcome, reference);
-      mailbox.send(new LocalMessage(actor, typedActor, consumer, failureOutcomeRepesentation1));
+      mailbox.send(new LocalMessage(actor, OutcomeAware.class, consumer, failureOutcomeRepesentation1));
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, failureOutcomeRepesentation1));
     }
@@ -40,7 +37,7 @@ public class OutcomeAware__Proxy<O, R> implements OutcomeAware<O, R> {
   public void successfulOutcome(final Outcome<O> outcome, R reference) {
     if (!actor.isStopped()) {
       final Consumer<OutcomeAware<O, R>> consumer = (actor) -> actor.successfulOutcome(outcome, reference);
-      mailbox.send(new LocalMessage(actor, typedActor, consumer, successfulOutcomeRepesentation2));
+      mailbox.send(new LocalMessage(actor, OutcomeAware.class, consumer, successfulOutcomeRepesentation2));
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, successfulOutcomeRepesentation2));
     }

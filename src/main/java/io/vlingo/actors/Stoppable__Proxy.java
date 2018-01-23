@@ -11,12 +11,10 @@ import java.util.function.Consumer;
 
 public class Stoppable__Proxy implements Stoppable {
   private final Actor actor;
-  private final Stoppable typedActor;
   private final Mailbox mailbox;
 
   public Stoppable__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (Stoppable) actor;
     this.mailbox = mailbox;
   }
 
@@ -28,6 +26,6 @@ public class Stoppable__Proxy implements Stoppable {
   @Override
   public void stop() {
     final Consumer<Stoppable> consumer = (actor) -> actor.stop();
-    mailbox.send(new LocalMessage<Stoppable>(actor, typedActor, consumer, "stop()"));
+    mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "stop()"));
   }
 }

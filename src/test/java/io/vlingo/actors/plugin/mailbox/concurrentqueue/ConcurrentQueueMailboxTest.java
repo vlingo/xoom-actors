@@ -36,7 +36,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
     }
     
@@ -48,14 +48,18 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   }
   
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    super.setUp();
+    
     ConcurrentQueueMailboxSettings.with(1);
     dispatcher = new ExecutorDispatcher(1, 1.0f);
     mailbox = new ConcurrentQueueMailbox(dispatcher);
   }
   
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
+    super.tearDown();
+    
     mailbox.close();
     dispatcher.close();
   }

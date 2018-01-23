@@ -14,14 +14,18 @@ import java.util.Map;
 
 import io.vlingo.actors.Address;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Message;
+import io.vlingo.actors.Protocols;
 import io.vlingo.actors.Stage;
 import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailboxPlugin;
 
 public class TestWorld implements AutoCloseable {
+  public static TestWorld testWorld;
+  
   private static final Map<Integer, List<Message>> actorMessages = new HashMap<>();
   
   private final MailboxProvider mailboxProvider;
@@ -35,11 +39,15 @@ public class TestWorld implements AutoCloseable {
 
   public static TestWorld start(final String name) {
     final World world = World.start(name);
-    return new TestWorld(world, name, LoggerProvider.standardLoggerProvider(world, name));
+    return new TestWorld(world, name);
   }
 
   public static TestWorld start(final String name, final LoggerProvider loggerProvider) {
-    return new TestWorld(World.start(name), name, loggerProvider);
+    return new TestWorld(World.start(name), name);
+  }
+
+  public static TestWorld startWith(final World world) {
+    return new TestWorld(world, world.name());
   }
 
   public static void track(final Message message) {
@@ -56,6 +64,22 @@ public class TestWorld implements AutoCloseable {
     return world.stage().testActorFor(definition, protocol);
   }
 
+  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
+    if (world.isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
+    }
+
+    return world.stage().testActorFor(definition, protocols);
+  }
+
+  public Logger findDefaultLogger() {
+    return world.findDefaultLogger();
+  }
+
+  public Logger findLogger(final String name) {
+    return world.findLogger(name);
+  }
+
   public Stage stage() {
     return world.stage();
   }
@@ -70,6 +94,7 @@ public class TestWorld implements AutoCloseable {
 
   public void terminate() {
     world.terminate();
+    testWorld = null;
   }
 
   public World world() {
@@ -84,10 +109,11 @@ public class TestWorld implements AutoCloseable {
     actorMessages.clear();
   }
 
-  private TestWorld(final World world, final String name, final LoggerProvider loggerProvider) {
+  private TestWorld(final World world, final String name) {
     this.world = world;
-    this.world.register(name + "-logger", true, loggerProvider);
     this.mailboxProvider = new TestMailboxPlugin(this.world);
+    
+    testWorld = this;
   }
 
   @Override

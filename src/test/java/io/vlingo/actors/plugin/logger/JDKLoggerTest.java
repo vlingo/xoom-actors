@@ -38,6 +38,14 @@ public class JDKLoggerTest {
     public void register(String name, boolean isDefault, LoggerProvider loggerProvider) {
       registered = true;
     }
+
+    @Override
+    public void registerCommonSupervisor(String stageName, String name, String fullyQualifiedProtocol, String fullyQualifiedSupervisor) {
+    }
+
+    @Override
+    public void registerDefaultSupervisor(String stageName, String name, String fullyQualifiedSupervisor) {
+    }
   };
 
   @Test

@@ -10,12 +10,9 @@ package io.vlingo.actors;
 import static org.junit.Assert.*;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 public class WorldTest extends ActorsTest {
-  private World world;
-  
   @Test
   public void testStartWorld() throws Exception {
     assertNotNull(world.configuration());
@@ -44,14 +41,10 @@ public class WorldTest extends ActorsTest {
     assertTrue(SimpleActor.invoked);
   }
 
-  @Before
-  public void setUp() {
-    world = World.start("test");
-  }
-  
   @After
+  @Override
   public void tearDown() throws Exception {
-    world.terminate();
+    super.tearDown();
     
     assertTrue(world.stage().isStopped());
     assertTrue(world.isTerminated());

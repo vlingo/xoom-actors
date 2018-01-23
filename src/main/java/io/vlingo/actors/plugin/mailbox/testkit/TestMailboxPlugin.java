@@ -30,6 +30,11 @@ public class TestMailboxPlugin implements Plugin, MailboxProvider {
   }
 
   @Override
+  public int pass() {
+    return 1;
+  }
+
+  @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     this.name = name;
     registrar.register(name, false, this);

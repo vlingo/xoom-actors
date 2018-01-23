@@ -11,19 +11,17 @@ import java.util.function.Consumer;
 
 public class Cancellable__Proxy implements Cancellable {
   private final Actor actor;
-  private final Cancellable typedActor;
   private final Mailbox mailbox;
 
   public Cancellable__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (Cancellable) actor;
     this.mailbox = mailbox;
   }
 
   @Override
   public boolean cancel() {
     final Consumer<Cancellable> consumer = (actor) -> actor.cancel();
-    mailbox.send(new LocalMessage<Cancellable>(actor, typedActor, consumer, "cancel()"));
+    mailbox.send(new LocalMessage<Cancellable>(actor, Cancellable.class, consumer, "cancel()"));
     return true;
   }
 }

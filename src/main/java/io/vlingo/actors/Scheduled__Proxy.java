@@ -11,18 +11,16 @@ import java.util.function.Consumer;
 
 public class Scheduled__Proxy implements Scheduled {
   private final Actor actor;
-  private final Scheduled typedActor;
   private final Mailbox mailbox;
 
   public Scheduled__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (Scheduled) actor;
     this.mailbox = mailbox;
   }
 
   @Override
   public void intervalSignal(final Scheduled scheduled, final Object data) {
     final Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(scheduled, data);
-    mailbox.send(new LocalMessage<Scheduled>(actor, typedActor, consumer, "intervalSignal(Scheduled, Object)"));
+    mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, "intervalSignal(Scheduled, Object)"));
   }
 }

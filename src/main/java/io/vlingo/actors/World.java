@@ -22,7 +22,7 @@ public final class World implements Registrar {
   protected static final int DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
   protected static final String DEADLETTERS_NAME = "#deadLetters";
   
-  private static final String DEFAULT_STAGE = "__defaultStage";
+  protected static final String DEFAULT_STAGE = "__defaultStage";
 
   private final Configuration configuration;
   private final LoggerProviderKeeper loggerProviderKeeper;
@@ -34,6 +34,7 @@ public final class World implements Registrar {
   private DeadLetters deadLetters;
   private Logger defaultLogger;
   private Actor defaultParent;
+  private Supervisor defaultSupervisor;
   private Stoppable privateRoot;
   private Stoppable publicRoot;
 
@@ -59,7 +60,7 @@ public final class World implements Registrar {
     return stage().actorFor(definition, protocol);
   }
 
-  public Object actorFor(final Definition definition, final Class<?>[] protocols) {
+  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
     if (isTerminated()) {
       throw new IllegalStateException("vlingo/actors: Stopped.");
     }
@@ -75,8 +76,37 @@ public final class World implements Registrar {
     return deadLetters;
   }
 
+  public Actor defaultParent() {
+    return defaultParent;
+  }
+
+  public Supervisor defaultSupervisor() {
+    if (defaultSupervisor == null) {
+      defaultSupervisor = defaultParent().selfAs(Supervisor.class);
+    }
+    return defaultSupervisor;
+  }
+
   public String name() {
     return name;
+  }
+
+  public Logger findDefaultLogger() {
+    if (this.defaultLogger != null) {
+      return defaultLogger;
+    }
+    
+    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+    
+    if (this.defaultLogger == null) {
+      this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
+    }
+    
+    return this.defaultLogger;
+  }
+
+  public Logger findLogger(final String name) {
+    return loggerProviderKeeper().findNamed(name).logger();
   }
 
   @Override
@@ -88,6 +118,36 @@ public final class World implements Registrar {
 
   public void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider) {
     mailboxProviderKeeper().keep(name, isDefault, mailboxProvider);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void registerCommonSupervisor(final String stageName, final String name, final String fullyQualifiedProtocol, final String fullyQualifiedSupervisor) {
+    try {
+      final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
+      final Stage stage = stageNamed(actualStageName);
+      final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
+      final Supervisor common = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
+      stage.registerCommonSupervisor(fullyQualifiedProtocol, common);
+      findDefaultLogger().log("REGISTERED COMMON: stage=" + stageName + " name=" + name + " fullyQualifiedProtocol=" + fullyQualifiedProtocol + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
+    } catch (Exception e) {
+      findDefaultLogger().log("vlingo/actors: World cannot register common supervisor: " + fullyQualifiedSupervisor, e);
+    }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void registerDefaultSupervisor(final String stageName, final String name, final String fullyQualifiedSupervisor) {
+    try {
+      final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
+      final Stage stage = stageNamed(actualStageName);
+      final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
+      defaultSupervisor = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
+      findDefaultLogger().log("REGISTERED OVERRIDE: stage=" + stageName + " name=" + name + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
+    } catch (Exception e) {
+      findDefaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + fullyQualifiedSupervisor, e);
+      e.printStackTrace();
+    }
   }
 
   public Scheduler scheduler() {
@@ -139,26 +199,8 @@ public final class World implements Registrar {
     }
   }
 
-  protected Logger findDefaultLogger() {
-    if (this.defaultLogger != null) {
-      return defaultLogger;
-    }
-    
-    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
-    
-    return this.defaultLogger;
-  }
-
-  protected Logger findLogger(final String name) {
-    return loggerProviderKeeper().findNamed(name).logger();
-  }
-
   protected String findDefaultMailboxName() {
     return mailboxProviderKeeper().findDefault();
-  }
-
-  protected Actor defaultParent() {
-    return defaultParent;
   }
 
   protected synchronized void setDefaultParent(final Actor defaultParent) {
@@ -215,14 +257,18 @@ public final class World implements Registrar {
     
     this.stages.put(DEFAULT_STAGE, defaultStage);
     
-    PluginLoader.loadPlugins(this);
+    PluginLoader.loadPlugins(this, 1);
 
     defaultStage.actorFor(
             Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
             Stoppable.class,
             null,
             Address.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
-            null);
+            null,
+            null,
+            findDefaultLogger());
+    
+    PluginLoader.loadPlugins(this, 2);
   }
 
   private LoggerProviderKeeper loggerProviderKeeper() {
@@ -252,8 +298,7 @@ public final class World implements Registrar {
           return info.loggerProvider;
         }
       }
-
-      throw new IllegalStateException("No registered default LoggerProvider.");
+      return null;
     }
 
     private LoggerProvider findNamed(final String name) {

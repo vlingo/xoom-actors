@@ -8,38 +8,37 @@
 package io.vlingo.actors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Environment {
-  private static final byte FLAG_RESET = 0x00;
-  private static final byte FLAG_STOPPED = 0x01;
-  private static final byte FLAG_SECURED = 0x02;
+  protected static final byte FLAG_RESET = 0x00;
+  protected static final byte FLAG_STOPPED = 0x01;
+  protected static final byte FLAG_SECURED = 0x02;
   
   protected final Address address;
   protected final List<Actor> children;
   protected final Definition definition;
-  private byte flags;
+  protected final FailureMark failureMark;
+  protected byte flags;
+  protected final Logger logger;
   protected final Mailbox mailbox;
+  protected final Supervisor maybeSupervisor;
   protected final Actor parent;
+  protected final Map<String,Object> proxyCache;
   protected final Stage stage;
-  
-  protected Environment() {
-    // for testing
-    this.address = Address.from("test");
-    this.children = new ArrayList<>(1);
-    this.definition = Definition.has(null, Definition.NoParameters);
-    this.flags = FLAG_RESET;
-    this.mailbox = null;
-    this.parent = null;
-    this.stage = null;
-  }
+  protected final Stowage stowage;
+  protected final Stowage suspended;
   
   protected Environment(
           final Stage stage,
           final Address address,
           final Definition definition,
           final Actor parent,
-          final Mailbox mailbox) {
+          final Mailbox mailbox,
+          final Supervisor maybeSupervisor,
+          final Logger logger) {
     assert(stage != null);
     this.stage = stage;
     assert(address != null);
@@ -50,13 +49,28 @@ public class Environment {
     this.parent = parent;
     assert(mailbox != null);
     this.mailbox = mailbox;
-    this.children = new ArrayList<Actor>(1);
+    this.maybeSupervisor = maybeSupervisor;
+    this.failureMark = new FailureMark();
+    this.logger = logger;
+    this.children = new ArrayList<Actor>(0);
+    this.proxyCache = new HashMap<>();
+    this.stowage = new Stowage();
+    this.suspended = new Stowage();
     
     this.flags = FLAG_RESET;
   }
 
   protected void addChild(final Actor child) {
     children.add(child);
+  }
+
+  protected <T> void cacheProxy(final T proxy) {
+    proxyCache.put(proxy.getClass().getName(), proxy);
+  }
+
+  @SuppressWarnings("unchecked")
+  protected <T> T lookUpProxy(final Class<T> protocol) {
+    return (T) proxyCache.get(protocol.getName());
   }
 
   protected boolean isSecured() {
@@ -72,10 +86,14 @@ public class Environment {
   }
 
   protected void stop() {
-    mailbox.close();
-    
     stopChildren();
 
+    suspended.reset();
+    
+    stowage.reset();
+    
+    mailbox.close();
+    
     setStopped();
   }
 

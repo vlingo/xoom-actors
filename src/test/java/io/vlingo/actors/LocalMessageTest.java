@@ -11,21 +11,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.function.Consumer;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestWorld;
-
 public class LocalMessageTest extends ActorsTest {
-  private TestWorld testWorld;
-  
   @Test
   public void testDeliverHappy() throws Exception {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test1-actor"), Simple.class);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, SimpleActor.actor, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple()");
     
     message.deliver();
     
@@ -41,7 +36,7 @@ public class LocalMessageTest extends ActorsTest {
     SimpleActor.actor.stop();
         
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, SimpleActor.actor, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple()");
     
     message.deliver();
     
@@ -55,7 +50,7 @@ public class LocalMessageTest extends ActorsTest {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test3-actor"), Simple.class);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple2(2);
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, SimpleActor.actor, consumer, "simple2(int)");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple2(int)");
     
     message.deliver();
     
@@ -65,15 +60,10 @@ public class LocalMessageTest extends ActorsTest {
   }
 
   @Before
-  public void setUp() {
-    testWorld = TestWorld.start("test");
+  public void setUp() throws Exception {
+    super.setUp();
     
     SimpleActor.actor = null;
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    testWorld.terminate();
   }
   
   public static interface Simple {

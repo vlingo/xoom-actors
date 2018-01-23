@@ -29,6 +29,10 @@ public class TestActor<T> implements TestStateView {
     return address;
   }
 
+  public Actor actorInside() {
+    return actor;
+  }
+
   @Override
   public TestState viewTestState() {
     return actor.viewTestState();

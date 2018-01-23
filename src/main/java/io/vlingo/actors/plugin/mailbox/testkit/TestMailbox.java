@@ -17,7 +17,7 @@ import io.vlingo.actors.testkit.TestWorld;
 public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
   
-  private final List<String> lifecycleMessages = Arrays.asList("__internal__BeforeStart", "afterStop", "beforeRestart", "afterRestart");
+  private final List<String> lifecycleMessages = Arrays.asList("start", "afterStop", "beforeRestart", "afterRestart");
   private boolean closed;
   
   public TestMailbox() { }
@@ -66,7 +66,7 @@ public class TestMailbox implements Mailbox {
   public Message receive() {
     throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
-  
+
   private boolean isLifecycleMessage(final Message message) {
     final String representation = message.representation();
     final int openParenIndex = representation.indexOf("(");

@@ -47,6 +47,11 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
     }
   }
 
+  @Override
+  public synchronized void start() {
+    super.start();
+  }
+
   protected RingBufferDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount) {
     this.backoff = fixedBackoff == 0L ? new Backoff() : new Backoff(fixedBackoff);
     this.requiresExecutionNotification = fixedBackoff == 0L;

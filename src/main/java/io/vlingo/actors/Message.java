@@ -11,4 +11,5 @@ public interface Message {
   Actor actor();
   void deliver();
   String representation();
+  boolean isStowed();
 }

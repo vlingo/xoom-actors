@@ -11,12 +11,10 @@ import java.util.function.Consumer;
 
 public class DeadLetters__Proxy implements DeadLetters {
   private final Actor actor;
-  private final DeadLetters typedActor;
   private final Mailbox mailbox;
 
   public DeadLetters__Proxy(final Actor actor, final Mailbox mailbox) {
     this.actor = actor;
-    this.typedActor = (DeadLetters) actor;
     this.mailbox = mailbox;
   }
 
@@ -28,18 +26,18 @@ public class DeadLetters__Proxy implements DeadLetters {
   @Override
   public void stop() {
     final Consumer<DeadLetters> consumer = (actor) -> actor.stop();
-    mailbox.send(new LocalMessage<DeadLetters>(actor, typedActor, consumer, "stop()"));
+    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "stop()"));
   }
 
   @Override
   public void failedDelivery(final DeadLetter deadLetter) {
     final Consumer<DeadLetters> consumer = (actor) -> actor.failedDelivery(deadLetter);
-    mailbox.send(new LocalMessage<DeadLetters>(actor, typedActor, consumer, "failedDelivery(DeadLetter)"));
+    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "failedDelivery(DeadLetter)"));
   }
 
   @Override
   public void registerListener(final DeadLettersListener listener) {
     final Consumer<DeadLetters> consumer = (actor) -> actor.registerListener(listener);
-    mailbox.send(new LocalMessage<DeadLetters>(actor, typedActor, consumer, "registerListener(DeadLettersListener)"));
+    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "registerListener(DeadLettersListener)"));
   }
 }

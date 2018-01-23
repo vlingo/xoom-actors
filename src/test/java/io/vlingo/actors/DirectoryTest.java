@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class DirectoryTest {
+public class DirectoryTest extends ActorsTest {
 
   @Test
   public void testDirectoryRegister() {

@@ -17,7 +17,9 @@ public class ActorFactory {
           final Actor parent,
           final Definition definition,
           final Address address,
-          final Mailbox mailbox) throws Exception {
+          final Mailbox mailbox,
+          final Supervisor supervisor,
+          final Logger logger) throws Exception {
     
     final Environment environment =
             new Environment(
@@ -25,7 +27,9 @@ public class ActorFactory {
                     address,
                     definition,
                     parent,
-                    mailbox);
+                    mailbox,
+                    supervisor,
+                    logger);
     
     threadLocalEnvironment.set(environment);
     

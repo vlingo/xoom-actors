@@ -47,9 +47,10 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   public void send(final Message message) {
     for (int tries = 0; tries < totalSendRetries; ++tries) {
       if (queue.offer(message)) {
-        break;
+        return;
       }
     }
+    throw new IllegalStateException("Count not enqueue message due to busy mailbox.");
   }
 
   @Override

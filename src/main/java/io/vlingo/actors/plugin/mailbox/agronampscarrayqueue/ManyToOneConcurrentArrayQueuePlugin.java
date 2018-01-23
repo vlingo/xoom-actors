@@ -25,8 +25,15 @@ public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvi
     dispatcherPool.close();
   }
 
+  @Override
   public String name() { return name; }
 
+  @Override
+  public int pass() {
+    return 1;
+  }
+
+  @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     this.name = name;
 

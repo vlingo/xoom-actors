@@ -25,6 +25,10 @@ public class NoOpLogger implements Logger {
   }
 
   @Override
+  public void log(final String message, final Throwable throwable) {
+  }
+
+  @Override
   public String name() {
     return "no-op";
   }

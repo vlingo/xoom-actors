@@ -36,7 +36,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -50,7 +50,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = mailboxSize + 1; count <= neverRevieved; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -75,7 +75,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -99,7 +99,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = 1; count <= overflowSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
       mailbox.send(message);
     }
@@ -112,7 +112,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    super.setUp();
+    
     CountTakerActor.highest = 0;
   }
   

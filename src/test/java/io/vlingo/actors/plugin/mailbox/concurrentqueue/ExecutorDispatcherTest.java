@@ -39,7 +39,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     for (int count = 0; count < 3; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
       dispatcher.execute(mailbox);
     }
@@ -47,7 +47,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     dispatcher.close();
     
     final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
-    final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+    final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
     
     mailbox.send(message);
     
@@ -69,7 +69,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, actor, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
       dispatcher.execute(mailbox);
     }
@@ -87,7 +87,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
   
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    super.setUp();
+    
     dispatcher = new ExecutorDispatcher(1, 1.0f);
     mailbox = new TestMailbox();
     CountTakerActor.highest = 0;

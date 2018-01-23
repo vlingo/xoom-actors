@@ -7,24 +7,32 @@
 
 package io.vlingo.actors.plugin;
 
-import io.vlingo.actors.Registrar;
-
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import io.vlingo.actors.Registrar;
 
 public class PluginLoader {
 
   private static final String propertiesFile = "/vlingo-actors.properties";
   private static final String pluginNamePrefix = "plugin.name.";
 
-  public static void loadPlugins(final Registrar registrar) {
-    new PluginLoader().loadEnabledPlugins(registrar);
+  private static final PluginLoader pluginLoader = new PluginLoader();
+  
+  private final Map<String,Plugin> plugins;
+  
+  public static void loadPlugins(final Registrar registrar, final int pass) {
+    pluginLoader.loadEnabledPlugins(registrar, pass);
   }
 
-  private PluginLoader() { }
+  private PluginLoader() {
+    this.plugins = new HashMap<>();
+  }
 
   private Set<String> findEnabledPlugins(final Properties properties) {
     final Set<String> enabledPlugins = new HashSet<String>();
@@ -40,11 +48,11 @@ public class PluginLoader {
     return enabledPlugins;
   }
 
-  private void loadEnabledPlugins(final Registrar registrar) {
+  private void loadEnabledPlugins(final Registrar registrar, final int pass) {
     final Properties properties = loadProperties();
 
     for (String enabledPlugin : findEnabledPlugins(properties))
-      registerPlugin(registrar, properties, enabledPlugin);
+      registerPlugin(registrar, properties, enabledPlugin, pass);
   }
 
   private Properties loadProperties() {
@@ -59,17 +67,30 @@ public class PluginLoader {
     return properties;
   }
 
-  private void registerPlugin(final Registrar registrar, final Properties properties, final String enabledPlugin) {
+  private void registerPlugin(final Registrar registrar, final Properties properties, final String enabledPlugin, final int pass) {
     final String pluginName = enabledPlugin.substring(pluginNamePrefix.length());
     final String classnameKey = "plugin." + pluginName + ".classname";
     final String classname = properties.getProperty(classnameKey);
 
     try {
-      final Class<?> pluginClass = Class.forName(classname);
-      final Plugin plugin = (Plugin) pluginClass.newInstance();
-      plugin.start(registrar, pluginName, new PluginProperties(pluginName, properties));
+      final Plugin plugin = pluginOf(classname);
+      if (plugin.pass() == pass) {
+        plugin.start(registrar, pluginName, new PluginProperties(pluginName, properties));
+      }
     } catch (Exception e) {
+      e.printStackTrace();
       throw new IllegalStateException("Cannot load plugin " + classname);
     }
+  }
+  
+  private Plugin pluginOf(final String classname) throws Exception {
+    final Plugin maybePlugin = plugins.get(classname);
+    if (maybePlugin == null) {
+      final Class<?> pluginClass = Class.forName(classname);
+      final Plugin plugin = (Plugin) pluginClass.newInstance();
+      plugins.put(classname, plugin);
+      return plugin;
+    }
+    return maybePlugin;
   }
 }

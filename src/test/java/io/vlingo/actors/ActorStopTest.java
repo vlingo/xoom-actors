@@ -14,8 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ActorStopTest extends ActorsTest {
-  private World world;
-  
   @Test
   public void testStopActors() throws Exception {
     final World world = World.start("test");
@@ -71,15 +69,15 @@ public class ActorStopTest extends ActorsTest {
   }
   
   @Before
-  public void setUp() {
-    world = World.start("test-world");
+  public void setUp() throws Exception {
+    super.setUp();
     
     ChildCreatingStoppableActor.reset();
   }
   
   @After
-  public void tearDown() {
-    world.terminate();
+  public void tearDown() throws Exception {
+    super.tearDown();
     
     ChildCreatingStoppableActor.reset();
   }

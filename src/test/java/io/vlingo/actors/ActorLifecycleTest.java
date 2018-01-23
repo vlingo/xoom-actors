@@ -10,13 +10,10 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ActorLifecycleTest extends ActorsTest {
-  private World world;
-
   @Test
   public void testBeforeStart() throws Exception {
     world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
@@ -35,16 +32,12 @@ public class ActorLifecycleTest extends ActorsTest {
   }
 
   @Before
-  public void setUp() {
-    world = World.start("test-lifecycle");
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
     
     LifecycleActor.ReceivedAfterStop = false;
     LifecycleActor.ReceivedBeforeStart = false;
-  }
-
-  @After
-  public void tearDown() {
-    world.terminate();
   }
   
   public static class LifecycleActor extends Actor implements Stoppable {

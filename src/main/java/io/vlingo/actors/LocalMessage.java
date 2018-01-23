@@ -10,16 +10,23 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class LocalMessage<T> implements Message {
-  private final Actor actor;
-  private final Consumer<T> consumer;
-  private final String representation;
-  private final T typedActor;
+  protected final Actor actor;
+  protected final Consumer<T> consumer;
+  protected final Class<T> protocol;
+  protected final String representation;
   
-  public LocalMessage(final Actor actor, final T typedActor, final Consumer<T> consumer, final String representation) {
+  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final String representation) {
     this.actor = actor;
     this.consumer = consumer;
-    this.typedActor = typedActor;
+    this.protocol = protocol;
     this.representation = representation;
+  }
+
+  public LocalMessage(final LocalMessage<T> message) {
+    this.actor = message.actor;
+    this.consumer = message.consumer;
+    this.protocol = message.protocol;
+    this.representation = message.representation;
   }
 
   @Override
@@ -29,22 +36,28 @@ public class LocalMessage<T> implements Message {
 
   @Override
   public void deliver() {
-    if (actor.isStopped()) {
-      deadLetter();
-      return;
-    }
-    
-    try {
-      consumer.accept(typedActor);
-    } catch (Exception e) {
-      // TODO: handle
-      System.out.println("Message#deliver(): Exception: " + e.getMessage() + " for Actor: " + actor + " sending: " + representation);
+    if (actor.__internal__IsResumed()) {
+      if (isStowed()) {
+        internalDeliver(this);
+      } else {
+        internalDeliver(actor.__internal__Environment().suspended.swapWith(this));
+      }
+      actor.__internal__NextResuming();
+    } else if (actor.isDispersing()) {
+      internalDeliver(actor.__internal__Environment().stowage.swapWith(this));
+    } else {
+      internalDeliver(this);
     }
   }
 
   @Override
   public String representation() {
     return representation;
+  }
+
+  @Override
+  public boolean isStowed() {
+    return false;
   }
 
   @Override
@@ -58,8 +71,26 @@ public class LocalMessage<T> implements Message {
     if (deadLetters != null) {
       deadLetters.failedDelivery(deadLetter);
     } else {
-      // TODO: Log
-      System.out.println("vlingo/actors: MISSING DEAD LETTERS FOR: " + deadLetter);
+      actor.stage().world().findDefaultLogger().log("vlingo/actors: MISSING DEAD LETTERS FOR: " + deadLetter);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void internalDeliver(final Message message) {
+    if (actor.isStopped()) {
+      deadLetter();
+    } else if (actor.__internal__IsSuspend()) {
+      actor.__internal__Environment().suspended.stow(message);
+    } else if (actor.isStowing()) {
+      actor.__internal__Environment().stowage.stow(message);
+    } else {
+      try {
+        consumer.accept((T) actor);
+      } catch (Throwable t) {
+        actor.stage().world().findDefaultLogger().log(
+                "Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
+        actor.stage().handleFailureOf(new StageSupervisedActor(protocol, actor, t));
+      }
     }
   }
 }

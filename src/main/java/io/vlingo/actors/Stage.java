@@ -7,21 +7,40 @@
 
 package io.vlingo.actors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 
 public class Stage implements Stoppable {
+  private final Map<String, Supervisor> commonSupervisors;
   private final Directory directory;
   private final String name;
   private boolean stopped;
   private final World world;
 
-  public <T> T actorFor(final Definition definition, final Class<T> protocol) {
-    return actorFor(definition, protocol, definition.parentOr(world.defaultParent()));
+  public <T> T actorAs(final Actor actor, Class<T> protocol) {
+    return actorProxyFor(protocol, actor, actor.__internal__Environment().mailbox);
   }
 
-  public Object actorFor(final Definition definition, final Class<?>[] protocols) {
-    return actorFor(definition, protocols, definition.parentOr(world.defaultParent()));
+  public <T> T actorFor(final Definition definition, final Class<T> protocol) {
+    return actorFor(
+            definition,
+            protocol,
+            definition.parentOr(world.defaultParent()),
+            definition.supervisor(),
+            definition.loggerOr(world.findDefaultLogger()));
+  }
+
+  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
+    return new Protocols(
+            actorFor(
+                    definition,
+                    protocols,
+                    definition.parentOr(world.defaultParent()),
+                    definition.supervisor(),
+                    definition.loggerOr(world.findDefaultLogger())));
   }
 
   public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
@@ -32,15 +51,50 @@ public class Stage implements Stoppable {
                     TestMailbox.Name,
                     definition.actorName());
     
-    return actorFor(redefinition, protocol, definition.parentOr(world.defaultParent()), null, null).toTestActor();
+    return actorFor(
+            redefinition,
+            protocol,
+            definition.parentOr(world.defaultParent()),
+            null,
+            null,
+            definition.supervisor(),
+            definition.loggerOr(world.findDefaultLogger())
+            ).toTestActor();
   }
 
-  public final <T> T createActorFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
+  public final Protocols testActorFor(final Definition definition, final Class<?>[] protocols) {
+    final Definition redefinition =
+            Definition.has(
+                    definition.type(),
+                    definition.parameters(),
+                    TestMailbox.Name,
+                    definition.actorName());
+    
+    final ActorProtocolActor<Object>[] all =
+            actorFor(
+                    redefinition,
+                    protocols,
+                    definition.parentOr(world.defaultParent()),
+                    null,
+                    null,
+                    definition.supervisor(),
+                    definition.loggerOr(world.findDefaultLogger()));
+    
+    return new Protocols(ActorProtocolActor.toTestActors(all));
+  }
+
+  public final <T> T actorProxyFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     return ActorProxy.createFor(protocol, actor, mailbox);
   }
 
-  public final Object createActorFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    return ActorProxy.createFor(protocol, actor, mailbox);
+  public final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
+    final Object[] proxies = new Object[protocol.length];
+    
+    for (int idx = 0; idx < protocol.length; ++idx) {
+      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
+    }
+    
+    return proxies;
   }
 
   public int count() {
@@ -53,6 +107,10 @@ public class Stage implements Stoppable {
       logger.log("STAGE: " + name);
       directory.dump(logger);
     }
+  }
+
+  public void registerCommonSupervisor(final String fullyQualifiedProtocol, final Supervisor common) {
+    commonSupervisors.put(fullyQualifiedProtocol, common);
   }
 
   @Override
@@ -82,15 +140,19 @@ public class Stage implements Stoppable {
     this.world = world;
     this.name = name;
     this.directory = new Directory();
+    this.commonSupervisors = new HashMap<>();
     this.stopped = false;
   }
 
-  protected <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent) {
-    return actorFor(definition, protocol, parent, null, null).protocolActor();
+  protected <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    try {
+      ActorProtocolActor<T> actor = actorFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
+    return actor.protocolActor();
+    } catch (Exception e) { e.printStackTrace(); return null;}
   }
 
-  protected Object actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent) {
-    return actorFor(definition, protocols, parent, null, null).protocolActor();
+  protected ActorProtocolActor<Object>[] actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    return actorFor(definition, protocols, parent, null, null, maybeSupervisor, logger);
   }
 
   protected <T> ActorProtocolActor<T> actorFor(
@@ -98,43 +160,52 @@ public class Stage implements Stoppable {
           final Class<T> protocol,
           final Actor parent,
           final Address maybeAddress,
-          final Mailbox maybeMailbox) {
+          final Mailbox maybeMailbox,
+          final Supervisor maybeSupervisor,
+          final Logger logger) {
 
     try {
-      final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final T protocolActor = ActorProxy.createFor(protocol, actor, actor.__internal__Environment().mailbox);
+      final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
+      final T protocolActor = actorProxyFor(protocol, actor, actor.__internal__Environment().mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
-      // TODO: deal with this
-      final Logger logger = this.world.findDefaultLogger();
-      if (logger.isEnabled()) {
-        logger.log("vlingo/actors: FAILED: " + e.getMessage());
-      }
-      e.printStackTrace();
+      world.findDefaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
   }
 
-  protected ActorProtocolActor<Object> actorFor(
+  protected ActorProtocolActor<Object>[] actorFor(
           final Definition definition,
           final Class<?>[] protocols,
           final Actor parent,
           final Address maybeAddress,
-          final Mailbox maybeMailbox) {
+          final Mailbox maybeMailbox,
+          final Supervisor maybeSupervisor,
+          final Logger logger) {
 
     try {
-      final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox);
-      final Object protocolActor = ActorProxy.createFor(protocols, actor, actor.__internal__Environment().mailbox);
-      return new ActorProtocolActor<Object>(actor, protocolActor);
+      final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
+      final Object[] protocolActors = actorProxyFor(protocols, actor, actor.__internal__Environment().mailbox);
+      return ActorProtocolActor.allOf(actor, protocolActors);
     } catch (Exception e) {
-      // TODO: deal with this
-      final Logger logger = this.world.findDefaultLogger();
-      if (logger.isEnabled()) {
-        logger.log("vlingo/actors: FAILED: " + e.getMessage());
-      }
-      e.printStackTrace();
+      world.findDefaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
+  }
+
+  protected Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {
+    final Supervisor common = commonSupervisors.get(protocol.getName());
+    
+    if (common != null) {
+      return common;
+    }
+
+    return defaultSupervisor;
+  }
+
+  protected void handleFailureOf(final Supervised supervised) {
+    supervised.suspend();
+    supervised.supervisor().inform(supervised.throwable(), supervised);
   }
 
   protected void stop(final Actor actor) {
@@ -145,11 +216,13 @@ public class Stage implements Stoppable {
     }
   }
 
-  private Actor createRawActor(
+  private <T> Actor createRawActor(
           final Definition definition,
           final Actor parent,
           final Address maybeAddress,
-          final Mailbox maybeMailbox)
+          final Mailbox maybeMailbox,
+          final Supervisor maybeSupervisor,
+          final Logger logger)
   throws Exception {
 
     if (isStopped()) {
@@ -166,7 +239,7 @@ public class Stage implements Stoppable {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
 
-    final Actor actor = ActorFactory.actorFor(this, parent, definition, address, mailbox);
+    final Actor actor = ActorFactory.actorFor(this, parent, definition, address, mailbox, maybeSupervisor, logger);
 
     directory.register(actor.address(), actor);
 
@@ -181,9 +254,26 @@ public class Stage implements Stoppable {
     }
   }
   
-  private class ActorProtocolActor<T> {
+  private static class ActorProtocolActor<T> {
     private final Actor actor;
     private final T protocolActor;
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected static ActorProtocolActor<Object>[] allOf(final Actor actor, Object[] protocolActors) {
+      final ActorProtocolActor<Object>[] all = new ActorProtocolActor[protocolActors.length];
+      for (int idx = 0; idx < protocolActors.length; ++idx) {
+        all[idx] = new ActorProtocolActor(actor, protocolActors[idx]);
+      }
+      return all;
+    }
+
+    protected static TestActor<?>[] toTestActors(final ActorProtocolActor<Object>[] all) {
+      final TestActor<?>[] testActors = new TestActor[all.length];
+      for (int idx = 0; idx < all.length; ++idx) {
+        testActors[idx] = all[idx].toTestActor();
+      }
+      return testActors;
+    }
 
     protected ActorProtocolActor(final Actor actor, final T protocol) {
       this.actor = actor;

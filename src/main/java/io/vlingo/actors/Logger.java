@@ -21,6 +21,7 @@ public interface Logger {
 
   void close();
   boolean isEnabled();
-  void log(String message);
+  void log(final String message);
+  void log(final String message, final Throwable throwable);
   String name();
 }

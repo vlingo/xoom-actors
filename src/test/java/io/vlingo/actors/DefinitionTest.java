@@ -15,6 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.testkit.TestWorld;
+
 public class DefinitionTest {
   private World world;
   
@@ -106,6 +108,7 @@ public class DefinitionTest {
   @Before
   public void setUp() {
     world = World.start("test-world");
+    TestWorld.startWith(world);
   }
   
   @After

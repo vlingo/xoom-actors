@@ -11,24 +11,22 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
-import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class RingBufferMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
   
-  private World world;
-  
   @Test
   public void testBasicDispatch() throws Exception {
+    System.out.println("testBasicDispatch 1");
+    
     final CountTaker countTaker =
             world.actorFor(
                     Definition.has(CountTakerActor.class, Definition.NoParameters, "testRingMailbox", "countTaker-1"),
@@ -36,17 +34,26 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize / 2;
     
+    System.out.println("testBasicDispatch 2");
+    
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
+    System.out.println("testBasicDispatch 3");
+    
+    delay = 200;
     pause();
+    
+    System.out.println("testBasicDispatch 4");
     
     assertEquals(MaxCount, CountTakerActor.highest);
   }
 
   @Test
   public void testOverflowDispatch() throws Exception {
+    System.out.println("testOverflowDispatch 1");
+    
     final CountTaker countTaker =
             world.actorFor(
                     Definition.has(CountTakerActor.class, Definition.NoParameters, "testRingMailbox", "countTaker-2"),
@@ -54,17 +61,25 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize * 2;
     
+    System.out.println("testOverflowDispatch 2");
+    
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
+    System.out.println("testOverflowDispatch 3");
+    
     pause();
+    
+    System.out.println("testOverflowDispatch 4");
     
     assertEquals(MaxCount, CountTakerActor.highest);
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    super.setUp();
+    
     CountTakerActor.highest = 0;
     
     Properties properties = new Properties();
@@ -78,16 +93,9 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     PluginProperties pluginProps = new PluginProperties("testRingMailbox", properties);
     
-    world = World.start("test-ring-mailbox");
-    
     SharedRingBufferMailboxPlugin provider = new SharedRingBufferMailboxPlugin();
     
     provider.start(world, "testRingMailbox", pluginProps);
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
   
   public static interface CountTaker {

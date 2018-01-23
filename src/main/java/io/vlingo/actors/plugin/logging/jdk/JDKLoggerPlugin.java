@@ -41,11 +41,17 @@ public class JDKLoggerPlugin implements Plugin, LoggerProvider {
   }
 
   @Override
+  public int pass() {
+    return 1;
+  }
+
+  @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    this.name = name;
-    this.logger = new JDKLogger(name, properties);
+    this.name = properties.getString("name", name);
+    this.logger = new JDKLogger(this.name, properties);
+    final boolean defaultLogger = properties.getBoolean("defaultLogger", true);
     
-    registrar.register(name, properties.getBoolean("defaultLogger", true), this);
+    registrar.register(name, defaultLogger, this);
   }
 
   @Override
