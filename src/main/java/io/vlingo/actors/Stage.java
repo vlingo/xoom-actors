@@ -22,7 +22,7 @@ public class Stage implements Stoppable {
   private final World world;
 
   public <T> T actorAs(final Actor actor, Class<T> protocol) {
-    return actorProxyFor(protocol, actor, actor.__internal__Environment().mailbox);
+    return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -174,7 +174,7 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
-      final T protocolActor = actorProxyFor(protocol, actor, actor.__internal__Environment().mailbox);
+      final T protocolActor = actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
@@ -193,7 +193,7 @@ public class Stage implements Stoppable {
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
-      final Object[] protocolActors = actorProxyFor(protocols, actor, actor.__internal__Environment().mailbox);
+      final Object[] protocolActors = actorProxyFor(protocols, actor, actor.lifeCycle.environment.mailbox);
       return ActorProtocolActor.allOf(actor, protocolActors);
     } catch (Exception e) {
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
@@ -220,7 +220,7 @@ public class Stage implements Stoppable {
     final Actor removedActor = directory.remove(actor.address());
     
     if (actor == removedActor) {
-      removedActor.__internal__Stop();
+      removedActor.lifeCycle.stop(actor);
     }
   }
 
@@ -251,7 +251,7 @@ public class Stage implements Stoppable {
 
     directory.register(actor.address(), actor);
 
-    actor.__internal__BeforeStart();
+    actor.lifeCycle.beforeStart(actor);
 
     return actor;
   }

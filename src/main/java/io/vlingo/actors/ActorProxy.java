@@ -23,7 +23,7 @@ public final class ActorProxy {
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final String proxyClassname = fullyQualifiedClassnameFor(protocol);
     
-    final T maybeProxy = actor.__internal__Environment().lookUpProxy(protocol);
+    final T maybeProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
     
     if (maybeProxy != null) {
       return maybeProxy;
@@ -37,7 +37,7 @@ public final class ActorProxy {
       newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
     }
     
-    actor.__internal__Environment().cacheProxy(newProxy);
+    actor.lifeCycle.environment.cacheProxy(newProxy);
     
     return newProxy;
   }

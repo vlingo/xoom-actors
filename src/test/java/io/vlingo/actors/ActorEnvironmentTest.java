@@ -154,7 +154,7 @@ public class ActorEnvironmentTest {
     
     @Override
     public TestState viewTestState() {
-      return new TestState().putValue("env", __internal__Environment());
+      return new TestState().putValue("env", lifeCycle.environment);
     }
   }
 }

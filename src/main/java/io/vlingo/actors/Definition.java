@@ -186,7 +186,7 @@ public final class Definition {
 
   private Supervisor assignSupervisor(final Actor parent) {
     if (parent != null && parent instanceof Supervisor) {
-      return parent.__internal__Environment().stage.actorAs(parent, Supervisor.class);
+      return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
     }
     return null;
   }

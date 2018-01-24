@@ -36,15 +36,15 @@ public class LocalMessage<T> implements Message {
 
   @Override
   public void deliver() {
-    if (actor.__internal__IsResumed()) {
+    if (actor.lifeCycle.isResuming()) {
       if (isStowed()) {
         internalDeliver(this);
       } else {
-        internalDeliver(actor.__internal__Environment().suspended.swapWith(this));
+        internalDeliver(actor.lifeCycle.environment.suspended.swapWith(this));
       }
-      actor.__internal__NextResuming();
+      actor.lifeCycle.nextResuming();
     } else if (actor.isDispersing()) {
-      internalDeliver(actor.__internal__Environment().stowage.swapWith(this));
+      internalDeliver(actor.lifeCycle.environment.stowage.swapWith(this));
     } else {
       internalDeliver(this);
     }
@@ -67,7 +67,7 @@ public class LocalMessage<T> implements Message {
 
   private void deadLetter() {
     final DeadLetter deadLetter  = new DeadLetter(actor, representation);
-    final DeadLetters deadLetters = actor.__internal__Environment().stage.world().deadLetters();
+    final DeadLetters deadLetters = actor.deadLetters();
     if (deadLetters != null) {
       deadLetters.failedDelivery(deadLetter);
     } else {
@@ -79,10 +79,10 @@ public class LocalMessage<T> implements Message {
   private void internalDeliver(final Message message) {
     if (actor.isStopped()) {
       deadLetter();
-    } else if (actor.__internal__IsSuspend()) {
-      actor.__internal__Environment().suspended.stow(message);
+    } else if (actor.lifeCycle.isSuspended()) {
+      actor.lifeCycle.environment.suspended.stow(message);
     } else if (actor.isStowing()) {
-      actor.__internal__Environment().stowage.stow(message);
+      actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
         consumer.accept((T) actor);

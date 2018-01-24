@@ -43,7 +43,7 @@ public class StageSupervisedActor implements Supervised {
 
   @Override
   public void resume() {
-    actor.__internal__Resume();
+    actor.lifeCycle.resume();
   }
 
   @Override
@@ -59,12 +59,12 @@ public class StageSupervisedActor implements Supervised {
 
   @Override
   public void suspend() {
-    actor.__internal__Suspend();
+    actor.lifeCycle.suspend();
   }
 
   @Override
   public Supervisor supervisor() {
-    return actor.__internal_Supervisor(protocol);
+    return actor.lifeCycle.supervisor(protocol);
   }
 
   @Override
@@ -83,7 +83,7 @@ public class StageSupervisedActor implements Supervised {
   }
 
   private Environment environmentOf(final Actor actor) {
-    return actor.__internal__Environment();
+    return actor.lifeCycle.environment;
   }
 
   private boolean failureThresholdReached(final long period, final int intensity) {
@@ -91,11 +91,11 @@ public class StageSupervisedActor implements Supervised {
   }
 
   private void restartWithin(final Actor actor, final long period, final int intensity) {
-    actor.__internal__BeforeRestart(throwable, protocol);
+    actor.lifeCycle.beforeRestart(actor, throwable, protocol);
     // TODO: Actually restart actor here? I am not
     // yet convinced that it is necessary or practical.
     // Please convince me.
-    actor.__internal__AfterRestart(throwable, protocol);
+    actor.lifeCycle.afterRestart(actor, throwable, protocol);
     resume();
   }
 }

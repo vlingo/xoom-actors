@@ -36,4 +36,8 @@ public abstract class ActorsTest {
   protected void pause(final long delayArg) {
     try { Thread.sleep(delayArg); } catch (Exception e) { }
   }
+
+  protected boolean isSuspended(final Actor actor) {
+    return actor.lifeCycle.isSuspended();
+  }
 }

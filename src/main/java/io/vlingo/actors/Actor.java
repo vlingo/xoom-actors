@@ -7,21 +7,19 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
-
 import io.vlingo.actors.testkit.TestEnvironment;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 
 public abstract class Actor implements Startable, Stoppable, TestStateView {
-  private final Environment environment;
+  final LifeCycle lifeCycle;
 
   public Address address() {
-    return environment.address;
+    return lifeCycle.address();
   }
 
   public DeadLetters deadLetters() {
-    return environment.stage.world().deadLetters();
+    return lifeCycle.environment.stage.world().deadLetters();
   }
 
   @Override
@@ -30,14 +28,14 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   @Override
   public boolean isStopped() {
-    return environment.isStopped();
+    return lifeCycle.isStopped();
   }
 
   @Override
   public void stop() {
     if (!isStopped()) {
-      if (environment.address.id() != World.DEADLETTERS_ID) {
-        environment.stage.stop(this);
+      if (lifeCycle.address().id() != World.DEADLETTERS_ID) {
+        lifeCycle.stop(this);
       }
     }
   }
@@ -53,72 +51,76 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
       return false;
     }
     
-    return environment.address.equals(((Actor) other).environment.address);
+    return address().equals(((Actor) other).lifeCycle.address());
   }
 
   @Override
   public int hashCode() {
-    return environment.address.hashCode();
+    return lifeCycle.hashCode();
   }
 
   @Override
   public String toString() {
-    return "Actor[type=" + this.getClass().getSimpleName() + " address=" + this.environment.address + "]";
+    return "Actor[type=" + this.getClass().getSimpleName() + " address=" + address() + "]";
+  }
+
+  protected Actor() {
+    final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
+    this.lifeCycle = new LifeCycle(this, maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
+    ActorFactory.threadLocalEnvironment.set(null);
+    this.lifeCycle.sendStart(this);
   }
 
   protected <T> T childActorFor(final Definition definition, final Class<T> protocol) {
     if (definition.supervisor() != null) {
-      return environment.stage.actorFor(definition, protocol, this, definition.supervisor(), logger());
+      return lifeCycle.environment.stage.actorFor(definition, protocol, this, definition.supervisor(), logger());
     } else {
       if (this instanceof Supervisor) {
-        return environment.stage.actorFor(definition, protocol, this, environment.lookUpProxy(Supervisor.class), logger());
+        return lifeCycle.environment.stage.actorFor(definition, protocol, this, lifeCycle.lookUpProxy(Supervisor.class), logger());
       } else {
-        return environment.stage.actorFor(definition, protocol, this, null, logger());
+        return lifeCycle.environment.stage.actorFor(definition, protocol, this, null, logger());
       }
     }
   }
 
   protected Definition definition() {
-    if (environment.isSecured()) {
-      throw new IllegalStateException("A secured actor cannot provide its definition.");
-    }
-    return environment.definition;
+    return lifeCycle.definition();
   }
 
   protected Logger logger() {
-    return environment.logger;
+    return lifeCycle.environment.logger;
   }
 
   protected Actor parent() {
-    if (environment.isSecured()) {
+    if (lifeCycle.environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its parent.");
     }
-    return environment.parent;
+    return lifeCycle.environment.parent;
   }
 
   protected void secure() {
-    environment.setSecured();
+    lifeCycle.secure();
   }
 
   protected <T> T selfAs(final Class<T> protocol) {
-    return environment.stage.actorProxyFor(protocol, this, environment.mailbox);
+    return lifeCycle.environment.stage.actorProxyFor(protocol, this, lifeCycle.environment.mailbox);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   protected OutcomeInterest selfAsOutcomeInterest(final Object reference) {
-    final OutcomeAware outcomeAware = environment.stage.actorProxyFor(OutcomeAware.class, this, environment.mailbox);
+    final OutcomeAware outcomeAware = lifeCycle.environment.stage.actorProxyFor(OutcomeAware.class, this, lifeCycle.environment.mailbox);
     return new OutcomeInterestActorProxy(outcomeAware, reference);
   }
 
   protected final Stage stage() {
-    if (environment.isSecured()) {
+    if (lifeCycle.environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its stage.");
     }
-    return environment.stage;
+    return lifeCycle.environment.stage;
   }
 
   protected Stage stageNamed(final String name) {
-    return environment.stage.world().stageNamed(name);
+    return lifeCycle.environment.stage.world().stageNamed(name);
   }
 
   //=======================================
@@ -126,20 +128,19 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   //=======================================
 
   protected boolean isDispersing() {
-    return environment.stowage.isDispersing();
+    return lifeCycle.environment.stowage.isDispersing();
   }
 
   protected void disperseStowedMessages() {
-    environment.stowage.dispersingMode();
-    __internal_SendFirst(environment.stowage);
+    lifeCycle.environment.stowage.dispersingMode();
   }
 
   protected boolean isStowing() {
-    return environment.stowage.isStowing();
+    return lifeCycle.environment.stowage.isStowing();
   }
 
   protected void stowMessages() {
-    environment.stowage.stowingMode();
+    lifeCycle.environment.stowage.stowingMode();
   }
 
   //=======================================
@@ -156,124 +157,11 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   protected void beforeRestart(final Throwable reason) {
     // override
-    __internal__AfterStop();
+    lifeCycle.afterStop(this);
   }
 
   protected void afterRestart(final Throwable reason) {
     // override
-    __internal__BeforeStart();
-  }
-
-  //=======================================
-  // internal implementation
-  //=======================================
-
-  protected Actor() {
-    final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
-    this.environment = maybeEnvironment != null ? maybeEnvironment : new TestEnvironment();
-    ActorFactory.threadLocalEnvironment.set(null);
-    __internal__SendStart();
-  }
-
-  protected Environment __internal__Environment() {
-    return environment;
-  }
-
-  protected void __internal__Stop() {
-    environment.stop();
-    
-    __internal__AfterStop();
-  }
-
-  private void __internal__AfterStop() {
-    try {
-      afterStop();
-    } catch (Throwable t) {
-      logger().log("vlingo/actors: Actor afterStop() failed: " + t.getMessage(), t);
-      environment.stage.handleFailureOf(new StageSupervisedActor(Stoppable.class, this, t));
-    }
-  }
-
-  protected void __internal__BeforeStart() {
-    try {
-      beforeStart();
-    } catch (Throwable t) {
-      logger().log("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
-      environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, this, t));
-    }
-  }
-
-  protected void __internal__AfterRestart(Throwable throwable, Class<?> protocol) {
-    try {
-      afterRestart(throwable);
-    } catch (Throwable t) {
-      logger().log("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
-      environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, this, t));
-    }
-  }
-
-  protected void __internal__BeforeRestart(final Throwable reason, final Class<?> protocol) {
-    try {
-      beforeRestart(reason);
-    } catch (Throwable t) {
-      logger().log("vlingo/actors: Actor beforeRestart() failed: " + t.getMessage());
-      environment.stage.handleFailureOf(new StageSupervisedActor(protocol, this, t));
-    }
-  }
-
-  private void __internal__SendStart() {
-    try {
-      final Consumer<Startable> consumer = (actor) -> actor.start();
-      final Message message = new LocalMessage<Startable>(this, Startable.class, consumer, "start()");
-      environment.mailbox.send(message);
-    } catch (Throwable t) {
-      logger().log("vlingo/actors: Actor start() failed: " + t.getMessage());
-      environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, this, t));
-    }
-  }
-
-  private void __internal_SendFirst(final Stowage stowage) {
-    final Message maybeMessage = stowage.head();
-    if (maybeMessage != null) {
-      //stowage.dump(logger());
-      environment.mailbox.send(maybeMessage);
-    }
-  }
-
-  //=======================================
-  // supervisor/suspending/resuming
-  //=======================================
-
-  protected boolean __internal__IsResumed() {
-    return environment.suspended.isDispersing();
-  }
-
-  protected void __internal__NextResuming() {
-    if (__internal__IsResumed()) {
-      __internal_SendFirst(environment.suspended);
-    }
-  }
-
-  protected void __internal__Resume() {
-    environment.suspended.dispersingMode();
-    __internal_SendFirst(environment.suspended);
-  }
-
-  protected boolean __internal__IsSuspend() {
-    return environment.suspended.isStowing();
-  }
-
-  protected void __internal__Suspend() {
-    environment.suspended.stowingMode();
-  }
-
-  protected Supervisor __internal_Supervisor(final Class<?> protocol) {
-    Supervisor supervisor = environment.maybeSupervisor;
-    
-    if (supervisor == null) {
-      supervisor = environment.stage.commonSupervisorOr(protocol, environment.stage.world().defaultSupervisor());
-    }
-    
-    return supervisor;
+    lifeCycle.beforeStart(this);
   }
 }

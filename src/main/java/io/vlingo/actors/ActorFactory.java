@@ -51,7 +51,7 @@ public class ActorFactory {
     }
     
     if (parent != null) {
-      parent.__internal__Environment().addChild(actor);
+      parent.lifeCycle.environment.addChild(actor);
     }
     
     return actor;

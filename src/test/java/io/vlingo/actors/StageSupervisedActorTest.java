@@ -82,7 +82,7 @@ public class StageSupervisedActorTest extends ActorsTest {
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance, new IllegalStateException("Failed"));
     
     supervised.suspend();
-    assertTrue(FailureControlActor.instance.__internal__IsSuspend());
+    assertTrue(isSuspended(FailureControlActor.instance));
     
     failure.afterFailure();   // into suspended stowage
     supervised.resume();      // sent

@@ -42,13 +42,13 @@ public class ActorFactoryTest {
     assertEquals(world.stage(), actor.stage());
     assertNotNull(actor.parent());
     assertEquals(world.defaultParent(), actor.parent());
-    assertNotNull(actor.__internal__Environment());
-    assertNotNull(actor.__internal__Environment().definition);
-    assertEquals(definition, actor.__internal__Environment().definition);
-    assertNotNull(actor.__internal__Environment().address);
-    assertEquals(address, actor.__internal__Environment().address);
-    assertNotNull(actor.__internal__Environment().mailbox);
-    assertEquals(mailbox, actor.__internal__Environment().mailbox);
+    assertNotNull(actor.lifeCycle.environment);
+    assertNotNull(actor.lifeCycle.environment.definition);
+    assertEquals(definition, actor.lifeCycle.environment.definition);
+    assertNotNull(actor.address());
+    assertEquals(address, actor.address());
+    assertNotNull(actor.lifeCycle.environment.mailbox);
+    assertEquals(mailbox, actor.lifeCycle.environment.mailbox);
   }
 
   @Test
@@ -83,13 +83,13 @@ public class ActorFactoryTest {
     assertEquals(world.stage(), actor.stage());
     assertNotNull(actor.parent());
     assertEquals(ParentInterfaceActor.parent, actor.parent());
-    assertNotNull(actor.__internal__Environment());
-    assertNotNull(actor.__internal__Environment().definition);
-    assertEquals(definition, actor.__internal__Environment().definition);
-    assertNotNull(actor.__internal__Environment().address);
-    assertEquals(address, actor.__internal__Environment().address);
-    assertNotNull(actor.__internal__Environment().mailbox);
-    assertEquals(mailbox, actor.__internal__Environment().mailbox);
+    assertNotNull(actor.lifeCycle.environment);
+    assertNotNull(actor.lifeCycle.environment.definition);
+    assertEquals(definition, actor.lifeCycle.environment.definition);
+    assertNotNull(actor.lifeCycle.environment.address);
+    assertEquals(address, actor.lifeCycle.environment.address);
+    assertNotNull(actor.lifeCycle.environment.mailbox);
+    assertEquals(mailbox, actor.lifeCycle.environment.mailbox);
   }
 
   @Before
