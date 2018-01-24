@@ -17,6 +17,7 @@ public class Stage implements Stoppable {
   private final Map<String, Supervisor> commonSupervisors;
   private final Directory directory;
   private final String name;
+  private final Scheduler scheduler;
   private boolean stopped;
   private final World world;
 
@@ -113,6 +114,10 @@ public class Stage implements Stoppable {
     commonSupervisors.put(fullyQualifiedProtocol, common);
   }
 
+  public Scheduler scheduler() {
+    return scheduler;
+  }
+
   @Override
   public boolean isStopped() {
     return stopped;
@@ -129,6 +134,8 @@ public class Stage implements Stoppable {
       try { Thread.sleep(10L); } catch (Exception e) {}
     }
     
+    scheduler.close();
+    
     stopped = true;
   }
   
@@ -141,6 +148,7 @@ public class Stage implements Stoppable {
     this.name = name;
     this.directory = new Directory();
     this.commonSupervisors = new HashMap<>();
+    this.scheduler = new Scheduler();
     this.stopped = false;
   }
 

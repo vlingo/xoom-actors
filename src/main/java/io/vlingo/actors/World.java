@@ -28,7 +28,6 @@ public final class World implements Registrar {
   private final LoggerProviderKeeper loggerProviderKeeper;
   private final MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
-  private final Scheduler scheduler;
   private final Map<String,Stage> stages;
   
   private DeadLetters deadLetters;
@@ -150,10 +149,6 @@ public final class World implements Registrar {
     }
   }
 
-  public Scheduler scheduler() {
-    return scheduler;
-  }
-
   public Stage stage() {
     return stageNamed(DEFAULT_STAGE);
   }
@@ -181,7 +176,6 @@ public final class World implements Registrar {
       
       loggerProviderKeeper.close();
       mailboxProviderKeeper.close();
-      scheduler.close();
     }
   }
 
@@ -248,7 +242,6 @@ public final class World implements Registrar {
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
-    this.scheduler = new Scheduler();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
     this.stages = new HashMap<>();

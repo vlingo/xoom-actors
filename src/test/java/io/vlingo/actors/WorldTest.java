@@ -18,8 +18,8 @@ public class WorldTest extends ActorsTest {
     assertNotNull(world.configuration());
     assertNotNull(world.deadLetters());
     assertEquals("test", world.name());
-    assertNotNull(world.scheduler());
     assertNotNull(world.stage());
+    assertNotNull(world.stage().scheduler());
     assertEquals(world, world.stage().world());
     assertFalse(world.isTerminated());
     assertNotNull(world.findDefaultMailboxName());
