@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 final class LifeCycle {
   final Environment environment;
 
-  LifeCycle(final Actor actor, final Environment environment) {
+  LifeCycle(final Environment environment) {
     this.environment = environment;
   }
 

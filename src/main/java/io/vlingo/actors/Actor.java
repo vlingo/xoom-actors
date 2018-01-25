@@ -66,7 +66,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   protected Actor() {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
-    this.lifeCycle = new LifeCycle(this, maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
+    this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
     ActorFactory.threadLocalEnvironment.set(null);
     this.lifeCycle.sendStart(this);
   }
