@@ -1,7 +1,5 @@
 # vlingo-actors
-This is a very early stage release of the vlingo platform.
-
-This vlingo-actors toolkit is a bit incomplete, but serves as a foundation for other platform tools.
+The vlingo-actors toolkit is much closer to fully defined in mid January 2018 than it was a month ago. Stay tuned for the feature-complete version coming soon.
 
 
 License (See LICENSE file for full license)
