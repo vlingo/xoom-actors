@@ -51,7 +51,6 @@ public class Stage implements Stoppable {
                     definition.parameters(),
                     TestMailbox.Name,
                     definition.actorName());
-    
     return actorFor(
             redefinition,
             protocol,
@@ -153,10 +152,8 @@ public class Stage implements Stoppable {
   }
 
   protected <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
-    try {
-      ActorProtocolActor<T> actor = actorFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
+    ActorProtocolActor<T> actor = actorFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
-    } catch (Exception e) { e.printStackTrace(); return null;}
   }
 
   protected ActorProtocolActor<Object>[] actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
@@ -177,6 +174,7 @@ public class Stage implements Stoppable {
       final T protocolActor = actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
+      e.printStackTrace();
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
