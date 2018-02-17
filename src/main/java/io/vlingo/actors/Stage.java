@@ -51,15 +51,23 @@ public class Stage implements Stoppable {
                     definition.parameters(),
                     TestMailbox.Name,
                     definition.actorName());
-    return actorFor(
-            redefinition,
-            protocol,
-            definition.parentOr(world.defaultParent()),
-            null,
-            null,
-            definition.supervisor(),
-            definition.loggerOr(world.defaultLogger())
-            ).toTestActor();
+    
+    try {
+      return actorFor(
+              redefinition,
+              protocol,
+              definition.parentOr(world.defaultParent()),
+              null,
+              null,
+              definition.supervisor(),
+              definition.loggerOr(world.defaultLogger())
+              ).toTestActor();
+      
+    } catch (Exception e) {
+      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      e.printStackTrace();
+      return null;
+    }
   }
 
   public final Protocols testActorFor(final Definition definition, final Class<?>[] protocols) {
