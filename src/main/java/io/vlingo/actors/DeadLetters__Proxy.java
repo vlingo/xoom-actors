@@ -25,19 +25,31 @@ public class DeadLetters__Proxy implements DeadLetters {
 
   @Override
   public void stop() {
-    final Consumer<DeadLetters> consumer = (actor) -> actor.stop();
-    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "stop()"));
+    if (!actor.isStopped()) {
+      final Consumer<DeadLetters> consumer = (actor) -> actor.stop();
+      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "stop()"));
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, "stop()"));
+    }
   }
 
   @Override
   public void failedDelivery(final DeadLetter deadLetter) {
-    final Consumer<DeadLetters> consumer = (actor) -> actor.failedDelivery(deadLetter);
-    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "failedDelivery(DeadLetter)"));
+    if (!actor.isStopped()) {
+      final Consumer<DeadLetters> consumer = (actor) -> actor.failedDelivery(deadLetter);
+      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "failedDelivery(DeadLetter)"));
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, "failedDelivery(DeadLetter)"));
+    }
   }
 
   @Override
   public void registerListener(final DeadLettersListener listener) {
-    final Consumer<DeadLetters> consumer = (actor) -> actor.registerListener(listener);
-    mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "registerListener(DeadLettersListener)"));
+    if (!actor.isStopped()) {
+      final Consumer<DeadLetters> consumer = (actor) -> actor.registerListener(listener);
+      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "registerListener(DeadLettersListener)"));
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, "registerListener(DeadLettersListener)"));
+    }
   }
 }

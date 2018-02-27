@@ -20,7 +20,11 @@ public class DeadLettersListener__Proxy implements DeadLettersListener {
 
   @Override
   public void handle(final DeadLetter deadLetter) {
-    final Consumer<DeadLettersListener> consumer = (actor) -> actor.handle(deadLetter);
-    mailbox.send(new LocalMessage<DeadLettersListener>(actor, DeadLettersListener.class, consumer, "handle(DeadLetter)"));
+    if (!actor.isStopped()) {
+      final Consumer<DeadLettersListener> consumer = (actor) -> actor.handle(deadLetter);
+      mailbox.send(new LocalMessage<DeadLettersListener>(actor, DeadLettersListener.class, consumer, "handle(DeadLetter)"));
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, "handle(DeadLetter)"));
+    }
   }
 }
