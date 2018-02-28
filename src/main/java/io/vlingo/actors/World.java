@@ -246,11 +246,15 @@ public final class World implements Registrar {
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
     this.stages = new HashMap<>();
 
+    Address.initialize();
+    
     final Stage defaultStage = new Stage(this, DEFAULT_STAGE);
     
     this.stages.put(DEFAULT_STAGE, defaultStage);
     
-    PluginLoader.loadPlugins(this, 1);
+    final PluginLoader pluginLoader = new PluginLoader();
+    
+    pluginLoader.loadEnabledPlugins(this, 1);
 
     defaultStage.actorFor(
             Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
@@ -261,7 +265,7 @@ public final class World implements Registrar {
             null,
             defaultLogger());
     
-    PluginLoader.loadPlugins(this, 2);
+    pluginLoader.loadEnabledPlugins(this, 2);
   }
 
   private LoggerProviderKeeper loggerProviderKeeper() {

@@ -19,19 +19,23 @@ public final class Address implements Comparable<Address> {
     return new Address(name);
   }
 
-  protected static Address from(final int reservedId, final String name) {
+  static void initialize() {
+    nextId.getAndSet(1);
+  }
+
+  static Address from(final int reservedId, final String name) {
     return new Address(reservedId, name);
   }
 
-  protected static int testNextIdValue() {
+  static int testNextIdValue() {
     return nextId.get(); // for test only
   }
 
-  protected Address(final String name) {
+  Address(final String name) {
     this(nextId.getAndIncrement(), name);
   }
 
-  protected Address(final int reservedId, final String name) {
+  Address(final int reservedId, final String name) {
     this.id = reservedId;
     this.name = name == null ? Integer.toString(reservedId) : name;
   }

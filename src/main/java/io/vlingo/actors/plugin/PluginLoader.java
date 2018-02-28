@@ -22,16 +22,17 @@ public class PluginLoader {
   private static final String propertiesFile = "/vlingo-actors.properties";
   private static final String pluginNamePrefix = "plugin.name.";
 
-  private static final PluginLoader pluginLoader = new PluginLoader();
-  
   private final Map<String,Plugin> plugins;
-  
-  public static void loadPlugins(final Registrar registrar, final int pass) {
-    pluginLoader.loadEnabledPlugins(registrar, pass);
+
+  public PluginLoader() {
+    this.plugins = new HashMap<>();
   }
 
-  private PluginLoader() {
-    this.plugins = new HashMap<>();
+  public void loadEnabledPlugins(final Registrar registrar, final int pass) {
+    final Properties properties = loadProperties();
+
+    for (String enabledPlugin : findEnabledPlugins(properties))
+      registerPlugin(registrar, properties, enabledPlugin, pass);
   }
 
   private Set<String> findEnabledPlugins(final Properties properties) {
@@ -46,13 +47,6 @@ public class PluginLoader {
     }
 
     return enabledPlugins;
-  }
-
-  private void loadEnabledPlugins(final Registrar registrar, final int pass) {
-    final Properties properties = loadProperties();
-
-    for (String enabledPlugin : findEnabledPlugins(properties))
-      registerPlugin(registrar, properties, enabledPlugin, pass);
   }
 
   private Properties loadProperties() {

@@ -95,6 +95,7 @@ public class TestWorld implements AutoCloseable {
   public void terminate() {
     world.terminate();
     testWorld = null;
+    actorMessages.clear();
   }
 
   public World world() {
