@@ -43,6 +43,7 @@ public class StageSupervisedActor implements Supervised {
 
   @Override
   public void resume() {
+    actor.lifeCycle.beforeResume(actor, throwable, protocol);
     actor.lifeCycle.resume();
   }
 

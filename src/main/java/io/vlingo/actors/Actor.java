@@ -164,4 +164,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     // override
     lifeCycle.beforeStart(this);
   }
+
+  protected void beforeResume(final Throwable reason) {
+    // override
+  }
 }

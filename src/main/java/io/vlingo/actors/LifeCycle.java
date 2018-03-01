@@ -94,6 +94,15 @@ final class LifeCycle {
     }
   }
 
+  void beforeResume(final Actor actor, final Throwable reason, final Class<?> protocol) {
+    try {
+      actor.beforeResume(reason);
+    } catch (Throwable t) {
+      environment.logger.log("vlingo/actors: Actor beforeResume() failed: " + t.getMessage());
+      environment.stage.handleFailureOf(new StageSupervisedActor(protocol, actor, t));
+    }
+  }
+
   void sendStart(final Actor targetActor) {
     try {
       final Consumer<Startable> consumer = (actor) -> actor.start();
