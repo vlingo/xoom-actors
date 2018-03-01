@@ -32,11 +32,13 @@ public class WorldTest extends ActorsTest {
   
   @Test
   public void testWorldActorFor() throws Exception {
+    until(1);
+    
     final Simple simple = world.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters), Simple.class);
     
     simple.simpleSay();
     
-    pause();
+    until.completes();
     
     assertTrue(SimpleActor.invoked);
   }
@@ -60,6 +62,7 @@ public class WorldTest extends ActorsTest {
     @Override
     public void simpleSay() {
       invoked = true;
+      until.happened();
     }
   }
 }

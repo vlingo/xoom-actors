@@ -16,45 +16,31 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SchedulerTest extends ActorsTest {
+  private Scheduled scheduled;
   private Scheduler scheduler;
   
   @Test
   public void testScheduleOnceOneHappyDelivery() throws Exception {
-    final Scheduled scheduled = new Scheduled() {
-      @Override
-      public void intervalSignal(final Scheduled scheduled, final Object data) {
-        ((CounterHolder) data).counter++;
-      }
-    };
+    until(1);
     
     final CounterHolder holder = new CounterHolder();
     
     scheduler.scheduleOnce(scheduled, holder, 0L, 1L);
     
-    pause();
+    until.completes();
     
     assertEquals(1, holder.counter);
   }
   
   @Test
   public void testScheduleManyHappyDelivery() throws Exception {
-    final Scheduled scheduled = new Scheduled() {
-      @Override
-      public void intervalSignal(final Scheduled scheduled, final Object data) {
-        ((CounterHolder) data).counter++;
-      }
-    };
+    until(505);
     
     final CounterHolder holder = new CounterHolder();
     
     scheduler.schedule(scheduled, holder, 0L, 1L);
     
-    while (true) {
-      if (holder.counter >= 500) {
-        break;
-      }
-      pause();
-    }
+    until.completes();
     
     assertFalse(0 == holder.counter);
     assertFalse(1 == holder.counter);
@@ -63,6 +49,13 @@ public class SchedulerTest extends ActorsTest {
   
   @Before
   public void setUp() {
+    scheduled = new Scheduled() {
+      @Override
+      public void intervalSignal(final Scheduled scheduled, final Object data) {
+        ((CounterHolder) data).increment();
+      }
+    };
+    
     scheduler = new Scheduler();
   }
   
@@ -76,6 +69,7 @@ public class SchedulerTest extends ActorsTest {
     
     public void increment() {
       ++counter;
+      until.happened();
     }
   }
 }

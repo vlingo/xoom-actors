@@ -22,9 +22,11 @@ public class LocalMessageTest extends ActorsTest {
     final Consumer<Simple> consumer = (actor) -> actor.simple();
     final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple()");
     
+    until(1);
+    
     message.deliver();
     
-    pause();
+    until.completes();
     
     assertEquals(1, SimpleActor.deliveries);
   }
@@ -33,6 +35,8 @@ public class LocalMessageTest extends ActorsTest {
   public void testDeliverStopped() throws Exception {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test2-actor"), Simple.class);
     
+    until(1);
+    
     SimpleActor.actor.stop();
         
     final Consumer<Simple> consumer = (actor) -> actor.simple();
@@ -40,7 +44,7 @@ public class LocalMessageTest extends ActorsTest {
     
     message.deliver();
     
-    pause();
+    assertEquals(1, until.remaining());
     
     assertEquals(0, SimpleActor.deliveries);
   }
@@ -49,12 +53,14 @@ public class LocalMessageTest extends ActorsTest {
   public void testDeliverWithParameters() throws Exception {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test3-actor"), Simple.class);
     
+    until(1);
+    
     final Consumer<Simple> consumer = (actor) -> actor.simple2(2);
     final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple2(int)");
     
     message.deliver();
     
-    pause();
+    until.completes();
     
     assertEquals(1, SimpleActor.deliveries);
   }
@@ -83,11 +89,13 @@ public class LocalMessageTest extends ActorsTest {
     @Override
     public void simple() {
       ++deliveries;
+      until.happened();
     }
 
     @Override
     public void simple2(final int val) {
       ++deliveries;
+      until.happened();
     }
   }
 }

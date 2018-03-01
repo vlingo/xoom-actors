@@ -32,11 +32,13 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize / 2;
     
+    until(MaxCount);
+    
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    pause();
+    until.completes();
     
     assertEquals(MaxCount, CountTakerActor.highest);
   }
@@ -50,12 +52,13 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize * 2;
     
+    until(MaxCount);
+    
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    delay = 500L;
-    pause();
+    until.completes();
     
     assertEquals(MaxCount, CountTakerActor.highest);
   }
@@ -99,6 +102,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     public void take(final int count) {
       if (count > highest) {
         highest = count;
+        until.happened();
       }
       if (count < MaxCount) {
         self.take(count + 1);

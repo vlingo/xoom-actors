@@ -21,6 +21,7 @@ import io.vlingo.actors.supervision.PingActor;
 import io.vlingo.actors.supervision.Pong;
 import io.vlingo.actors.supervision.PongActor;
 import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class StageSupervisedActorTest extends ActorsTest {
 
@@ -73,6 +74,8 @@ public class StageSupervisedActorTest extends ActorsTest {
 
   @Test
   public void testSuspendResume() {
+    FailureControlActor.untilAfterFail = TestUntil.happenings(1);
+    
     final FailureControl failure =
             world.actorFor(
                     Definition.has(FailureControlActor.class, Definition.NoParameters, "failure"),
@@ -84,14 +87,17 @@ public class StageSupervisedActorTest extends ActorsTest {
     supervised.suspend();
     assertTrue(isSuspended(FailureControlActor.instance));
     
-    failure.afterFailure();   // into suspended stowage
-    supervised.resume();      // sent
-    pause(50);                // delivered
+    failure.afterFailure();                         // into suspended stowage
+    supervised.resume();                            // sent
+    FailureControlActor.untilAfterFail.completes(); // delivered
+    
     assertEquals(1, FailureControlActor.afterFailureCount);
   }
 
   @Test
   public void testStopOne() {
+    FailureControlActor.untilStopped = TestUntil.happenings(1);
+    
     world.actorFor(
             Definition.has(FailureControlActor.class, Definition.NoParameters, "failure"),
             FailureControl.class);
@@ -100,12 +106,17 @@ public class StageSupervisedActorTest extends ActorsTest {
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance, new IllegalStateException("Failed"));
     
     supervised.stop(Scope.One);
-    pause(50);
+    
+    FailureControlActor.untilStopped.completes();
+    
     assertTrue(FailureControlActor.instance.isStopped());
   }
   
   @Test
   public void testStopAll() {
+    PingActor.untilStopped = TestUntil.happenings(1);
+    PongActor.untilStopped = TestUntil.happenings(1);
+    
     world.actorFor(
             Definition.has(PingActor.class, Definition.NoParameters, "ping"),
             Ping.class);
@@ -118,7 +129,10 @@ public class StageSupervisedActorTest extends ActorsTest {
             new StageSupervisedActor(Ping.class, PingActor.instance, new IllegalStateException("Failed"));
     
     supervised.stop(Scope.All);
-    pause(50);
+    
+    PingActor.untilStopped.completes();
+    PongActor.untilStopped.completes();
+    
     assertTrue(PingActor.instance.isStopped());
     assertTrue(PongActor.instance.isStopped());
   }

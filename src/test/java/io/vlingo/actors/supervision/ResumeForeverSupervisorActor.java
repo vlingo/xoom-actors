@@ -11,10 +11,12 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ResumeForeverSupervisorActor extends Actor implements Supervisor {
   public static int informedCount;
   public static ResumeForeverSupervisorActor instance;
+  public static TestUntil untilInform;
   
   public ResumeForeverSupervisorActor() {
     instance = this;
@@ -41,12 +43,12 @@ public class ResumeForeverSupervisorActor extends Actor implements Supervisor {
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     ++informedCount;
-    
     if (informedCount == 1) {
       supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
     } else {
       supervised.resume();
     }
+    untilInform.happened();
   }
 
   @Override

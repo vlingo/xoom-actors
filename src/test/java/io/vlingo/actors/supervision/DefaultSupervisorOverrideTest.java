@@ -16,6 +16,7 @@ import org.junit.Test;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class DefaultSupervisorOverrideTest extends ActorsTest {
 
@@ -26,21 +27,31 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
                     Definition.has(FailureControlActor.class, Definition.NoParameters, "failure-for-stop"),
                     FailureControl.class);
     
-    for (int idx = 1; idx <= 20; ++idx) {
-      failure.actor().failNow();
-      pause(10);
-      failure.actor().afterFailure();
-    }
-
-    pause(100);
+    FailureControlActor.untilFailNow = TestUntil.happenings(20);
+    FailureControlActor.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
+      FailureControlActor.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      pause(10);
+      FailureControlActor.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    pause(100);
+    FailureControlActor.untilFailNow.completes();
+    FailureControlActor.untilAfterFail.completes();
+    
+    FailureControlActor.untilFailNow = TestUntil.happenings(20);
+    FailureControlActor.untilAfterFail = TestUntil.happenings(20);
+    
+    for (int idx = 1; idx <= 20; ++idx) {
+      FailureControlActor.untilBeforeResume = TestUntil.happenings(1);
+      failure.actor().failNow();
+      FailureControlActor.untilBeforeResume.completes();
+      failure.actor().afterFailure();
+    }
+
+    FailureControlActor.untilFailNow.completes();
+    FailureControlActor.untilAfterFail.completes();
     
     assertFalse(failure.actorInside().isStopped());
     assertEquals(40, FailureControlActor.failNowCount);

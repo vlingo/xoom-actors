@@ -16,17 +16,19 @@ import org.junit.Test;
 public class ActorLifecycleTest extends ActorsTest {
   @Test
   public void testBeforeStart() throws Exception {
+    until(1);
     world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
-    pause();
+    until.completes();
     assertTrue(LifecycleActor.ReceivedBeforeStart);
     assertFalse(LifecycleActor.ReceivedAfterStop);
   }
 
   @Test
   public void testAfterStop() throws Exception {
+    until(2);
     final Stoppable actor = world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
     actor.stop();
-    pause();
+    until.completes();
     assertTrue(LifecycleActor.ReceivedBeforeStart);
     assertTrue(LifecycleActor.ReceivedAfterStop);
   }
@@ -46,11 +48,13 @@ public class ActorLifecycleTest extends ActorsTest {
     
     @Override
     protected void beforeStart() {
+      until.happened();
       ReceivedBeforeStart = true;
     }
 
     @Override
     protected void afterStop() {
+      until.happened();
       ReceivedAfterStop = true;
     }
   }

@@ -34,6 +34,8 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize / 2;
     
+    until(MaxCount);
+    
     System.out.println("testBasicDispatch 2");
     
     for (int count = 1; count <= totalCount; ++count) {
@@ -42,8 +44,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     System.out.println("testBasicDispatch 3");
     
-    delay = 200;
-    pause();
+    until.completes();
     
     System.out.println("testBasicDispatch 4");
     
@@ -61,6 +62,8 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize * 2;
     
+    until(MaxCount);
+    
     System.out.println("testOverflowDispatch 2");
     
     for (int count = 1; count <= totalCount; ++count) {
@@ -69,7 +72,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     System.out.println("testOverflowDispatch 3");
     
-    pause();
+    until.completes();
     
     System.out.println("testOverflowDispatch 4");
     
@@ -114,9 +117,12 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     public void take(final int count) {
       if (count > highest) {
         highest = count;
+        until.happened();
       }
       if (count < MaxCount) {
         self.take(count + 1);
+      } else {
+        until.completeNow();
       }
     }
   }

@@ -25,6 +25,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
   public void testClose() throws Exception {
     final int mailboxSize = 64;
     
+    until(mailboxSize);
+    
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
     dispatcher.start();
@@ -41,8 +43,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    pause();
-    
+    until.completes();
+
     dispatcher.close();
     
     final int neverRevieved = mailboxSize * 2;
@@ -55,7 +57,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
 
-    pause();
+    until(0).completes();
     
     assertEquals(mailboxSize, CountTakerActor.highest);
   }
@@ -63,6 +65,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
   @Test
   public void testBasicDispatch() throws Exception {
     final int mailboxSize = 64;
+    
+    until(mailboxSize);
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
@@ -80,7 +84,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    pause();
+    until.completes();
     
     assertEquals(mailboxSize, CountTakerActor.highest);
   }
@@ -89,6 +93,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
   public void testOverflowDispatch() throws Exception {
     final int mailboxSize = 64;
     final int overflowSize = mailboxSize * 2;
+    
+    until(overflowSize);
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
@@ -106,7 +112,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     dispatcher.start();
     
-    pause();
+    until.completes();
     
     assertEquals(overflowSize, CountTakerActor.highest);
   }
@@ -128,6 +134,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
     @Override
     public void take(final int count) {
       if (count > highest) highest = count;
+      until.happened();
     }
   }
 }

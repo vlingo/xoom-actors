@@ -10,14 +10,20 @@ package io.vlingo.actors;
 import org.junit.After;
 import org.junit.Before;
 
+import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
 
 public abstract class ActorsTest {
   protected World world;
   protected TestWorld testWorld;
 
-  protected long delay = 100L;
+  public static TestUntil until;
   
+  public static TestUntil until(final int times) {
+    until = TestUntil.happenings(times);
+    return until;
+  }
+
   @Before
   public void setUp() throws Exception {
     testWorld = TestWorld.start("test");
@@ -27,14 +33,6 @@ public abstract class ActorsTest {
   @After
   public void tearDown() throws Exception {
     testWorld.terminate();
-  }
-
-  protected void pause() {
-    try { Thread.sleep(delay); } catch (Exception e) { }
-  }
-
-  protected void pause(final long delayArg) {
-    try { Thread.sleep(delayArg); } catch (Exception e) { }
   }
 
   protected boolean isSuspended(final Actor actor) {

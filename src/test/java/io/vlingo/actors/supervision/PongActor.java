@@ -8,10 +8,13 @@
 package io.vlingo.actors.supervision;
 
 import io.vlingo.actors.Actor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class PongActor extends Actor implements Pong {
   public static int pongCount;
   public static PongActor instance;
+  public static TestUntil untilPonged;
+  public static TestUntil untilStopped;
   
   public PongActor() {
     instance = this;
@@ -20,6 +23,13 @@ public class PongActor extends Actor implements Pong {
   @Override
   public void pong() {
     ++pongCount;
+    untilPonged.happened();
     throw new IllegalStateException("Intended Pong failure.");
+  }
+
+  @Override
+  public void stop() {
+    super.stop();
+    untilStopped.happened();
   }
 }

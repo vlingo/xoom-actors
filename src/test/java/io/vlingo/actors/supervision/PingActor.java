@@ -8,18 +8,28 @@
 package io.vlingo.actors.supervision;
 
 import io.vlingo.actors.Actor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class PingActor extends Actor implements Ping {
   public static int pingCount;
   public static PingActor instance;
+  public static TestUntil untilPinged;
+  public static TestUntil untilStopped;
   
   public PingActor() {
     instance = this;
   }
   
   @Override
+  public void stop() {
+    super.stop();
+    untilStopped.happened();
+  }
+
+  @Override
   public void ping() {
     ++pingCount;
+    untilPinged.happened();
     throw new IllegalStateException("Intended Ping failure.");
   }
 }

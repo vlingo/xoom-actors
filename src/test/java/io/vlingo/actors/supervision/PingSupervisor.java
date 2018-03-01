@@ -11,11 +11,15 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class PingSupervisor extends Actor implements Supervisor {
   public static int informedCount;
+  public static TestUntil untilInform;
   
-  public PingSupervisor() { }
+  public PingSupervisor() {
+    System.out.println("PING SUPERVISOR CTOR");
+  }
   
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
@@ -38,8 +42,8 @@ public class PingSupervisor extends Actor implements Supervisor {
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     ++informedCount;
-    
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
+    untilInform.happened();
   }
 
   @Override

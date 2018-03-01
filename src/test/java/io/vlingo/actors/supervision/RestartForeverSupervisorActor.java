@@ -11,10 +11,12 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class RestartForeverSupervisorActor extends Actor implements Supervisor {
   public static int informedCount;
-  
+  public static TestUntil untilInform;
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override
@@ -38,6 +40,8 @@ public class RestartForeverSupervisorActor extends Actor implements Supervisor {
     ++informedCount;
     
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
+    
+    untilInform.happened();
   }
 
   @Override

@@ -16,7 +16,10 @@ import org.junit.Test;
 public class ActorStopTest extends ActorsTest {
   @Test
   public void testStopActors() throws Exception {
+    //System.out.println("================= testStopActors");
     final World world = World.start("test");
+    
+    until(12);
     
     final ChildCreatingStoppable[] stoppables = setUpActors(world);
     
@@ -24,47 +27,53 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    pause();
+    until.completes();
+    //System.out.println("================= testStopActors 1");
+    until(12);
     
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].stop();
     }
     
-    pause();
-    
-    ChildCreatingStoppableActor.awaitExpectedCounts(12, 0);
+    until.completes();
+    //System.out.println("================= testStopActors 2");
     
     assertEquals(12, ChildCreatingStoppableActor.stopCount);
 
+    until(1);
+    
     ChildCreatingStoppableActor.terminating = true;
     world.terminate();
     
-    pause();
+    assertEquals(1, until.remaining());
     
-    ChildCreatingStoppableActor.awaitExpectedCounts(12, 0);
-
+    //System.out.println("================= testStopActors 3");
     assertEquals(0, ChildCreatingStoppableActor.terminatingStopCount);
+    //System.out.println("================= testStopActors /////////////");
   }
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
+    System.out.println("================= testWorldTerminateToStopAllActors");
     final World world = World.start("test");
     
+    until(12);
+
     final ChildCreatingStoppable[] stoppables = setUpActors(world);
     
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].createChildren();
     }
 
-    pause();
+    until.completes();
     
+    until(12);
+
     ChildCreatingStoppableActor.terminating = true;
     world.terminate();
     
-    pause();
+    until.completes();
     
-    ChildCreatingStoppableActor.awaitExpectedCounts(0, 12);
-
     assertEquals(12, ChildCreatingStoppableActor.terminatingStopCount);
   }
   
@@ -111,25 +120,24 @@ public class ActorStopTest extends ActorsTest {
     }
 
     @Override
+    protected void beforeStart() {
+      super.beforeStart();
+      until.happened();
+    }
+
+    @Override
     protected void afterStop() {
       synchronized (lock) {
         if (terminating) {
           ++terminatingStopCount;
+          until.happened();
         } else {
           ++stopCount;
+          until.happened();
         }
       }
     }
 
-    protected static void awaitExpectedCounts(final int expectedStopCount, final int expectedTerminatingStopCount) {
-      for (int idx = 0; idx < 100; ++idx) {
-        if (stopCount == expectedStopCount && terminatingStopCount == expectedTerminatingStopCount) {
-          return;
-        }
-        try { Thread.sleep(10L); } catch (Exception e) {}
-      }
-    }
-    
     protected static void reset() {
       stopCount = 0;
       terminating = false;

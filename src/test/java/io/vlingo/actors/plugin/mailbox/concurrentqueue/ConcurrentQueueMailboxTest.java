@@ -33,6 +33,8 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   public void testMailboxSendReceive() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
+    until(Total);
+
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -40,7 +42,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    pause();
+    until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
       assertEquals(idx, (int) CountTakerActor.counts.get(idx));
@@ -74,6 +76,8 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     @Override
     public void take(final int count) {
       counts.add(count);
+      
+      until.happened();
     }
   }
 }

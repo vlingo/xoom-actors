@@ -36,6 +36,8 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void testClose() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
+    until(3);
+    
     for (int count = 0; count < 3; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -53,7 +55,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher.execute(mailbox);
     
-    pause();
+    until.completes();
     
     assertEquals(0, (int) ((TestMailbox) mailbox).counts.get(0));
     assertEquals(1, (int) ((TestMailbox) mailbox).counts.get(1));
@@ -66,6 +68,8 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void testExecute() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
+    until(Total);
+    
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -74,7 +78,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       dispatcher.execute(mailbox);
     }
     
-    pause();
+    until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
       assertEquals(idx, (int) ((TestMailbox) mailbox).counts.get(idx));
@@ -149,7 +153,10 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     @Override
     public void take(final int count) {
-      if (count > highest) highest = count;
+      if (count > highest) {
+        highest = count;
+      }
+      until.happened();
     }
   }
 }

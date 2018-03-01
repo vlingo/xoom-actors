@@ -20,21 +20,22 @@ import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 
 public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
-
+  private static final int MailboxSize = 64;
+  
   @Test
   public void testClose() throws Exception {
-    final int mailboxSize = 64;
-    
     final ManyToOneConcurrentArrayQueueDispatcher dispatcher =
-            new ManyToOneConcurrentArrayQueueDispatcher(mailboxSize, 2, 4, 10);
+            new ManyToOneConcurrentArrayQueueDispatcher(MailboxSize, 2, 4, 10);
     
     dispatcher.start();
     
     final Mailbox mailbox = dispatcher.mailbox();
     
+    until(MailboxSize);
+    
     final CountTakerActor actor = new CountTakerActor();
     
-    for (int count = 1; count <= mailboxSize; ++count) {
+    for (int count = 1; count <= MailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
@@ -42,13 +43,13 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    pause();
-    
+    until.completes();
+
     dispatcher.close();
     
-    final int neverRevieved = mailboxSize * 2;
+    final int neverRevieved = MailboxSize * 2;
     
-    for (int count = mailboxSize + 1; count <= neverRevieved; ++count) {
+    for (int count = MailboxSize + 1; count <= neverRevieved; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
@@ -56,15 +57,17 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
 
-    pause();
-    
-    assertEquals(mailboxSize, CountTakerActor.highest);
+    until(0).completes();
+
+    assertEquals(MailboxSize, CountTakerActor.highest);
   }
 
   @Test
   public void testBasicDispatch() throws Exception {
     final int mailboxSize = 64;
     
+    until(MailboxSize);
+    
     final ManyToOneConcurrentArrayQueueDispatcher dispatcher =
             new ManyToOneConcurrentArrayQueueDispatcher(mailboxSize, 2, 4, 10);
     
@@ -82,7 +85,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    pause();
+    until.completes();
     
     assertEquals(mailboxSize, CountTakerActor.highest);
   }
@@ -103,7 +106,10 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     
     @Override
     public void take(final int count) {
-      if (count > highest) highest = count;
+      if (count > highest) {
+        highest = count;
+      }
+      until.happened();
     }
   }
 }

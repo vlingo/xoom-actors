@@ -16,6 +16,7 @@ import io.vlingo.actors.supervision.FailureControl;
 import io.vlingo.actors.supervision.FailureControlActor;
 import io.vlingo.actors.supervision.FailureControlSender;
 import io.vlingo.actors.supervision.SuspendedSenderSupervisorActor;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorSuspendResumeTest extends ActorsTest {
 
@@ -31,17 +32,22 @@ public class ActorSuspendResumeTest extends ActorsTest {
                     Definition.has(FailureControlActor.class, Definition.NoParameters, SuspendedSenderSupervisorActor.instance, "queueArray", "failure"),
                     FailureControl.class);
     
+    FailureControlActor.untilFailNow = TestUntil.happenings(25);
+    
+    SuspendedSenderSupervisorActor.untilInform = TestUntil.happenings(1);
+    
     final int times = 25;
     
     supervisor.sendUsing(failure, times);
-    pause(100);
     
     failure.failNow();
     
-    pause(100);
+    SuspendedSenderSupervisorActor.untilInform.completes();
+    
+    FailureControlActor.untilFailNow.completes();
+    
     assertEquals(1, SuspendedSenderSupervisorActor.informedCount);
     
-    pause(100);
     assertEquals(times, FailureControlActor.afterFailureCountCount);
   }
   
