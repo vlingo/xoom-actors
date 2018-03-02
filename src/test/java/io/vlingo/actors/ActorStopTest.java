@@ -13,13 +13,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.testkit.TestUntil;
+
 public class ActorStopTest extends ActorsTest {
   @Test
   public void testStopActors() throws Exception {
-    //System.out.println("================= testStopActors");
     final World world = World.start("test");
     
-    until(12);
+    ChildCreatingStoppableActor.untilStart = TestUntil.happenings(12);
     
     final ChildCreatingStoppable[] stoppables = setUpActors(world);
     
@@ -27,37 +28,29 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    until.completes();
-    //System.out.println("================= testStopActors 1");
-    until(12);
+    pause(500);
     
+    ChildCreatingStoppableActor.untilStart.completes();
+
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].stop();
     }
     
-    until.completes();
-    //System.out.println("================= testStopActors 2");
+    pause(500);
     
     assertEquals(12, ChildCreatingStoppableActor.stopCount);
 
-    until(1);
-    
     ChildCreatingStoppableActor.terminating = true;
     world.terminate();
     
-    assertEquals(1, until.remaining());
-    
-    //System.out.println("================= testStopActors 3");
     assertEquals(0, ChildCreatingStoppableActor.terminatingStopCount);
-    //System.out.println("================= testStopActors /////////////");
   }
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
-    System.out.println("================= testWorldTerminateToStopAllActors");
     final World world = World.start("test");
     
-    until(12);
+    ChildCreatingStoppableActor.untilStart = TestUntil.happenings(12);
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world);
     
@@ -65,14 +58,16 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    until.completes();
+    pause(500);
+
+    ChildCreatingStoppableActor.untilStart.completes();
     
-    until(12);
+    ChildCreatingStoppableActor.untilStop = TestUntil.happenings(12);
 
     ChildCreatingStoppableActor.terminating = true;
     world.terminate();
     
-    until.completes();
+    ChildCreatingStoppableActor.untilStop.completes();
     
     assertEquals(12, ChildCreatingStoppableActor.terminatingStopCount);
   }
@@ -91,6 +86,10 @@ public class ActorStopTest extends ActorsTest {
     ChildCreatingStoppableActor.reset();
   }
   
+  private void pause(final int millis) {
+    try { Thread.sleep(millis); } catch (Exception e) { }
+  }
+  
   private ChildCreatingStoppable[] setUpActors(final World world) {
     final ChildCreatingStoppable[] stoppables = new ChildCreatingStoppable[3];
     stoppables[0] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, "p1"), ChildCreatingStoppable.class);
@@ -104,10 +103,11 @@ public class ActorStopTest extends ActorsTest {
   }
   
   public static class ChildCreatingStoppableActor extends Actor implements ChildCreatingStoppable {
-    public static Object lock = new Object();
     public static int stopCount;
     public static boolean terminating;
     public static int terminatingStopCount;
+    public static TestUntil untilStart;
+    public static TestUntil untilStop;
     
     public ChildCreatingStoppableActor() { }
 
@@ -122,19 +122,17 @@ public class ActorStopTest extends ActorsTest {
     @Override
     protected void beforeStart() {
       super.beforeStart();
-      until.happened();
+      if (untilStart != null) untilStart.happened();
     }
 
     @Override
-    protected void afterStop() {
-      synchronized (lock) {
-        if (terminating) {
-          ++terminatingStopCount;
-          until.happened();
-        } else {
-          ++stopCount;
-          until.happened();
-        }
+    protected synchronized void afterStop() {
+      if (terminating) {
+        ++terminatingStopCount;
+        if (untilStop != null) untilStop.happened();
+      } else {
+        ++stopCount;
+        if (untilStop != null) untilStop.happened();
       }
     }
 
