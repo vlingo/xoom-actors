@@ -8,20 +8,20 @@
 package io.vlingo.actors;
 
 import java.lang.reflect.Constructor;
-import static io.vlingo.actors.proxy.ProxyNaming.fullyQualifiedClassnameFor;
+import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
-import io.vlingo.actors.proxy.ProxyClassLoader;
-import io.vlingo.actors.proxy.ProxyCompiler;
-import io.vlingo.actors.proxy.ProxyCompiler.Input;
+import io.vlingo.common.compiler.DynaClassLoader;
+import io.vlingo.common.compiler.DynaCompiler;
+import io.vlingo.common.compiler.DynaCompiler.Input;
 import io.vlingo.actors.proxy.ProxyGenerator;
 import io.vlingo.actors.proxy.ProxyGenerator.Result;
 
 public final class ActorProxy {
-  private static final ProxyClassLoader classLoader = new ProxyClassLoader(ActorProxy.class.getClassLoader());
-  private static final ProxyCompiler proxyCompiler = new ProxyCompiler();
+  private static final DynaClassLoader classLoader = new DynaClassLoader(ActorProxy.class.getClassLoader());
+  private static final DynaCompiler proxyCompiler = new DynaCompiler();
   
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
-    final String proxyClassname = fullyQualifiedClassnameFor(protocol);
+    final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
     
     final T maybeProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
     

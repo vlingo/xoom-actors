@@ -25,5 +25,10 @@
       <artifactId>Agrona</artifactId>
       <version>0.4.12</version>
     </dependency>
+    <dependency>
+      <groupId>io.vlingo</groupId>
+      <artifactId>vlingo-common</artifactId>
+      <version>0.2.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

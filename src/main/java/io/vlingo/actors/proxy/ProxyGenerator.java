@@ -7,14 +7,14 @@
 
 package io.vlingo.actors.proxy;
 
-import static io.vlingo.actors.proxy.ProxyFile.GeneratedSources;
-import static io.vlingo.actors.proxy.ProxyFile.GeneratedTestSources;
-import static io.vlingo.actors.proxy.ProxyFile.RootOfMainClasses;
-import static io.vlingo.actors.proxy.ProxyFile.RootOfTestClasses;
-import static io.vlingo.actors.proxy.ProxyFile.toFullPath;
-import static io.vlingo.actors.proxy.ProxyFile.toPackagePath;
-import static io.vlingo.actors.proxy.ProxyNaming.classnameFor;
-import static io.vlingo.actors.proxy.ProxyNaming.fullyQualifiedClassnameFor;
+import static io.vlingo.common.compiler.DynaFile.GeneratedSources;
+import static io.vlingo.common.compiler.DynaFile.GeneratedTestSources;
+import static io.vlingo.common.compiler.DynaFile.RootOfMainClasses;
+import static io.vlingo.common.compiler.DynaFile.RootOfTestClasses;
+import static io.vlingo.common.compiler.DynaFile.toFullPath;
+import static io.vlingo.common.compiler.DynaFile.toPackagePath;
+import static io.vlingo.common.compiler.DynaNaming.classnameFor;
+import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -25,6 +25,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
+
+import io.vlingo.common.compiler.DynaFile;
+import io.vlingo.common.compiler.DynaType;
 
 public class ProxyGenerator implements AutoCloseable {
   public static class Result {
@@ -45,15 +48,15 @@ public class ProxyGenerator implements AutoCloseable {
   private final String rootOfClasses;
   private final String rootOfGenerated;
   private final File targetClassesPath;
-  private final ProxyType type;
+  private final DynaType type;
   private final URLClassLoader urlClassLoader;
   
   public static ProxyGenerator forMain(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfMainClasses, ProxyType.Main, persist);
+    return new ProxyGenerator(RootOfMainClasses, DynaType.Main, persist);
   }
   
   public static ProxyGenerator forTest(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfTestClasses, ProxyType.Test, persist);
+    return new ProxyGenerator(RootOfTestClasses, DynaType.Test, persist);
   }
 
   @Override
@@ -62,7 +65,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   public Result generateFor(final String actorProtocol) {
-    System.out.println("vlingo/actors: Generating proxy for " + (type == ProxyType.Main ? "main":"test") + ": " + actorProtocol);
+    System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
     
     final String relativePathToClass = toFullPath(actorProtocol);
     final String relativePathToClassFile = rootOfClasses + relativePathToClass + ".class";
@@ -72,10 +75,10 @@ public class ProxyGenerator implements AutoCloseable {
       try {
         final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
         final String proxyClassSource = proxyClassSource(protocolInterface);
-        final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface);
+        final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
         final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
         final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
-        return new Result(fullyQualifiedClassname, classnameFor(protocolInterface), proxyClassSource, sourceFile);
+        return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
       } catch (Exception e) {
         throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
       }
@@ -84,7 +87,7 @@ public class ProxyGenerator implements AutoCloseable {
     }
   }
 
-  public ProxyType type() {
+  public DynaType type() {
     return type;
   }
 
@@ -92,9 +95,9 @@ public class ProxyGenerator implements AutoCloseable {
     return urlClassLoader;
   }
 
-  private ProxyGenerator(final String rootOfClasses, final ProxyType type, final boolean persist) throws Exception {
+  private ProxyGenerator(final String rootOfClasses, final DynaType type, final boolean persist) throws Exception {
     this.rootOfClasses = rootOfClasses;
-    this.rootOfGenerated = type == ProxyType.Main ? GeneratedSources : GeneratedTestSources;
+    this.rootOfGenerated = type == DynaType.Main ? GeneratedSources : GeneratedTestSources;
     this.type = type;
     this.persist = persist;
     this.targetClassesPath = new File(rootOfClasses);
@@ -102,13 +105,13 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String classStatement(final Class<?> protocolInterface) {
-    return MessageFormat.format("public class {0} implements {1} '{'\n", classnameFor(protocolInterface), protocolInterface.getSimpleName());
+    return MessageFormat.format("public class {0} implements {1} '{'\n", classnameFor(protocolInterface, "__Proxy"), protocolInterface.getSimpleName());
   }
 
   private String constructor(final Class<?> protocolInterface) {
     final StringBuilder builder = new StringBuilder();
 
-    final String signature = MessageFormat.format("  public {0}(final Actor actor, final Mailbox mailbox)", classnameFor(protocolInterface));
+    final String signature = MessageFormat.format("  public {0}(final Actor actor, final Mailbox mailbox)", classnameFor(protocolInterface, "__Proxy"));
     
     builder
       .append(signature).append("{\n")
@@ -285,7 +288,7 @@ public class ProxyGenerator implements AutoCloseable {
     new File(rootOfGenerated + pathToGeneratedSource).mkdirs();
     final String pathToSource = rootOfGenerated + relativePathToClass + ".java";
     
-    return ProxyFile.persistProxyClassSource(pathToSource, proxyClassSource);
+    return DynaFile.persistDynaClassSource(pathToSource, proxyClassSource);
   }
   
   private String proxyClassSource(final Class<?> protocolInterface) {
