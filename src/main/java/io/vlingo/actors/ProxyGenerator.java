@@ -5,7 +5,7 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-package io.vlingo.actors.proxy;
+package io.vlingo.actors;
 
 import static io.vlingo.common.compiler.DynaFile.GeneratedSources;
 import static io.vlingo.common.compiler.DynaFile.GeneratedTestSources;
@@ -29,7 +29,7 @@ import java.text.MessageFormat;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 
-public class ProxyGenerator implements AutoCloseable {
+class ProxyGenerator implements AutoCloseable {
   public static class Result {
     public final String classname;
     public final String fullyQualifiedClassname;
@@ -51,11 +51,11 @@ public class ProxyGenerator implements AutoCloseable {
   private final DynaType type;
   private final URLClassLoader urlClassLoader;
   
-  public static ProxyGenerator forMain(final boolean persist) throws Exception {
+  static ProxyGenerator forMain(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfMainClasses, DynaType.Main, persist);
   }
   
-  public static ProxyGenerator forTest(final boolean persist) throws Exception {
+  static ProxyGenerator forTest(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfTestClasses, DynaType.Test, persist);
   }
 
@@ -64,7 +64,7 @@ public class ProxyGenerator implements AutoCloseable {
     urlClassLoader.close();
   }
 
-  public Result generateFor(final String actorProtocol) {
+  Result generateFor(final String actorProtocol) {
     System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
     
     final String relativePathToClass = toFullPath(actorProtocol);
@@ -87,11 +87,11 @@ public class ProxyGenerator implements AutoCloseable {
     }
   }
 
-  public DynaType type() {
+  DynaType type() {
     return type;
   }
 
-  public URLClassLoader urlClassLoader() {
+  URLClassLoader urlClassLoader() {
     return urlClassLoader;
   }
 

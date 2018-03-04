@@ -10,11 +10,10 @@ package io.vlingo.actors;
 import java.lang.reflect.Constructor;
 import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
+import io.vlingo.actors.ProxyGenerator.Result;
 import io.vlingo.common.compiler.DynaClassLoader;
 import io.vlingo.common.compiler.DynaCompiler;
 import io.vlingo.common.compiler.DynaCompiler.Input;
-import io.vlingo.actors.proxy.ProxyGenerator;
-import io.vlingo.actors.proxy.ProxyGenerator.Result;
 
 public final class ActorProxy {
   private static final DynaClassLoader classLoader = new DynaClassLoader(ActorProxy.class.getClassLoader());
