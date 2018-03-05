@@ -10,6 +10,8 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class Supervisor__Proxy implements Supervisor {
+  private static final String representationInform1 = "inform(Throwable, Supervised)";
+
   private final Actor actor;
   private final Mailbox mailbox;
 
@@ -19,8 +21,12 @@ public class Supervisor__Proxy implements Supervisor {
   }
 
   public void inform(final Throwable throwable, final Supervised supervised) {
-    final Consumer<Supervisor> consumer = (actor) -> actor.inform(throwable, supervised);
-    mailbox.send(new LocalMessage<Supervisor>(actor, Supervisor.class, consumer, "inform(Throwable, Supervised)"));
+    if (!actor.isStopped()) {
+      final Consumer<Supervisor> consumer = (actor) -> actor.inform(throwable, supervised);
+      mailbox.send(new LocalMessage<Supervisor>(actor, Supervisor.class, consumer, representationInform1));
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, representationInform1));
+    }
   }
 
   public SupervisionStrategy supervisionStrategy() {

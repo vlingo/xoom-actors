@@ -15,7 +15,6 @@ import org.junit.Test;
 public class WorldTest extends ActorsTest {
   @Test
   public void testStartWorld() throws Exception {
-    assertNotNull(world.configuration());
     assertNotNull(world.deadLetters());
     assertEquals("test", world.name());
     assertNotNull(world.stage());

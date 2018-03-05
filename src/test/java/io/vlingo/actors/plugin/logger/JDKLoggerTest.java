@@ -16,6 +16,7 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Test;
 
+import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
@@ -31,6 +32,11 @@ public class JDKLoggerTest {
   
   final Registrar registrar = new Registrar() {
     @Override
+    public void register(String name, CompletesEventuallyProvider completesEventuallyProvider) {
+      
+    }
+
+    @Override
     public void register(String name, boolean isDefault, MailboxProvider mailboxProvider) {
     }
 
@@ -45,6 +51,11 @@ public class JDKLoggerTest {
 
     @Override
     public void registerDefaultSupervisor(String stageName, String name, String fullyQualifiedSupervisor) {
+    }
+
+    @Override
+    public World world() {
+      return null;
     }
   };
 

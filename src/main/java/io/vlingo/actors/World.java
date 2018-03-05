@@ -13,18 +13,16 @@ import java.util.Map;
 import io.vlingo.actors.plugin.PluginLoader;
 
 public final class World implements Registrar {
-  private static final Configuration defaultConfiguration = new Configuration();
+  static final int PRIVATE_ROOT_ID = Integer.MAX_VALUE;
+  static final String PRIVATE_ROOT_NAME = "#private";
+  static final int PUBLIC_ROOT_ID = PRIVATE_ROOT_ID - 1;
+  static final String PUBLIC_ROOT_NAME = "#public";
+  static final int DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
+  static final String DEADLETTERS_NAME = "#deadLetters";
   
-  protected static final int PRIVATE_ROOT_ID = Integer.MAX_VALUE;
-  protected static final String PRIVATE_ROOT_NAME = "#private";
-  protected static final int PUBLIC_ROOT_ID = PRIVATE_ROOT_ID - 1;
-  protected static final String PUBLIC_ROOT_NAME = "#public";
-  protected static final int DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
-  protected static final String DEADLETTERS_NAME = "#deadLetters";
-  
-  protected static final String DEFAULT_STAGE = "__defaultStage";
+  static final String DEFAULT_STAGE = "__defaultStage";
 
-  private final Configuration configuration;
+  private final CompletesEventuallyProviderKeeper completesProviderKeeper;
   private final LoggerProviderKeeper loggerProviderKeeper;
   private final MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
@@ -37,18 +35,12 @@ public final class World implements Registrar {
   private Stoppable privateRoot;
   private Stoppable publicRoot;
 
-  public static World start(final String name) {
-    return start(name, defaultConfiguration);
-  }
-
-  public static synchronized World start(final String name, final Configuration configuration) {
+  public static synchronized World start(final String name) {
     if (name == null) {
       throw new IllegalArgumentException("The world name must not be null.");
-    } else if (configuration == null) {
-      throw new IllegalArgumentException("The world configuration must not be null.");
     }
     
-    return new World(name, configuration);
+    return new World(name);
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -67,12 +59,12 @@ public final class World implements Registrar {
     return stage().actorFor(definition, protocols);
   }
 
-  public Configuration configuration() {
-    return configuration;
-  }
-
   public DeadLetters deadLetters() {
     return deadLetters;
+  }
+
+  public <T> Completes<T> completesFor(final Completes<T> clientCompletes) {
+    return completesProviderKeeper.findDefault().provideCompletesFor(clientCompletes);
   }
 
   public Logger defaultLogger() {
@@ -80,7 +72,7 @@ public final class World implements Registrar {
       return defaultLogger;
     }
     
-    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+    this.defaultLogger = loggerProviderKeeper.findDefault().logger();
     
     if (this.defaultLogger == null) {
       this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
@@ -100,23 +92,28 @@ public final class World implements Registrar {
     return defaultSupervisor;
   }
 
+  public Logger logger(final String name) {
+    return loggerProviderKeeper.findNamed(name).logger();
+  }
+
   public String name() {
     return name;
   }
 
-  public Logger logger(final String name) {
-    return loggerProviderKeeper().findNamed(name).logger();
+  @Override
+  public void register(final String name, final CompletesEventuallyProvider completesEventuallyProvider) {
+    completesEventuallyProvider.initializeUsing(stage());
+    this.completesProviderKeeper.keep(name, completesEventuallyProvider);
   }
 
   @Override
   public void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider) {
-    loggerProviderKeeper().keep(name, isDefault, loggerProvider);
-    
-    this.defaultLogger = loggerProviderKeeper().findDefault().logger();
+    loggerProviderKeeper.keep(name, isDefault, loggerProvider);
+    this.defaultLogger = loggerProviderKeeper.findDefault().logger();
   }
 
   public void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider) {
-    mailboxProviderKeeper().keep(name, isDefault, mailboxProvider);
+    mailboxProviderKeeper.keep(name, isDefault, mailboxProvider);
   }
 
   @Override
@@ -176,28 +173,34 @@ public final class World implements Registrar {
       
       loggerProviderKeeper.close();
       mailboxProviderKeeper.close();
+      completesProviderKeeper.close();
     }
   }
 
-  protected <T> Mailbox assignMailbox(final String mailboxName, final int hashCode) {
-    return mailboxProviderKeeper().assignMailbox(mailboxName, hashCode);
+  @Override
+  public World world() {
+    return this;
   }
 
-  protected String mailboxNameFrom(final String candidateMailboxName) {
+  <T> Mailbox assignMailbox(final String mailboxName, final int hashCode) {
+    return mailboxProviderKeeper.assignMailbox(mailboxName, hashCode);
+  }
+
+  String mailboxNameFrom(final String candidateMailboxName) {
     if (candidateMailboxName == null) {
       return findDefaultMailboxName();
-    } else if (mailboxProviderKeeper().isValidMailboxName(candidateMailboxName)) {
+    } else if (mailboxProviderKeeper.isValidMailboxName(candidateMailboxName)) {
       return candidateMailboxName;
     } else {
       return findDefaultMailboxName();
     }
   }
 
-  protected String findDefaultMailboxName() {
-    return mailboxProviderKeeper().findDefault();
+  String findDefaultMailboxName() {
+    return mailboxProviderKeeper.findDefault();
   }
 
-  protected synchronized void setDefaultParent(final Actor defaultParent) {
+  synchronized void setDefaultParent(final Actor defaultParent) {
     if (defaultParent != null && this.defaultParent != null) {
       throw new IllegalStateException("Default parent already exists.");
     }
@@ -205,7 +208,7 @@ public final class World implements Registrar {
     this.defaultParent = defaultParent;
   }
 
-  protected synchronized void setDeadLetters(final DeadLetters deadLetters) {
+  synchronized void setDeadLetters(final DeadLetters deadLetters) {
     if (deadLetters != null && this.deadLetters != null) {
       deadLetters.stop();
       throw new IllegalStateException("Dead letters already exists.");
@@ -214,11 +217,11 @@ public final class World implements Registrar {
     this.deadLetters = deadLetters;
   }
 
-  protected Stoppable privateRoot() {
+  Stoppable privateRoot() {
     return this.privateRoot;
   }
 
-  protected synchronized void setPrivateRoot(final Stoppable privateRoot) {
+  synchronized void setPrivateRoot(final Stoppable privateRoot) {
     if (privateRoot != null && this.privateRoot != null) {
       privateRoot.stop();
       throw new IllegalStateException("Private root already exists.");
@@ -227,11 +230,11 @@ public final class World implements Registrar {
     this.privateRoot = privateRoot;
   }
 
-  protected Stoppable publicRoot() {
+  Stoppable publicRoot() {
     return this.publicRoot;
   }
 
-  protected synchronized void setPublicRoot(final Stoppable publicRoot) {
+  synchronized void setPublicRoot(final Stoppable publicRoot) {
     if (publicRoot != null && this.publicRoot != null) {
       throw new IllegalStateException("The public root already exists.");
     }
@@ -239,181 +242,34 @@ public final class World implements Registrar {
     this.publicRoot = publicRoot;
   }
 
-  private World(final String name, final Configuration configuration) {
+  private World(final String name) {
     this.name = name;
-    this.configuration = configuration;
+    this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
     this.stages = new HashMap<>();
 
     Address.initialize();
-    
-    final Stage defaultStage = new Stage(this, DEFAULT_STAGE);
-    
-    this.stages.put(DEFAULT_STAGE, defaultStage);
-    
+
+    final Stage defaultStage = stageNamed(DEFAULT_STAGE);
+
     final PluginLoader pluginLoader = new PluginLoader();
-    
+
     pluginLoader.loadEnabledPlugins(this, 1);
 
-    defaultStage.actorFor(
+    startRootFor(defaultStage, defaultLogger());
+
+    pluginLoader.loadEnabledPlugins(this, 2);
+  }
+
+  private void startRootFor(final Stage stage, final Logger logger) {
+    stage.actorFor(
             Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
             Stoppable.class,
             null,
             Address.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
             null,
             null,
-            defaultLogger());
-    
-    pluginLoader.loadEnabledPlugins(this, 2);
-  }
-
-  private LoggerProviderKeeper loggerProviderKeeper() {
-    return loggerProviderKeeper;
-  }
-  
-  private MailboxProviderKeeper mailboxProviderKeeper() {
-    return mailboxProviderKeeper;
-  }
-
-  private class LoggerProviderKeeper {
-    private final Map<String, LoggerProviderInfo> loggerProviderInfos;
-    
-    private LoggerProviderKeeper() {
-      this.loggerProviderInfos = new HashMap<>();
-    }
-    
-    private void close() {
-      for (final LoggerProviderInfo info : loggerProviderInfos.values()) {
-        info.loggerProvider.close();
-      }
-    }
-    
-    private LoggerProvider findDefault() {
-      for (final LoggerProviderInfo info : loggerProviderInfos.values()) {
-        if (info.isDefault) {
-          return info.loggerProvider;
-        }
-      }
-      return null;
-    }
-
-    private LoggerProvider findNamed(final String name) {
-      final LoggerProviderInfo info = loggerProviderInfos.get(name);
-      
-      if (info != null) {
-        return info.loggerProvider;
-      }
-      
-      throw new IllegalStateException("No registered LoggerProvider named: " + name);
-    }
-
-    private void keep(final String name, boolean isDefault, final LoggerProvider loggerProvider) {
-      if (loggerProviderInfos.isEmpty()) {
-        isDefault = true;
-      }
-      
-      if (isDefault) {
-        undefaultCurrentDefault();
-      }
-
-      loggerProviderInfos.put(name, new LoggerProviderInfo(name, loggerProvider, isDefault));
-    }
-
-    private void undefaultCurrentDefault() {
-      for (final String key : loggerProviderInfos.keySet()) {
-        final LoggerProviderInfo info = loggerProviderInfos.get(key);
-
-        if (info.isDefault) {
-          loggerProviderInfos.put(key, new LoggerProviderInfo(info.name, info.loggerProvider, false));
-        }
-      }
-    }
-  }
-
-  private class LoggerProviderInfo {
-    private final boolean isDefault;
-    private final LoggerProvider loggerProvider;
-    private final String name;
-
-    private LoggerProviderInfo(final String name, final LoggerProvider loggerProvider, final boolean isDefault) {
-      this.name = name;
-      this.loggerProvider = loggerProvider;
-      this.isDefault = isDefault;
-    }
-  }
-
-  private class MailboxProviderKeeper {
-    private final Map<String, MailboxProviderInfo> mailboxProviderInfos;
-
-    private MailboxProviderKeeper() {
-      this.mailboxProviderInfos = new HashMap<String, MailboxProviderInfo>();
-    }
-
-    private Mailbox assignMailbox(final String name, final int hashCode) {
-      MailboxProviderInfo info = mailboxProviderInfos.get(name);
-
-      if (info == null) {
-        throw new IllegalStateException("No registered MailboxProvider named " + name);
-      }
-
-      return info.mailboxProvider.provideMailboxFor(hashCode);
-    }
-
-    private void close() {
-      for (final MailboxProviderInfo info : mailboxProviderInfos.values()) {
-        info.mailboxProvider.close();
-      }
-    }
-
-    private String findDefault() {
-      for (final MailboxProviderInfo info : mailboxProviderInfos.values()) {
-        if (info.isDefault) {
-          return info.name;
-        }
-      }
-
-      throw new IllegalStateException("No registered default MailboxProvider.");
-    }
-
-    private void keep(final String name, boolean isDefault, final MailboxProvider mailboxProvider) {
-      if (mailboxProviderInfos.isEmpty()) {
-        isDefault = true;
-      }
-      
-      if (isDefault) {
-        undefaultCurrentDefault();
-      }
-
-      mailboxProviderInfos.put(name, new MailboxProviderInfo(name, mailboxProvider, isDefault));
-    }
-
-    private void undefaultCurrentDefault() {
-      for (final String key : mailboxProviderInfos.keySet()) {
-        final MailboxProviderInfo info = mailboxProviderInfos.get(key);
-
-        if (info.isDefault) {
-          mailboxProviderInfos.put(key, new MailboxProviderInfo(info.name, info.mailboxProvider, false));
-        }
-      }
-    }
-
-    private boolean isValidMailboxName(final String candidateMailboxName) {
-      final MailboxProviderInfo info = mailboxProviderInfos.get(candidateMailboxName);
-
-      return info != null;
-    }
-  }
-
-  private class MailboxProviderInfo {
-    private final boolean isDefault;
-    private final MailboxProvider mailboxProvider;
-    private final String name;
-
-    private MailboxProviderInfo(final String name, final MailboxProvider mailboxProvider, final boolean isDefault) {
-      this.name = name;
-      this.mailboxProvider = mailboxProvider;
-      this.isDefault = isDefault;
-    }
+            logger);
   }
 }

@@ -117,6 +117,10 @@ public class Stage implements Stoppable {
     }
   }
 
+  public String name() {
+    return name;
+  }
+
   public void registerCommonSupervisor(final String fullyQualifiedProtocol, final Supervisor common) {
     commonSupervisors.put(fullyQualifiedProtocol, common);
   }
@@ -150,7 +154,7 @@ public class Stage implements Stoppable {
     return world;
   }
 
-  protected Stage(final World world, final String name) {
+  Stage(final World world, final String name) {
     this.world = world;
     this.name = name;
     this.directory = new Directory();
@@ -159,16 +163,16 @@ public class Stage implements Stoppable {
     this.stopped = false;
   }
 
-  protected <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+  <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
     ActorProtocolActor<T> actor = actorFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
   }
 
-  protected ActorProtocolActor<Object>[] actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+  ActorProtocolActor<Object>[] actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
     return actorFor(definition, protocols, parent, null, null, maybeSupervisor, logger);
   }
 
-  protected <T> ActorProtocolActor<T> actorFor(
+  <T> ActorProtocolActor<T> actorFor(
           final Definition definition,
           final Class<T> protocol,
           final Actor parent,
@@ -188,7 +192,7 @@ public class Stage implements Stoppable {
     }
   }
 
-  protected ActorProtocolActor<Object>[] actorFor(
+  ActorProtocolActor<Object>[] actorFor(
           final Definition definition,
           final Class<?>[] protocols,
           final Actor parent,
@@ -207,7 +211,7 @@ public class Stage implements Stoppable {
     }
   }
 
-  protected Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {
+  Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {
     final Supervisor common = commonSupervisors.get(protocol.getName());
     
     if (common != null) {
@@ -217,12 +221,12 @@ public class Stage implements Stoppable {
     return defaultSupervisor;
   }
 
-  protected void handleFailureOf(final Supervised supervised) {
+  void handleFailureOf(final Supervised supervised) {
     supervised.suspend();
     supervised.supervisor().inform(supervised.throwable(), supervised);
   }
 
-  protected void stop(final Actor actor) {
+  void stop(final Actor actor) {
     final Actor removedActor = directory.remove(actor.address());
     
     if (actor == removedActor) {

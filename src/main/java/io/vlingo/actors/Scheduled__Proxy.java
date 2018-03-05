@@ -10,6 +10,8 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class Scheduled__Proxy implements Scheduled {
+  private static final String representationIntervalSignal1 = "intervalSignal(Scheduled, Object)";
+
   private final Actor actor;
   private final Mailbox mailbox;
 
@@ -22,9 +24,9 @@ public class Scheduled__Proxy implements Scheduled {
   public void intervalSignal(final Scheduled scheduled, final Object data) {
     if (!actor.isStopped()) {
       final Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(scheduled, data);
-      mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, "intervalSignal(Scheduled, Object)"));
+      mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, representationIntervalSignal1));
     } else {
-      actor.deadLetters().failedDelivery(new DeadLetter(actor, "intervalSignal(Scheduled, Object)"));
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, representationIntervalSignal1));
     }
   }
 }

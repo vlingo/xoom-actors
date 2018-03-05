@@ -7,6 +7,6 @@
 
 package io.vlingo.actors;
 
-public class Configuration {
-  public Configuration() { }
+public interface CompletesEventually extends Completes<Object>, Stoppable {
+  void with(final Object outcome);
 }

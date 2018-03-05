@@ -17,9 +17,7 @@ public class PongSupervisor extends Actor implements Supervisor {
   public static int informedCount;
   public static TestUntil untilInform;
   
-  public PongSupervisor() {
-    System.out.println("PONG SUPERVISOR CTOR");
-  }
+  public PongSupervisor() { }
   
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {

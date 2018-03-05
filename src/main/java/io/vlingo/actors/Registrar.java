@@ -8,9 +8,12 @@
 package io.vlingo.actors;
 
 public interface Registrar {
+  void register(final String name, final CompletesEventuallyProvider completesEventuallyProvider);
   void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider);
   void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider);
-  
+
   void registerCommonSupervisor(final String stageName, final String name, final String fullyQualifiedProtocol, final String fullyQualifiedSupervisor);
   void registerDefaultSupervisor(final String stageName, final String name, final String fullyQualifiedSupervisor);
+
+  World world();
 }

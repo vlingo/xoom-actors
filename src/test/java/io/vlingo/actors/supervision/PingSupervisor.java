@@ -17,9 +17,7 @@ public class PingSupervisor extends Actor implements Supervisor {
   public static int informedCount;
   public static TestUntil untilInform;
   
-  public PingSupervisor() {
-    System.out.println("PING SUPERVISOR CTOR");
-  }
+  public PingSupervisor() { }
   
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
