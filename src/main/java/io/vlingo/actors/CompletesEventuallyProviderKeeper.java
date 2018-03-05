@@ -20,7 +20,9 @@ final class CompletesEventuallyProviderKeeper {
   }
 
   void close() {
-    completesEventuallyProviderInfo.completesEventuallyProvider.close();
+    if (completesEventuallyProviderInfo != null) {
+      completesEventuallyProviderInfo.completesEventuallyProvider.close();
+    }
   }
 
   CompletesEventuallyProvider findDefault() {
