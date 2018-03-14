@@ -10,6 +10,8 @@ package io.vlingo.actors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Address implements Comparable<Address> {
+  final static Address None = new Address(0, "None");
+
   private static final AtomicInteger nextId = new AtomicInteger(1);
   
   private final int id;

@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
@@ -18,7 +19,7 @@ public class Stage implements Stoppable {
   private final Directory directory;
   private final String name;
   private final Scheduler scheduler;
-  private boolean stopped;
+  private AtomicBoolean stopped;
   private final World world;
 
   public <T> T actorAs(final Actor actor, Class<T> protocol) {
@@ -131,23 +132,21 @@ public class Stage implements Stoppable {
 
   @Override
   public boolean isStopped() {
-    return stopped;
+    return stopped.get();
   }
 
   @Override
   public void stop() {
+    if (!stopped.compareAndSet(false, true)) return;
+
     sweep();
-    
-    // TODO: remove...
-    //dump();
+
     int retries = 0;
     while (count() > 1 && ++retries < 10) {
       try { Thread.sleep(10L); } catch (Exception e) {}
     }
     
     scheduler.close();
-    
-    stopped = true;
   }
   
   public World world() {
@@ -160,7 +159,7 @@ public class Stage implements Stoppable {
     this.directory = new Directory();
     this.commonSupervisors = new HashMap<>();
     this.scheduler = new Scheduler();
-    this.stopped = false;
+    this.stopped = new AtomicBoolean(false);
   }
 
   <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
