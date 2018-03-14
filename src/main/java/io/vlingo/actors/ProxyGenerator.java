@@ -29,7 +29,7 @@ import java.text.MessageFormat;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 
-class ProxyGenerator implements AutoCloseable {
+public class ProxyGenerator implements AutoCloseable {
   public static class Result {
     public final String classname;
     public final String fullyQualifiedClassname;
@@ -51,11 +51,11 @@ class ProxyGenerator implements AutoCloseable {
   private final DynaType type;
   private final URLClassLoader urlClassLoader;
   
-  static ProxyGenerator forMain(final boolean persist) throws Exception {
+  public static ProxyGenerator forMain(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfMainClasses, DynaType.Main, persist);
   }
   
-  static ProxyGenerator forTest(final boolean persist) throws Exception {
+  public static ProxyGenerator forTest(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfTestClasses, DynaType.Test, persist);
   }
 
@@ -64,7 +64,7 @@ class ProxyGenerator implements AutoCloseable {
     urlClassLoader.close();
   }
 
-  Result generateFor(final String actorProtocol) {
+  public Result generateFor(final String actorProtocol) {
     System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
     
     final String relativePathToClass = toFullPath(actorProtocol);
