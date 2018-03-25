@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.completes;
 
 import static org.junit.Assert.assertEquals;
 
+import io.vlingo.actors.testkit.TestUntil;
 import org.junit.Test;
 
 import io.vlingo.actors.Completes;
@@ -26,7 +27,8 @@ public class PooledCompletesPluginTest {
     MockCompletesPlugin.completesEventuallyProvider.completesEventually().with(new Object());
     
     Completes<Object> completes = MockCompletesPlugin.completesEventuallyProvider.provideCompletesFor(null);
-    
+    MockCompletes.untilWith = TestUntil.happenings(1);
+
     completes.with(new Integer(7));
     
     assertEquals(1, registrar.registerCount);
