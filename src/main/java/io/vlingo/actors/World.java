@@ -125,7 +125,6 @@ public final class World implements Registrar {
       final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       final Supervisor common = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
       stage.registerCommonSupervisor(fullyQualifiedProtocol, common);
-      defaultLogger().log("REGISTERED COMMON: stage=" + stageName + " name=" + name + " fullyQualifiedProtocol=" + fullyQualifiedProtocol + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
     } catch (Exception e) {
       defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + fullyQualifiedSupervisor, e);
     }
@@ -139,7 +138,6 @@ public final class World implements Registrar {
       final Stage stage = stageNamed(actualStageName);
       final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       defaultSupervisor = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
-      defaultLogger().log("REGISTERED OVERRIDE: stage=" + stageName + " name=" + name + " fullyQualifiedSupervisor=" + fullyQualifiedSupervisor);
     } catch (Exception e) {
       defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + fullyQualifiedSupervisor, e);
       e.printStackTrace();
