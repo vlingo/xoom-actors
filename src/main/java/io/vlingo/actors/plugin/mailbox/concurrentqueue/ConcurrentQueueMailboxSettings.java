@@ -15,6 +15,6 @@ class ConcurrentQueueMailboxSettings {
   }
   
   private ConcurrentQueueMailboxSettings(final int throttlingCount) {
-    this.throttlingCount = throttlingCount;
+    this.throttlingCount = throttlingCount <= 0 ? 1 : throttlingCount;
   }
 }
