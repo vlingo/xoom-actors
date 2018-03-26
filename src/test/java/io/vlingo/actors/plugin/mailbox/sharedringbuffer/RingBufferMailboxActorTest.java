@@ -18,6 +18,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class RingBufferMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
@@ -34,7 +35,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize / 2;
     
-    until(MaxCount);
+    CountTakerActor.instance.until = until(MaxCount);
     
     System.out.println("testBasicDispatch 2");
     
@@ -44,11 +45,11 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     System.out.println("testBasicDispatch 3");
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
     System.out.println("testBasicDispatch 4");
     
-    assertEquals(MaxCount, CountTakerActor.highest);
+    assertEquals(MaxCount, CountTakerActor.instance.highest);
   }
 
   @Test
@@ -62,7 +63,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize * 2;
     
-    until(MaxCount);
+    CountTakerActor.instance.until = until(MaxCount);
     
     System.out.println("testOverflowDispatch 2");
     
@@ -72,18 +73,16 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     System.out.println("testOverflowDispatch 3");
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
     System.out.println("testOverflowDispatch 4");
     
-    assertEquals(MaxCount, CountTakerActor.highest);
+    assertEquals(MaxCount, CountTakerActor.instance.highest);
   }
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    
-    CountTakerActor.highest = 0;
     
     Properties properties = new Properties();
     properties.setProperty("plugin.name.testRingMailbox", "true");
@@ -106,10 +105,16 @@ public class RingBufferMailboxActorTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static int highest;
+    public static CountTakerActor instance;
+    
+    public int highest;
+    public TestUntil until;
+
     private CountTaker self;
     
     public CountTakerActor() {
+      instance = this;
+      
       self = selfAs(CountTaker.class);
     }
     

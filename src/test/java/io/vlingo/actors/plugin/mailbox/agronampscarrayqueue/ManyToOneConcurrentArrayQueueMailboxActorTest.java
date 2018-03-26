@@ -18,6 +18,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
@@ -32,15 +33,15 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize / 2;
     
-    until(MaxCount);
+    CountTakerActor.instance.until = until(MaxCount);
     
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
-    assertEquals(MaxCount, CountTakerActor.highest);
+    assertEquals(MaxCount, CountTakerActor.instance.highest);
   }
 
   @Test
@@ -52,22 +53,20 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     
     final int totalCount = MailboxSize * 2;
     
-    until(MaxCount);
+    CountTakerActor.instance.until = until(MaxCount);
     
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
-    assertEquals(MaxCount, CountTakerActor.highest);
+    assertEquals(MaxCount, CountTakerActor.instance.highest);
   }
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    
-    CountTakerActor.highest = 0;
     
     Properties properties = new Properties();
     properties.setProperty("plugin.name.testArrayQueueMailbox", "true");
@@ -91,10 +90,15 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static int highest;
+    public static CountTakerActor instance;
+    
+    public int highest;
+    public TestUntil until;
     private CountTaker self;
     
     public CountTakerActor() {
+      instance = this;
+      
       self = selfAs(CountTaker.class);
     }
     

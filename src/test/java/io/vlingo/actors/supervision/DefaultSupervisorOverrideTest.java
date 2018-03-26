@@ -10,7 +10,6 @@ package io.vlingo.actors.supervision;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
@@ -27,42 +26,34 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
                     Definition.has(FailureControlActor.class, Definition.NoParameters, "failure-for-stop"),
                     FailureControl.class);
     
-    FailureControlActor.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.untilAfterFail = TestUntil.happenings(20);
+    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
+    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      FailureControlActor.untilBeforeResume = TestUntil.happenings(1);
+      FailureControlActor.instance.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      FailureControlActor.untilBeforeResume.completes();
+      FailureControlActor.instance.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.untilFailNow.completes();
-    FailureControlActor.untilAfterFail.completes();
+    FailureControlActor.instance.untilFailNow.completes();
+    FailureControlActor.instance.untilAfterFail.completes();
     
-    FailureControlActor.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.untilAfterFail = TestUntil.happenings(20);
+    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
+    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      FailureControlActor.untilBeforeResume = TestUntil.happenings(1);
+      FailureControlActor.instance.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      FailureControlActor.untilBeforeResume.completes();
+      FailureControlActor.instance.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.untilFailNow.completes();
-    FailureControlActor.untilAfterFail.completes();
+    FailureControlActor.instance.untilFailNow.completes();
+    FailureControlActor.instance.untilAfterFail.completes();
     
     assertFalse(failure.actorInside().isStopped());
-    assertEquals(40, FailureControlActor.failNowCount);
-    assertEquals(40, FailureControlActor.afterFailureCount);
-  }
-  
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    FailureControlActor.failNowCount = 0;
-    FailureControlActor.afterFailureCount = 0;
+    assertEquals(40, FailureControlActor.instance.failNowCount.get());
+    assertEquals(40, FailureControlActor.instance.afterFailureCount.get());
   }
 }

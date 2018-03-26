@@ -11,8 +11,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
+
+import io.vlingo.actors.testkit.TestUntil;
 
 public class LocalMessageTest extends ActorsTest {
   @Test
@@ -20,56 +21,49 @@ public class LocalMessageTest extends ActorsTest {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test1-actor"), Simple.class);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple()");
     
-    until(1);
+    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
     
     message.deliver();
     
-    until.completes();
+    SimpleActor.instance.untilSimple.completes();
     
-    assertEquals(1, SimpleActor.deliveries);
+    assertEquals(1, SimpleActor.instance.deliveries);
   }
 
   @Test
   public void testDeliverStopped() throws Exception {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test2-actor"), Simple.class);
     
-    until(1);
+    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
     
-    SimpleActor.actor.stop();
+    SimpleActor.instance.stop();
         
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple()");
     
     message.deliver();
     
-    assertEquals(1, until.remaining());
+    assertEquals(1, SimpleActor.instance.untilSimple.remaining());
     
-    assertEquals(0, SimpleActor.deliveries);
+    assertEquals(0, SimpleActor.instance.deliveries);
   }
 
   @Test
   public void testDeliverWithParameters() throws Exception {
     testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test3-actor"), Simple.class);
     
-    until(1);
+    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple2(2);
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.actor, Simple.class, consumer, "simple2(int)");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple2(int)");
     
     message.deliver();
     
-    until.completes();
+    SimpleActor.instance.untilSimple.completes();
     
-    assertEquals(1, SimpleActor.deliveries);
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    SimpleActor.actor = null;
+    assertEquals(1, SimpleActor.instance.deliveries);
   }
   
   public static interface Simple {
@@ -78,24 +72,28 @@ public class LocalMessageTest extends ActorsTest {
   }
 
   public static class SimpleActor extends Actor implements Simple {
-    public static SimpleActor actor;
-    public static int deliveries;
+    public static SimpleActor instance;
+    
+    public TestUntil untilSimple;
+    
+    public int deliveries;
     
     public SimpleActor() {
-      actor = this;
-      deliveries = 0;
+      instance = this;
+      
+      untilSimple = TestUntil.happenings(0);
     }
 
     @Override
     public void simple() {
       ++deliveries;
-      until.happened();
+      untilSimple.happened();
     }
 
     @Override
     public void simple2(final int val) {
       ++deliveries;
-      until.happened();
+      untilSimple.happened();
     }
   }
 }

@@ -7,10 +7,15 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Test;
+
+import io.vlingo.actors.testkit.TestUntil;
 
 public class WorldTest extends ActorsTest {
   @Test
@@ -31,15 +36,15 @@ public class WorldTest extends ActorsTest {
   
   @Test
   public void testWorldActorFor() throws Exception {
-    until(1);
-    
     final Simple simple = world.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters), Simple.class);
+    
+    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
     
     simple.simpleSay();
     
-    until.completes();
+    SimpleActor.instance.untilSimple.completes();
     
-    assertTrue(SimpleActor.invoked);
+    assertTrue(SimpleActor.instance.invoked);
   }
 
   @After
@@ -56,12 +61,21 @@ public class WorldTest extends ActorsTest {
   }
   
   public static class SimpleActor extends Actor implements Simple {
-    public static boolean invoked;
+    public static SimpleActor instance;
+    
+    public boolean invoked;
+    public TestUntil untilSimple;
+    
+    public SimpleActor() {
+      instance = this;
+      
+      untilSimple = TestUntil.happenings(0);
+    }
     
     @Override
     public void simpleSay() {
       invoked = true;
-      until.happened();
+      untilSimple.happened();
     }
   }
 }

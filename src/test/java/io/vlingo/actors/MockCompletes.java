@@ -10,9 +10,13 @@ package io.vlingo.actors;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class MockCompletes<T> implements Completes<T> {
-  public static TestUntil untilWith;
+  public TestUntil untilWith;
   public T outcome;
   public int withCount;
+  
+  public MockCompletes() {
+    untilWith = TestUntil.happenings(0);
+  }
   
   @Override
   public void with(final T outcome) {

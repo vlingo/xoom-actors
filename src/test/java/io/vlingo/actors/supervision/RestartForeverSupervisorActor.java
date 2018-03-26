@@ -14,9 +14,15 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class RestartForeverSupervisorActor extends Actor implements Supervisor {
-  public static int informedCount;
-  public static TestUntil untilInform;
+  public static RestartForeverSupervisorActor instance;
+  
+  public int informedCount;
+  public TestUntil untilInform;
 
+  public RestartForeverSupervisorActor() {
+    instance = this;
+  }
+  
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override

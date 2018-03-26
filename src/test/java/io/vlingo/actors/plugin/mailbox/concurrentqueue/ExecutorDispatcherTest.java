@@ -25,6 +25,7 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ExecutorDispatcherTest extends ActorsTest {
   private static int Total = 10_000;
@@ -36,7 +37,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void testClose() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
-    until(3);
+    CountTakerActor.instance.until = until(3);
     
     for (int count = 0; count < 3; ++count) {
       final int countParam = count;
@@ -55,7 +56,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher.execute(mailbox);
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
     assertEquals(0, (int) ((TestMailbox) mailbox).counts.get(0));
     assertEquals(1, (int) ((TestMailbox) mailbox).counts.get(1));
@@ -68,7 +69,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void testExecute() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
-    until(Total);
+    CountTakerActor.instance.until = until(Total);
     
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
@@ -78,7 +79,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       dispatcher.execute(mailbox);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
       assertEquals(idx, (int) ((TestMailbox) mailbox).counts.get(idx));
@@ -96,7 +97,6 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher = new ExecutorDispatcher(1, 1.0f);
     mailbox = new TestMailbox();
-    CountTakerActor.highest = 0;
   }
 
   public static class TestMailbox implements Mailbox {
@@ -109,7 +109,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       
       if (message != null) {
         message.deliver();
-        counts.add((Integer) CountTakerActor.highest);
+        counts.add((Integer) CountTakerActor.instance.highest);
       }
     }
 
@@ -149,7 +149,14 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static int highest;
+    public static CountTakerActor instance;
+    
+    public int highest;
+    public TestUntil until;
+
+    public CountTakerActor() {
+      instance = this;
+    }
     
     @Override
     public void take(final int count) {

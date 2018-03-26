@@ -10,52 +10,50 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
+
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorLifecycleTest extends ActorsTest {
   @Test
   public void testBeforeStart() throws Exception {
-    until(1);
+    LifecycleActor.until = until(1);
     world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
-    until.completes();
-    assertTrue(LifecycleActor.ReceivedBeforeStart);
-    assertFalse(LifecycleActor.ReceivedAfterStop);
+    LifecycleActor.until.completes();
+    assertTrue(LifecycleActor.receivedBeforeStart);
+    assertFalse(LifecycleActor.receivedAfterStop);
   }
 
   @Test
   public void testAfterStop() throws Exception {
-    until(2);
+    LifecycleActor.until = until(2);
     final Stoppable actor = world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
     actor.stop();
-    until.completes();
-    assertTrue(LifecycleActor.ReceivedBeforeStart);
-    assertTrue(LifecycleActor.ReceivedAfterStop);
-  }
-
-  @Before
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    LifecycleActor.ReceivedAfterStop = false;
-    LifecycleActor.ReceivedBeforeStart = false;
+    LifecycleActor.until.completes();
+    assertTrue(LifecycleActor.receivedBeforeStart);
+    assertTrue(LifecycleActor.receivedAfterStop);
   }
   
   public static class LifecycleActor extends Actor implements Stoppable {
-    public static boolean ReceivedBeforeStart = false;
-    public static boolean ReceivedAfterStop = false;
+    public static boolean receivedBeforeStart = false;
+    public static boolean receivedAfterStop = false;
+    public static TestUntil until;
+    
+    public LifecycleActor() {
+      receivedBeforeStart = false;
+      receivedAfterStop = false;
+    }
     
     @Override
     protected void beforeStart() {
       until.happened();
-      ReceivedBeforeStart = true;
+      receivedBeforeStart = true;
     }
 
     @Override
     protected void afterStop() {
       until.happened();
-      ReceivedAfterStop = true;
+      receivedAfterStop = true;
     }
   }
 }

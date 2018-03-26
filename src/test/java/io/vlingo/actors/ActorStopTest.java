@@ -9,7 +9,6 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,15 +27,15 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    pause(500);
-    
     ChildCreatingStoppableActor.untilStart.completes();
+
+    ChildCreatingStoppableActor.untilStop = TestUntil.happenings(12);
 
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].stop();
     }
     
-    pause(500);
+    ChildCreatingStoppableActor.untilStop.completes();
     
     assertEquals(12, ChildCreatingStoppableActor.stopCount);
 
@@ -58,16 +57,14 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    pause(500);
-
     ChildCreatingStoppableActor.untilStart.completes();
     
-    ChildCreatingStoppableActor.untilStop = TestUntil.happenings(12);
+    ChildCreatingStoppableActor.untilTerminatingStop = TestUntil.happenings(12);
 
     ChildCreatingStoppableActor.terminating = true;
     world.terminate();
     
-    ChildCreatingStoppableActor.untilStop.completes();
+    ChildCreatingStoppableActor.untilTerminatingStop.completes();
     
     assertEquals(12, ChildCreatingStoppableActor.terminatingStopCount);
   }
@@ -77,17 +74,6 @@ public class ActorStopTest extends ActorsTest {
     super.setUp();
     
     ChildCreatingStoppableActor.reset();
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    super.tearDown();
-    
-    ChildCreatingStoppableActor.reset();
-  }
-  
-  private void pause(final int millis) {
-    try { Thread.sleep(millis); } catch (Exception e) { }
   }
   
   private ChildCreatingStoppable[] setUpActors(final World world) {
@@ -108,8 +94,19 @@ public class ActorStopTest extends ActorsTest {
     public static int terminatingStopCount;
     public static TestUntil untilStart;
     public static TestUntil untilStop;
+    public static TestUntil untilTerminatingStop;
     
-    public ChildCreatingStoppableActor() { }
+    public static void reset() {
+      stopCount = 0;
+      terminating = false;
+      terminatingStopCount = 0;
+      untilStart = TestUntil.happenings(0);
+      untilStop = TestUntil.happenings(0);
+      untilTerminatingStop = TestUntil.happenings(0);
+    }
+    
+    public ChildCreatingStoppableActor() {
+    }
 
     @Override
     public void createChildren() {
@@ -129,17 +126,11 @@ public class ActorStopTest extends ActorsTest {
     protected synchronized void afterStop() {
       if (terminating) {
         ++terminatingStopCount;
-        if (untilStop != null) untilStop.happened();
+        if (untilTerminatingStop != null) untilTerminatingStop.happened();
       } else {
         ++stopCount;
         if (untilStop != null) untilStop.happened();
       }
-    }
-
-    protected static void reset() {
-      stopCount = 0;
-      terminating = false;
-      terminatingStopCount = 0;
     }
   }
 }

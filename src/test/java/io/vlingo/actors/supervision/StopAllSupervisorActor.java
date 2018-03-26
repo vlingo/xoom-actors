@@ -13,8 +13,9 @@ import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
 
 public class StopAllSupervisorActor extends Actor implements Supervisor {
-  public static int informedCount;
   public static StopAllSupervisorActor instance;
+
+  public int informedCount;
   
   public StopAllSupervisorActor() {
     instance = this;

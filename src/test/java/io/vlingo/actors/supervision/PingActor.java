@@ -11,10 +11,11 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PingActor extends Actor implements Ping {
-  public static int pingCount;
   public static PingActor instance;
-  public static TestUntil untilPinged;
-  public static TestUntil untilStopped;
+
+  public int pingCount;
+  public TestUntil untilPinged;
+  public TestUntil untilStopped;
   
   public PingActor() {
     instance = this;

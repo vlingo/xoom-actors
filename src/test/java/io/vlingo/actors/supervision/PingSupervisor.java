@@ -14,10 +14,14 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PingSupervisor extends Actor implements Supervisor {
-  public static int informedCount;
-  public static TestUntil untilInform;
+  public static PingSupervisor instance;
   
-  public PingSupervisor() { }
+  public int informedCount;
+  public TestUntil untilInform;
+  
+  public PingSupervisor() {
+    instance = this;
+  }
   
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {

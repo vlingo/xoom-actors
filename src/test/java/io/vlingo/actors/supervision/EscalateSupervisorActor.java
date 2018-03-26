@@ -13,7 +13,13 @@ import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
 
 public class EscalateSupervisorActor extends Actor implements Supervisor {
-  public static int informedCount;
+  public static EscalateSupervisorActor instance;
+  
+  public int informedCount;
+  
+  public EscalateSupervisorActor() {
+    instance = this;
+  }
   
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {

@@ -11,21 +11,19 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class RingBufferDispatcherTest extends ActorsTest {
 
   @Test
   public void testClose() throws Exception {
     final int mailboxSize = 64;
-    
-    until(mailboxSize);
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
@@ -35,6 +33,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
+    CountTakerActor.instance.until = until(mailboxSize);
+    
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -43,7 +43,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
 
     dispatcher.close();
     
@@ -59,14 +59,12 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     until(0).completes();
     
-    assertEquals(mailboxSize, CountTakerActor.highest);
+    assertEquals(mailboxSize, CountTakerActor.instance.highest);
   }
 
   @Test
   public void testBasicDispatch() throws Exception {
     final int mailboxSize = 64;
-    
-    until(mailboxSize);
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
@@ -76,6 +74,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
+    CountTakerActor.instance.until = until(mailboxSize);
+    
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -84,9 +84,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
-    assertEquals(mailboxSize, CountTakerActor.highest);
+    assertEquals(mailboxSize, CountTakerActor.instance.highest);
   }
 
   @Test
@@ -94,13 +94,13 @@ public class RingBufferDispatcherTest extends ActorsTest {
     final int mailboxSize = 64;
     final int overflowSize = mailboxSize * 2;
     
-    until(overflowSize);
-    
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
     
     final Mailbox mailbox = dispatcher.mailbox();
     
     final CountTakerActor actor = new CountTakerActor();
+    
+    CountTakerActor.instance.until = until(overflowSize);
     
     for (int count = 1; count <= overflowSize; ++count) {
       final int countParam = count;
@@ -112,16 +112,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     dispatcher.start();
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
-    assertEquals(overflowSize, CountTakerActor.highest);
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    CountTakerActor.highest = 0;
+    assertEquals(overflowSize, CountTakerActor.instance.highest);
   }
   
   public static interface CountTaker {
@@ -129,7 +122,14 @@ public class RingBufferDispatcherTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static int highest;
+    public static CountTakerActor instance;
+    
+    public int highest;
+    public TestUntil until;
+
+    public CountTakerActor() {
+      instance = this;
+    }
     
     @Override
     public void take(final int count) {

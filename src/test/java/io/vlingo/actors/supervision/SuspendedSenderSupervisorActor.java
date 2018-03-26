@@ -14,9 +14,10 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class SuspendedSenderSupervisorActor extends Actor implements Supervisor, FailureControlSender {
-  public static volatile int informedCount;
   public static SuspendedSenderSupervisorActor instance;
-  public static TestUntil untilInform;
+
+  public volatile int informedCount;
+  public TestUntil untilInform;
   
   private FailureControl failureControl;
   private int times;
@@ -51,12 +52,11 @@ public class SuspendedSenderSupervisorActor extends Actor implements Supervisor,
       failureControl.afterFailureCount(idx);
     }
     
-    try { Thread.sleep(100); } catch (Exception e) {}
     supervised.resume();
     
     untilInform.happened();
   }
-
+  
   @Override
   public SupervisionStrategy supervisionStrategy() {
     return strategy;

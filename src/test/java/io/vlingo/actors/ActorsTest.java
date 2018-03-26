@@ -17,11 +17,13 @@ public abstract class ActorsTest {
   protected World world;
   protected TestWorld testWorld;
 
-  public static TestUntil until;
+  public TestUntil until;
   
-  public static TestUntil until(final int times) {
-    until = TestUntil.happenings(times);
-    return until;
+  protected ActorsTest() {
+  }
+  
+  public TestUntil until(final int times) {
+    return TestUntil.happenings(times);
   }
 
   @Before

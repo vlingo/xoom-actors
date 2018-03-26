@@ -14,9 +14,10 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ResumeForeverSupervisorActor extends Actor implements Supervisor {
-  public static int informedCount;
   public static ResumeForeverSupervisorActor instance;
-  public static TestUntil untilInform;
+
+  public int informedCount;
+  public TestUntil untilInform;
   
   public ResumeForeverSupervisorActor() {
     instance = this;

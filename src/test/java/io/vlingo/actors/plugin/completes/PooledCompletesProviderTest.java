@@ -38,12 +38,12 @@ public class PooledCompletesProviderTest {
     
     plugin.start(world, "pooledCompletes", pluginProperties);
     
-    final Completes<Object> clientCompletes = new MockCompletes<Object>();
+    final MockCompletes<Object> clientCompletes = new MockCompletes<Object>();
     
-    MockCompletes.untilWith = TestUntil.happenings(1);
+    clientCompletes.untilWith = TestUntil.happenings(1);
     final Completes<Object> asyncCompletes = world.completesFor(clientCompletes);
     asyncCompletes.with(new Integer(5));
-    MockCompletes.untilWith.completes();
+    clientCompletes.untilWith.completes();
     assertEquals(1, ((MockCompletes<Object>) clientCompletes).withCount);
     assertEquals(5, ((MockCompletes<Object>) clientCompletes).outcome);
   }

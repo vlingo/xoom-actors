@@ -49,7 +49,7 @@ public class ActorMessageSendingSpeedTest {
     System.out.println("WARM UP: STARTING FOR MAILBOX TYPE: " + mailboxType);
     // warm up
     EndTime = 0;
-    SingleOperationActor.totalValue = 0;
+    SingleOperationActor.instance.totalValue = 0;
     for (int idx = 1; idx <= Max; ++idx) {
       actor.keep(idx);
     }
@@ -65,7 +65,7 @@ public class ActorMessageSendingSpeedTest {
     
     // speed test
     EndTime = 0;
-    SingleOperationActor.totalValue = 0;
+    SingleOperationActor.instance.totalValue = 0;
     StartTime = System.currentTimeMillis();
     for (int idx = 1; idx <= Max; ++idx) {
       actor.keep(idx);
@@ -88,9 +88,13 @@ public class ActorMessageSendingSpeedTest {
   }
   
   public static class SingleOperationActor extends Actor implements SingleOperation {
-    public static int totalValue;
+    public static SingleOperationActor instance;
     
-    public SingleOperationActor() { }
+    public int totalValue;
+    
+    public SingleOperationActor() {
+      instance = this;
+    }
     
     @Override
     public void keep(final int value) {

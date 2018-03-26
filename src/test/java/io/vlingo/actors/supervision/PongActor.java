@@ -11,10 +11,11 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PongActor extends Actor implements Pong {
-  public static int pongCount;
   public static PongActor instance;
-  public static TestUntil untilPonged;
-  public static TestUntil untilStopped;
+
+  public int pongCount;
+  public TestUntil untilPonged;
+  public TestUntil untilStopped;
   
   public PongActor() {
     instance = this;

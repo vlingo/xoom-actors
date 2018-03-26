@@ -22,6 +22,7 @@ import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
+import io.vlingo.actors.testkit.TestUntil;
 
 public class ConcurrentQueueMailboxTest extends ActorsTest {
   private static int Total = 10_000;
@@ -33,7 +34,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   public void testMailboxSendReceive() throws Exception {
     final CountTakerActor actor = new CountTakerActor();
     
-    until(Total);
+    CountTakerActor.instance.until = until(Total);
 
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
@@ -42,10 +43,10 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    until.completes();
+    CountTakerActor.instance.until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
-      assertEquals(idx, (int) CountTakerActor.counts.get(idx));
+      assertEquals(idx, (int) CountTakerActor.instance.counts.get(idx));
     }
   }
   
@@ -71,7 +72,15 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static final List<Integer> counts = new ArrayList<>();    
+    public static CountTakerActor instance;
+    
+    public final List<Integer> counts;
+    public TestUntil until;
+    
+    public CountTakerActor() {
+      instance = this;
+      counts = new ArrayList<>();
+    }
     
     @Override
     public void take(final int count) {

@@ -14,11 +14,15 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PongSupervisor extends Actor implements Supervisor {
-  public static int informedCount;
-  public static TestUntil untilInform;
+  public static PongSupervisor instance;
   
-  public PongSupervisor() { }
+  public int informedCount;
+  public TestUntil untilInform;
   
+  public PongSupervisor() {
+    instance = this;
+  }
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override

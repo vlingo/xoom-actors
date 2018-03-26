@@ -15,32 +15,34 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.testkit.TestUntil;
+
 public class SchedulerTest extends ActorsTest {
   private Scheduled scheduled;
   private Scheduler scheduler;
   
   @Test
   public void testScheduleOnceOneHappyDelivery() throws Exception {
-    until(1);
-    
     final CounterHolder holder = new CounterHolder();
+    
+    holder.until = until(1);
     
     scheduler.scheduleOnce(scheduled, holder, 0L, 1L);
     
-    until.completes();
+    holder.until.completes();
     
     assertEquals(1, holder.counter);
   }
   
   @Test
   public void testScheduleManyHappyDelivery() throws Exception {
-    until(505);
-    
     final CounterHolder holder = new CounterHolder();
+    
+    holder.until = until(505);
     
     scheduler.schedule(scheduled, holder, 0L, 1L);
     
-    until.completes();
+    holder.until.completes();
     
     assertFalse(0 == holder.counter);
     assertFalse(1 == holder.counter);
@@ -66,6 +68,7 @@ public class SchedulerTest extends ActorsTest {
   
   public static class CounterHolder {
     public int counter;
+    public TestUntil until;
     
     public void increment() {
       ++counter;

@@ -12,7 +12,7 @@ import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class MockCompletesPlugin implements Plugin {
-  public static MockCompletesEventuallyProvider completesEventuallyProvider;
+  public MockCompletesEventuallyProvider completesEventuallyProvider;
   
   @Override
   public void close() {

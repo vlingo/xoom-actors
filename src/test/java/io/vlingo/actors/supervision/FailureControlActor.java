@@ -7,27 +7,30 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class FailureControlActor extends Actor implements FailureControl {
-  public static volatile int afterFailureCount;
-  public static volatile int afterFailureCountCount;
-  public static volatile int afterRestartCount;
-  public static volatile int afterStopCount;
-  public static volatile int beforeRestartCount;
-  public static volatile int beforeResume;
-  public static volatile int beforeStartCount;
-  public static volatile int failNowCount;
-  public static volatile int stoppedCount;
-  
   public static FailureControlActor instance;
   
-  public static TestUntil untilAfterFail;
-  public static TestUntil untilAfterRestart;
-  public static TestUntil untilBeforeResume;
-  public static TestUntil untilFailNow;
-  public static TestUntil untilStopped;
+  public AtomicInteger afterFailureCount = new AtomicInteger(0);
+  public AtomicInteger afterFailureCountCount = new AtomicInteger(0);
+  public AtomicInteger afterRestartCount = new AtomicInteger(0);
+  public AtomicInteger afterStopCount = new AtomicInteger(0);
+  public AtomicInteger beforeRestartCount = new AtomicInteger(0);
+  public AtomicInteger beforeResume = new AtomicInteger(0);
+  public AtomicInteger beforeStartCount = new AtomicInteger(0);
+  public AtomicInteger failNowCount = new AtomicInteger(0);
+  public AtomicInteger stoppedCount = new AtomicInteger(0);
+  
+  public TestUntil untilAfterFail;
+  public TestUntil untilAfterRestart;
+  public TestUntil untilBeforeResume;
+  public TestUntil untilFailNow;
+  public TestUntil untilFailureCount;
+  public TestUntil untilStopped;
   
   public FailureControlActor() {
     instance = this;
@@ -35,40 +38,40 @@ public class FailureControlActor extends Actor implements FailureControl {
   
   @Override
   public void failNow() {
-    ++failNowCount;
+    failNowCount.incrementAndGet();
     if (untilFailNow != null) untilFailNow.happened();
     throw new IllegalStateException("Intended failure.");
   }
 
   @Override
   public void afterFailure() {
-    ++afterFailureCount;
+    afterFailureCount.incrementAndGet();
     if (untilAfterFail != null) untilAfterFail.happened();
   }
 
   @Override
   public void afterFailureCount(int count) {
-    ++afterFailureCountCount;
-    if (untilFailNow != null) untilFailNow.happened();
+    afterFailureCountCount.incrementAndGet();
+    if (untilFailureCount != null) untilFailureCount.happened();
   }
 
   @Override
   protected void beforeStart() {
-    ++beforeStartCount;
+    beforeStartCount.incrementAndGet();
     if (untilFailNow != null) untilFailNow.happened();
     super.beforeStart();
   }
 
   @Override
   protected void afterStop() {
-    ++afterStopCount;
+    afterStopCount.incrementAndGet();
     if (untilFailNow != null) untilFailNow.happened();
     super.afterStop();
   }
 
   @Override
   protected void beforeRestart(Throwable reason) {
-    ++beforeRestartCount;
+    beforeRestartCount.incrementAndGet();
     if (untilFailNow != null) untilFailNow.happened();
     super.beforeRestart(reason);
   }
@@ -76,20 +79,20 @@ public class FailureControlActor extends Actor implements FailureControl {
   @Override
   protected void afterRestart(Throwable reason) {
     super.afterRestart(reason);
-    ++afterRestartCount;
+    afterRestartCount.incrementAndGet();
     if (untilAfterRestart != null) untilAfterRestart.happened();
   }
 
   @Override
   protected void beforeResume(Throwable reason) {
-    ++beforeResume;
+    beforeResume.incrementAndGet();
     if (untilBeforeResume != null) untilBeforeResume.happened();
     super.beforeResume(reason);
   }
 
   @Override
   public void stop() {
-    ++stoppedCount;
+    stoppedCount.incrementAndGet();
     if (untilStopped != null) untilStopped.happened();
     super.stop();
   }

@@ -14,8 +14,8 @@ import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.Stage;
 
 public class MockCompletesEventuallyProvider implements CompletesEventuallyProvider {
-  public static int initializeUsing;
-  public static int provideCompletesForCount;
+  public int initializeUsing;
+  public int provideCompletesForCount;
   
   public MockCompletesEventually completesEventually;
   public MockCompletes<?> completes;

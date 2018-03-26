@@ -11,7 +11,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
@@ -28,34 +27,34 @@ public class CommonSupervisionTest extends ActorsTest {
                     Definition.has(PingActor.class, Definition.NoParameters, "ping"),
                     Ping.class);
     
-    PingActor.untilPinged = TestUntil.happenings(5);
+    PingActor.instance.untilPinged = TestUntil.happenings(5);
     
     for (int idx = 1; idx <= 5; ++idx) {
-      PingSupervisor.untilInform = TestUntil.happenings(1);
+      PingSupervisor.instance.untilInform = TestUntil.happenings(1);
       ping.actor().ping();
-      PingSupervisor.untilInform.completes();
+      PingSupervisor.instance.untilInform.completes();
     }
 
-    PingActor.untilPinged.completes();
-    PingSupervisor.untilInform.completes();
+    PingActor.instance.untilPinged.completes();
+    PingSupervisor.instance.untilInform.completes();
     
     assertFalse(ping.actorInside().isStopped());
-    assertEquals(5, PingActor.pingCount);
-    assertEquals(5, PingSupervisor.informedCount);
+    assertEquals(5, PingActor.instance.pingCount);
+    assertEquals(5, PingSupervisor.instance.informedCount);
     
-    PingActor.untilPinged = TestUntil.happenings(1);
-    PingActor.untilStopped = TestUntil.happenings(1);
-    PingSupervisor.untilInform = TestUntil.happenings(1);
+    PingActor.instance.untilPinged = TestUntil.happenings(1);
+    PingActor.instance.untilStopped = TestUntil.happenings(1);
+    PingSupervisor.instance.untilInform = TestUntil.happenings(1);
 
     ping.actor().ping();
 
-    PingSupervisor.untilInform.completes();
-    PingActor.untilPinged.completes();
-    PingActor.untilStopped.completes();
+    PingSupervisor.instance.untilInform.completes();
+    PingActor.instance.untilPinged.completes();
+    PingActor.instance.untilStopped.completes();
     
     assertTrue(ping.actorInside().isStopped());
-    assertEquals(6, PingActor.pingCount);
-    assertEquals(6, PingSupervisor.informedCount);
+    assertEquals(6, PingActor.instance.pingCount);
+    assertEquals(6, PingSupervisor.instance.informedCount);
   }
 
   @Test
@@ -64,41 +63,39 @@ public class CommonSupervisionTest extends ActorsTest {
             testWorld.actorFor(
                     Definition.has(PongActor.class, Definition.NoParameters, "pong"),
                     Pong.class);
-    
-    PongActor.untilPonged = TestUntil.happenings(10);
-    PongSupervisor.untilInform = TestUntil.happenings(10);
+
+    PongActor.instance.untilPonged = TestUntil.happenings(10);
+    PongSupervisor.instance.untilInform = TestUntil.happenings(10);
     
     for (int idx = 1; idx <= 10; ++idx) {
-      PongSupervisor.untilInform = TestUntil.happenings(1);
+      PongSupervisor.instance.untilInform = TestUntil.happenings(1);
       pong.actor().pong();
-      PongSupervisor.untilInform.completes();
+      PongSupervisor.instance.untilInform.completes();
     }
 
-    PongActor.untilPonged.completes();
-    PongSupervisor.untilInform.completes();
+    PongActor.instance.untilPonged.completes();
+    PongSupervisor.instance.untilInform.completes();
 
     assertFalse(pong.actorInside().isStopped());
-    assertEquals(10, PongActor.pongCount);
-    assertEquals(10, PongSupervisor.informedCount);
+    assertEquals(10, PongActor.instance.pongCount);
+    assertEquals(10, PongSupervisor.instance.informedCount);
+
+    PongActor.instance.untilPonged = TestUntil.happenings(1);
+    PongActor.instance.untilStopped = TestUntil.happenings(1);
+    PongSupervisor.instance.untilInform = TestUntil.happenings(1);
     
-    PongActor.untilPonged = TestUntil.happenings(1);
-    PongSupervisor.untilInform = TestUntil.happenings(1);
-    
+    assertFalse(pong.actorInside().isStopped());
+
     pong.actor().pong();
 
-    PongSupervisor.untilInform.completes();
-    PongActor.untilPonged.completes();
-    
-    assertTrue(pong.actorInside().isStopped());
-    assertEquals(11, PongActor.pongCount);
-    assertEquals(11, PongSupervisor.informedCount);
-  }
+    assertFalse(pong.actorInside().isStopped());
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    PingActor.pingCount = 0;
-    PongActor.pongCount = 0;
+    PongSupervisor.instance.untilInform.completes();
+    PongActor.instance.untilPonged.completes();
+    PongActor.instance.untilStopped.completes();
+
+    assertTrue(pong.actorInside().isStopped());
+    assertEquals(11, PongActor.instance.pongCount);
+    assertEquals(11, PongSupervisor.instance.informedCount);
   }
 }

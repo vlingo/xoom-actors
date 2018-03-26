@@ -23,15 +23,15 @@ public class PooledCompletesPluginTest {
     
     plugin.start(registrar, "pooledCompletes", null);
     
-    MockCompletesPlugin.completesEventuallyProvider.completesEventually().with(new Object());
+    plugin.completesEventuallyProvider.completesEventually().with(new Object());
     
-    Completes<Object> completes = MockCompletesPlugin.completesEventuallyProvider.provideCompletesFor(null);
+    Completes<Object> completes = plugin.completesEventuallyProvider.provideCompletesFor(null);
     
     completes.with(new Integer(7));
     
     assertEquals(1, registrar.registerCount);
-    assertEquals(1, MockCompletesEventuallyProvider.initializeUsing);
-    assertEquals(1, MockCompletesEventuallyProvider.provideCompletesForCount);
+    assertEquals(1, plugin.completesEventuallyProvider.initializeUsing);
+    assertEquals(1, plugin.completesEventuallyProvider.provideCompletesForCount);
     assertEquals(1, MockCompletesEventually.withCount);
     assertEquals(1, ((MockCompletes<?>) completes).withCount);
     assertEquals(7, ((MockCompletes<?>) completes).outcome);

@@ -10,7 +10,6 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.SupervisionStrategy.Scope;
@@ -52,7 +51,7 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     supervised.escalate(); // to the private root, which always stops the actor
     
-    assertEquals(1, FailureControlActor.stoppedCount);
+    assertEquals(1, FailureControlActor.instance.stoppedCount.get());
   }
   
   @Test
@@ -67,20 +66,20 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     supervised.restartWithin(1000, 5, Scope.One);
     
-    assertEquals(2, FailureControlActor.beforeStartCount);
-    assertEquals(1, FailureControlActor.beforeRestartCount);
-    assertEquals(1, FailureControlActor.afterRestartCount);
+    assertEquals(2, FailureControlActor.instance.beforeStartCount.get());
+    assertEquals(1, FailureControlActor.instance.beforeRestartCount.get());
+    assertEquals(1, FailureControlActor.instance.afterRestartCount.get());
   }
 
   @Test
   public void testSuspendResume() {
-    FailureControlActor.untilAfterFail = TestUntil.happenings(1);
-    
     final FailureControl failure =
             world.actorFor(
                     Definition.has(FailureControlActor.class, Definition.NoParameters, "failure"),
                     FailureControl.class);
 
+    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(1);
+    
     final StageSupervisedActor supervised =
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance, new IllegalStateException("Failed"));
     
@@ -89,15 +88,13 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     failure.afterFailure();                         // into suspended stowage
     supervised.resume();                            // sent
-    FailureControlActor.untilAfterFail.completes(); // delivered
+    FailureControlActor.instance.untilAfterFail.completes(); // delivered
     
-    assertEquals(1, FailureControlActor.afterFailureCount);
+    assertEquals(1, FailureControlActor.instance.afterFailureCount.get());
   }
 
   @Test
   public void testStopOne() {
-    FailureControlActor.untilStopped = TestUntil.happenings(1);
-    
     world.actorFor(
             Definition.has(FailureControlActor.class, Definition.NoParameters, "failure"),
             FailureControl.class);
@@ -105,18 +102,17 @@ public class StageSupervisedActorTest extends ActorsTest {
     final StageSupervisedActor supervised =
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance, new IllegalStateException("Failed"));
     
+    FailureControlActor.instance.untilStopped = TestUntil.happenings(1);
+    
     supervised.stop(Scope.One);
     
-    FailureControlActor.untilStopped.completes();
+    FailureControlActor.instance.untilStopped.completes();
     
     assertTrue(FailureControlActor.instance.isStopped());
   }
   
   @Test
   public void testStopAll() {
-    PingActor.untilStopped = TestUntil.happenings(1);
-    PongActor.untilStopped = TestUntil.happenings(1);
-    
     world.actorFor(
             Definition.has(PingActor.class, Definition.NoParameters, "ping"),
             Ping.class);
@@ -125,26 +121,18 @@ public class StageSupervisedActorTest extends ActorsTest {
             Definition.has(PongActor.class, Definition.NoParameters, "pong"),
             Pong.class);
 
+    PingActor.instance.untilStopped = TestUntil.happenings(1);
+    PongActor.instance.untilStopped = TestUntil.happenings(1);
+    
     final StageSupervisedActor supervised =
             new StageSupervisedActor(Ping.class, PingActor.instance, new IllegalStateException("Failed"));
     
     supervised.stop(Scope.All);
     
-    PingActor.untilStopped.completes();
-    PongActor.untilStopped.completes();
+    PingActor.instance.untilStopped.completes();
+    PongActor.instance.untilStopped.completes();
     
     assertTrue(PingActor.instance.isStopped());
     assertTrue(PongActor.instance.isStopped());
-  }
-  
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    FailureControlActor.afterFailureCount = 0;
-    FailureControlActor.beforeStartCount = 0;
-    FailureControlActor.beforeRestartCount = 0;
-    FailureControlActor.afterRestartCount = 0;
-    FailureControlActor.stoppedCount = 0;
   }
 }
