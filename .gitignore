@@ -6,9 +6,13 @@ target/
 .settings
 .DS_Store
 *.log
-*.log.*
+build/
+
 
 # Intellij
 .idea/
 *.iml
 *.iws
+*.ipr
+.gradle/
+out/
