@@ -1,6 +1,6 @@
 # vlingo-actors
 
-[![Build Status](https://travis-ci.org/d-led/vlingo-actors.svg?branch=master)](https://travis-ci.org/d-led/vlingo-actors)
+[![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors)
 
 The vlingo-actors toolkit is much closer to fully defined in mid January 2018 than it was a month ago. Stay tuned for the feature-complete version coming soon.
 

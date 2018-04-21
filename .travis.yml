@@ -12,7 +12,7 @@ cache:
 # check out the dependency
 before_install:
   - cd ${TRAVIS_BUILD_DIR}/..
-  - git clone --depth=50 --branch=master https://github.com/d-led/vlingo-common.git
+  - git clone --depth=50 --branch=master https://github.com/vlingo/vlingo-common.git
   - cd ${TRAVIS_BUILD_DIR} # back to the origin
 
 script:
