@@ -13,6 +13,7 @@ cache:
 before_install:
   - cd ${TRAVIS_BUILD_DIR}/..
   - git clone --depth=50 --branch=master https://github.com/d-led/vlingo-common.git
+  - cd ${TRAVIS_BUILD_DIR} # back to the origin
 
 script:
   - mvn install
