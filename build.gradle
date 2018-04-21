@@ -19,6 +19,8 @@ repositories {
 }
 
 test {
+    maxHeapSize = "2048m"
+
     testLogging {
         exceptionFormat "full"
     }
