@@ -1,0 +1,5 @@
+rootProject.name = 'vlingo-actors'
+
+include ':vlingo-common'
+
+project(':vlingo-common').projectDir = file('../vlingo-common')
