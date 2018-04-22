@@ -67,8 +67,11 @@ public class ActorEnvironmentTest {
 
     final TestActor<StopTester> stoptest = world.actorFor(definition, StopTester.class);
     
-    final Environment env = stoptest.viewTestState().valueOf("env");
-    
+    assertNotNull(stoptest);
+    final TestState testState = stoptest.viewTestState();
+    assertNotNull(testState);
+    final Environment env = testState.valueOf("env");
+    assertNotNull(env);
     assertEquals(1, env.children.size());
     assertFalse(env.isStopped());
     assertFalse(env.mailbox.isClosed());
@@ -154,7 +157,8 @@ public class ActorEnvironmentTest {
     
     @Override
     public TestState viewTestState() {
-      return new TestState().putValue("env", lifeCycle.environment);
+      final TestState testState = new TestState();
+      return testState.putValue("env", lifeCycle.environment);
     }
   }
 }
