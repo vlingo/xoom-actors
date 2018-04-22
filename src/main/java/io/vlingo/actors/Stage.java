@@ -256,7 +256,15 @@ public class Stage implements Stoppable {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
 
-    final Actor actor = ActorFactory.actorFor(this, parent, definition, address, mailbox, maybeSupervisor, logger);
+    final Actor actor;
+
+    try {
+      actor = ActorFactory.actorFor(this, parent, definition, address, mailbox, maybeSupervisor, logger);
+    } catch (Exception e) {
+      logger.log("Actor instantiation failed because: " + e.getMessage());
+      e.printStackTrace();
+      throw new IllegalArgumentException("Actor instantiation failed because: " + e.getMessage(), e);
+    }
 
     directory.register(actor.address(), actor);
 
