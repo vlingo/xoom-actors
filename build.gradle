@@ -24,7 +24,6 @@ test {
     testLogging {
         exceptionFormat "full"
         showStandardStreams = true
-        events = ["passed", "failed", "skipped"]
     }
 
     afterTest { descr, result ->
