@@ -23,7 +23,7 @@
           <systemPropertyVariables>
             <propertyName>firefox</propertyName>
           </systemPropertyVariables>
-          <argLine>-Xmx2048m</argLine>
+          <argLine>-Xmx1024m</argLine>
         </configuration>
       </plugin>
     </plugins>
