@@ -23,6 +23,7 @@ test {
 
     testLogging {
         exceptionFormat "full"
+        showStandardStreams = true
     }
 
     afterTest { descr, result ->
