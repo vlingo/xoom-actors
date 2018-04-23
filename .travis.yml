@@ -20,5 +20,4 @@ before_install:
 
 script:
   # - mvn install # gradle dependencies are set up for the CI
-  - echo "JAVA_HOME: $JAVA_HOME"
   - gradle test --rerun-tasks --stacktrace
