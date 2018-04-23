@@ -17,4 +17,4 @@ before_install:
 
 script:
   # - mvn install # gradle dependencies are set up for the CI
-  - gradle test --rerun-tasks --stacktrace
+  - chmod +x gradlew && ./gradlew test --rerun-tasks --stacktrace
