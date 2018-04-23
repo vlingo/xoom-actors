@@ -20,5 +20,4 @@ before_install:
   - cd ${TRAVIS_BUILD_DIR} # back to the origin
 
 script:
-  - mvn install # gradle dependencies are set up for the CI
-  - ./gradlew test --rerun-tasks --stacktrace
+  - mvn install
