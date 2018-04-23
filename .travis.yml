@@ -16,9 +16,9 @@ jdk:
 before_install:
   - cd ${TRAVIS_BUILD_DIR}/..
   - git clone --depth=50 --branch=master https://github.com/vlingo/vlingo-common.git
+  - cd vlingo-common && mvn install -DskipTests=true
   - cd ${TRAVIS_BUILD_DIR} # back to the origin
 
 script:
-  # - mvn install # gradle dependencies are set up for the CI
-  - echo ${JAVA_HOME}
+  - mvn install # gradle dependencies are set up for the CI
   - ./gradlew test --rerun-tasks --stacktrace
