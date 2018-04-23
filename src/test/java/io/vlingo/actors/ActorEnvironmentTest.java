@@ -21,7 +21,7 @@ import io.vlingo.actors.testkit.TestWorld;
 
 public class ActorEnvironmentTest {
   private TestWorld world;
-  
+
   @Test
   public void testExpectedEnvironment() throws Exception {
     final Definition definition = Definition.has(EnvironmentProviderActor.class, Definition.NoParameters, "test-env");
