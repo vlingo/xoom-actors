@@ -1,8 +1,5 @@
 language: java
 
-jdk:
-  - oraclejdk8
-
 # check out the dependency
 before_install:
   - cd ${TRAVIS_BUILD_DIR}/..
