@@ -25,11 +25,11 @@ public class ProtocolsTest extends ActorsTest {
     final Protocols.Two<TestActor<P1>, TestActor<P2>> two = Protocols.two(protocols);
     
     two.p1().actor().do1();
-    assertEquals(1, TwoProtocolsActor.instance.do1Count);
+    assertEquals(1, TwoProtocolsActor.instance.get().do1Count);
     
     two.p2().actor().do2();
     two.p2().actor().do2();
-    assertEquals(2, TwoProtocolsActor.instance.do2Count);
+    assertEquals(2, TwoProtocolsActor.instance.get().do2Count);
   }
 
   @Test
@@ -42,16 +42,16 @@ public class ProtocolsTest extends ActorsTest {
     final Protocols.Three<TestActor<P1>, TestActor<P2>, TestActor<P3>> three = Protocols.three(protocols);
     
     three.p1().actor().do1();
-    assertEquals(1, ThreeProtocolsActor.instance.do1Count);
+    assertEquals(1, ThreeProtocolsActor.instance.get().do1Count);
     
     three.p2().actor().do2();
     three.p2().actor().do2();
-    assertEquals(2, ThreeProtocolsActor.instance.do2Count);
+    assertEquals(2, ThreeProtocolsActor.instance.get().do2Count);
     
     three.p3().actor().do3();
     three.p3().actor().do3();
     three.p3().actor().do3();
-    assertEquals(3, ThreeProtocolsActor.instance.do3Count);
+    assertEquals(3, ThreeProtocolsActor.instance.get().do3Count);
   }
 
   @Test
@@ -64,22 +64,22 @@ public class ProtocolsTest extends ActorsTest {
     final Protocols.Four<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>> four = Protocols.four(protocols);
     
     four.p1().actor().do1();
-    assertEquals(1, FourProtocolsActor.instance.do1Count);
+    assertEquals(1, FourProtocolsActor.instance.get().do1Count);
     
     four.p2().actor().do2();
     four.p2().actor().do2();
-    assertEquals(2, FourProtocolsActor.instance.do2Count);
+    assertEquals(2, FourProtocolsActor.instance.get().do2Count);
     
     four.p3().actor().do3();
     four.p3().actor().do3();
     four.p3().actor().do3();
-    assertEquals(3, FourProtocolsActor.instance.do3Count);
+    assertEquals(3, FourProtocolsActor.instance.get().do3Count);
     
     four.p4().actor().do4();
     four.p4().actor().do4();
     four.p4().actor().do4();
     four.p4().actor().do4();
-    assertEquals(4, FourProtocolsActor.instance.do4Count);
+    assertEquals(4, FourProtocolsActor.instance.get().do4Count);
   }
 
   @Test
@@ -92,29 +92,29 @@ public class ProtocolsTest extends ActorsTest {
     final Protocols.Five<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>, TestActor<P5>> five = Protocols.five(protocols);
     
     five.p1().actor().do1();
-    assertEquals(1, FiveProtocolsActor.instance.do1Count);
+    assertEquals(1, FiveProtocolsActor.instance.get().do1Count);
     
     five.p2().actor().do2();
     five.p2().actor().do2();
-    assertEquals(2, FiveProtocolsActor.instance.do2Count);
+    assertEquals(2, FiveProtocolsActor.instance.get().do2Count);
     
     five.p3().actor().do3();
     five.p3().actor().do3();
     five.p3().actor().do3();
-    assertEquals(3, FiveProtocolsActor.instance.do3Count);
+    assertEquals(3, FiveProtocolsActor.instance.get().do3Count);
     
     five.p4().actor().do4();
     five.p4().actor().do4();
     five.p4().actor().do4();
     five.p4().actor().do4();
-    assertEquals(4, FiveProtocolsActor.instance.do4Count);
+    assertEquals(4, FiveProtocolsActor.instance.get().do4Count);
     
     five.p5().actor().do5();
     five.p5().actor().do5();
     five.p5().actor().do5();
     five.p5().actor().do5();
     five.p5().actor().do5();
-    assertEquals(5, FiveProtocolsActor.instance.do5Count);
+    assertEquals(5, FiveProtocolsActor.instance.get().do5Count);
   }
 
   public static interface P1 {
@@ -138,13 +138,13 @@ public class ProtocolsTest extends ActorsTest {
   }
 
   public static class TwoProtocolsActor extends Actor implements P1, P2 {
-    public static TwoProtocolsActor instance;
+    public static ThreadLocal<TwoProtocolsActor> instance = new ThreadLocal<>();
     
     public int do1Count;
     public int do2Count;
     
     public TwoProtocolsActor() {
-      instance = this;
+      instance.set(this);
     }
     
     @Override
@@ -159,14 +159,14 @@ public class ProtocolsTest extends ActorsTest {
   }
 
   public static class ThreeProtocolsActor extends Actor implements P1, P2, P3 {
-    public static ThreeProtocolsActor instance;
+    public static final ThreadLocal<ThreeProtocolsActor> instance = new ThreadLocal<>();
     
     public int do1Count;
     public int do2Count;
     public int do3Count;
     
     public ThreeProtocolsActor() {
-      instance = this;
+      instance.set(this);
     }
     
     @Override
@@ -186,7 +186,7 @@ public class ProtocolsTest extends ActorsTest {
   }
 
   public static class FourProtocolsActor extends Actor implements P1, P2, P3, P4 {
-    public static FourProtocolsActor instance;
+    public static ThreadLocal<FourProtocolsActor> instance = new ThreadLocal<>();
     
     public int do1Count;
     public int do2Count;
@@ -194,7 +194,7 @@ public class ProtocolsTest extends ActorsTest {
     public int do4Count;
     
     public FourProtocolsActor() {
-      instance = this;
+      instance.set(this);
     }
     
     @Override
@@ -219,7 +219,7 @@ public class ProtocolsTest extends ActorsTest {
   }
 
   public static class FiveProtocolsActor extends Actor implements P1, P2, P3, P4, P5 {
-    public static FiveProtocolsActor instance;
+    public static ThreadLocal<FiveProtocolsActor> instance = new ThreadLocal<>();
     
     public int do1Count;
     public int do2Count;
@@ -228,7 +228,7 @@ public class ProtocolsTest extends ActorsTest {
     public int do5Count;
     
     public FiveProtocolsActor() {
-      instance = this;
+      instance.set(this);
     }
     
     @Override

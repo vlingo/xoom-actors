@@ -7,11 +7,17 @@
 
 package io.vlingo.actors.plugin.completes;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.CompletesEventually;
 
 public class MockCompletesEventually implements CompletesEventually {
-  public static int withCount;
-  
+  public final CompletesResults completesResults;
+
+  public MockCompletesEventually(final CompletesResults completesResults) {
+    this.completesResults = completesResults;
+  }
+
   @Override
   public boolean isStopped() {
     return false;
@@ -22,6 +28,10 @@ public class MockCompletesEventually implements CompletesEventually {
 
   @Override
   public void with(final Object outcome) {
-    ++withCount;
+    completesResults.withCount.incrementAndGet();
+  }
+
+  public static class CompletesResults {
+    public final AtomicInteger withCount = new AtomicInteger(0);
   }
 }

@@ -13,87 +13,92 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class FailureControlActor extends Actor implements FailureControl {
-  public static FailureControlActor instance;
+  public static final ThreadLocal<FailureControlActor> instance = new ThreadLocal<>();
   
-  public AtomicInteger afterFailureCount = new AtomicInteger(0);
-  public AtomicInteger afterFailureCountCount = new AtomicInteger(0);
-  public AtomicInteger afterRestartCount = new AtomicInteger(0);
-  public AtomicInteger afterStopCount = new AtomicInteger(0);
-  public AtomicInteger beforeRestartCount = new AtomicInteger(0);
-  public AtomicInteger beforeResume = new AtomicInteger(0);
-  public AtomicInteger beforeStartCount = new AtomicInteger(0);
-  public AtomicInteger failNowCount = new AtomicInteger(0);
-  public AtomicInteger stoppedCount = new AtomicInteger(0);
+  private final FailureControlTestResults testResults;
   
-  public TestUntil untilAfterFail;
-  public TestUntil untilAfterRestart;
-  public TestUntil untilBeforeResume;
-  public TestUntil untilFailNow;
-  public TestUntil untilFailureCount;
-  public TestUntil untilStopped;
-  
-  public FailureControlActor() {
-    instance = this;
+  public FailureControlActor(final FailureControlTestResults testResults) {
+    this.testResults = testResults;
+    instance.set(this);
   }
   
   @Override
   public void failNow() {
-    failNowCount.incrementAndGet();
-    if (untilFailNow != null) untilFailNow.happened();
+    testResults.failNowCount.incrementAndGet();
+    testResults.untilFailNow.happened();
     throw new IllegalStateException("Intended failure.");
   }
 
   @Override
   public void afterFailure() {
-    afterFailureCount.incrementAndGet();
-    if (untilAfterFail != null) untilAfterFail.happened();
+    testResults.afterFailureCount.incrementAndGet();
+    testResults.untilAfterFail.happened();
   }
 
   @Override
   public void afterFailureCount(int count) {
-    afterFailureCountCount.incrementAndGet();
-    if (untilFailureCount != null) untilFailureCount.happened();
+    testResults.afterFailureCountCount.incrementAndGet();
+    testResults.untilFailureCount.happened();
   }
 
   @Override
   protected void beforeStart() {
-    beforeStartCount.incrementAndGet();
-    if (untilFailNow != null) untilFailNow.happened();
+    testResults.beforeStartCount.incrementAndGet();
+    testResults.untilFailNow.happened();
     super.beforeStart();
   }
 
   @Override
   protected void afterStop() {
-    afterStopCount.incrementAndGet();
-    if (untilFailNow != null) untilFailNow.happened();
+    testResults.afterStopCount.incrementAndGet();
+    testResults.untilFailNow.happened();
     super.afterStop();
   }
 
   @Override
   protected void beforeRestart(Throwable reason) {
-    beforeRestartCount.incrementAndGet();
-    if (untilFailNow != null) untilFailNow.happened();
+    testResults.beforeRestartCount.incrementAndGet();
+    testResults.untilFailNow.happened();
     super.beforeRestart(reason);
   }
 
   @Override
   protected void afterRestart(Throwable reason) {
     super.afterRestart(reason);
-    afterRestartCount.incrementAndGet();
-    if (untilAfterRestart != null) untilAfterRestart.happened();
+    testResults.afterRestartCount.incrementAndGet();
+    testResults.untilAfterRestart.happened();
   }
 
   @Override
   protected void beforeResume(Throwable reason) {
-    beforeResume.incrementAndGet();
-    if (untilBeforeResume != null) untilBeforeResume.happened();
+    testResults.beforeResume.incrementAndGet();
+    testResults.untilBeforeResume.happened();
     super.beforeResume(reason);
   }
 
   @Override
   public void stop() {
-    stoppedCount.incrementAndGet();
-    if (untilStopped != null) untilStopped.happened();
+    testResults.stoppedCount.incrementAndGet();
+    testResults.untilStopped.happened();
     super.stop();
+  }
+  
+  public static class FailureControlTestResults {
+    public AtomicInteger afterFailureCount = new AtomicInteger(0);
+    public AtomicInteger afterFailureCountCount = new AtomicInteger(0);
+    public AtomicInteger afterRestartCount = new AtomicInteger(0);
+    public AtomicInteger afterStopCount = new AtomicInteger(0);
+    public AtomicInteger beforeRestartCount = new AtomicInteger(0);
+    public AtomicInteger beforeResume = new AtomicInteger(0);
+    public AtomicInteger beforeStartCount = new AtomicInteger(0);
+    public AtomicInteger failNowCount = new AtomicInteger(0);
+    public AtomicInteger stoppedCount = new AtomicInteger(0);
+    
+    public TestUntil untilAfterFail = TestUntil.happenings(0);
+    public TestUntil untilAfterRestart = TestUntil.happenings(0);
+    public TestUntil untilBeforeResume = TestUntil.happenings(0);
+    public TestUntil untilFailNow = TestUntil.happenings(0);
+    public TestUntil untilFailureCount = TestUntil.happenings(0);
+    public TestUntil untilStopped = TestUntil.happenings(0);
   }
 }

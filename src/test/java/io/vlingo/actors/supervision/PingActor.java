@@ -7,30 +7,37 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PingActor extends Actor implements Ping {
-  public static PingActor instance;
-
-  public int pingCount;
-  public TestUntil untilPinged;
-  public TestUntil untilStopped;
+  public static final ThreadLocal<PingActor> instance = new ThreadLocal<>();
   
-  public PingActor() {
-    instance = this;
+  private final PingTestResults testResults;
+  
+  public PingActor(final PingTestResults testResults) {
+    this.testResults = testResults;
+    instance.set(this);
   }
   
   @Override
   public void stop() {
     super.stop();
-    untilStopped.happened();
+    testResults.untilStopped.happened();
   }
 
   @Override
   public void ping() {
-    ++pingCount;
-    untilPinged.happened();
+    testResults.pingCount.incrementAndGet();
+    testResults.untilPinged.happened();
     throw new IllegalStateException("Intended Ping failure.");
+  }
+
+  public static class PingTestResults {
+    public final AtomicInteger pingCount = new AtomicInteger(0);
+    public TestUntil untilPinged = TestUntil.happenings(0);
+    public TestUntil untilStopped = TestUntil.happenings(0);
   }
 }

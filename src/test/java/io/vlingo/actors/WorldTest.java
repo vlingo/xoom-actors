@@ -12,6 +12,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.After;
 import org.junit.Test;
 
@@ -36,15 +38,17 @@ public class WorldTest extends ActorsTest {
   
   @Test
   public void testWorldActorFor() throws Exception {
-    final Simple simple = world.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters), Simple.class);
+    final TestResults testResults = new TestResults();
     
-    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
+    final Simple simple = world.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults)), Simple.class);
+    
+    testResults.untilSimple = TestUntil.happenings(1);
     
     simple.simpleSay();
     
-    SimpleActor.instance.untilSimple.completes();
+    testResults.untilSimple.completes();
     
-    assertTrue(SimpleActor.instance.invoked);
+    assertTrue(testResults.invoked.get());
   }
 
   @After
@@ -61,21 +65,21 @@ public class WorldTest extends ActorsTest {
   }
   
   public static class SimpleActor extends Actor implements Simple {
-    public static SimpleActor instance;
+    private final TestResults testResults;
     
-    public boolean invoked;
-    public TestUntil untilSimple;
-    
-    public SimpleActor() {
-      instance = this;
-      
-      untilSimple = TestUntil.happenings(0);
+    public SimpleActor(final TestResults testResults) {
+      this.testResults = testResults;
     }
     
     @Override
     public void simpleSay() {
-      invoked = true;
-      untilSimple.happened();
+      testResults.invoked.set(true);
+      testResults.untilSimple.happened();
     }
+  }
+  
+  public static class TestResults {
+    public AtomicBoolean invoked = new AtomicBoolean(false);
+    public TestUntil untilSimple = TestUntil.happenings(0);
   }
 }

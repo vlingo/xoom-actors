@@ -7,18 +7,18 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
 
 public class EscalateSupervisorActor extends Actor implements Supervisor {
-  public static EscalateSupervisorActor instance;
+  private final EscalateSupervisorTestResults testResults;
   
-  public int informedCount;
-  
-  public EscalateSupervisorActor() {
-    instance = this;
+  public EscalateSupervisorActor(final EscalateSupervisorTestResults testResults) {
+    this.testResults = testResults;
   }
   
   private final SupervisionStrategy strategy =
@@ -41,7 +41,7 @@ public class EscalateSupervisorActor extends Actor implements Supervisor {
   
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    ++informedCount;
+    testResults.informedCount.incrementAndGet();
     
     supervised.escalate();
   }
@@ -49,5 +49,9 @@ public class EscalateSupervisorActor extends Actor implements Supervisor {
   @Override
   public SupervisionStrategy supervisionStrategy() {
     return strategy;
+  }
+
+  public static class EscalateSupervisorTestResults {
+    public AtomicInteger informedCount = new AtomicInteger(0);
   }
 }

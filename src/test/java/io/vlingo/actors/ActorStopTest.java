@@ -9,7 +9,9 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Before;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
@@ -19,68 +21,65 @@ public class ActorStopTest extends ActorsTest {
   public void testStopActors() throws Exception {
     final World world = World.start("test");
     
-    ChildCreatingStoppableActor.untilStart = TestUntil.happenings(12);
+    final TestResults testResults = new TestResults();
     
-    final ChildCreatingStoppable[] stoppables = setUpActors(world);
+    testResults.untilStart = TestUntil.happenings(12);
+    
+    final ChildCreatingStoppable[] stoppables = setUpActors(world, testResults);
     
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].createChildren();
     }
 
-    ChildCreatingStoppableActor.untilStart.completes();
+    testResults.untilStart.completes();
 
-    ChildCreatingStoppableActor.untilStop = TestUntil.happenings(12);
+    testResults.untilStop = TestUntil.happenings(12);
 
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].stop();
     }
     
-    ChildCreatingStoppableActor.untilStop.completes();
+    testResults.untilStop.completes();
     
-    assertEquals(12, ChildCreatingStoppableActor.stopCount);
+    assertEquals(12, testResults.stopCount.get());
 
-    ChildCreatingStoppableActor.terminating = true;
+    testResults.terminating.set(true);
     world.terminate();
     
-    assertEquals(0, ChildCreatingStoppableActor.terminatingStopCount);
+    assertEquals(0, testResults.terminatingStopCount.get());
   }
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
     final World world = World.start("test");
     
-    ChildCreatingStoppableActor.untilStart = TestUntil.happenings(12);
+    final TestResults testSpecs = new TestResults();
+    
+    testSpecs.untilStart = TestUntil.happenings(12);
 
-    final ChildCreatingStoppable[] stoppables = setUpActors(world);
+    final ChildCreatingStoppable[] stoppables = setUpActors(world, testSpecs);
     
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].createChildren();
     }
 
-    ChildCreatingStoppableActor.untilStart.completes();
+    testSpecs.untilStart.completes();
     
-    ChildCreatingStoppableActor.untilTerminatingStop = TestUntil.happenings(12);
+    testSpecs.untilTerminatingStop = TestUntil.happenings(12);
 
-    ChildCreatingStoppableActor.terminating = true;
+    testSpecs.terminating.set(true);
     world.terminate();
     
-    ChildCreatingStoppableActor.untilTerminatingStop.completes();
+    testSpecs.untilTerminatingStop.completes();
     
-    assertEquals(12, ChildCreatingStoppableActor.terminatingStopCount);
+    assertEquals(12, testSpecs.terminatingStopCount.get());
   }
   
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
-    ChildCreatingStoppableActor.reset();
-  }
-  
-  private ChildCreatingStoppable[] setUpActors(final World world) {
+  private ChildCreatingStoppable[] setUpActors(final World world, final TestResults testResults) {
     final ChildCreatingStoppable[] stoppables = new ChildCreatingStoppable[3];
-    stoppables[0] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, "p1"), ChildCreatingStoppable.class);
-    stoppables[1] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, "p2"), ChildCreatingStoppable.class);
-    stoppables[2] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, "p3"), ChildCreatingStoppable.class);
+    stoppables[0] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p1"), ChildCreatingStoppable.class);
+    stoppables[1] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p2"), ChildCreatingStoppable.class);
+    stoppables[2] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p3"), ChildCreatingStoppable.class);
     return stoppables;
   }
   
@@ -89,48 +88,44 @@ public class ActorStopTest extends ActorsTest {
   }
   
   public static class ChildCreatingStoppableActor extends Actor implements ChildCreatingStoppable {
-    public static int stopCount;
-    public static boolean terminating;
-    public static int terminatingStopCount;
-    public static TestUntil untilStart;
-    public static TestUntil untilStop;
-    public static TestUntil untilTerminatingStop;
+    private final TestResults testResults;
     
-    public static void reset() {
-      stopCount = 0;
-      terminating = false;
-      terminatingStopCount = 0;
-      untilStart = TestUntil.happenings(0);
-      untilStop = TestUntil.happenings(0);
-      untilTerminatingStop = TestUntil.happenings(0);
-    }
-    
-    public ChildCreatingStoppableActor() {
+    public ChildCreatingStoppableActor(final TestResults testSpecs) {
+      this.testResults = testSpecs;
     }
 
     @Override
     public void createChildren() {
       final String pre = address().name();
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, pre+".1"), ChildCreatingStoppable.class);
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, pre+".2"), ChildCreatingStoppable.class);
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.NoParameters, pre+".3"), ChildCreatingStoppable.class);
+      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".1"), ChildCreatingStoppable.class);
+      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".2"), ChildCreatingStoppable.class);
+      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".3"), ChildCreatingStoppable.class);
     }
 
     @Override
     protected void beforeStart() {
       super.beforeStart();
-      if (untilStart != null) untilStart.happened();
+      if (testResults.untilStart != null) testResults.untilStart.happened();
     }
 
     @Override
     protected synchronized void afterStop() {
-      if (terminating) {
-        ++terminatingStopCount;
-        if (untilTerminatingStop != null) untilTerminatingStop.happened();
+      if (testResults.terminating.get()) {
+        testResults.terminatingStopCount.incrementAndGet();
+        testResults.untilTerminatingStop.happened();
       } else {
-        ++stopCount;
-        if (untilStop != null) untilStop.happened();
+        testResults.stopCount.incrementAndGet();
+        testResults.untilStop.happened();
       }
     }
+  }
+
+  private static class TestResults {
+    public AtomicInteger stopCount = new AtomicInteger(0);
+    public AtomicBoolean terminating = new AtomicBoolean(false);
+    public AtomicInteger terminatingStopCount = new AtomicInteger(0);
+    public TestUntil untilStart = TestUntil.happenings(0);
+    public TestUntil untilStop = TestUntil.happenings(0);
+    public TestUntil untilTerminatingStop = TestUntil.happenings(0);
   }
 }

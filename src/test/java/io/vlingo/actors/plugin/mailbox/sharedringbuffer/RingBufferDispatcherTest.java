@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.Test;
@@ -23,6 +24,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
   @Test
   public void testClose() throws Exception {
+    final TestResults testResults = new TestResults();
+    
     final int mailboxSize = 64;
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
@@ -31,9 +34,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     final Mailbox mailbox = dispatcher.mailbox();
     
-    final CountTakerActor actor = new CountTakerActor();
+    final CountTakerActor actor = new CountTakerActor(testResults);
     
-    CountTakerActor.instance.until = until(mailboxSize);
+    testResults.until = until(mailboxSize);
     
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
@@ -43,7 +46,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
 
     dispatcher.close();
     
@@ -59,11 +62,13 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     until(0).completes();
     
-    assertEquals(mailboxSize, CountTakerActor.instance.highest);
+    assertEquals(mailboxSize, testResults.highest.get());
   }
 
   @Test
   public void testBasicDispatch() throws Exception {
+    final TestResults testResults = new TestResults();
+    
     final int mailboxSize = 64;
     
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, 4);
@@ -72,9 +77,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     final Mailbox mailbox = dispatcher.mailbox();
     
-    final CountTakerActor actor = new CountTakerActor();
+    final CountTakerActor actor = new CountTakerActor(testResults);
     
-    CountTakerActor.instance.until = until(mailboxSize);
+    testResults.until = until(mailboxSize);
     
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
@@ -84,13 +89,15 @@ public class RingBufferDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
-    assertEquals(mailboxSize, CountTakerActor.instance.highest);
+    assertEquals(mailboxSize, testResults.highest.get());
   }
 
   @Test
   public void testOverflowDispatch() throws Exception {
+    final TestResults testResults = new TestResults();
+    
     final int mailboxSize = 64;
     final int overflowSize = mailboxSize * 2;
     
@@ -98,9 +105,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     final Mailbox mailbox = dispatcher.mailbox();
     
-    final CountTakerActor actor = new CountTakerActor();
+    final CountTakerActor actor = new CountTakerActor(testResults);
     
-    CountTakerActor.instance.until = until(overflowSize);
+    testResults.until = until(overflowSize);
     
     for (int count = 1; count <= overflowSize; ++count) {
       final int countParam = count;
@@ -112,9 +119,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
     
     dispatcher.start();
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
-    assertEquals(overflowSize, CountTakerActor.instance.highest);
+    assertEquals(overflowSize, testResults.highest.get());
   }
   
   public static interface CountTaker {
@@ -122,19 +129,21 @@ public class RingBufferDispatcherTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static CountTakerActor instance;
+    private final TestResults testResults;
     
-    public int highest;
-    public TestUntil until;
-
-    public CountTakerActor() {
-      instance = this;
+    public CountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
     }
     
     @Override
     public void take(final int count) {
-      if (count > highest) highest = count;
-      until.happened();
+      if (count > testResults.highest.get()) testResults.highest.set(count);
+      testResults.until.happened();
     }
+  }
+
+  private static class TestResults {
+    public AtomicInteger highest = new AtomicInteger(0);
+    public TestUntil until = TestUntil.happenings(0);
   }
 }

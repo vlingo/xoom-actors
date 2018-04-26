@@ -26,8 +26,8 @@ public class StageTest {
     final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
     
     assertNotNull(test);
-    assertNotNull(TestInterfaceActor.actor);
-    assertEquals(world.defaultParent(), TestInterfaceActor.actor.parent());
+    assertNotNull(TestInterfaceActor.instance.get());
+    assertEquals(world.defaultParent(), TestInterfaceActor.instance.get().parent());
   }
   
   @Test
@@ -38,21 +38,19 @@ public class StageTest {
             Definition.has(
                     TestInterfaceActor.class,
                     Definition.NoParameters,
-                    ParentInterfaceActor.parent,
+                    ParentInterfaceActor.parent.get(),
                     TestMailbox.Name,
                     "test-actor");
 
     final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
     
     assertNotNull(test);
-    assertNotNull(TestInterfaceActor.actor);
+    assertNotNull(TestInterfaceActor.instance.get());
   }
 
   @Before
   public void setUp() {
     world = World.start("test");
-    
-    TestInterfaceActor.actor = null;
   }
   
   @After
@@ -61,16 +59,16 @@ public class StageTest {
   }
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
-    public static ParentInterfaceActor parent;
+    public static ThreadLocal<ParentInterfaceActor> parent = new ThreadLocal<>();
     
-    public ParentInterfaceActor() { parent = this; }
+    public ParentInterfaceActor() { parent.set(this); }
   }
 
   public static class TestInterfaceActor extends Actor implements NoProtocol {
-    public static TestInterfaceActor actor;
+    public static ThreadLocal<TestInterfaceActor> instance = new ThreadLocal<>();
     
     public TestInterfaceActor() {
-      actor = this;
+      instance.set(this);
     }
   }
 }

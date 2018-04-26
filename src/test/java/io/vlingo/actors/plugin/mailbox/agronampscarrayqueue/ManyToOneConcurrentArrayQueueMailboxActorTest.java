@@ -10,6 +10,7 @@ package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,42 +27,46 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   
   @Test
   public void testBasicDispatch() throws Exception {
+    final TestResults testResults = new TestResults();
+    
     final CountTaker countTaker =
             world.actorFor(
-                    Definition.has(CountTakerActor.class, Definition.NoParameters, "testRingMailbox", "countTaker-1"),
+                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-1"),
                     CountTaker.class);
     
     final int totalCount = MailboxSize / 2;
     
-    CountTakerActor.instance.until = until(MaxCount);
+    testResults.until = until(MaxCount);
     
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
-    assertEquals(MaxCount, CountTakerActor.instance.highest);
+    assertEquals(MaxCount, testResults.highest.get());
   }
 
   @Test
   public void testOverflowDispatch() throws Exception {
+    final TestResults testResults = new TestResults();
+    
     final CountTaker countTaker =
             world.actorFor(
-                    Definition.has(CountTakerActor.class, Definition.NoParameters, "testRingMailbox", "countTaker-2"),
+                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"),
                     CountTaker.class);
     
     final int totalCount = MailboxSize * 2;
     
-    CountTakerActor.instance.until = until(MaxCount);
+    testResults.until = until(MaxCount);
     
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
-    assertEquals(MaxCount, CountTakerActor.instance.highest);
+    assertEquals(MaxCount, testResults.highest.get());
   }
 
   @Before
@@ -90,27 +95,28 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static CountTakerActor instance;
-    
-    public int highest;
-    public TestUntil until;
+    public final TestResults testResults;
     private CountTaker self;
     
-    public CountTakerActor() {
-      instance = this;
-      
+    public CountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
       self = selfAs(CountTaker.class);
     }
     
     @Override
     public void take(final int count) {
-      if (count > highest) {
-        highest = count;
-        until.happened();
+      if (count > testResults.highest.get()) {
+        testResults.highest.set(count);
+        testResults.until.happened();
       }
       if (count < MaxCount) {
         self.take(count + 1);
       }
     }
+  }
+  
+  private static class TestResults {
+    public AtomicInteger highest = new AtomicInteger(0);
+    public TestUntil until = TestUntil.happenings(0);
   }
 }

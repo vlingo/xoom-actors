@@ -13,11 +13,14 @@ import org.junit.Test;
 
 import io.vlingo.actors.Completes;
 import io.vlingo.actors.MockCompletes;
+import io.vlingo.actors.plugin.completes.MockCompletesEventually.CompletesResults;
 
 public class PooledCompletesPluginTest {
   @Test
   public void testStart() {
-    final MockCompletesPlugin plugin = new MockCompletesPlugin();
+    final CompletesResults completesResults = new CompletesResults();
+    
+    final MockCompletesPlugin plugin = new MockCompletesPlugin(completesResults);
     
     final MockRegistrar registrar = new MockRegistrar();
     
@@ -32,7 +35,7 @@ public class PooledCompletesPluginTest {
     assertEquals(1, registrar.registerCount);
     assertEquals(1, plugin.completesEventuallyProvider.initializeUsing);
     assertEquals(1, plugin.completesEventuallyProvider.provideCompletesForCount);
-    assertEquals(1, MockCompletesEventually.withCount);
+    assertEquals(1, completesResults.withCount.get());
     assertEquals(1, ((MockCompletes<?>) completes).withCount);
     assertEquals(7, ((MockCompletes<?>) completes).outcome);
   }

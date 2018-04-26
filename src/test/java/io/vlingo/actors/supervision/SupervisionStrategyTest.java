@@ -16,6 +16,13 @@ import org.junit.Test;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.supervision.EscalateSupervisorActor.EscalateSupervisorTestResults;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
+import io.vlingo.actors.supervision.PingActor.PingTestResults;
+import io.vlingo.actors.supervision.PongActor.PongTestResults;
+import io.vlingo.actors.supervision.RestartFiveInOneSupervisorActor.RestartFiveInOneSupervisorTestResults;
+import io.vlingo.actors.supervision.RestartForeverSupervisorActor.RestartForeverSupervisorTestResults;
+import io.vlingo.actors.supervision.ResumeForeverSupervisorActor.ResumeForeverSupervisorTestResults;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
 
@@ -23,159 +30,175 @@ public class SupervisionStrategyTest extends ActorsTest {
 
   @Test
   public void testResumeForeverStrategy() {
+    final ResumeForeverSupervisorTestResults resumeForeverSupervisorTestResults = new ResumeForeverSupervisorTestResults();
+    
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(ResumeForeverSupervisorActor.class, Definition.NoParameters, "resume-forever-supervisor"),
+                    Definition.has(ResumeForeverSupervisorActor.class, Definition.parameters(resumeForeverSupervisorTestResults), "resume-forever-supervisor"),
                     Supervisor.class);
+    
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure-for-stop"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      ResumeForeverSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+      resumeForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      ResumeForeverSupervisorActor.instance.untilInform.completes();
+      resumeForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      ResumeForeverSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+      resumeForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      ResumeForeverSupervisorActor.instance.untilInform.completes();
+      resumeForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
-    assertEquals(40, FailureControlActor.instance.failNowCount.get());
-    assertEquals(40, FailureControlActor.instance.afterFailureCount.get());
-    assertTrue(40 <= ResumeForeverSupervisorActor.instance.informedCount);
+    assertEquals(40, failureControlTestResults.failNowCount.get());
+    assertEquals(40, failureControlTestResults.afterFailureCount.get());
+    assertTrue(40 <= resumeForeverSupervisorTestResults.informedCount.get());
   }
 
   @Test
   public void testRestartForeverStrategy() {
+    final RestartForeverSupervisorTestResults restartForeverSupervisorTestResults = new RestartForeverSupervisorTestResults();
+    
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartForeverSupervisorActor.class, Definition.NoParameters, "restart-forever-supervisor"),
+                    Definition.has(RestartForeverSupervisorActor.class, Definition.parameters(restartForeverSupervisorTestResults), "restart-forever-supervisor"),
                     Supervisor.class);
+    
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure-for-stop"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      RestartForeverSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+      restartForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      RestartForeverSupervisorActor.instance.untilInform.completes();
+      restartForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      RestartForeverSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+      restartForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      RestartForeverSupervisorActor.instance.untilInform.completes();
+      restartForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
-    assertEquals(40, FailureControlActor.instance.failNowCount.get());
-    assertEquals(40, FailureControlActor.instance.afterFailureCount.get());
-    assertEquals(40, RestartForeverSupervisorActor.instance.informedCount);
+    assertEquals(40, failureControlTestResults.failNowCount.get());
+    assertEquals(40, failureControlTestResults.afterFailureCount.get());
+    assertEquals(40, restartForeverSupervisorTestResults.informedCount.get());
   }
 
   @Test
   public void test5Intensity1PeriodRestartStrategy() {
+    final RestartFiveInOneSupervisorTestResults restartFiveInOneSupervisorTestResults = new RestartFiveInOneSupervisorTestResults();
+    
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartFiveInOneSupervisorActor.class, Definition.NoParameters, "resuming-5-1-supervisor"),
+                    Definition.has(RestartFiveInOneSupervisorActor.class, Definition.parameters(restartFiveInOneSupervisorTestResults), "resuming-5-1-supervisor"),
                     Supervisor.class);
+    
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure-for-stop"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(5);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(5);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(5);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(5);
     
     for (int idx = 1; idx <= 5; ++idx) {
-      RestartFiveInOneSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+      restartFiveInOneSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      RestartFiveInOneSupervisorActor.instance.untilInform.completes();
+      restartFiveInOneSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
-    assertEquals(5, FailureControlActor.instance.failNowCount.get());
-    assertEquals(5, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(5, failureControlTestResults.failNowCount.get());
+    assertEquals(5, failureControlTestResults.afterFailureCount.get());
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(1);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(0);
-    RestartFiveInOneSupervisorActor.instance.untilInform = TestUntil.happenings(1);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(1);
+    failureControlTestResults.untilAfterFail = TestUntil.happenings(0);
+    restartFiveInOneSupervisorTestResults.untilInform = TestUntil.happenings(1);
 
     failure.actor().failNow();  // should stop
     failure.actor().afterFailure();
 
-    FailureControlActor.instance.untilFailNow.completes();
-    RestartFiveInOneSupervisorActor.instance.untilInform.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    failureControlTestResults.untilFailNow.completes();
+    restartFiveInOneSupervisorTestResults.untilInform.completes();
+    failureControlTestResults.untilAfterFail.completes();
     
     assertTrue(failure.actorInside().isStopped());
-    assertEquals(6, FailureControlActor.instance.failNowCount.get());
-    assertEquals(6, RestartFiveInOneSupervisorActor.instance.informedCount);
-    assertEquals(5, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(6, failureControlTestResults.failNowCount.get());
+    assertEquals(6, restartFiveInOneSupervisorTestResults.informedCount.get());
+    assertEquals(5, failureControlTestResults.afterFailureCount.get());
   }
 
   @Test
   public void testEscalate() {
+    final EscalateSupervisorTestResults escalateSupervisorTestResults = new EscalateSupervisorTestResults();
+    
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(EscalateSupervisorActor.class, Definition.NoParameters, "escalate"),
+                    Definition.has(EscalateSupervisorActor.class, Definition.parameters(escalateSupervisorTestResults), "escalate"),
                     Supervisor.class);
+    
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(1);
-    FailureControlActor.instance.untilStopped = TestUntil.happenings(1);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(1);
+    failureControlTestResults.untilStopped = TestUntil.happenings(1);
     
-    assertEquals(0, EscalateSupervisorActor.instance.informedCount);
-    assertEquals(0, FailureControlActor.instance.stoppedCount.get());
+    assertEquals(0, escalateSupervisorTestResults.informedCount.get());
+    assertEquals(0, failureControlTestResults.stoppedCount.get());
     failure.actor().failNow();
     
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilStopped.completes();
+    failureControlTestResults.untilFailNow.completes();
+    failureControlTestResults.untilStopped.completes();
     
-    assertEquals(1, EscalateSupervisorActor.instance.informedCount);
-    assertEquals(1, FailureControlActor.instance.stoppedCount.get());
+    assertEquals(1, escalateSupervisorTestResults.informedCount.get());
+    assertEquals(1, failureControlTestResults.stoppedCount.get());
   }
 
   @Test
@@ -184,23 +207,27 @@ public class SupervisionStrategyTest extends ActorsTest {
             Definition.has(StopAllSupervisorActor.class, Definition.NoParameters, "stop-all"),
             Supervisor.class);
     
+    final PingTestResults pingTestResults = new PingTestResults();
+    
     final Ping ping = world.actorFor(
-            Definition.has(PingActor.class, Definition.NoParameters, StopAllSupervisorActor.instance, "ping"),
+            Definition.has(PingActor.class, Definition.parameters(pingTestResults), StopAllSupervisorActor.instance, "ping"),
             Ping.class);
 
+    final PongTestResults pongTestResults = new PongTestResults();
+    
     world.actorFor(
-            Definition.has(PongActor.class, Definition.NoParameters, StopAllSupervisorActor.instance, "pong"),
+            Definition.has(PongActor.class, Definition.parameters(pongTestResults), StopAllSupervisorActor.instance, "pong"),
             Pong.class);
 
-    PingActor.instance.untilStopped = TestUntil.happenings(1);
-    PongActor.instance.untilStopped = TestUntil.happenings(1);
+    pingTestResults.untilStopped = TestUntil.happenings(1);
+    pongTestResults.untilStopped = TestUntil.happenings(1);
     
-    assertFalse(PingActor.instance.isStopped());
-    assertFalse(PongActor.instance.isStopped());
+    assertFalse(PingActor.instance.get().isStopped());
+    assertFalse(PongActor.instance.get().isStopped());
     ping.ping();
-    PingActor.instance.untilStopped.completes();
-    PongActor.instance.untilStopped.completes();
-    assertTrue(PingActor.instance.isStopped());
-    assertTrue(PongActor.instance.isStopped());
+    pingTestResults.untilStopped.completes();
+    pongTestResults.untilStopped.completes();
+    assertTrue(PingActor.instance.get().isStopped());
+    assertTrue(PongActor.instance.get().isStopped());
   }
 }

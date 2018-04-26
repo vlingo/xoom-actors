@@ -9,6 +9,8 @@ package io.vlingo.actors.supervision;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +20,7 @@ import io.vlingo.actors.Definition;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.testkit.TestActor;
 
 public class BasicSupervisionTest extends ActorsTest {
@@ -32,24 +35,26 @@ public class BasicSupervisionTest extends ActorsTest {
     // will never be delivered unless time is given to
     // empty to stowed messages
     
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
+    
     final FailureControl failure =
             world.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, world.defaultParent(), "failure-for-default"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = until(1);
-    assertEquals(0, FailureControlActor.instance.failNowCount.get());
+    failureControlTestResults.untilFailNow = until(1);
+    assertEquals(0, failureControlTestResults.failNowCount.get());
     failure.failNow();
-    FailureControlActor.instance.untilFailNow.completes();
-    assertEquals(1, FailureControlActor.instance.failNowCount.get());
+    failureControlTestResults.untilFailNow.completes();
+    assertEquals(1, failureControlTestResults.failNowCount.get());
     
     // actor may or may not be resumed by now
     
-    FailureControlActor.instance.untilAfterFail = until(1);
-    assertEquals(0, FailureControlActor.instance.afterFailureCount.get());
+    failureControlTestResults.untilAfterFail = until(1);
+    assertEquals(0, failureControlTestResults.afterFailureCount.get());
     failure.afterFailure();
-    FailureControlActor.instance.untilAfterFail.completes();
-    assertEquals(1, FailureControlActor.instance.afterFailureCount.get());
+    failureControlTestResults.untilAfterFail.completes();
+    assertEquals(1, failureControlTestResults.afterFailureCount.get());
   }
   
   @Test
@@ -59,54 +64,59 @@ public class BasicSupervisionTest extends ActorsTest {
                     Definition.has(StoppingSupervisorActor.class, Definition.NoParameters, "stopping-supervisor"),
                     Supervisor.class);
     
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
+    
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure-for-stop"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
                     FailureControl.class);
     
-    assertEquals(0, FailureControlActor.instance.failNowCount.get());
+    assertEquals(0, failureControlTestResults.failNowCount.get());
     failure.actor().failNow();
-    assertEquals(1, FailureControlActor.instance.failNowCount.get());
+    assertEquals(1, failureControlTestResults.failNowCount.get());
     
-    assertEquals(0, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(0, failureControlTestResults.afterFailureCount.get());
     failure.actor().afterFailure();
-    assertEquals(0, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(0, failureControlTestResults.afterFailureCount.get());
     
-    assertEquals(1, FailureControlActor.instance.stoppedCount.get());
+    assertEquals(1, failureControlTestResults.stoppedCount.get());
   }
   
   @Test
   public void testRestartSupervisor() {
+    final RestartSupervisorTestResults restartSupervisorTestResults = new RestartSupervisorTestResults();
+    
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartSupervisorActor.class, Definition.NoParameters, "restart-supervisor"),
+                    Definition.has(RestartSupervisorActor.class, Definition.parameters(restartSupervisorTestResults), "restart-supervisor"),
                     Supervisor.class);
+    
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, supervisor.actorInside(), "failure-for-restart"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-restart"),
                     FailureControl.class);
     
-    assertEquals(0, FailureControlActor.instance.failNowCount.get());
-    assertEquals(0, RestartSupervisorActor.instance.informedCount);
-    assertEquals(0, FailureControlActor.instance.afterRestartCount.get());
-    assertEquals(0, FailureControlActor.instance.afterStopCount.get());
-    assertEquals(0, FailureControlActor.instance.beforeRestartCount.get());
-    assertEquals(1, FailureControlActor.instance.beforeStartCount.get());
+    assertEquals(0, failureControlTestResults.failNowCount.get());
+    assertEquals(0, restartSupervisorTestResults.informedCount.get());
+    assertEquals(0, failureControlTestResults.afterRestartCount.get());
+    assertEquals(0, failureControlTestResults.afterStopCount.get());
+    assertEquals(0, failureControlTestResults.beforeRestartCount.get());
+    assertEquals(1, failureControlTestResults.beforeStartCount.get());
     failure.actor().failNow();
-    assertEquals(1, FailureControlActor.instance.failNowCount.get());
-    assertEquals(1, RestartSupervisorActor.instance.informedCount);
-    assertEquals(1, FailureControlActor.instance.afterRestartCount.get());
-    assertEquals(1, FailureControlActor.instance.afterStopCount.get());
-    assertEquals(1, FailureControlActor.instance.beforeRestartCount.get());
-    assertEquals(2, FailureControlActor.instance.beforeStartCount.get());
+    assertEquals(1, failureControlTestResults.failNowCount.get());
+    assertEquals(1, restartSupervisorTestResults.informedCount.get());
+    assertEquals(1, failureControlTestResults.afterRestartCount.get());
+    assertEquals(1, failureControlTestResults.afterStopCount.get());
+    assertEquals(1, failureControlTestResults.beforeRestartCount.get());
+    assertEquals(2, failureControlTestResults.beforeStartCount.get());
 
-    assertEquals(0, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(0, failureControlTestResults.afterFailureCount.get());
     failure.actor().afterFailure();
-    assertEquals(1, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(1, failureControlTestResults.afterFailureCount.get());
     
-    assertEquals(0, FailureControlActor.instance.stoppedCount.get());
-    
+    assertEquals(0, failureControlTestResults.stoppedCount.get());
   }
   
   @Before
@@ -116,13 +126,7 @@ public class BasicSupervisionTest extends ActorsTest {
   }
   
   public static class StoppingSupervisorActor extends Actor implements Supervisor {
-    public static StoppingSupervisorActor instance;
-    
-    public int informedCount;
-    
-    public StoppingSupervisorActor() {
-      instance = this;
-    }
+    public StoppingSupervisorActor() { }
 
     @Override
     public void inform(final Throwable throwable, final Supervised supervised) {
@@ -153,12 +157,10 @@ public class BasicSupervisionTest extends ActorsTest {
   }
   
   public static class RestartSupervisorActor extends Actor implements Supervisor {
-    public static RestartSupervisorActor instance;
+    private final RestartSupervisorTestResults testResults;
     
-    public int informedCount;
-    
-    public RestartSupervisorActor() {
-      instance = this;
+    public RestartSupervisorActor(final RestartSupervisorTestResults testResults) {
+      this.testResults = testResults;
     }
     
     private final SupervisionStrategy strategy =
@@ -183,12 +185,16 @@ public class BasicSupervisionTest extends ActorsTest {
     public void inform(final Throwable throwable, final Supervised supervised) {
       logger().log("RestartSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
       supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-      ++informedCount;
+      testResults.informedCount.incrementAndGet();
     }
 
     @Override
     public SupervisionStrategy supervisionStrategy() {
       return strategy;
     }
+  }
+  
+  private static class RestartSupervisorTestResults {
+    public AtomicInteger informedCount = new AtomicInteger(0);
   }
 }

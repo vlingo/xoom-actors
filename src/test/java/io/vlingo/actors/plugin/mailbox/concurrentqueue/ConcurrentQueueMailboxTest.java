@@ -32,9 +32,11 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   
   @Test
   public void testMailboxSendReceive() throws Exception {
-    final CountTakerActor actor = new CountTakerActor();
+    final TestResults testResults = new TestResults();
     
-    CountTakerActor.instance.until = until(Total);
+    final CountTakerActor actor = new CountTakerActor(testResults);
+    
+    actor.testResults.until = until(Total);
 
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
@@ -43,10 +45,10 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    CountTakerActor.instance.until.completes();
+    actor.testResults.until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
-      assertEquals(idx, (int) CountTakerActor.instance.counts.get(idx));
+      assertEquals(idx, (int) actor.testResults.counts.get(idx));
     }
   }
   
@@ -72,21 +74,22 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static CountTakerActor instance;
+    private final TestResults testResults;
     
-    public final List<Integer> counts;
-    public TestUntil until;
-    
-    public CountTakerActor() {
-      instance = this;
-      counts = new ArrayList<>();
+    public CountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
     }
     
     @Override
     public void take(final int count) {
-      counts.add(count);
+      testResults.counts.add(count);
       
-      until.happened();
+      testResults.until.happened();
     }
+  }
+  
+  private static class TestResults {
+    public final List<Integer> counts = new ArrayList<>();
+    public TestUntil until = TestUntil.happenings(0);
   }
 }

@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -34,7 +35,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
-    CountTakerActor.instance.until = until(MailboxSize);
+    actor.until = until(MailboxSize);
     
     for (int count = 1; count <= MailboxSize; ++count) {
       final int countParam = count;
@@ -44,7 +45,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    CountTakerActor.instance.until.completes();
+    actor.until.completes();
 
     dispatcher.close();
     
@@ -60,7 +61,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     until(0).completes();
 
-    assertEquals(MailboxSize, CountTakerActor.instance.highest);
+    assertEquals(MailboxSize, actor.highest.get());
   }
 
   @Test
@@ -76,7 +77,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     
     final CountTakerActor actor = new CountTakerActor();
     
-    CountTakerActor.instance.until = until(MailboxSize);
+    actor.until = until(MailboxSize);
     
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
@@ -86,9 +87,9 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       mailbox.send(message);
     }
     
-    CountTakerActor.instance.until.completes();
+    actor.until.completes();
     
-    assertEquals(mailboxSize, CountTakerActor.instance.highest);
+    assertEquals(mailboxSize, actor.highest.get());
   }
 
   @Before
@@ -101,19 +102,15 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static CountTakerActor instance;
+    public AtomicInteger highest = new AtomicInteger(0);
+    public TestUntil until = TestUntil.happenings(0);
     
-    public int highest;
-    public TestUntil until;
-    
-    public CountTakerActor() {
-      instance = this;
-    }
+    public CountTakerActor() { }
     
     @Override
     public void take(final int count) {
-      if (count > highest) {
-        highest = count;
+      if (count > highest.get()) {
+        highest.set(count);
       }
       until.happened();
     }

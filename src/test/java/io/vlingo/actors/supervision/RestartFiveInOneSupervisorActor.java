@@ -7,6 +7,8 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
@@ -14,13 +16,10 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class RestartFiveInOneSupervisorActor extends Actor implements Supervisor {
-  public static RestartFiveInOneSupervisorActor instance;
+  private final RestartFiveInOneSupervisorTestResults testResults;
   
-  public int informedCount;
-  public TestUntil untilInform;
-  
-  public RestartFiveInOneSupervisorActor() {
-    instance = this;
+  public RestartFiveInOneSupervisorActor(final RestartFiveInOneSupervisorTestResults testResults) {
+    this.testResults = testResults;
   }
   
   private final SupervisionStrategy strategy =
@@ -43,13 +42,18 @@ public class RestartFiveInOneSupervisorActor extends Actor implements Supervisor
   
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    ++informedCount;
+    testResults.informedCount.incrementAndGet();
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-    untilInform.happened();
+    testResults.untilInform.happened();
   }
 
   @Override
   public SupervisionStrategy supervisionStrategy() {
     return strategy;
+  }
+
+  public static class RestartFiveInOneSupervisorTestResults {
+    public final AtomicInteger informedCount = new AtomicInteger(0);
+    public TestUntil untilInform = TestUntil.happenings(0);
   }
 }

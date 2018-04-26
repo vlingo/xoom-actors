@@ -16,6 +16,7 @@ import io.vlingo.actors.supervision.FailureControl;
 import io.vlingo.actors.supervision.FailureControlActor;
 import io.vlingo.actors.supervision.FailureControlSender;
 import io.vlingo.actors.supervision.SuspendedSenderSupervisorActor;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorSuspendResumeTest extends ActorsTest {
@@ -27,31 +28,33 @@ public class ActorSuspendResumeTest extends ActorsTest {
                     Definition.has(SuspendedSenderSupervisorActor.class, Definition.NoParameters, "suspended-sender-supervisor"),
                     FailureControlSender.class);
     
+    final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
+    
     final FailureControl failure =
             world.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, SuspendedSenderSupervisorActor.instance, "queueArray", "failure"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), SuspendedSenderSupervisorActor.instance, "queueArray", "failure"),
                     FailureControl.class);
     
     final int times = 25;
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(1);
+    failureControlTestResults.untilFailNow = TestUntil.happenings(1);
     
     SuspendedSenderSupervisorActor.instance.untilInform = TestUntil.happenings(1);
     
-    FailureControlActor.instance.untilFailureCount = TestUntil.happenings(times - 1);
+    failureControlTestResults.untilFailureCount = TestUntil.happenings(times - 1);
     
     supervisor.sendUsing(failure, times);
     
     failure.failNow();
     
-    FailureControlActor.instance.untilFailNow.completes();
+    failureControlTestResults.untilFailNow.completes();
     
     SuspendedSenderSupervisorActor.instance.untilInform.completes();
     
-    FailureControlActor.instance.untilFailureCount.completes();
+    failureControlTestResults.untilFailureCount.completes();
     
     assertEquals(1, SuspendedSenderSupervisorActor.instance.informedCount);
     
-    assertTrue(FailureControlActor.instance.afterFailureCountCount.get() >= (times - 1));
+    assertTrue(failureControlTestResults.afterFailureCountCount.get() >= (times - 1));
   }
 }

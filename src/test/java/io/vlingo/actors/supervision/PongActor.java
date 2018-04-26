@@ -7,30 +7,37 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class PongActor extends Actor implements Pong {
-  public static PongActor instance;
-
-  public int pongCount;
-  public TestUntil untilPonged;
-  public TestUntil untilStopped;
+  public static final ThreadLocal<PongActor> instance = new ThreadLocal<>();
   
-  public PongActor() {
-    instance = this;
+  private final PongTestResults testResults;
+  
+  public PongActor(final PongTestResults testResults) {
+    this.testResults = testResults;
+    instance.set(this);
   }
   
   @Override
   public void pong() {
-    ++pongCount;
-    untilPonged.happened();
+    testResults.pongCount.incrementAndGet();
+    testResults.untilPonged.happened();
     throw new IllegalStateException("Intended Pong failure.");
   }
 
   @Override
   public void stop() {
     super.stop();
-    untilStopped.happened();
+    testResults.untilStopped.happened();
+  }
+
+  public static class PongTestResults {
+    public AtomicInteger pongCount = new AtomicInteger(0);
+    public TestUntil untilPonged = TestUntil.happenings(0);
+    public TestUntil untilStopped = TestUntil.happenings(0);
   }
 }

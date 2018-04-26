@@ -7,11 +7,18 @@
 
 package io.vlingo.actors.plugin.logger;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 public class MockHandler extends Handler {
-  public static volatile int logMessagesCount;
+  public static final ThreadLocal<MockHandler> instance = new ThreadLocal<>();
+  
+  public AtomicInteger logMessagesCount = new AtomicInteger(0);
+  
+  public MockHandler() {
+    instance.set(this);
+  }
   
   @Override
   public void publish(final LogRecord record) {
@@ -19,7 +26,7 @@ public class MockHandler extends Handler {
     
     System.out.println("MockHandler: " + record.getLoggerName() + ": " + message);
     
-    ++logMessagesCount;
+    logMessagesCount.incrementAndGet();
   }
 
   @Override

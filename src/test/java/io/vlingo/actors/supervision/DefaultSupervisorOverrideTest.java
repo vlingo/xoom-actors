@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
 
@@ -21,39 +22,41 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
 
   @Test
   public void testOverride() {
+    final FailureControlTestResults testResults = new FailureControlTestResults();
+    
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.NoParameters, "failure-for-stop"),
+                    Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure-for-stop"),
                     FailureControl.class);
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    testResults.untilFailNow = TestUntil.happenings(20);
+    testResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      FailureControlActor.instance.untilBeforeResume = TestUntil.happenings(1);
+      testResults.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      FailureControlActor.instance.untilBeforeResume.completes();
+      testResults.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    testResults.untilFailNow.completes();
+    testResults.untilAfterFail.completes();
     
-    FailureControlActor.instance.untilFailNow = TestUntil.happenings(20);
-    FailureControlActor.instance.untilAfterFail = TestUntil.happenings(20);
+    testResults.untilFailNow = TestUntil.happenings(20);
+    testResults.untilAfterFail = TestUntil.happenings(20);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      FailureControlActor.instance.untilBeforeResume = TestUntil.happenings(1);
+      testResults.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      FailureControlActor.instance.untilBeforeResume.completes();
+      testResults.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    FailureControlActor.instance.untilFailNow.completes();
-    FailureControlActor.instance.untilAfterFail.completes();
+    testResults.untilFailNow.completes();
+    testResults.untilAfterFail.completes();
     
     assertFalse(failure.actorInside().isStopped());
-    assertEquals(40, FailureControlActor.instance.failNowCount.get());
-    assertEquals(40, FailureControlActor.instance.afterFailureCount.get());
+    assertEquals(40, testResults.failNowCount.get());
+    assertEquals(40, testResults.afterFailureCount.get());
   }
 }

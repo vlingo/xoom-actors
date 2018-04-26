@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -31,13 +32,16 @@ public class ExecutorDispatcherTest extends ActorsTest {
   private static int Total = 10_000;
   
   private Dispatcher dispatcher;
-  private Mailbox mailbox;
 
   @Test
   public void testClose() throws Exception {
-    final CountTakerActor actor = new CountTakerActor();
+    final TestResults testResults = new TestResults();
     
-    CountTakerActor.instance.until = until(3);
+    final TestMailbox mailbox = new TestMailbox(testResults);
+
+    final CountTakerActor actor = new CountTakerActor(testResults);
+    
+    testResults.until = until(3);
     
     for (int count = 0; count < 3; ++count) {
       final int countParam = count;
@@ -56,7 +60,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher.execute(mailbox);
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
     assertEquals(0, (int) ((TestMailbox) mailbox).counts.get(0));
     assertEquals(1, (int) ((TestMailbox) mailbox).counts.get(1));
@@ -67,9 +71,13 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
   @Test
   public void testExecute() throws Exception {
-    final CountTakerActor actor = new CountTakerActor();
+    final TestResults testResults = new TestResults();
     
-    CountTakerActor.instance.until = until(Total);
+    final TestMailbox mailbox = new TestMailbox(testResults);
+
+    final CountTakerActor actor = new CountTakerActor(testResults);
+    
+    testResults.until = until(Total);
     
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
@@ -79,7 +87,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       dispatcher.execute(mailbox);
     }
     
-    CountTakerActor.instance.until.completes();
+    testResults.until.completes();
     
     for (int idx = 0; idx < Total; ++idx) {
       assertEquals(idx, (int) ((TestMailbox) mailbox).counts.get(idx));
@@ -96,12 +104,16 @@ public class ExecutorDispatcherTest extends ActorsTest {
     super.setUp();
     
     dispatcher = new ExecutorDispatcher(1, 1.0f);
-    mailbox = new TestMailbox();
   }
 
   public static class TestMailbox implements Mailbox {
     public final List<Integer> counts = new ArrayList<>();
     private final Queue<Message> queue = new ConcurrentLinkedQueue<>();
+    private final TestResults testResults;
+
+    public TestMailbox(final TestResults testResults) {
+      this.testResults = testResults;
+    }
 
     @Override
     public void run() {
@@ -109,7 +121,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       
       if (message != null) {
         message.deliver();
-        counts.add((Integer) CountTakerActor.instance.highest);
+        counts.add(testResults.highest.get());
       }
     }
 
@@ -149,21 +161,23 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public static CountTakerActor instance;
-    
-    public int highest;
-    public TestUntil until;
+    private final TestResults testResults;
 
-    public CountTakerActor() {
-      instance = this;
+    public CountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
     }
     
     @Override
     public void take(final int count) {
-      if (count > highest) {
-        highest = count;
+      if (count > testResults.highest.get()) {
+        testResults.highest.set(count);
       }
-      until.happened();
+      testResults.until.happened();
     }
+  }
+  
+  private static class TestResults {
+    public AtomicInteger highest = new AtomicInteger(0);
+    public TestUntil until = TestUntil.happenings(0);
   }
 }

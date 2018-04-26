@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.junit.Test;
@@ -18,52 +19,58 @@ import io.vlingo.actors.testkit.TestUntil;
 public class LocalMessageTest extends ActorsTest {
   @Test
   public void testDeliverHappy() throws Exception {
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test1-actor"), Simple.class);
+    final SimpleTestResults testResults = new SimpleTestResults();
+    
+    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test1-actor"), Simple.class);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance.get(), Simple.class, consumer, "simple()");
     
-    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
+    testResults.untilSimple = TestUntil.happenings(1);
     
     message.deliver();
     
-    SimpleActor.instance.untilSimple.completes();
+    testResults.untilSimple.completes();
     
-    assertEquals(1, SimpleActor.instance.deliveries);
+    assertEquals(1, testResults.deliveries.get());
   }
 
   @Test
   public void testDeliverStopped() throws Exception {
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test2-actor"), Simple.class);
+    final SimpleTestResults testResults = new SimpleTestResults();
     
-    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
+    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test2-actor"), Simple.class);
     
-    SimpleActor.instance.stop();
+    testResults.untilSimple = TestUntil.happenings(1);
+    
+    SimpleActor.instance.get().stop();
         
     final Consumer<Simple> consumer = (actor) -> actor.simple();
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple()");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance.get(), Simple.class, consumer, "simple()");
     
     message.deliver();
     
-    assertEquals(1, SimpleActor.instance.untilSimple.remaining());
+    assertEquals(1, testResults.untilSimple.remaining());
     
-    assertEquals(0, SimpleActor.instance.deliveries);
+    assertEquals(0, testResults.deliveries.get());
   }
 
   @Test
   public void testDeliverWithParameters() throws Exception {
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.NoParameters, "test3-actor"), Simple.class);
+    final SimpleTestResults testResults = new SimpleTestResults();
     
-    SimpleActor.instance.untilSimple = TestUntil.happenings(1);
+    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test3-actor"), Simple.class);
+    
+    testResults.untilSimple = TestUntil.happenings(1);
     
     final Consumer<Simple> consumer = (actor) -> actor.simple2(2);
-    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance, Simple.class, consumer, "simple2(int)");
+    final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance.get(), Simple.class, consumer, "simple2(int)");
     
     message.deliver();
     
-    SimpleActor.instance.untilSimple.completes();
+    testResults.untilSimple.completes();
     
-    assertEquals(1, SimpleActor.instance.deliveries);
+    assertEquals(1, testResults.deliveries.get());
   }
   
   public static interface Simple {
@@ -72,28 +79,30 @@ public class LocalMessageTest extends ActorsTest {
   }
 
   public static class SimpleActor extends Actor implements Simple {
-    public static SimpleActor instance;
+    public static final ThreadLocal<SimpleActor> instance = new ThreadLocal<>();
     
-    public TestUntil untilSimple;
+    private final SimpleTestResults testResults;
     
-    public int deliveries;
-    
-    public SimpleActor() {
-      instance = this;
-      
-      untilSimple = TestUntil.happenings(0);
+    public SimpleActor(final SimpleTestResults testResults) {
+      this.testResults = testResults;
+      instance.set(this);
     }
 
     @Override
     public void simple() {
-      ++deliveries;
-      untilSimple.happened();
+      testResults.deliveries.incrementAndGet();
+      testResults.untilSimple.happened();
     }
 
     @Override
     public void simple2(final int val) {
-      ++deliveries;
-      untilSimple.happened();
+      testResults.deliveries.incrementAndGet();
+      testResults.untilSimple.happened();
     }
+  }
+  
+  public static class SimpleTestResults {
+    public AtomicInteger deliveries = new AtomicInteger(0);
+    public TestUntil untilSimple = TestUntil.happenings(0);
   }
 }

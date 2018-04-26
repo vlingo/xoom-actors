@@ -12,6 +12,7 @@ import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.Stage;
+import io.vlingo.actors.plugin.completes.MockCompletesEventually.CompletesResults;
 
 public class MockCompletesEventuallyProvider implements CompletesEventuallyProvider {
   public int initializeUsing;
@@ -19,6 +20,12 @@ public class MockCompletesEventuallyProvider implements CompletesEventuallyProvi
   
   public MockCompletesEventually completesEventually;
   public MockCompletes<?> completes;
+  
+  private final CompletesResults completesResults;
+  
+  public MockCompletesEventuallyProvider(final CompletesResults completesResults) {
+    this.completesResults = completesResults;
+  }
   
   @Override
   public void close() { }
@@ -30,7 +37,7 @@ public class MockCompletesEventuallyProvider implements CompletesEventuallyProvi
 
   @Override
   public void initializeUsing(final Stage stage) {
-    completesEventually = new MockCompletesEventually();
+    completesEventually = new MockCompletesEventually(completesResults);
     ++initializeUsing;
   }
 

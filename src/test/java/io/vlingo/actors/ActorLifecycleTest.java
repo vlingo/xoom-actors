@@ -10,6 +10,8 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
@@ -17,43 +19,48 @@ import io.vlingo.actors.testkit.TestUntil;
 public class ActorLifecycleTest extends ActorsTest {
   @Test
   public void testBeforeStart() throws Exception {
-    LifecycleActor.until = until(1);
-    world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
-    LifecycleActor.until.completes();
-    assertTrue(LifecycleActor.receivedBeforeStart);
-    assertFalse(LifecycleActor.receivedAfterStop);
+    final TestResults testResults = new TestResults();
+    testResults.until = until(1);
+    world.actorFor(Definition.has(LifecycleActor.class, Definition.parameters(testResults)), Stoppable.class);
+    testResults.until.completes();
+    assertTrue(testResults.receivedBeforeStart.get());
+    assertFalse(testResults.receivedAfterStop.get());
   }
 
   @Test
   public void testAfterStop() throws Exception {
-    LifecycleActor.until = until(2);
-    final Stoppable actor = world.actorFor(Definition.has(LifecycleActor.class, Definition.NoParameters), Stoppable.class);
+    final TestResults testResults = new TestResults();
+    testResults.until = until(2);
+    final Stoppable actor = world.actorFor(Definition.has(LifecycleActor.class, Definition.parameters(testResults)), Stoppable.class);
     actor.stop();
-    LifecycleActor.until.completes();
-    assertTrue(LifecycleActor.receivedBeforeStart);
-    assertTrue(LifecycleActor.receivedAfterStop);
+    testResults.until.completes();
+    assertTrue(testResults.receivedBeforeStart.get());
+    assertTrue(testResults.receivedAfterStop.get());
   }
-  
+
   public static class LifecycleActor extends Actor implements Stoppable {
-    public static boolean receivedBeforeStart = false;
-    public static boolean receivedAfterStop = false;
-    public static TestUntil until;
-    
-    public LifecycleActor() {
-      receivedBeforeStart = false;
-      receivedAfterStop = false;
+    private final TestResults testResults;
+
+    public LifecycleActor(final TestResults testResults) {
+      this.testResults = testResults;
     }
-    
+
     @Override
     protected void beforeStart() {
-      until.happened();
-      receivedBeforeStart = true;
+      testResults.until.happened();
+      testResults.receivedBeforeStart.set(true);
     }
 
     @Override
     protected void afterStop() {
-      until.happened();
-      receivedAfterStop = true;
+      testResults.until.happened();
+      testResults.receivedAfterStop.set(true);
     }
+  }
+
+  private static class TestResults {
+    public AtomicBoolean receivedBeforeStart = new AtomicBoolean(false);
+    public AtomicBoolean receivedAfterStop = new AtomicBoolean(false);
+    public TestUntil until = TestUntil.happenings(0);
   }
 }

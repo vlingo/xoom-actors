@@ -7,27 +7,29 @@
 
 package io.vlingo.actors.supervision;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.TestUntil;
 
-public class PingSupervisor extends Actor implements Supervisor {
-  public static PingSupervisor instance;
+public class PongSupervisorActor extends Actor implements Supervisor {
+  public static final ThreadLocal<PongSupervisorActor> instance = new ThreadLocal<>();
   
-  public int informedCount;
-  public TestUntil untilInform;
+  public final PongSupervisorTestResults testResults;
   
-  public PingSupervisor() {
-    instance = this;
+  public PongSupervisorActor() {
+    this.testResults = new PongSupervisorTestResults();
+    instance.set(this);
   }
-  
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override
             public int intensity() {
-              return 5;
+              return 10;
             }
 
             @Override
@@ -43,13 +45,18 @@ public class PingSupervisor extends Actor implements Supervisor {
   
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    ++informedCount;
+    testResults.informedCount.incrementAndGet();
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-    untilInform.happened();
+    testResults.untilInform.happened();
   }
 
   @Override
   public SupervisionStrategy supervisionStrategy() {
     return strategy;
+  }
+
+  public static class PongSupervisorTestResults {
+    public AtomicInteger informedCount = new AtomicInteger(0);
+    public TestUntil untilInform = TestUntil.happenings(0);
   }
 }

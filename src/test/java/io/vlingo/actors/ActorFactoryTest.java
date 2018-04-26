@@ -61,7 +61,7 @@ public class ActorFactoryTest {
             Definition.has(
                     TestInterfaceWithParamsActor.class,
                     Definition.parameters("test-text", 100),
-                    ParentInterfaceActor.parent,
+                    ParentInterfaceActor.instance.get(),
                     actorName);
     
     final Address address = Address.from(actorName);
@@ -82,7 +82,7 @@ public class ActorFactoryTest {
     assertNotNull(actor.stage());
     assertEquals(world.stage(), actor.stage());
     assertNotNull(actor.parent());
-    assertEquals(ParentInterfaceActor.parent, actor.parent());
+    assertEquals(ParentInterfaceActor.instance.get(), actor.parent());
     assertNotNull(actor.lifeCycle.environment);
     assertNotNull(actor.lifeCycle.environment.definition);
     assertEquals(definition, actor.lifeCycle.environment.definition);
@@ -105,9 +105,9 @@ public class ActorFactoryTest {
   public interface ParentInterface { }
   
   public static class ParentInterfaceActor extends Actor implements ParentInterface {
-    public static ParentInterfaceActor parent;
+    public static final ThreadLocal<ParentInterfaceActor> instance = new ThreadLocal<>();
     
-    public ParentInterfaceActor() { parent = this; }
+    public ParentInterfaceActor() { instance.set(this); }
   }
   
   public interface TestInterface { }

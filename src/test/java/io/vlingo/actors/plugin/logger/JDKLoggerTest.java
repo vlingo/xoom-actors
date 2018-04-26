@@ -79,13 +79,11 @@ public class JDKLoggerTest {
     
     assertEquals("testLoggedMessagesCount", plugin.logger().name());
 
-    MockHandler.logMessagesCount = 0;
-    
     logger.log("TEST:1 1");
     logger.log("TEST:1 2");
     logger.log("TEST:1 3");
     
-    assertEquals(3, MockHandler.logMessagesCount);
+    assertEquals(3, MockHandler.instance.get().logMessagesCount.get());
   }
 
   @Test
@@ -105,13 +103,11 @@ public class JDKLoggerTest {
     
     assertEquals("testNamedHandler", plugin.logger().name());
 
-    MockHandler.logMessagesCount = 0;
-    
     logger.log("TEST:2 1");
     logger.log("TEST:2 2");
     logger.log("TEST:2 3");
     
-    assertEquals(3, MockHandler.logMessagesCount);
+    assertEquals(3, MockHandler.instance.get().logMessagesCount.get());
   }
 
   @Test
