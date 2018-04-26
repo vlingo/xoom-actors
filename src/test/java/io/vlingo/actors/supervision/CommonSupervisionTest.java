@@ -97,8 +97,6 @@ public class CommonSupervisionTest extends ActorsTest {
 
     pong.actor().pong();
 
-    assertFalse(pong.actorInside().isStopped());
-
     PongSupervisorActor.instance.get().testResults.untilInform.completes();
     testResults.untilPonged.completes();
     testResults.untilStopped.completes();
