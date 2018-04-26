@@ -89,8 +89,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     testResults.until.completes();
     
-    for (int idx = 0; idx < Total; ++idx) {
-      assertEquals(idx, (int) ((TestMailbox) mailbox).counts.get(idx));
+    int idx = 0;
+    for (final Integer count : ((TestMailbox) mailbox).counts) {
+      assertEquals(idx++, (int) count);
     }
   }
   
