@@ -19,12 +19,14 @@ import io.vlingo.actors.testkit.TestUntil;
 public class ActorStopTest extends ActorsTest {
   @Test
   public void testStopActors() throws Exception {
-    final World world = World.start("test");
-    
+    System.out.println("Test: testStopActors");
+
     final TestResults testResults = new TestResults();
     
     testResults.untilStart = TestUntil.happenings(12);
     
+    System.out.println("Test: testStopActors: starting actors");
+
     final ChildCreatingStoppable[] stoppables = setUpActors(world, testResults);
     
     for (int idx = 0; idx < stoppables.length; ++idx) {
@@ -32,6 +34,8 @@ public class ActorStopTest extends ActorsTest {
     }
 
     testResults.untilStart.completes();
+
+    System.out.println("Test: testStopActors: stopping actors");
 
     testResults.untilStop = TestUntil.happenings(12);
 
@@ -41,7 +45,11 @@ public class ActorStopTest extends ActorsTest {
     
     testResults.untilStop.completes();
     
+    System.out.println("Test: testStopActors: stopped actors");
+
     assertEquals(12, testResults.stopCount.get());
+
+    System.out.println("Test: testStopActors: terminating world");
 
     testResults.terminating.set(true);
     world.terminate();
@@ -51,10 +59,12 @@ public class ActorStopTest extends ActorsTest {
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
-    final World world = World.start("test");
-    
+    System.out.println("Test: testWorldTerminateToStopAllActors");
+
     final TestResults testSpecs = new TestResults();
     
+    System.out.println("Test: testWorldTerminateToStopAllActors: starting actors");
+
     testSpecs.untilStart = TestUntil.happenings(12);
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world, testSpecs);
@@ -65,7 +75,11 @@ public class ActorStopTest extends ActorsTest {
 
     testSpecs.untilStart.completes();
     
+    System.out.println("Test: testWorldTerminateToStopAllActors: stopping actors");
+
     testSpecs.untilTerminatingStop = TestUntil.happenings(12);
+
+    System.out.println("Test: testWorldTerminateToStopAllActors: terminating world");
 
     testSpecs.terminating.set(true);
     world.terminate();
