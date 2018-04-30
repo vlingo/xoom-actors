@@ -10,10 +10,10 @@ package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -62,11 +62,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher.execute(mailbox);
     
-    assertEquals(3, ((TestMailbox) mailbox).counts.size());
+    assertEquals(3, testResults.counts.size());
 
-    assertEquals(0, (int) ((TestMailbox) mailbox).counts.get(0));
-    assertEquals(1, (int) ((TestMailbox) mailbox).counts.get(1));
-    assertEquals(2, (int) ((TestMailbox) mailbox).counts.get(2));
+    assertEquals(0, (int) testResults.counts.get(0));
+    assertEquals(1, (int) testResults.counts.get(1));
+    assertEquals(2, (int) testResults.counts.get(2));
   }
 
   @Test
@@ -90,7 +90,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     testResults.until.completes();
     
     int idx = 0;
-    for (final Integer count : ((TestMailbox) mailbox).counts) {
+    for (final Integer count : testResults.counts) {
       assertEquals(idx++, (int) count);
     }
   }
@@ -108,7 +108,6 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
 
   public static class TestMailbox implements Mailbox {
-    public final List<Integer> counts = new ArrayList<>();
     private final Queue<Message> queue = new ConcurrentLinkedQueue<>();
     private final TestResults testResults;
 
@@ -122,7 +121,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
       
       if (message != null) {
         message.deliver();
-        counts.add(testResults.highest.get());
+        testResults.counts.add(testResults.highest.get());
       }
     }
 
@@ -180,5 +179,6 @@ public class ExecutorDispatcherTest extends ActorsTest {
   private static class TestResults {
     public AtomicInteger highest = new AtomicInteger(0);
     public TestUntil until = TestUntil.happenings(0);
+    public final List<Integer> counts = new CopyOnWriteArrayList<>();
   }
 }
