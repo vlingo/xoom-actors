@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -36,7 +37,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
   @Test
   public void testClose() throws Exception {
     final TestResults testResults = new TestResults();
-    
+
+    testResults.log.set(true);
+
     final TestMailbox mailbox = new TestMailbox(testResults);
 
     final CountTakerActor actor = new CountTakerActor(testResults);
@@ -118,9 +121,10 @@ public class ExecutorDispatcherTest extends ActorsTest {
     @Override
     public void run() {
       final Message message = receive();
-      
+if (testResults.log.get()) System.out.println("TestMailbox: run: received: " + message);
       if (message != null) {
         message.deliver();
+if (testResults.log.get()) System.out.println("TestMailbox: run: adding: " + testResults.highest.get());
         testResults.counts.add(testResults.highest.get());
       }
     }
@@ -169,7 +173,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     @Override
     public void take(final int count) {
+if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count);
       if (count > testResults.highest.get()) {
+if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count + " > " + testResults.highest.get());
         testResults.highest.set(count);
       }
       testResults.until.happened();
@@ -177,8 +183,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
   
   private static class TestResults {
+    public final AtomicBoolean log = new AtomicBoolean(false);
+    public final List<Integer> counts = new CopyOnWriteArrayList<>();
     public AtomicInteger highest = new AtomicInteger(0);
     public TestUntil until = TestUntil.happenings(0);
-    public final List<Integer> counts = new CopyOnWriteArrayList<>();
   }
 }
