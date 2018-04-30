@@ -51,6 +51,8 @@ public class ExecutorDispatcherTest extends ActorsTest {
       dispatcher.execute(mailbox);
     }
 
+    testResults.until.completes();
+    
     dispatcher.close();
     
     final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
@@ -60,13 +62,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     dispatcher.execute(mailbox);
     
-    testResults.until.completes();
-    
+    assertEquals(3, ((TestMailbox) mailbox).counts.size());
+
     assertEquals(0, (int) ((TestMailbox) mailbox).counts.get(0));
     assertEquals(1, (int) ((TestMailbox) mailbox).counts.get(1));
     assertEquals(2, (int) ((TestMailbox) mailbox).counts.get(2));
-    
-    assertEquals(3, ((TestMailbox) mailbox).counts.size());
   }
 
   @Test
