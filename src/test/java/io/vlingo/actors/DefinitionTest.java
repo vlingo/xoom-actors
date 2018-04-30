@@ -89,9 +89,11 @@ public class DefinitionTest {
   public void testDefinitionHasTypeNoParametersParentActorName() throws Exception {
     final String actorName = "test-actor";
     
-    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), ParentInterface.class);
+    final ParentHolder parentHolder = new ParentHolder();
     
-    final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters, ParentInterfaceActor.parent, actorName);
+    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.parameters(parentHolder)), ParentInterface.class);
+    
+    final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters, parentHolder.parent, actorName);
     
     assertNotNull(definition);
     assertNotNull(definition.actorName());
@@ -100,7 +102,7 @@ public class DefinitionTest {
     assertNotNull(definition.parameters());
     assertEquals(0, definition.parameters().size());
     assertNotNull(definition.parent());
-    assertEquals(ParentInterfaceActor.parent, definition.parent());
+    assertEquals(parentHolder.parent, definition.parent());
     assertNotNull(definition.parentOr(new TestInterfaceActor()));
     assertEquals(TestInterfaceActor.class, definition.type());
   }
@@ -119,12 +121,14 @@ public class DefinitionTest {
   public static interface ParentInterface { }
   
   public static class ParentInterfaceActor extends Actor implements ParentInterface {
-    public static ParentInterfaceActor parent;
-    
-    public ParentInterfaceActor() { parent = this; }
+    public ParentInterfaceActor(final ParentHolder parentHolder) { parentHolder.parent = this; }
   }
   
   public static interface TestInterface { }
   
   public static class TestInterfaceActor extends Actor implements TestInterface { }
+  
+  public static class ParentHolder {
+    public ParentInterfaceActor parent;
+  }
 }
