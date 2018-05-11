@@ -40,7 +40,13 @@ public class ActorFactory {
     } else {
       for (final Constructor<?> ctor : definition.type().getConstructors()) {
         if (ctor.getParameterCount() == definition.internalParameters().size()) {
-          actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
+          try {
+            actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
+            actor.lifeCycle.sendStart(actor);
+          } catch (Throwable t) {
+            logger.log("vlingo/actors: ActorFactory: failed because: " + t.getMessage(), t);
+            t.printStackTrace();
+          }
           break;
         }
       }
