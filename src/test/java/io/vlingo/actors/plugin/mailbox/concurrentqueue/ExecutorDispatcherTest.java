@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Queue;
@@ -67,9 +68,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     assertEquals(3, testResults.counts.size());
 
-    assertEquals(0, (int) testResults.counts.get(0));
-    assertEquals(1, (int) testResults.counts.get(1));
-    assertEquals(2, (int) testResults.counts.get(2));
+    for (int idx = 0; idx < testResults.counts.size(); ++idx) {
+      assertTrue(testResults.counts.contains(idx));
+    }
   }
 
   @Test
@@ -92,9 +93,8 @@ public class ExecutorDispatcherTest extends ActorsTest {
     
     testResults.until.completes();
     
-    int idx = 0;
-    for (final Integer count : testResults.counts) {
-      assertEquals(idx++, (int) count);
+    for (int idx = 0; idx < testResults.counts.size(); ++idx) {
+      assertTrue(testResults.counts.contains(idx));
     }
   }
   
