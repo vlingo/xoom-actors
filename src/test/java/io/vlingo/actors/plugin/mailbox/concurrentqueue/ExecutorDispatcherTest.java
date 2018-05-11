@@ -123,7 +123,6 @@ public class ExecutorDispatcherTest extends ActorsTest {
       final Message message = receive();
 if (testResults.log.get()) System.out.println("TestMailbox: run: received: " + message);
       if (message != null) {
-        testResults.counts.add(testResults.highest.get());
         message.deliver();
 if (testResults.log.get()) System.out.println("TestMailbox: run: adding: " + testResults.highest.get());
       }
@@ -178,6 +177,7 @@ if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count)
 if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count + " > " + testResults.highest.get());
         testResults.highest.set(count);
       }
+      testResults.counts.add(testResults.highest.get());
       testResults.until.happened();
     }
   }
