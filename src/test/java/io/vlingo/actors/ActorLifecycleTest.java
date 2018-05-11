@@ -47,14 +47,14 @@ public class ActorLifecycleTest extends ActorsTest {
 
     @Override
     protected void beforeStart() {
-      testResults.until.happened();
       testResults.receivedBeforeStart.set(true);
+      testResults.until.happened();
     }
 
     @Override
     protected void afterStop() {
-      testResults.until.happened();
       testResults.receivedAfterStop.set(true);
+      testResults.until.happened();
     }
   }
 
