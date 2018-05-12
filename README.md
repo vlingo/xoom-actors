@@ -6,6 +6,16 @@ The vlingo-actors toolkit is much closer to fully defined in mid January 2018 th
 
 A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlingo-actors-tutorial-1/
 
+### Bintray
+```xml
+<dependency>
+  <groupId>io.vlingo</groupId>
+  <artifactId>vlingo-actors</artifactId>
+  <version>0.4.1</version>
+  <type>pom</type>
+</dependency>
+```
+
 License (See LICENSE file for full license)
 -------------------------------------------
 Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
