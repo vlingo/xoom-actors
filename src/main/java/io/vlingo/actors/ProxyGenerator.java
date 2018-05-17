@@ -35,7 +35,7 @@ public class ProxyGenerator implements AutoCloseable {
     public final String fullyQualifiedClassname;
     public final String source;
     public final File sourceFile;
-    
+
     private Result(final String fullyQualifiedClassname, final String classname, final String source, final File sourceFile) {
       this.fullyQualifiedClassname = fullyQualifiedClassname;
       this.classname = classname;
@@ -43,18 +43,18 @@ public class ProxyGenerator implements AutoCloseable {
       this.sourceFile = sourceFile;
     }
   }
-  
+
   private final boolean persist;
-  private final String rootOfClasses;
+  private final String rootOfClasses; // if the path is not configurable and automatic, this should be removed
   private final String rootOfGenerated;
   private final File targetClassesPath;
   private final DynaType type;
   private final URLClassLoader urlClassLoader;
-  
+
   public static ProxyGenerator forMain(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfMainClasses, DynaType.Main, persist);
   }
-  
+
   public static ProxyGenerator forTest(final boolean persist) throws Exception {
     return new ProxyGenerator(RootOfTestClasses, DynaType.Test, persist);
   }
@@ -66,24 +66,16 @@ public class ProxyGenerator implements AutoCloseable {
 
   public Result generateFor(final String actorProtocol) {
     System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
-    
-    final String relativePathToClass = toFullPath(actorProtocol);
-    final String relativePathToClassFile = rootOfClasses + relativePathToClass + ".class";
-    final File targetClassesRelativePathToClass = new File(relativePathToClassFile);
-    
-    if (targetClassesRelativePathToClass.exists()) {
-      try {
-        final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
-        final String proxyClassSource = proxyClassSource(protocolInterface);
-        final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
-        final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
-        final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
-        return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
-      } catch (Exception e) {
-        throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
-      }
-    } else {
-      throw new IllegalArgumentException("Cannot generate proxy class for " + actorProtocol + " because there is no corresponding:\n" + relativePathToClassFile);
+
+    try {
+      final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
+      final String proxyClassSource = proxyClassSource(protocolInterface);
+      final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
+      final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
+      final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
+      return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
     }
   }
 
@@ -112,7 +104,7 @@ public class ProxyGenerator implements AutoCloseable {
     final StringBuilder builder = new StringBuilder();
 
     final String signature = MessageFormat.format("  public {0}(final Actor actor, final Mailbox mailbox)", classnameFor(protocolInterface, "__Proxy"));
-    
+
     builder
       .append(signature).append("{\n")
       .append("    this.actor = actor;").append("\n")
@@ -124,7 +116,7 @@ public class ProxyGenerator implements AutoCloseable {
 
   private String importStatements(final Class<?> protocolInterface) {
     final StringBuilder builder = new StringBuilder();
-    
+
     builder
       .append("import java.util.function.Consumer;").append("\n\n")
       .append("import io.vlingo.actors.Actor;").append("\n")
@@ -133,7 +125,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.Mailbox;").append("\n");
 
     final Class<?> outerClass = protocolInterface.getDeclaringClass();
-    
+
     if (outerClass != null) {
       builder.append("import " + outerClass.getName() + "." + protocolInterface.getSimpleName() + ";").append("\n");
     }
@@ -150,17 +142,17 @@ public class ProxyGenerator implements AutoCloseable {
 
   private String instanceVariables(final Class<?> protocolInterface) {
     final StringBuilder builder = new StringBuilder();
-    
+
     builder
       .append("  private final Actor actor;").append("\n")
       .append("  private final Mailbox mailbox;").append("\n");
-    
+
     return builder.toString();
   }
 
   private String methodDefinition(final Class<?> protocolInterface, final Method method, final int count) {
     final StringBuilder builder = new StringBuilder();
-    
+
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}({3})", passedGenericTypes(method), method.getReturnType().getName(), method.getName(), parametersFor(method));
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
@@ -170,7 +162,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String elseDead = MessageFormat.format("      actor.deadLetters().failedDelivery(new DeadLetter(actor, {0}));", representationName);
     final String returnValue = returnValue(method.getReturnType());
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);
-    
+
     builder
       .append(methodSignature).append(throwsExceptions).append(" {\n")
       .append(ifNotStopped).append("\n")
@@ -181,21 +173,21 @@ public class ProxyGenerator implements AutoCloseable {
       .append("    }\n")
       .append(returnStatement)
       .append("  }\n");
-    
+
     return builder.toString();
   }
 
   private String methodDefinitions(final Class<?> protocolInterface, final Method[] methods) {
     final StringBuilder builder = new StringBuilder();
-    
+
     int count = 0;
-    
+
     for (final Method method : methods) {
       if (!Modifier.isStatic(method.getModifiers())) {
         builder.append(methodDefinition(protocolInterface, method, ++count));
       }
     }
-    
+
     return builder.toString();
   }
 
@@ -205,7 +197,7 @@ public class ProxyGenerator implements AutoCloseable {
 
   private String parametersFor(final Method method) {
     final StringBuilder builder = new StringBuilder();
-    
+
     String separator = ", ";
     int parameterIndex = 0;
     final Parameter[] parameters = method.getParameters();
@@ -217,13 +209,13 @@ public class ProxyGenerator implements AutoCloseable {
         builder.append(separator);
       }
     }
-    
+
     return builder.toString();
   }
 
   private String parameterNamesFor(final Method method) {
     final StringBuilder builder = new StringBuilder();
-    
+
     String separator = ", ";
     int parameterIndex = 0;
     final Parameter[] parameters = method.getParameters();
@@ -234,13 +226,13 @@ public class ProxyGenerator implements AutoCloseable {
         builder.append(separator);
       }
     }
-    
+
     return builder.toString();
   }
 
   private String parameterTypesFor(final Method method) {
     final StringBuilder builder = new StringBuilder();
-    
+
     String separator = ", ";
     int parameterIndex = 0;
     final Parameter[] parameters = method.getParameters();
@@ -252,21 +244,21 @@ public class ProxyGenerator implements AutoCloseable {
         builder.append(separator);
       }
     }
-    
+
     return builder.toString();
   }
 
   private Object passedGenericTypes(final Method method) {
     final StringBuilder builder = new StringBuilder();
-    
+
     final Parameter[] parameters = method.getParameters();
-    
+
     boolean first = true;
 
     for (final Parameter parameter : parameters) {
       final String parameterizedType = parameter.getParameterizedType().getTypeName();
       final String parameterType = parameter.getType().getTypeName();
-      
+
       if (parameterType.equals("java.lang.Object") && !parameterizedType.equals(parameterType)) {
         if (first) {
           builder.append("<");
@@ -277,9 +269,9 @@ public class ProxyGenerator implements AutoCloseable {
         first = false;
       }
     }
-    
+
     if (builder.length() > 0) builder.append("> ");
-    
+
     return builder.toString();
   }
 
@@ -287,15 +279,15 @@ public class ProxyGenerator implements AutoCloseable {
     final String pathToGeneratedSource = toPackagePath(actorProtocol);
     new File(rootOfGenerated + pathToGeneratedSource).mkdirs();
     final String pathToSource = rootOfGenerated + relativePathToClass + ".java";
-    
+
     return DynaFile.persistDynaClassSource(pathToSource, proxyClassSource);
   }
-  
+
   private String proxyClassSource(final Class<?> protocolInterface) {
     final Method[] methods = protocolInterface.getMethods();
-    
+
     final StringBuilder builder = new StringBuilder();
-    
+
     builder
       .append(packageStatement(protocolInterface)).append("\n\n")
       .append(importStatements(protocolInterface)).append("\n")
@@ -305,7 +297,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(constructor(protocolInterface)).append("\n")
       .append(methodDefinitions(protocolInterface, methods))
       .append("}").append("\n");
-    
+
     return builder.toString();
   }
 
@@ -316,9 +308,9 @@ public class ProxyGenerator implements AutoCloseable {
 
   private String representationStatements(final Method[] methods) {
     final StringBuilder builder = new StringBuilder();
-    
+
     int count = 0;
-    
+
     for (final Method method : methods) {
       if (!Modifier.isStatic(method.getModifiers())) {
         final String statement =
@@ -327,11 +319,11 @@ public class ProxyGenerator implements AutoCloseable {
                         method.getName(),
                         ++count,
                         parameterTypesFor(method));
-        
+
         builder.append(statement);
       }
     }
-    
+
     return builder.toString();
   }
 
@@ -359,21 +351,21 @@ public class ProxyGenerator implements AutoCloseable {
 
   private String throwsExceptions(final Method method) {
     final StringBuilder builder = new StringBuilder();
-    
+
     boolean first = true;
-    
+
     for (final Class<?> exceptionType : method.getExceptionTypes()) {
       if (first) {
         builder.append(" throws ");
       } else {
         builder.append(", ");
       }
-      
+
       first = false;
-      
+
       builder.append(exceptionType.getName());
     }
-    
+
     return builder.toString();
   }
 }
