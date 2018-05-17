@@ -67,23 +67,15 @@ public class ProxyGenerator implements AutoCloseable {
   public Result generateFor(final String actorProtocol) {
     System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
 
-    final String relativePathToClass = toFullPath(actorProtocol);
-    final ClassLoader loader = this.getClass().getClassLoader();
-    final String relativePathToClassFile = loader.getResource(relativePathToClass + ".class").getPath();
-    final File targetClassesRelativePathToClass = new File(relativePathToClassFile);
-    if (targetClassesRelativePathToClass.exists()) {
-      try {
-        final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
-        final String proxyClassSource = proxyClassSource(protocolInterface);
-        final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
-        final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
-        final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
-        return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
-      } catch (Exception e) {
-        throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
-      }
-    } else {
-      throw new IllegalArgumentException("Cannot generate proxy class for " + actorProtocol + " because there is no corresponding:\n" + relativePathToClassFile);
+    try {
+      final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
+      final String proxyClassSource = proxyClassSource(protocolInterface);
+      final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
+      final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
+      final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
+      return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
     }
   }
 
