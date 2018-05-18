@@ -13,14 +13,14 @@
     },
 
     "version": {
-        "name": "0.4-SNAPSHOT",
+        "name": "0.4.2",
         "gpgSign": false
     },
 
     "files": [
         {
             "includePattern": "target/(.*).jar",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.4-SNAPSHOT/$1",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/$1",
             "matrixParams": {
                 "override": 1
             }
