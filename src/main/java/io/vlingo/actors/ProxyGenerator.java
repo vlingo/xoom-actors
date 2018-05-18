@@ -45,7 +45,6 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private final boolean persist;
-  private final String rootOfClasses; // if the path is not configurable and automatic, this should be removed
   private final String rootOfGenerated;
   private final File targetClassesPath;
   private final DynaType type;
@@ -88,7 +87,6 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private ProxyGenerator(final String rootOfClasses, final DynaType type, final boolean persist) throws Exception {
-    this.rootOfClasses = rootOfClasses;
     this.rootOfGenerated = type == DynaType.Main ? GeneratedSources : GeneratedTestSources;
     this.type = type;
     this.persist = persist;
