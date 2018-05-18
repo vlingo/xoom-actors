@@ -29,7 +29,11 @@ public class PluginLoader {
   }
 
   public void loadEnabledPlugins(final Registrar registrar, final int pass) {
-    final Properties properties = loadProperties();
+    loadEnabledPlugins(registrar, pass, false);
+  }
+
+  public void loadEnabledPlugins(final Registrar registrar, final int pass, final boolean forceDefaults) {
+    final Properties properties = forceDefaults ? loadDefaultProperties() : loadProperties();
 
     for (String enabledPlugin : findEnabledPlugins(properties))
       registerPlugin(registrar, properties, enabledPlugin, pass);
@@ -49,13 +53,19 @@ public class PluginLoader {
     return enabledPlugins;
   }
 
+  private Properties loadDefaultProperties() {
+    final Properties properties = new Properties();
+    setUpDefaulted(properties);
+    return properties;
+  }
+
   private Properties loadProperties() {
     final Properties properties = new Properties();
 
     try {
       properties.load(PluginLoader.class.getResourceAsStream(propertiesFile));
     } catch (IOException e) {
-      throw new IllegalStateException("Must provide properties file on classpath: " + propertiesFile);
+      setUpDefaulted(properties);
     }
 
     return properties;
@@ -86,5 +96,25 @@ public class PluginLoader {
       return plugin;
     }
     return maybePlugin;
+  }
+
+  private void setUpDefaulted(final Properties properties) {
+    properties.setProperty("plugin.name.pooledCompletes", "true");
+    properties.setProperty("plugin.pooledCompletes.classname", "io.vlingo.actors.plugin.completes.PooledCompletesPlugin");
+    properties.setProperty("plugin.pooledCompletes.pool", "10");
+
+    properties.setProperty("plugin.name.queueMailbox", "true");
+    properties.setProperty("plugin.queueMailbox.classname", "io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin");
+    properties.setProperty("plugin.queueMailbox.defaultMailbox", "true");
+    properties.setProperty("plugin.queueMailbox.numberOfDispatchersFactor", "1.5");
+    properties.setProperty("plugin.queueMailbox.dispatcherThrottlingCount", "10");
+
+    properties.setProperty("plugin.name.jdkLogger", "true");
+    properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
+    properties.setProperty("plugin.jdkLogger.name", "vlingo/actors");
+    properties.setProperty("plugin.jdkLogger.defaultLogger", "false");
+    properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logging.jdk.DefaultHandler");
+    properties.setProperty("plugin.jdkLogger.handler.name", "vlingo");
+    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
   }
 }

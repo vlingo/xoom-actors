@@ -36,11 +36,15 @@ public final class World implements Registrar {
   private Stoppable publicRoot;
 
   public static synchronized World start(final String name) {
+    return start(name, false);
+  }
+
+  public static synchronized World start(final String name, final boolean forceDefaultConfiguration) {
     if (name == null) {
       throw new IllegalArgumentException("The world name must not be null.");
     }
     
-    return new World(name);
+    return new World(name, forceDefaultConfiguration);
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -240,7 +244,7 @@ public final class World implements Registrar {
     this.publicRoot = publicRoot;
   }
 
-  private World(final String name) {
+  private World(final String name, final boolean forceDefaultConfiguration) {
     this.name = name;
     this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
@@ -253,11 +257,11 @@ public final class World implements Registrar {
 
     final PluginLoader pluginLoader = new PluginLoader();
 
-    pluginLoader.loadEnabledPlugins(this, 1);
+    pluginLoader.loadEnabledPlugins(this, 1, forceDefaultConfiguration);
 
     startRootFor(defaultStage, defaultLogger());
 
-    pluginLoader.loadEnabledPlugins(this, 2);
+    pluginLoader.loadEnabledPlugins(this, 2, forceDefaultConfiguration);
   }
 
   private void startRootFor(final Stage stage, final Logger logger) {
