@@ -25,7 +25,7 @@
                 "override": 1
             }
         },
-        {"includePattern": "pom.xml", "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/$1.pom"}
+        {"includePattern": "pom.xml", "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/vlingo-actors-0.4.2.pom"}
     ],
 
     "publish": true
