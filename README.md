@@ -11,9 +11,8 @@ A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlin
 ```xml
   <repositories>
     <repository>
-      <id>bintray-vlingo-vlingo-platform-java</id>
-      <name>bintray</name>
-      <url>https://dl.bintray.com/vlingo/vlingo-platform-java</url>
+      <id>jcenter</id>
+      <url>https://jcenter.bintray.com/</url>
     </repository>
   </repositories>
   <dependencies>
@@ -32,9 +31,7 @@ dependencies {
 }
 
 repositories {
-    maven {
-        url  "https://dl.bintray.com/vlingo/vlingo-platform-java"
-    }
+    jcenter()
 }
 ```
 
