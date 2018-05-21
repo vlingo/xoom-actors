@@ -25,7 +25,13 @@
                 "override": 1
             }
         },
-        {"includePattern": "pom.xml", "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/vlingo-actors-0.4.2.pom"}
+        {
+            "includePattern": "pom.xml",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/vlingo-actors-0.4.2.pom",
+            "matrixParams": {
+                "override": 1
+            }
+        }
     ],
 
     "publish": true
