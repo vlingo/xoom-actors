@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion)
 
-The vlingo-actors toolkit is much closer to fully defined in mid January 2018 than it was a month ago. Stay tuned for the feature-complete version coming soon.
+The vlingo-actors toolkit is nearly full featured, so don't be fooled by the seemingly low version number.
 
 A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlingo-actors-tutorial-1/
 
@@ -19,7 +19,7 @@ A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlin
     <dependency>
       <groupId>io.vlingo</groupId>
       <artifactId>vlingo-actors</artifactId>
-      <version>0.4.2</version>
+      <version>0.4.4</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -27,7 +27,7 @@ A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlin
 
 ```gradle
 dependencies {
-    compile 'io.vlingo:vlingo-actors:0.4.2'
+    compile 'io.vlingo:vlingo-actors:0.4.4'
 }
 
 repositories {
