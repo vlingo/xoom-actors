@@ -20,14 +20,14 @@
     "files": [
         {
             "includePattern": "target/(.*).jar",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/$1.jar",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.3/$1.jar",
             "matrixParams": {
                 "override": 1
             }
         },
         {
             "includePattern": "pom.xml",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.2/vlingo-actors-0.4.2.pom",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.3/vlingo-actors-0.4.2.pom",
             "matrixParams": {
                 "override": 1
             }

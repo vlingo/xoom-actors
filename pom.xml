@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo</groupId>
   <artifactId>vlingo-actors</artifactId>
-  <version>0.4.2</version>
+  <version>0.4.3</version>
 
   <name>vlingo-actors</name>
   <url>http://maven.apache.org</url>
