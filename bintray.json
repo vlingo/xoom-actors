@@ -27,7 +27,7 @@
         },
         {
             "includePattern": "pom.xml",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.3/vlingo-actors-0.4.2.pom",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.4.3/vlingo-actors-0.4.3.pom",
             "matrixParams": {
                 "override": 1
             }
