@@ -11,8 +11,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import io.vlingo.actors.Completes;
-import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.plugin.completes.MockCompletesEventually.CompletesResults;
 
 public class PooledCompletesPluginTest {
@@ -28,15 +26,16 @@ public class PooledCompletesPluginTest {
     
     plugin.completesEventuallyProvider.completesEventually().with(new Object());
     
-    Completes<Object> completes = plugin.completesEventuallyProvider.provideCompletesFor(null);
+    MockCompletesEventually completes =
+            (MockCompletesEventually) plugin.completesEventuallyProvider.provideCompletesFor(null);
     
     completes.with(new Integer(7));
     
     assertEquals(1, registrar.registerCount);
     assertEquals(1, plugin.completesEventuallyProvider.initializeUsing);
     assertEquals(1, plugin.completesEventuallyProvider.provideCompletesForCount);
-    assertEquals(1, completesResults.withCount.get());
-    assertEquals(1, ((MockCompletes<?>) completes).withCount);
-    assertEquals(7, ((MockCompletes<?>) completes).outcome);
+    assertEquals(2, completesResults.withCount.get());
+    assertEquals(2, completes.completesResults.withCount.get());
+    assertEquals(7, completes.completesResults.outcome.get());
   }
 }

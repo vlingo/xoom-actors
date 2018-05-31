@@ -13,8 +13,8 @@ import io.vlingo.actors.Completes;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyActor;
 import io.vlingo.actors.CompletesEventuallyProvider;
-import io.vlingo.actors.CompletesHolder;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.PooledCompletes;
 import io.vlingo.actors.Stage;
 
 public class CompletesEventuallyPool implements CompletesEventuallyProvider {
@@ -51,11 +51,10 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T> Completes<T> provideCompletesFor(final Completes<T> clientCompletes) {
-    return (Completes<T>) new CompletesHolder(
+  public CompletesEventually provideCompletesFor(final Completes<?> clientCompletes) {
+    return new PooledCompletes(
             completesEventuallyId.getAndIncrement(),
-            (Completes<Object>) clientCompletes,
+            clientCompletes,
             completesEventually());
   }
 }

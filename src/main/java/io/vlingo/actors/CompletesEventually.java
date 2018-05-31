@@ -7,6 +7,6 @@
 
 package io.vlingo.actors;
 
-public interface CompletesEventually extends Completes<Object>, Stoppable {
+public interface CompletesEventually extends Stoppable {
   void with(final Object outcome);
 }

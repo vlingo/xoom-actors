@@ -13,8 +13,8 @@ public class CompletesEventuallyActor extends Actor implements CompletesEventual
   @Override
   public void with(final Object outcome) {
     try {
-      final CompletesHolder holder = (CompletesHolder) outcome;
-      holder.clientCompletes.with(holder.outcome());
+      final PooledCompletes pooled = (PooledCompletes) outcome;
+      pooled.clientCompletes.with(pooled.outcome());
     } catch (Throwable t) {
       logger().log("The eventually completed outcome failed in the client because: " + t.getMessage(), t);
     }

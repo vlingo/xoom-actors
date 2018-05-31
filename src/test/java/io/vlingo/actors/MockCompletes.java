@@ -9,12 +9,14 @@ package io.vlingo.actors;
 
 import io.vlingo.actors.testkit.TestUntil;
 
-public class MockCompletes<T> implements Completes<T> {
+public class MockCompletes<T> extends BasicCompletes<T> {
   public TestUntil untilWith;
   public T outcome;
   public int withCount;
   
   public MockCompletes() {
+    super((Scheduler) null);
+    
     untilWith = TestUntil.happenings(0);
   }
   
@@ -23,5 +25,10 @@ public class MockCompletes<T> implements Completes<T> {
     this.outcome = outcome;
     ++withCount;
     untilWith.happened();
+  }
+
+  @Override
+  public T outcome() {
+    return outcome;
   }
 }

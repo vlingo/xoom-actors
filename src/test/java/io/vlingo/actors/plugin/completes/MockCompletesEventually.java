@@ -8,6 +8,7 @@
 package io.vlingo.actors.plugin.completes;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.vlingo.actors.CompletesEventually;
 
@@ -28,10 +29,12 @@ public class MockCompletesEventually implements CompletesEventually {
 
   @Override
   public void with(final Object outcome) {
+    completesResults.outcome.set(outcome);
     completesResults.withCount.incrementAndGet();
   }
 
   public static class CompletesResults {
+    public final AtomicReference<Object> outcome = new AtomicReference<>();
     public final AtomicInteger withCount = new AtomicInteger(0);
   }
 }

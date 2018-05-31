@@ -42,12 +42,8 @@ public class MockCompletesEventuallyProvider implements CompletesEventuallyProvi
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T> Completes<T> provideCompletesFor(final Completes<T> clientCompletes) {
-    if (completes == null) {
-      completes = new MockCompletes<T>();
-    }
+  public CompletesEventually provideCompletesFor(final Completes<?> clientCompletes) {
     ++provideCompletesForCount;
-    return (Completes<T>) completes;
+    return completesEventually;
   }
 }

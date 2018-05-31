@@ -15,7 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.vlingo.actors.Completes;
+import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.PluginProperties;
@@ -41,7 +41,7 @@ public class PooledCompletesProviderTest {
     final MockCompletes<Object> clientCompletes = new MockCompletes<Object>();
     
     clientCompletes.untilWith = TestUntil.happenings(1);
-    final Completes<Object> asyncCompletes = world.completesFor(clientCompletes);
+    final CompletesEventually asyncCompletes = world.completesFor(clientCompletes);
     asyncCompletes.with(new Integer(5));
     clientCompletes.untilWith.completes();
     assertEquals(1, ((MockCompletes<Object>) clientCompletes).withCount);

@@ -7,15 +7,19 @@
 
 package io.vlingo.actors;
 
-public class CompletesHolder implements Completes<Object> {
+public class PooledCompletes implements CompletesEventually {
   public final Completes<Object> clientCompletes;
   public final CompletesEventually completesEventually;
   public final long id;
   private Object outcome;
 
-  public CompletesHolder(final long id, final Completes<Object> clientCompletes, final CompletesEventually completesEventually) {
+  @SuppressWarnings("unchecked")
+  public PooledCompletes(
+          final long id,
+          final Completes<?> clientCompletes,
+          final CompletesEventually completesEventually) {
     this.id = id;
-    this.clientCompletes = clientCompletes;
+    this.clientCompletes = (Completes<Object>) clientCompletes;
     this.completesEventually = completesEventually;
   }
 
@@ -28,4 +32,12 @@ public class CompletesHolder implements Completes<Object> {
     this.outcome = outcome;
     completesEventually.with(this);
   }
+
+  @Override
+  public boolean isStopped() {
+    return completesEventually.isStopped();
+  }
+
+  @Override
+  public void stop() { }
 }

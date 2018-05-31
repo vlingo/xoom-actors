@@ -67,7 +67,7 @@ public final class World implements Registrar {
     return deadLetters;
   }
 
-  public <T> Completes<T> completesFor(final Completes<T> clientCompletes) {
+  public CompletesEventually completesFor(final Completes<?> clientCompletes) {
     return completesProviderKeeper.findDefault().provideCompletesFor(clientCompletes);
   }
 
