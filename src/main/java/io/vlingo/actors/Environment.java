@@ -11,26 +11,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Environment {
-  protected static final byte FLAG_RESET = 0x00;
-  protected static final byte FLAG_STOPPED = 0x01;
-  protected static final byte FLAG_SECURED = 0x02;
-  
-  protected final Address address;
-  protected final List<Actor> children;
-  protected final Definition definition;
-  protected final FailureMark failureMark;
-  protected byte flags;
-  protected final Logger logger;
-  protected final Mailbox mailbox;
-  protected final Supervisor maybeSupervisor;
-  protected final Actor parent;
-  protected final Map<String,Object> proxyCache;
-  protected final Stage stage;
-  protected final Stowage stowage;
-  protected final Stowage suspended;
-  
+  final Address address;
+  final List<Actor> children;
+  final Definition definition;
+  final FailureMark failureMark;
+  final Logger logger;
+  final Mailbox mailbox;
+  final Supervisor maybeSupervisor;
+  final Actor parent;
+  final Map<String,Object> proxyCache;
+  final Stage stage;
+  final Stowage stowage;
+  final Stowage suspended;
+
+  private final AtomicBoolean secured;
+  private final AtomicBoolean stopped;
+
   protected Environment(
           final Stage stage,
           final Address address,
@@ -57,48 +56,45 @@ public class Environment {
     this.stowage = new Stowage();
     this.suspended = new Stowage();
     
-    this.flags = FLAG_RESET;
+    this.secured = new AtomicBoolean(false);
+    this.stopped = new AtomicBoolean(false);
   }
 
-  protected void addChild(final Actor child) {
+  void addChild(final Actor child) {
     children.add(child);
   }
 
-  protected <T> void cacheProxy(final T proxy) {
+  <T> void cacheProxy(final T proxy) {
     proxyCache.put(proxy.getClass().getName(), proxy);
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T lookUpProxy(final Class<T> protocol) {
+  <T> T lookUpProxy(final Class<T> protocol) {
     return (T) proxyCache.get(protocol.getName());
   }
 
-  protected boolean isSecured() {
-    return (flags & FLAG_SECURED) == FLAG_SECURED;
+  boolean isSecured() {
+    return secured.get();
   }
 
-  protected void setSecured() {
-    flags |= FLAG_SECURED;
+  void setSecured() {
+    secured.set(true);
   }
 
-  protected boolean isStopped() {
-    return (flags & FLAG_STOPPED) == FLAG_STOPPED;
+  boolean isStopped() {
+    return stopped.get();
   }
 
-  protected void stop() {
-    stopChildren();
+  void stop() {
+    if (stopped.compareAndSet(false, true)) {
+      stopChildren();
 
-    suspended.reset();
-    
-    stowage.reset();
-    
-    mailbox.close();
-    
-    setStopped();
-  }
+      suspended.reset();
 
-  private void setStopped() {
-    flags |= FLAG_STOPPED;
+      stowage.reset();
+
+      mailbox.close();
+    }
   }
 
   private void stopChildren() {
