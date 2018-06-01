@@ -11,6 +11,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface Completes<T> {
+  static <T> Completes<T> using(final Scheduler scheduler) {
+    return new BasicCompletes<T>(scheduler);
+  }
+
   static <T> Completes<T> withSuccess(final T outcome) {
     return new BasicCompletes<T>(outcome);
   }
@@ -30,6 +34,7 @@ public interface Completes<T> {
   Completes<T> after(final Consumer<T> consumer);
   Completes<T> after(final Consumer<T> consumer, final long timeout);
   Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue);
+  boolean hasOutcome();
   T outcome();
-  void with(final T outcome);
+  <O> Completes<O> with(final O outcome);
 }

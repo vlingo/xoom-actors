@@ -21,10 +21,12 @@ public class MockCompletes<T> extends BasicCompletes<T> {
   }
   
   @Override
-  public void with(final T outcome) {
-    this.outcome = outcome;
+  @SuppressWarnings("unchecked")
+  public <O> Completes<O> with(final O outcome) {
+    this.outcome = (T) outcome;
     ++withCount;
     untilWith.happened();
+    return (Completes<O>) this;
   }
 
   @Override

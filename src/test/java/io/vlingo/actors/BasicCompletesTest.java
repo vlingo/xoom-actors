@@ -9,40 +9,33 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-
-import io.vlingo.actors.BasicCompletes;
-import io.vlingo.actors.Completes;
-import io.vlingo.actors.Scheduler;
 
 public class BasicCompletesTest {
   private Integer andThenValue;
 
   @Test
   public void testCompletesWith() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-
-    completes.with(5);
+    final Completes<Integer> completes = new BasicCompletes<>(5);
 
     assertEquals(new Integer(5), completes.outcome());
   }
 
   @Test
   public void testCompletesAfterSupplier() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+    final Completes<Integer> completes = new BasicCompletes<>(0);
+
     completes.after(() -> completes.outcome() * 2);
-    
+
     completes.with(5);
-    
+
     assertEquals(new Integer(10), completes.outcome());
   }
 
   @Test
   public void testCompletesAfterConsumer() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    final Completes<Integer> completes = new BasicCompletes<>(0);
     
     completes.after((value) -> andThenValue = value);
     
@@ -53,8 +46,8 @@ public class BasicCompletesTest {
 
   @Test
   public void testCompletesAfterAndThen() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+    final Completes<Integer> completes = new BasicCompletes<>(0);
+
     completes
       .after(() -> completes.outcome() * 2)
       .andThen((value) -> andThenValue = value);
@@ -66,7 +59,7 @@ public class BasicCompletesTest {
 
   @Test
   public void testCompletesAfterAndThenMessageOut() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    final Completes<Integer> completes = new BasicCompletes<>(0);
 
     final Sender sender = new Sender();
 
@@ -77,17 +70,6 @@ public class BasicCompletesTest {
     completes.with(5);
 
     assertEquals(new Integer(10), andThenValue);
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void testThatCompletesAfterConsumerAndThenConsumerFails() {
-    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
-    completes.after((value) -> andThenValue = value).andThen((value) -> andThenValue = value * 2);
-    
-    completes.with(5);
-    
-    assertNotEquals(new Integer(10), andThenValue);
   }
 
   @Test
@@ -108,7 +90,7 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(() -> completes.outcome() * 2, 1)
+      .after(() -> completes.outcome() * 2, 1, 0)
       .andThen((value) -> andThenValue = value);
     
     Thread.sleep(100);
@@ -116,7 +98,7 @@ public class BasicCompletesTest {
     completes.with(5);
     
     assertNotEquals(new Integer(10), andThenValue);
-    assertNull(andThenValue);
+    assertEquals(new Integer(0), andThenValue);
   }
 
   private class Sender {

@@ -11,22 +11,26 @@ import java.util.function.Consumer;
 
 public class LocalMessage<T> implements Message {
   protected final Actor actor;
+  protected final Completes<Object> completes;
   protected final Consumer<T> consumer;
   protected final Class<T> protocol;
   protected final String representation;
   
-  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final String representation) {
+  @SuppressWarnings("unchecked")
+  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Completes<?> completes, final String representation) {
     this.actor = actor;
     this.consumer = consumer;
     this.protocol = protocol;
     this.representation = representation;
+    this.completes = (Completes<Object>) completes;
+  }
+
+  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final String representation) {
+    this(actor, protocol, consumer, null, representation);
   }
 
   public LocalMessage(final LocalMessage<T> message) {
-    this.actor = message.actor;
-    this.consumer = message.consumer;
-    this.protocol = message.protocol;
-    this.representation = message.representation;
+    this(message.actor, message.protocol, message.consumer, null, message.representation);
   }
 
   @Override
@@ -85,7 +89,11 @@ public class LocalMessage<T> implements Message {
       actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
+        actor.completes.clearOutcome();
         consumer.accept((T) actor);
+        if (actor.completes.hasOutcome()) {
+          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.outcome());
+        }
       } catch (Throwable t) {
         actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
         actor.stage().handleFailureOf(new StageSupervisedActor(protocol, actor, t));

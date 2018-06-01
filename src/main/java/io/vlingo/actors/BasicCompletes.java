@@ -13,29 +13,17 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BasicCompletes<T> implements Completes<T>, Scheduled {
-  private Cancellable cancellable;
-  private final AtomicBoolean completed;
-  private Consumer<T> consumer;
-  private final AtomicReference<T> outcome;
-  private final Scheduler scheduler;
-  private Supplier<T> supplier;
-  private T timedOutValue;
-  private long timeout;
+  private final AtomicReference<Outcome> outcome;
+  private final State state;
 
-  BasicCompletes(final Scheduler scheduler) {
-    this.scheduler = scheduler;
-    this.consumer = null;
-    this.completed = new AtomicBoolean(false);
-    this.outcome = new AtomicReference<>();
-    this.supplier = null;
+  public BasicCompletes(final Scheduler scheduler) {
+    this.outcome = new AtomicReference<>(null);
+    this.state = new State(scheduler);
   }
 
-  BasicCompletes(final T outcome) {
-    this.scheduler = null;
-    this.consumer = null;
-    this.completed = new AtomicBoolean(true);
-    this.outcome = new AtomicReference<>(outcome);
-    this.supplier = null;
+  public BasicCompletes(final T outcome) {
+    this.outcome = new AtomicReference<>(new Outcome(outcome));
+    this.state = new State();
   }
 
   @Override
@@ -52,19 +40,22 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
 
   @Override
   public Completes<T> after(final Supplier<T> supplier, final long timeout, final T timedOutValue) {
-    this.supplier = supplier;
-    this.timeout = timeout;
-    this.timedOutValue = timedOutValue;
-    startTimer();
+    state.supplier = supplier;
+    state.timedOutValue = timedOutValue;
+    if (state.isCompleted() && outcome.get() != null) {
+      outcome.set(new Outcome(state.supplier.get()));
+    } else {
+      startTimer(timeout);
+    }
     return this;
   }
 
   @Override
   public Completes<T> andThen(final Consumer<T> consumer) {
-    if (this.consumer != null) {
-      throw new IllegalStateException("Consumer already set making andThen() invalid.");
+    state.andThen = consumer;
+    if (state.isCompleted() && outcome.get() != null) {
+      state.andThen.accept(outcome.get().data);
     }
-    this.consumer = consumer;
     return this;
   }
 
@@ -82,53 +73,121 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
 
   @Override
   public Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue) {
-    this.consumer = consumer;
-    this.timeout = timeout;
-    startTimer();
+    state.consumer = consumer;
+    state.timedOutValue = timedOutValue;
+    if (state.isCompleted() && outcome.get() != null) {
+      state.consumer.accept(outcome.get().data);
+    } else {
+      startTimer(timeout);
+    }
     return this;
   }
 
   @Override
-  public T outcome() {
-    return outcome.get();
+  public boolean hasOutcome() {
+    return outcome.get() != null;
   }
 
   @Override
-  public void with(final T outcome) {
-    this.outcome.set(outcome);
-    
-    if (cancellable != null) {
-      cancellable.cancel();
+  public T outcome() {
+    return outcome.get().data;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <O> Completes<O> with(final O outcome) {
+    if (state == null) {
+      this.outcome.set(new Outcome((T) outcome));
+    } else {
+      completedWith(false, (T) outcome);
     }
 
-    complete(false);
+    return (Completes<O>) this;
   }
 
   @Override
   public void intervalSignal(final Scheduled scheduled, final Object data) {
-    complete(true);
+    completedWith(true, null);
   }
 
-  private void complete(final boolean timedOut) {
-    if (completed.compareAndSet(false, true)) {
+  BasicCompletes() {
+    this.outcome = new AtomicReference<>(null);
+    this.state = null;
+  }
+
+  void clearOutcome() {
+    outcome.set(null);
+  }
+
+  private void completedWith(final boolean timedOut, final T outcome) {
+    if (state.completed.compareAndSet(false, true)) {
+      this.outcome.set(new Outcome(outcome));
+
+      state.cancelTimer();
+
       if (timedOut) {
-        outcome.set(timedOutValue);
+        this.outcome.set(new Outcome(state.timedOutValue));
       }
 
-      if (supplier != null) {
-        outcome.set(supplier.get());
+      if (state.supplier != null) {
+        this.outcome.set(new Outcome(state.supplier.get()));
       }
 
-      if (consumer != null) {
-        consumer.accept(outcome.get());
+      if (state.consumer != null) {
+        state.consumer.accept(this.outcome.get().data);
+      }
+
+      if (state.andThen != null) {
+        state.andThen.accept(this.outcome.get().data);
       }
     }
   }
 
-  private void startTimer() {
+  private void startTimer(final long timeout) {
     if (timeout > 0) {
       // 2L delayBefore prevents timeout until after return from here
-      cancellable = scheduler.scheduleOnce(this, null, 2L, timeout);
+      state.cancellable = state.scheduler.scheduleOnce(this, null, 2L, timeout);
+    }
+  }
+
+  private class Outcome {
+    private T data;
+
+    private Outcome(final T data) {
+      this.data = data;
+    }
+  }
+
+  private class State {
+    private Consumer<T> andThen;
+    private Cancellable cancellable;
+    private final AtomicBoolean completed;
+    private Consumer<T> consumer;
+    private Scheduler scheduler;
+    private Supplier<T> supplier;
+    private T timedOutValue;
+
+    private State(final Scheduler scheduler) {
+      this.scheduler = scheduler;
+      this.andThen = null;
+      this.consumer = null;
+      this.completed = new AtomicBoolean(false);
+      this.supplier = null;
+    }
+
+    private State() {
+      this(null);
+    }
+
+    private void cancelTimer() {
+      if (cancellable != null) {
+        cancellable.cancel();
+        cancellable = null;
+      }
+    }
+
+    private boolean isCompleted() {
+      return completed.get();
     }
   }
 }

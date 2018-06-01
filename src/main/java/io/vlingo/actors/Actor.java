@@ -12,6 +12,7 @@ import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 
 public abstract class Actor implements Startable, Stoppable, TestStateView {
+  final BasicCompletes<Object> completes;
   final LifeCycle lifeCycle;
 
   public Address address() {
@@ -20,6 +21,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   public DeadLetters deadLetters() {
     return lifeCycle.environment.stage.world().deadLetters();
+  }
+
+  public Scheduler scheduler() {
+    return lifeCycle.environment.stage.scheduler();
   }
 
   @Override
@@ -68,6 +73,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
     this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
     ActorFactory.threadLocalEnvironment.set(null);
+    this.completes = new BasicCompletes<Object>();
   }
 
   protected <T> T childActorFor(final Definition definition, final Class<T> protocol) {
@@ -80,6 +86,14 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
         return lifeCycle.environment.stage.actorFor(definition, protocol, this, null, logger());
       }
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  protected <T> Completes<T> completes() {
+    if (completes == null) {
+      throw new IllegalStateException("Completes is not available for this protocol behavior.");
+    }
+    return (Completes<T>) completes;
   }
 
   protected Definition definition() {
