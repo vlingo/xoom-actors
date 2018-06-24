@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -40,21 +42,12 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
 
   @Override
   public Completes<T> after(final Supplier<T> supplier, final long timeout, final T timedOutValue) {
-    state.supplier = supplier;
     state.timedOutValue = timedOutValue;
+    state.actions.add(supplier);
     if (state.isCompleted() && outcome.get() != null) {
-      outcome.set(new Outcome(state.supplier.get()));
+      executeActions();
     } else {
       startTimer(timeout);
-    }
-    return this;
-  }
-
-  @Override
-  public Completes<T> andThen(final Consumer<T> consumer) {
-    state.andThen = consumer;
-    if (state.isCompleted() && outcome.get() != null) {
-      state.andThen.accept(outcome.get().data);
     }
     return this;
   }
@@ -73,12 +66,41 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
 
   @Override
   public Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue) {
-    state.consumer = consumer;
     state.timedOutValue = timedOutValue;
+    state.actions.add(consumer);
     if (state.isCompleted() && outcome.get() != null) {
-      state.consumer.accept(outcome.get().data);
+      executeActions();
     } else {
       startTimer(timeout);
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> andThen(final Consumer<T> consumer) {
+    state.actions.add(consumer);
+    if (state.isCompleted() && outcome.get() != null) {
+      executeActions();
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> atLast(final Supplier<T> supplier) {
+    state.actions.add(supplier);
+    if (state.isCompleted() && outcome.get() != null) {
+      executeActions();
+      outcome.set(new Outcome(supplier.get()));
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> atLast(final Consumer<T> consumer) {
+    if (state.actions.isEmpty()) throw new IllegalStateException("Must follow one after().");
+    state.actions.add(consumer);
+    if (state.isCompleted() && outcome.get() != null) {
+      consumer.accept(outcome.get().data);
     }
     return this;
   }
@@ -129,18 +151,23 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
         this.outcome.set(new Outcome(state.timedOutValue));
       }
 
-      if (state.supplier != null) {
-        this.outcome.set(new Outcome(state.supplier.get()));
-      }
+      executeActions();
+    }
+  }
 
-      if (state.consumer != null) {
-        state.consumer.accept(this.outcome.get().data);
-      }
-
-      if (state.andThen != null) {
-        state.andThen.accept(this.outcome.get().data);
+  @SuppressWarnings("unchecked")
+  private void executeActions() {
+    while (!state.executingActions.compareAndSet(false, true))
+      ;
+    while (state.actions.peek() != null) {
+      final Object action = state.actions.poll();
+      if (action instanceof Supplier) {
+        this.outcome.set(new Outcome(((Supplier<T>) action).get()));
+      } else if (action instanceof Consumer) {
+        ((Consumer<T>) action).accept(this.outcome.get().data);
       }
     }
+    state.executingActions.set(false);
   }
 
   private void startTimer(final long timeout) {
@@ -159,20 +186,18 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
   }
 
   private class State {
-    private Consumer<T> andThen;
+    private Queue<Object> actions;
     private Cancellable cancellable;
     private final AtomicBoolean completed;
-    private Consumer<T> consumer;
+    private final AtomicBoolean executingActions;
     private Scheduler scheduler;
-    private Supplier<T> supplier;
     private T timedOutValue;
 
     private State(final Scheduler scheduler) {
       this.scheduler = scheduler;
-      this.andThen = null;
-      this.consumer = null;
+      this.actions = new ConcurrentLinkedQueue<>();
       this.completed = new AtomicBoolean(false);
-      this.supplier = null;
+      this.executingActions = new AtomicBoolean(false);
     }
 
     private State() {

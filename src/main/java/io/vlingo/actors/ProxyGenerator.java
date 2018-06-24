@@ -125,6 +125,7 @@ public class ProxyGenerator implements AutoCloseable {
     builder
       .append("import java.util.function.Consumer;").append("\n\n")
       .append("import io.vlingo.actors.Actor;").append("\n")
+      .append(returnTypes._2 ? "import io.vlingo.actors.BasicCompletes;\n" : "")
       .append(returnTypes._2 ? "import io.vlingo.actors.Completes;\n" : "")
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
@@ -348,9 +349,11 @@ public class ProxyGenerator implements AutoCloseable {
     boolean anyCompletes = false;
     
     for (final Method method : protocolInterface.getMethods()) {
-      final ReturnType returnType = new ReturnType(method);
-      returnTypes.add(returnType);
-      if (returnType.completes) anyCompletes = true;
+      if (!Modifier.isStatic(method.getModifiers())) {
+        final ReturnType returnType = new ReturnType(method);
+        returnTypes.add(returnType);
+        if (returnType.completes) anyCompletes = true;
+      }
     }
 
     return Tuple2.from(returnTypes, anyCompletes);

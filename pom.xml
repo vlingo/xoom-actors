@@ -1,20 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo</groupId>
   <artifactId>vlingo-actors</artifactId>
-  <version>0.4.5</version>
-
+  <version>0.4.6</version>
   <name>vlingo-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
   <url>https://github.com/vlingo/vlingo-actors</url>
-
   <licenses>
     <license>
       <name>Mozilla Public License 2.0</name>
       <url>https://mozilla.org/MPL/2.0/</url>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <name>Vaughn Vernon</name>
@@ -29,19 +26,16 @@
       <organizationUrl>https://github.com/d-led</organizationUrl>
     </developer>
   </developers>
-
   <scm>
     <connection>scm:git:git://github.com/vlingo/vlingo-actors.git</connection>
     <developerConnection>scm:git:ssh://github.com/vlingo/vlingo-actors.git</developerConnection>
     <url>http://github.com/vlingo/vlingo-actors/tree/master</url>
   </scm>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
-
   <build>
     <plugins>
       <plugin>
@@ -83,7 +77,6 @@
       </plugin>
     </plugins>
   </build>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -102,7 +95,6 @@
       <version>0.3.3</version>
     </dependency>
   </dependencies>
-
   <distributionManagement>
     <repository>
       <id>bintray-vlingo-vlingo-platform-java</id>
@@ -110,5 +102,4 @@
       <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
     </repository>
   </distributionManagement>
-
 </project>

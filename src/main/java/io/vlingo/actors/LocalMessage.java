@@ -92,7 +92,8 @@ public class LocalMessage<T> implements Message {
         actor.completes.clearOutcome();
         consumer.accept((T) actor);
         if (actor.completes.hasOutcome()) {
-          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.outcome());
+          final Object outcome = actor.completes.outcome();
+          actor.lifeCycle.environment.stage.world().completesFor(completes).with(outcome);
         }
       } catch (Throwable t) {
         actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);

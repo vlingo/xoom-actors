@@ -19,7 +19,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   private static final String HelloNot = "Bye!";
   private static final String Prefix = "*** ";
 
-  private String hello;
+  private String greeting;
   private int value;
   private TestUntil untilHello = TestUntil.happenings(1);
   private TestUntil untilOne = TestUntil.happenings(1);
@@ -28,9 +28,9 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testReturnsCompletes() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    uc.getHello().after((hello) -> setHello(hello.hello));
+    uc.getHello().after((hello) -> setHello(hello.greeting));
     untilHello.completes();
-    assertEquals(Hello, hello);
+    assertEquals(Hello, greeting);
     uc.getOne().after((value) -> setValue(value));
     untilOne.completes();
     assertEquals(1, value);
@@ -40,15 +40,15 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testAfterAndThenCompletes() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    final Completes<Hello> hello = uc.getHello();
-    hello.after(() -> new Hello(Prefix + hello.outcome().hello))
-         .andThen((finalHello) -> setHello(finalHello.hello));
+    final Completes<Hello> helloCompletes = uc.getHello();
+    helloCompletes.after(() -> new Hello(Prefix + helloCompletes.outcome().greeting))
+         .andThen((hello) -> setHello(hello.greeting));
 
     untilHello.completes();
-    assertNotEquals(Hello, hello.outcome().hello);
-    assertNotEquals(Hello, this.hello);
-    assertEquals(Prefix + Hello, hello.outcome().hello);
-    assertEquals(Prefix + Hello, this.hello);
+    assertNotEquals(Hello, helloCompletes.outcome().greeting);
+    assertNotEquals(Hello, this.greeting);
+    assertEquals(Prefix + Hello, helloCompletes.outcome().greeting);
+    assertEquals(Prefix + Hello, this.greeting);
 
     final Completes<Integer> one = uc.getOne();
     one.after(() -> one.outcome() + 1)
@@ -65,10 +65,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testThatTimeOutOccurs() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesCausesTimeoutActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    final Completes<Hello> helloCompletes = uc.getHello().after((hello) -> setHello(hello.hello), 2, new Hello(HelloNot));
+    final Completes<Hello> helloCompletes = uc.getHello().after((hello) -> setHello(hello.greeting), 2, new Hello(HelloNot));
     untilHello.completes();
-    assertNotEquals(Hello, hello);
-    assertEquals(HelloNot, helloCompletes.outcome().hello);
+    assertNotEquals(Hello, greeting);
+    assertEquals(HelloNot, helloCompletes.outcome().greeting);
     final Completes<Integer> oneCompletes = uc.getOne().after((value) -> setValue(value), 2, 0);
     untilOne.completes();
     assertNotEquals(1, value);
@@ -76,7 +76,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   private void setHello(final String hello) {
-    this.hello = hello;
+    this.greeting = hello;
     untilHello.happened();
   }
 
@@ -86,10 +86,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   public static class Hello {
-    public final String hello;
+    public final String greeting;
 
-    public Hello(final String hello) {
-      this.hello = hello;
+    public Hello(final String greeting) {
+      this.greeting = greeting;
     }
   }
 

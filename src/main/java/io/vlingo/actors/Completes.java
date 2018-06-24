@@ -30,10 +30,12 @@ public interface Completes<T> {
   Completes<T> after(final Supplier<T> supplier);
   Completes<T> after(final Supplier<T> supplier, final long timeout);
   Completes<T> after(final Supplier<T> supplier, final long timeout, final T timedOutValue);
-  Completes<T> andThen(final Consumer<T> consumer);
   Completes<T> after(final Consumer<T> consumer);
   Completes<T> after(final Consumer<T> consumer, final long timeout);
   Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue);
+  Completes<T> andThen(final Consumer<T> consumer);
+  Completes<T> atLast(final Consumer<T> consumer);
+  Completes<T> atLast(final Supplier<T> supplier);
   boolean hasOutcome();
   T outcome();
   <O> Completes<O> with(final O outcome);
