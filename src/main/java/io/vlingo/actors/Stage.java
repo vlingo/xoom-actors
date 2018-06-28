@@ -36,13 +36,15 @@ public class Stage implements Stoppable {
   }
 
   public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
-    return new Protocols(
+    final ActorProtocolActor<Object>[] all =
             actorFor(
                     definition,
                     protocols,
                     definition.parentOr(world.defaultParent()),
                     definition.supervisor(),
-                    definition.loggerOr(world.defaultLogger())));
+                    definition.loggerOr(world.defaultLogger()));
+
+    return new Protocols(ActorProtocolActor.toActors(all));
   }
 
   public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
@@ -279,12 +281,12 @@ public class Stage implements Stoppable {
     }
   }
   
-  private static class ActorProtocolActor<T> {
+  static class ActorProtocolActor<T> {
     private final Actor actor;
     private final T protocolActor;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected static ActorProtocolActor<Object>[] allOf(final Actor actor, Object[] protocolActors) {
+    static ActorProtocolActor<Object>[] allOf(final Actor actor, Object[] protocolActors) {
       final ActorProtocolActor<Object>[] all = new ActorProtocolActor[protocolActors.length];
       for (int idx = 0; idx < protocolActors.length; ++idx) {
         all[idx] = new ActorProtocolActor(actor, protocolActors[idx]);
@@ -292,7 +294,15 @@ public class Stage implements Stoppable {
       return all;
     }
 
-    protected static TestActor<?>[] toTestActors(final ActorProtocolActor<Object>[] all) {
+    static Object[] toActors(final ActorProtocolActor<Object>[] all) {
+      final Object[] actors = new Object[all.length];
+      for (int idx = 0; idx < all.length; ++idx) {
+        actors[idx] = all[idx].protocolActor();
+      }
+      return actors;
+    }
+
+    static TestActor<?>[] toTestActors(final ActorProtocolActor<Object>[] all) {
       final TestActor<?>[] testActors = new TestActor[all.length];
       for (int idx = 0; idx < all.length; ++idx) {
         testActors[idx] = all[idx].toTestActor();
@@ -300,16 +310,16 @@ public class Stage implements Stoppable {
       return testActors;
     }
 
-    protected ActorProtocolActor(final Actor actor, final T protocol) {
+    ActorProtocolActor(final Actor actor, final T protocol) {
       this.actor = actor;
       this.protocolActor = protocol;
     }
 
-    protected T protocolActor() {
+    T protocolActor() {
       return protocolActor;
     }
     
-    protected TestActor<T> toTestActor() {
+    TestActor<T> toTestActor() {
       return new TestActor<T>(actor, protocolActor, actor.address());
     }
   }

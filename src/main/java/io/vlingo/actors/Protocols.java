@@ -15,7 +15,7 @@ public class Protocols {
     return (T) protocolActors[index];
   }
   
-  protected Protocols(final Object[] protocolActors) {
+  Protocols(final Object[] protocolActors) {
     this.protocolActors = protocolActors;
   }
 
