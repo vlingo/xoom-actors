@@ -19,7 +19,7 @@ A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlin
     <dependency>
       <groupId>io.vlingo</groupId>
       <artifactId>vlingo-actors</artifactId>
-      <version>0.4.7</version>
+      <version>0.4.8</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -27,7 +27,7 @@ A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlin
 
 ```gradle
 dependencies {
-    compile 'io.vlingo:vlingo-actors:0.4.7'
+    compile 'io.vlingo:vlingo-actors:0.4.8'
 }
 
 repositories {

@@ -117,7 +117,8 @@ public final class World implements Registrar {
 
   @Override
   public void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider) {
-    loggerProviderKeeper.keep(name, isDefault, loggerProvider);
+    final boolean actualDefault = loggerProviderKeeper.findDefault() == null ? true : isDefault;
+    loggerProviderKeeper.keep(name, actualDefault, loggerProvider);
     this.defaultLogger = loggerProviderKeeper.findDefault().logger();
   }
 
