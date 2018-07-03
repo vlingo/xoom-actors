@@ -43,7 +43,7 @@ final class LoggerProviderKeeper {
   }
 
   void keep(final String name, boolean isDefault, final LoggerProvider loggerProvider) {
-    if (loggerProviderInfos.isEmpty()) {
+    if (loggerProviderInfos.isEmpty() || findDefault() == null) {
       isDefault = true;
     }
     
@@ -57,8 +57,7 @@ final class LoggerProviderKeeper {
   private void undefaultCurrentDefault() {
     for (final String key : loggerProviderInfos.keySet()) {
       final LoggerProviderInfo info = loggerProviderInfos.get(key);
-
-      if (info.isDefault) {
+      if (info != null && info.isDefault) {
         loggerProviderInfos.put(key, new LoggerProviderInfo(info.name, info.loggerProvider, false));
       }
     }

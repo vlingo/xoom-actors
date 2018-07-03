@@ -76,12 +76,17 @@ public final class World implements Registrar {
       return defaultLogger;
     }
     
-    this.defaultLogger = loggerProviderKeeper.findDefault().logger();
+    if (loggerProviderKeeper != null) {
+      final LoggerProvider maybeLoggerProvider = loggerProviderKeeper.findDefault();
+      this.defaultLogger = maybeLoggerProvider != null ?
+              maybeLoggerProvider.logger() :
+              LoggerProvider.noOpLoggerProvider().logger();
+    }
     
     if (this.defaultLogger == null) {
       this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
     }
-    
+
     return this.defaultLogger;
   }
 

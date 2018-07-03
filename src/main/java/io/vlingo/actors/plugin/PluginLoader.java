@@ -28,15 +28,12 @@ public class PluginLoader {
     this.plugins = new HashMap<>();
   }
 
-  public void loadEnabledPlugins(final Registrar registrar, final int pass) {
-    loadEnabledPlugins(registrar, pass, false);
-  }
-
   public void loadEnabledPlugins(final Registrar registrar, final int pass, final boolean forceDefaults) {
     final Properties properties = forceDefaults ? loadDefaultProperties() : loadProperties();
 
-    for (String enabledPlugin : findEnabledPlugins(properties))
+    for (String enabledPlugin : findEnabledPlugins(properties)) {
       registerPlugin(registrar, properties, enabledPlugin, pass);
+    }
   }
 
   private Set<String> findEnabledPlugins(final Properties properties) {
@@ -112,7 +109,7 @@ public class PluginLoader {
     properties.setProperty("plugin.name.jdkLogger", "true");
     properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
     properties.setProperty("plugin.jdkLogger.name", "vlingo/actors");
-    properties.setProperty("plugin.jdkLogger.defaultLogger", "false");
+    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
     properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logging.jdk.DefaultHandler");
     properties.setProperty("plugin.jdkLogger.handler.name", "vlingo");
     properties.setProperty("plugin.jdkLogger.handler.level", "ALL");

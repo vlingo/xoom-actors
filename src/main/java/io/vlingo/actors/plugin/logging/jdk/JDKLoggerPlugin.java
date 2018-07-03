@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.logging.jdk;
 
 import java.util.Properties;
 
+import io.vlingo.actors.Definition;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.Registrar;
@@ -16,14 +17,16 @@ import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class JDKLoggerPlugin implements Plugin, LoggerProvider {
-  private JDKLogger logger;
+  private Logger logger;
   private String name;
+  private int pass = 0;
   
   public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
     Properties properties = new Properties();
     properties.setProperty("plugin.jdkLogger.defaulLogger", "true");
     properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logging.jdk.DefaultHandler");
     properties.setProperty("plugin.jdkLogger.handler.name", name);
+    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
     properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
     JDKLoggerPlugin plugin = new JDKLoggerPlugin();
     plugin.start(registrar, name, new PluginProperties("jdkLogger", properties));
@@ -42,16 +45,23 @@ public class JDKLoggerPlugin implements Plugin, LoggerProvider {
 
   @Override
   public int pass() {
-    return 1;
+    pass = pass == 0 ? 1 : 2;
+    return pass;
   }
 
   @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     this.name = properties.getString("name", name);
-    this.logger = new JDKLogger(this.name, properties);
-    final boolean defaultLogger = properties.getBoolean("defaultLogger", true);
     
-    registrar.register(name, defaultLogger, this);
+    // pass 0 or 1 is bootstrap, pass 2 is for reals
+    if (pass < 2) {
+      logger = new JDKLogger(this.name, properties);
+      registrar.register(name, true, this);
+    } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
+      logger = registrar.world().actorFor(Definition.has(JDKLoggerActor.class, Definition.parameters(logger), logger), Logger.class);
+      final boolean defaultLogger = properties.getBoolean("defaultLogger", true);
+      registrar.register(name, defaultLogger, this);
+    }
   }
 
   @Override
