@@ -59,12 +59,8 @@ public class ActorStopTest extends ActorsTest {
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
-    System.out.println("Test: testWorldTerminateToStopAllActors");
-
     final TestResults testSpecs = new TestResults();
     
-    System.out.println("Test: testWorldTerminateToStopAllActors: starting actors");
-
     testSpecs.untilStart = TestUntil.happenings(12);
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world, testSpecs);
@@ -75,11 +71,7 @@ public class ActorStopTest extends ActorsTest {
 
     testSpecs.untilStart.completes();
     
-    System.out.println("Test: testWorldTerminateToStopAllActors: stopping actors");
-
     testSpecs.untilTerminatingStop = TestUntil.happenings(12);
-
-    System.out.println("Test: testWorldTerminateToStopAllActors: terminating world");
 
     testSpecs.terminating.set(true);
     world.terminate();
