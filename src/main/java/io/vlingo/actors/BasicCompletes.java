@@ -97,7 +97,6 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
 
   @Override
   public Completes<T> atLast(final Consumer<T> consumer) {
-    if (state.actions.isEmpty()) throw new IllegalStateException("Must follow one after().");
     state.actions.add(consumer);
     if (state.isCompleted() && outcome.get() != null) {
       consumer.accept(outcome.get().data);
