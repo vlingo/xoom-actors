@@ -89,9 +89,9 @@ public class LocalMessage<T> implements Message {
       actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
-        actor.completes.clearOutcome();
+        actor.completes = completes;
         consumer.accept((T) actor);
-        if (actor.completes.hasOutcome()) {
+        if (actor.completes != null && actor.completes.hasOutcome()) {
           final Object outcome = actor.completes.outcome();
           actor.lifeCycle.environment.stage.world().completesFor(completes).with(outcome);
         }

@@ -12,7 +12,7 @@ import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 
 public abstract class Actor implements Startable, Stoppable, TestStateView {
-  final BasicCompletes<Object> completes;
+  Completes<Object> completes;
   final LifeCycle lifeCycle;
 
   public Address address() {
@@ -73,7 +73,6 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
     this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
     ActorFactory.threadLocalEnvironment.set(null);
-    this.completes = new BasicCompletes<Object>();
   }
 
   protected <T> T childActorFor(final Definition definition, final Class<T> protocol) {
