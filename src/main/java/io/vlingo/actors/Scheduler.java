@@ -21,15 +21,15 @@ public class Scheduler {
 
   public Cancellable scheduleOnce(final Scheduled scheduled, final Object data, final long delayBefore, final long interval) {
     final SchedulerTask schedulerTask = new SchedulerTask(scheduled, data, false);
-    timer.schedule(schedulerTask, delayBefore, interval);
+    timer.schedule(schedulerTask, delayBefore + interval);
     return schedulerTask;
   }
 
-  protected Scheduler() {
+  Scheduler() {
     this.timer = new Timer();
   }
 
-  protected void close() {
+  void close() {
     timer.cancel();
   }
 
