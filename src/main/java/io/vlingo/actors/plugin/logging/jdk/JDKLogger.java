@@ -7,6 +7,8 @@
 
 package io.vlingo.actors.plugin.logging.jdk;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -63,7 +65,16 @@ public class JDKLogger implements Logger {
   @Override
   public void log(final String message, final Throwable throwable) {
     if (isEnabled()) {
-      logger.log(this.level, message, throwable);
+      try {
+        logger.log(this.level, message);
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        final PrintStream stream = new PrintStream(output);
+        throwable.printStackTrace(stream);
+        final String stacktrace = output.toString("UTF8");
+        logger.log(this.level, stacktrace);
+      } catch (Exception e) {
+        logger.severe("JDKLogger: Failed to log exception about: " + message + " and reason: " + throwable.getMessage());
+      }
     }
   }
 
