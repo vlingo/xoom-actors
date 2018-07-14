@@ -35,9 +35,32 @@ public class Stage implements Stoppable {
             definition.loggerOr(world.defaultLogger()));
   }
 
+  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Logger logger) {
+    return actorFor(
+            definition,
+            protocol,
+            definition.parentOr(world.defaultParent()),
+            definition.supervisor(),
+            logger);
+  }
+
+  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address, final Logger logger) {
+    final ActorProtocolActor<T> actor =
+            actorProtocolFor(
+              definition,
+              protocol,
+              definition.parentOr(world.defaultParent()),
+              address,
+              null,
+              definition.supervisor(),
+              logger);
+
+    return actor.protocolActor();
+  }
+
   public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
     final ActorProtocolActor<Object>[] all =
-            actorFor(
+            actorProtocolFor(
                     definition,
                     protocols,
                     definition.parentOr(world.defaultParent()),
@@ -56,7 +79,7 @@ public class Stage implements Stoppable {
                     definition.actorName());
     
     try {
-      return actorFor(
+      return actorProtocolFor(
               redefinition,
               protocol,
               definition.parentOr(world.defaultParent()),
@@ -82,7 +105,7 @@ public class Stage implements Stoppable {
                     definition.actorName());
     
     final ActorProtocolActor<Object>[] all =
-            actorFor(
+            actorProtocolFor(
                     redefinition,
                     protocols,
                     definition.parentOr(world.defaultParent()),
@@ -92,20 +115,6 @@ public class Stage implements Stoppable {
                     definition.loggerOr(world.defaultLogger()));
     
     return new Protocols(ActorProtocolActor.toTestActors(all));
-  }
-
-  public final <T> T actorProxyFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
-    return ActorProxy.createFor(protocol, actor, mailbox);
-  }
-
-  public final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    final Object[] proxies = new Object[protocol.length];
-    
-    for (int idx = 0; idx < protocol.length; ++idx) {
-      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
-    }
-    
-    return proxies;
   }
 
   public int count() {
@@ -165,15 +174,15 @@ public class Stage implements Stoppable {
   }
 
   <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
-    ActorProtocolActor<T> actor = actorFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
+    ActorProtocolActor<T> actor = actorProtocolFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
   }
 
-  ActorProtocolActor<Object>[] actorFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
-    return actorFor(definition, protocols, parent, null, null, maybeSupervisor, logger);
+  ActorProtocolActor<Object>[] actorProtocolFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    return actorProtocolFor(definition, protocols, parent, null, null, maybeSupervisor, logger);
   }
 
-  <T> ActorProtocolActor<T> actorFor(
+  <T> ActorProtocolActor<T> actorProtocolFor(
           final Definition definition,
           final Class<T> protocol,
           final Actor parent,
@@ -193,7 +202,7 @@ public class Stage implements Stoppable {
     }
   }
 
-  ActorProtocolActor<Object>[] actorFor(
+  ActorProtocolActor<Object>[] actorProtocolFor(
           final Definition definition,
           final Class<?>[] protocols,
           final Actor parent,
@@ -210,6 +219,20 @@ public class Stage implements Stoppable {
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
+  }
+
+  final <T> T actorProxyFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
+    return ActorProxy.createFor(protocol, actor, mailbox);
+  }
+
+  final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
+    final Object[] proxies = new Object[protocol.length];
+    
+    for (int idx = 0; idx < protocol.length; ++idx) {
+      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
+    }
+    
+    return proxies;
   }
 
   Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {

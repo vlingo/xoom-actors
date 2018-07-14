@@ -19,7 +19,8 @@ public final class World implements Registrar {
   static final String PUBLIC_ROOT_NAME = "#public";
   static final int DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
   static final String DEADLETTERS_NAME = "#deadLetters";
-  
+  static final int HIGH_ROOT_ID = DEADLETTERS_ID - 1;
+
   static final String DEFAULT_STAGE = "__defaultStage";
 
   private final CompletesEventuallyProviderKeeper completesProviderKeeper;
@@ -190,7 +191,7 @@ public final class World implements Registrar {
     return this;
   }
 
-  <T> Mailbox assignMailbox(final String mailboxName, final int hashCode) {
+  Mailbox assignMailbox(final String mailboxName, final int hashCode) {
     return mailboxProviderKeeper.assignMailbox(mailboxName, hashCode);
   }
 
@@ -271,7 +272,7 @@ public final class World implements Registrar {
   }
 
   private void startRootFor(final Stage stage, final Logger logger) {
-    stage.actorFor(
+    stage.actorProtocolFor(
             Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
             Stoppable.class,
             null,

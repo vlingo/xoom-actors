@@ -34,7 +34,7 @@ public class DefaultSupervisorOverride extends Actor implements Supervisor {
           };
 
   public DefaultSupervisorOverride() {
-    this.parentSupervisor = stage().actorAs(parent(), Supervisor.class);
+    this.parentSupervisor = parentAs(Supervisor.class);
   }
 
   @Override

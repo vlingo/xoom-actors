@@ -9,12 +9,12 @@ package io.vlingo.actors;
 
 public class Protocols {
   private final Object[] protocolActors;
-  
+
   @SuppressWarnings("unchecked")
   public <T> T get(final int index) {
     return (T) protocolActors[index];
   }
-  
+
   Protocols(final Object[] protocolActors) {
     this.protocolActors = protocolActors;
   }
@@ -24,18 +24,12 @@ public class Protocols {
   }
 
   public static class Two<A, B> {
-    private final Protocols protocols;
+    public final A _1;
+    public final B _2;
     
     public Two(final Protocols protocols) {
-      this.protocols = protocols;
-    }
-    
-    public A p1() {
-      return protocols.get(0);
-    }
-    
-    public B p2() {
-      return protocols.get(1);
+      this._1 = protocols.get(0);
+      this._2 = protocols.get(1);
     }
   }
 
@@ -44,22 +38,14 @@ public class Protocols {
   }
 
   public static class Three<A, B, C> {
-    private final Protocols protocols;
+    public final A _1;
+    public final B _2;
+    public final C _3;
     
     public Three(final Protocols protocols) {
-      this.protocols = protocols;
-    }
-    
-    public A p1() {
-      return protocols.get(0);
-    }
-    
-    public B p2() {
-      return protocols.get(1);
-    }
-    
-    public C p3() {
-      return protocols.get(2);
+      this._1 = protocols.get(0);
+      this._2 = protocols.get(1);
+      this._3 = protocols.get(2);
     }
   }
 
@@ -68,26 +54,16 @@ public class Protocols {
   }
 
   public static class Four<A, B, C, D> {
-    private final Protocols protocols;
-    
+    public final A _1;
+    public final B _2;
+    public final C _3;
+    public final D _4;
+
     public Four(final Protocols protocols) {
-      this.protocols = protocols;
-    }
-    
-    public A p1() {
-      return protocols.get(0);
-    }
-    
-    public B p2() {
-      return protocols.get(1);
-    }
-    
-    public C p3() {
-      return protocols.get(2);
-    }
-    
-    public D p4() {
-      return protocols.get(3);
+      this._1 = protocols.get(0);
+      this._2 = protocols.get(1);
+      this._3 = protocols.get(2);
+      this._4 = protocols.get(3);
     }
   }
 
@@ -96,30 +72,18 @@ public class Protocols {
   }
 
   public static class Five<A, B, C, D, E> {
-    private final Protocols protocols;
-    
+    public final A _1;
+    public final B _2;
+    public final C _3;
+    public final D _4;
+    public final E _5;
+
     public Five(final Protocols protocols) {
-      this.protocols = protocols;
-    }
-    
-    public A p1() {
-      return protocols.get(0);
-    }
-    
-    public B p2() {
-      return protocols.get(1);
-    }
-    
-    public C p3() {
-      return protocols.get(2);
-    }
-    
-    public D p4() {
-      return protocols.get(3);
-    }
-    
-    public E p5() {
-      return protocols.get(4);
+      this._1 = protocols.get(0);
+      this._2 = protocols.get(1);
+      this._3 = protocols.get(2);
+      this._4 = protocols.get(3);
+      this._5 = protocols.get(4);
     }
   }
 }

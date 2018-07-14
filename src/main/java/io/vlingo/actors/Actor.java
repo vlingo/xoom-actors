@@ -69,6 +69,13 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     return "Actor[type=" + this.getClass().getSimpleName() + " address=" + address() + "]";
   }
 
+  Actor parent() {
+    if (lifeCycle.environment.isSecured()) {
+      throw new IllegalStateException("A secured actor cannot provide its parent.");
+    }
+    return lifeCycle.environment.parent;
+  }
+
   protected Actor() {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
     this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
@@ -103,11 +110,12 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     return lifeCycle.environment.logger;
   }
 
-  protected Actor parent() {
+  protected <T> T parentAs(final Class<T> protocol) {
     if (lifeCycle.environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its parent.");
     }
-    return lifeCycle.environment.parent;
+    final Actor parent = lifeCycle.environment.parent;
+    return lifeCycle.environment.stage.actorProxyFor(protocol, parent, parent.lifeCycle.environment.mailbox);
   }
 
   protected void secure() {

@@ -34,10 +34,11 @@ public class PooledCompletesPlugin implements Plugin {
   @Override
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     final int poolSize = properties.getInteger("pool", 10);
+    final String mailboxName = properties.getString("mailbox", null);
     
     this.name = name;
     
-    this.completesEventuallyProvider = new CompletesEventuallyPool(poolSize);
+    this.completesEventuallyProvider = new CompletesEventuallyPool(poolSize, mailboxName);
     
     registrar.register(name, completesEventuallyProvider);
   }

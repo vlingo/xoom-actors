@@ -27,7 +27,7 @@ public class StageTest {
     
     assertNotNull(test);
     assertNotNull(TestInterfaceActor.instance.get());
-    assertEquals(world.defaultParent(), TestInterfaceActor.instance.get().parent());
+    assertEquals(world.defaultParent(), TestInterfaceActor.instance.get().lifeCycle.environment.parent);
   }
   
   @Test

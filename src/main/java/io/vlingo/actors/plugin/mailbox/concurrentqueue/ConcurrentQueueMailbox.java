@@ -18,6 +18,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
   private final Dispatcher dispatcher;
   private final Queue<Message> queue;
+  private final byte throttlingCount;
 
   public void close() {
     queue.clear();
@@ -49,7 +50,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   }
 
   public void run() {
-    final int total = ConcurrentQueueMailboxSettings.instance().throttlingCount;
+    final int total = (int) throttlingCount;
     for (int count = 0; count < total; ++count) {
       final Message message = receive();
       if (message != null) {
@@ -64,9 +65,10 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     }
   }
 
-  protected ConcurrentQueueMailbox(final Dispatcher dispatcher) {
+  protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
     this.dispatcher = dispatcher;
     this.delivering = new AtomicBoolean(false);
     this.queue = new ConcurrentLinkedQueue<Message>();
+    this.throttlingCount = (byte) throttlingCount;
   }
 }

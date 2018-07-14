@@ -24,11 +24,11 @@ public class ProtocolsTest extends ActorsTest {
     
     final Protocols.Two<TestActor<P1>, TestActor<P2>> two = Protocols.two(protocols);
     
-    two.p1().actor().do1();
+    two._1.actor().do1();
     assertEquals(1, TwoProtocolsActor.instance.get().do1Count);
     
-    two.p2().actor().do2();
-    two.p2().actor().do2();
+    two._2.actor().do2();
+    two._2.actor().do2();
     assertEquals(2, TwoProtocolsActor.instance.get().do2Count);
   }
 
@@ -41,16 +41,16 @@ public class ProtocolsTest extends ActorsTest {
     
     final Protocols.Three<TestActor<P1>, TestActor<P2>, TestActor<P3>> three = Protocols.three(protocols);
     
-    three.p1().actor().do1();
+    three._1.actor().do1();
     assertEquals(1, ThreeProtocolsActor.instance.get().do1Count);
     
-    three.p2().actor().do2();
-    three.p2().actor().do2();
+    three._2.actor().do2();
+    three._2.actor().do2();
     assertEquals(2, ThreeProtocolsActor.instance.get().do2Count);
     
-    three.p3().actor().do3();
-    three.p3().actor().do3();
-    three.p3().actor().do3();
+    three._3.actor().do3();
+    three._3.actor().do3();
+    three._3.actor().do3();
     assertEquals(3, ThreeProtocolsActor.instance.get().do3Count);
   }
 
@@ -63,22 +63,22 @@ public class ProtocolsTest extends ActorsTest {
     
     final Protocols.Four<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>> four = Protocols.four(protocols);
     
-    four.p1().actor().do1();
+    four._1.actor().do1();
     assertEquals(1, FourProtocolsActor.instance.get().do1Count);
     
-    four.p2().actor().do2();
-    four.p2().actor().do2();
+    four._2.actor().do2();
+    four._2.actor().do2();
     assertEquals(2, FourProtocolsActor.instance.get().do2Count);
     
-    four.p3().actor().do3();
-    four.p3().actor().do3();
-    four.p3().actor().do3();
+    four._3.actor().do3();
+    four._3.actor().do3();
+    four._3.actor().do3();
     assertEquals(3, FourProtocolsActor.instance.get().do3Count);
     
-    four.p4().actor().do4();
-    four.p4().actor().do4();
-    four.p4().actor().do4();
-    four.p4().actor().do4();
+    four._4.actor().do4();
+    four._4.actor().do4();
+    four._4.actor().do4();
+    four._4.actor().do4();
     assertEquals(4, FourProtocolsActor.instance.get().do4Count);
   }
 
@@ -91,29 +91,29 @@ public class ProtocolsTest extends ActorsTest {
     
     final Protocols.Five<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>, TestActor<P5>> five = Protocols.five(protocols);
     
-    five.p1().actor().do1();
+    five._1.actor().do1();
     assertEquals(1, FiveProtocolsActor.instance.get().do1Count);
     
-    five.p2().actor().do2();
-    five.p2().actor().do2();
+    five._2.actor().do2();
+    five._2.actor().do2();
     assertEquals(2, FiveProtocolsActor.instance.get().do2Count);
     
-    five.p3().actor().do3();
-    five.p3().actor().do3();
-    five.p3().actor().do3();
+    five._3.actor().do3();
+    five._3.actor().do3();
+    five._3.actor().do3();
     assertEquals(3, FiveProtocolsActor.instance.get().do3Count);
     
-    five.p4().actor().do4();
-    five.p4().actor().do4();
-    five.p4().actor().do4();
-    five.p4().actor().do4();
+    five._4.actor().do4();
+    five._4.actor().do4();
+    five._4.actor().do4();
+    five._4.actor().do4();
     assertEquals(4, FiveProtocolsActor.instance.get().do4Count);
     
-    five.p5().actor().do5();
-    five.p5().actor().do5();
-    five.p5().actor().do5();
-    five.p5().actor().do5();
-    five.p5().actor().do5();
+    five._5.actor().do5();
+    five._5.actor().do5();
+    five._5.actor().do5();
+    five._5.actor().do5();
+    five._5.actor().do5();
     assertEquals(5, FiveProtocolsActor.instance.get().do5Count);
   }
 

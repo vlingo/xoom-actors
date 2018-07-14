@@ -12,8 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class Address implements Comparable<Address> {
   final static Address None = new Address(0, "None");
 
+  private static final AtomicInteger highId = new AtomicInteger(World.HIGH_ROOT_ID);
   private static final AtomicInteger nextId = new AtomicInteger(1);
-  
+
   private final int id;
   private final String name;
 
@@ -21,8 +22,17 @@ public final class Address implements Comparable<Address> {
     return new Address(name);
   }
 
+  public static Address withHighId() {
+    return withHighId(null);
+  }
+
+  public static Address withHighId(final String name) {
+    return new Address(highId.decrementAndGet(), name);
+  }
+
   static void initialize() {
-    nextId.getAndSet(1);
+    highId.set(World.HIGH_ROOT_ID);
+    nextId.set(1);
   }
 
   static Address from(final int reservedId, final String name) {

@@ -56,9 +56,8 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   public void setUp() throws Exception {
     super.setUp();
     
-    ConcurrentQueueMailboxSettings.with(1);
     dispatcher = new ExecutorDispatcher(1, 1.0f);
-    mailbox = new ConcurrentQueueMailbox(dispatcher);
+    mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
   }
   
   @After

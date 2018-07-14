@@ -50,12 +50,12 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   @Test
   public void testOverflowDispatch() throws Exception {
     final TestResults testResults = new TestResults();
-    
+
     final CountTaker countTaker =
             world.actorFor(
                     Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"),
                     CountTaker.class);
-    
+
     final int totalCount = MailboxSize * 2;
     
     testResults.until = until(MaxCount);
@@ -63,9 +63,9 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
-    
+
     testResults.until.completes();
-    
+
     assertEquals(MaxCount, testResults.highest.get());
   }
 
@@ -79,8 +79,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testArrayQueueMailbox.defaultMailbox", "false");
     properties.setProperty("plugin.testArrayQueueMailbox.size", ""+MailboxSize);
     properties.setProperty("plugin.testArrayQueueMailbox.fixedBackoff", "2");
-    properties.setProperty("plugin.testArrayQueueMailbox.numberOfDispatchersFactor", "1.0");
-    properties.setProperty("plugin.testArrayQueueMailbox.dispatcherThrottlingCount", "10");
+    properties.setProperty("plugin.testArrayQueueMailbox.dispatcherThrottlingCount", "1");
     properties.setProperty("plugin.testArrayQueueMailbox.sendRetires", "10");
     
     PluginProperties pluginProps = new PluginProperties("testRingMailbox", properties);
@@ -114,7 +113,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
       }
     }
   }
-  
+
   private static class TestResults {
     public AtomicInteger highest = new AtomicInteger(0);
     public TestUntil until = TestUntil.happenings(0);

@@ -51,7 +51,7 @@ public class ExecutorDispatcher implements Dispatcher {
 
     public void rejectedExecution(final Runnable runnable, final ThreadPoolExecutor executor) {
       if (!executor.isShutdown() && !executor.isTerminated())
-        runnable.run();
+        throw new IllegalStateException("Message cannot be sent due to current system resource limitations.");
     }
   }
 }

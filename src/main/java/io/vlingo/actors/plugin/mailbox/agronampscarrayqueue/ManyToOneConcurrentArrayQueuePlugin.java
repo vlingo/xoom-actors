@@ -7,6 +7,10 @@
 
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
@@ -15,18 +19,24 @@ import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvider {
-  private ManyToOneConcurrentArrayQueueDispatcherPool dispatcherPool;
+  private final Map<Integer, ManyToOneConcurrentArrayQueueDispatcher> dispatchers;
   private String name;
+  private final Properties defaultProperties;
 
-  public ManyToOneConcurrentArrayQueuePlugin() { }
-
-  @Override
-  public void close() {
-    dispatcherPool.close();
+  public ManyToOneConcurrentArrayQueuePlugin() {
+    this.dispatchers = new ConcurrentHashMap<>(1);
+    this.defaultProperties = new Properties();
   }
 
   @Override
-  public String name() { return name; }
+  public void close() {
+    dispatchers.values().stream().forEach(dispatcher -> dispatcher.close());
+  }
+
+  @Override
+  public String name() {
+    return name;
+  }
 
   @Override
   public int pass() {
@@ -37,35 +47,55 @@ public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvi
   public void start(final Registrar registrar, final String name, final PluginProperties properties) {
     this.name = name;
 
-    createDispatcherPool(properties);
+    defaultProperties.setProperty("mailboxSize", String.valueOf(properties.getInteger("size", 1048576)));
+    defaultProperties.setProperty("fixedBackoff", String.valueOf(properties.getInteger("fixedBackoff", 2)));
+    defaultProperties.setProperty("dispatcherThrottlingCount", String.valueOf(properties.getInteger("dispatcherThrottlingCount", 1)));
+    defaultProperties.setProperty("sendRetires", String.valueOf(properties.getInteger("sendRetires", 10)));
 
     registerWith(registrar, properties);
   }
 
   public Mailbox provideMailboxFor(final int hashCode) {
-    return dispatcherPool.assignFor(hashCode).mailbox();
+    return provideMailboxFor(hashCode, null);
   }
 
   public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
-    // TODO: allow for custom RingBufferDispatcher
-    return dispatcherPool.assignFor(hashCode).mailbox();
+    return provideMailboxFor(hashCode, dispatcher, defaultProperties);
   }
 
-  private void createDispatcherPool(final PluginProperties properties) {
-    final float numberOfDispatchersFactor = properties.getFloat("numberOfDispatchersFactor", 1.5f);
-    final int size = properties.getInteger("size", 1048576);
-    final int fixedBackoff = properties.getInteger("fixedBackoff", 2);
-    final int dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
-    final int totalSendRetries = properties.getInteger("sendRetires", 10);
+  @Override
+  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher, final Properties properties) {
+    final ManyToOneConcurrentArrayQueueDispatcher maybeDispatcher =
+            dispatcher != null ?
+                    (ManyToOneConcurrentArrayQueueDispatcher) dispatcher :
+                    dispatchers.get(hashCode);
 
-    dispatcherPool =
-        new ManyToOneConcurrentArrayQueueDispatcherPool(
-            Runtime.getRuntime().availableProcessors(),
-            numberOfDispatchersFactor,
-            size,
-            fixedBackoff,
-            dispatcherThrottlingCount,
-            totalSendRetries);
+    if (maybeDispatcher == null) {
+      final int mailboxSize = Integer.parseInt(properties.getProperty("mailboxSize"));
+      final int fixedBackoff = Integer.parseInt(properties.getProperty("fixedBackoff"));
+      final int dispatcherThrottlingCount = Integer.parseInt(properties.getProperty("dispatcherThrottlingCount"));
+      final int totalSendRetries = Integer.parseInt(properties.getProperty("sendRetires"));
+
+      final ManyToOneConcurrentArrayQueueDispatcher newDispatcher =
+              new ManyToOneConcurrentArrayQueueDispatcher(
+                      mailboxSize,
+                      fixedBackoff,
+                      dispatcherThrottlingCount,
+                      totalSendRetries);
+
+      final ManyToOneConcurrentArrayQueueDispatcher otherDispatcher =
+              dispatchers.putIfAbsent(hashCode, newDispatcher);
+
+      if (otherDispatcher != null) {
+        otherDispatcher.start();
+        return otherDispatcher.mailbox();
+      } else {
+        newDispatcher.start();
+        return newDispatcher.mailbox();
+      }
+    }
+
+    return maybeDispatcher.mailbox();
   }
 
   private void registerWith(final Registrar registrar, final PluginProperties properties) {

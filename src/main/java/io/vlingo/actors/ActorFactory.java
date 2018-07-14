@@ -10,9 +10,9 @@ package io.vlingo.actors;
 import java.lang.reflect.Constructor;
 
 public class ActorFactory {
-  protected static final ThreadLocal<Environment> threadLocalEnvironment = new ThreadLocal<Environment>();
+  static final ThreadLocal<Environment> threadLocalEnvironment = new ThreadLocal<Environment>();
 
-  protected static Actor actorFor(
+  static Actor actorFor(
           final Stage stage,
           final Actor parent,
           final Definition definition,
@@ -63,7 +63,7 @@ public class ActorFactory {
     return actor;
   }
 
-  protected static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition) {
+  static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition) {
     final String mailboxName = stage.world().mailboxNameFrom(definition.mailboxName());
     final Mailbox mailbox = stage.world().assignMailbox(mailboxName, address.hashCode());
     

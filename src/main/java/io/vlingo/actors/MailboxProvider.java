@@ -7,8 +7,11 @@
 
 package io.vlingo.actors;
 
+import java.util.Properties;
+
 public interface MailboxProvider {
   void close();
   Mailbox provideMailboxFor(final int hashCode);
   Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher);
+  Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher, final Properties properties);
 }

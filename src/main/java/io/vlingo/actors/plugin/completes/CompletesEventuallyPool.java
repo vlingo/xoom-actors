@@ -19,13 +19,15 @@ import io.vlingo.actors.Stage;
 
 public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   private final AtomicLong completesEventuallyId;
+  private final String mailboxName;
   private final CompletesEventually[] pool;
   private final AtomicLong poolIndex;
   private final long poolSize;
 
-  CompletesEventuallyPool(final int poolSize) {
+  CompletesEventuallyPool(final int poolSize, final String mailboxName) {
     this.completesEventuallyId = new AtomicLong(0);
     this.poolSize = poolSize;
+    this.mailboxName = mailboxName;
     this.poolIndex = new AtomicLong(0);
     this.pool = new CompletesEventually[poolSize];
   }
@@ -46,7 +48,14 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   @Override
   public void initializeUsing(final Stage stage) {
     for (int idx = 0; idx < poolSize; ++idx) {
-      pool[idx] = stage.actorFor(Definition.has(CompletesEventuallyActor.class, Definition.NoParameters), CompletesEventually.class);
+      pool[idx] =
+              stage.actorFor(
+                      Definition.has(
+                              CompletesEventuallyActor.class,
+                              Definition.NoParameters,
+                              mailboxName,
+                              "completes-eventually-" + (idx + 1)),
+                      CompletesEventually.class);
     }
   }
 

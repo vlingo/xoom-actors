@@ -52,7 +52,7 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
     super.start();
   }
 
-  protected RingBufferDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount) {
+  RingBufferDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount) {
     this.backoff = fixedBackoff == 0L ? new Backoff() : new Backoff(fixedBackoff);
     this.requiresExecutionNotification = fixedBackoff == 0L;
     this.mailbox = new SharedRingBufferMailbox(this, mailboxSize);

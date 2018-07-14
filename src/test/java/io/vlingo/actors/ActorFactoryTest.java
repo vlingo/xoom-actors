@@ -40,8 +40,8 @@ public class ActorFactoryTest {
     assertNotNull(actor);
     assertNotNull(actor.stage());
     assertEquals(world.stage(), actor.stage());
-    assertNotNull(actor.parent());
-    assertEquals(world.defaultParent(), actor.parent());
+    assertNotNull(actor.lifeCycle.environment.parent);
+    assertEquals(world.defaultParent(), actor.lifeCycle.environment.parent);
     assertNotNull(actor.lifeCycle.environment);
     assertNotNull(actor.lifeCycle.environment.definition);
     assertEquals(definition, actor.lifeCycle.environment.definition);
@@ -81,8 +81,8 @@ public class ActorFactoryTest {
     assertNotNull(actor);
     assertNotNull(actor.stage());
     assertEquals(world.stage(), actor.stage());
-    assertNotNull(actor.parent());
-    assertEquals(ParentInterfaceActor.instance.get(), actor.parent());
+    assertNotNull(actor.lifeCycle.environment.parent);
+    assertEquals(ParentInterfaceActor.instance.get(), actor.lifeCycle.environment.parent);
     assertNotNull(actor.lifeCycle.environment);
     assertNotNull(actor.lifeCycle.environment.definition);
     assertEquals(definition, actor.lifeCycle.environment.definition);

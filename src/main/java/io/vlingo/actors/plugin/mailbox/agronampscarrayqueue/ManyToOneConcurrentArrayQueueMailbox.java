@@ -7,10 +7,11 @@
 
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
+import org.agrona.concurrent.ManyToOneConcurrentArrayQueue;
+
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
-import uk.co.real_logic.agrona.concurrent.ManyToOneConcurrentArrayQueue;
 
 public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   private final Dispatcher dispatcher;
