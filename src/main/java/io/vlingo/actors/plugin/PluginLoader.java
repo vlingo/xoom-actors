@@ -7,7 +7,6 @@
 
 package io.vlingo.actors.plugin;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,8 +17,6 @@ import java.util.Set;
 import io.vlingo.actors.Registrar;
 
 public class PluginLoader {
-
-  private static final String propertiesFile = "/vlingo-actors.properties";
   private static final String pluginNamePrefix = "plugin.name.";
 
   private final Map<String,Plugin> plugins;
@@ -29,7 +26,7 @@ public class PluginLoader {
   }
 
   public void loadEnabledPlugins(final Registrar registrar, final int pass, final boolean forceDefaults) {
-    final Properties properties = forceDefaults ? loadDefaultProperties() : loadProperties();
+    final Properties properties = forceDefaults ? loadDefaultProperties() : io.vlingo.actors.Properties.properties;
 
     for (String enabledPlugin : findEnabledPlugins(properties)) {
       registerPlugin(registrar, properties, enabledPlugin, pass);
@@ -53,18 +50,6 @@ public class PluginLoader {
   private Properties loadDefaultProperties() {
     final Properties properties = new Properties();
     setUpDefaulted(properties);
-    return properties;
-  }
-
-  private Properties loadProperties() {
-    final Properties properties = new Properties();
-
-    try {
-      properties.load(PluginLoader.class.getResourceAsStream(propertiesFile));
-    } catch (IOException e) {
-      setUpDefaulted(properties);
-    }
-
     return properties;
   }
 
