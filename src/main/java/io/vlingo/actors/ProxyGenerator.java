@@ -56,11 +56,13 @@ public class ProxyGenerator implements AutoCloseable {
   private final URLClassLoader urlClassLoader;
 
   public static ProxyGenerator forMain(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfMainClasses, DynaType.Main, persist);
+    final String root = Properties.properties.getProperty("proxy.generated.classes.main", RootOfMainClasses);
+    return new ProxyGenerator(root, DynaType.Main, persist);
   }
 
   public static ProxyGenerator forTest(final boolean persist) throws Exception {
-    return new ProxyGenerator(RootOfTestClasses, DynaType.Test, persist);
+    final String root = Properties.properties.getProperty("proxy.generated.classes.test", RootOfTestClasses);
+    return new ProxyGenerator(root, DynaType.Test, persist);
   }
 
   @Override
@@ -92,7 +94,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private ProxyGenerator(final String rootOfClasses, final DynaType type, final boolean persist) throws Exception {
-    this.rootOfGenerated = type == DynaType.Main ? GeneratedSources : GeneratedTestSources;
+    this.rootOfGenerated = rootOfGeneratedSources(type);
     this.type = type;
     this.persist = persist;
     this.targetClassesPath = new File(rootOfClasses);
@@ -414,6 +416,14 @@ public class ProxyGenerator implements AutoCloseable {
     }
 
     return builder.toString();
+  }
+
+  private String rootOfGeneratedSources(final DynaType type) {
+    final String root = 
+            type == DynaType.Main ?
+                    Properties.properties.getProperty("proxy.generated.sources.main", GeneratedSources) :
+                    Properties.properties.getProperty("proxy.generated.sources.test", GeneratedTestSources);
+    return root;
   }
 
   private static class ReturnType {
