@@ -80,7 +80,7 @@ public class DefaultSupervisorOverridePlugin implements Plugin {
 
     @Override
     public void build(final Configuration configuration) {
-      configuration.with(supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class));
+      configuration.with(supervisor("default", "overrideSupervisor", ConfiguredSupervisor.supervisorFrom("io.vlingo.actors.plugin.supervision.DefaultSupervisorOverride")));
     }
 
     @Override

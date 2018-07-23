@@ -15,6 +15,23 @@ class ConfiguredSupervisor {
   public final String supervisorName;
   public final Class<?> supervisedProtocol;
 
+  static Class<?> protocolFrom(final String supervisedProtocol) {
+    try {
+      return Class.forName(supervisedProtocol);
+    } catch (Exception e) {
+      throw new IllegalStateException("Cannot load class for: " + supervisedProtocol);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  static Class<? extends Actor> supervisorFrom(final String supervisorClassname) {
+    try {
+      return (Class<? extends Actor>) Class.forName(supervisorClassname);
+    } catch (Exception e) {
+      throw new IllegalStateException("Cannot load class for: " + supervisorClassname);
+    }
+  }
+
   ConfiguredSupervisor(final String stageName, final String supervisorName, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass) {
     this.stageName = stageName;
     this.supervisorName = supervisorName;
@@ -41,22 +58,5 @@ class ConfiguredSupervisor {
     this.supervisorName = supervisorName;
     this.supervisedProtocol = null;
     this.supervisorClass = supervisorFrom(supervisorClassname);
-  }
-
-  private Class<?> protocolFrom(final String supervisedProtocol) {
-    try {
-      return Class.forName(supervisedProtocol);
-    } catch (Exception e) {
-      throw new IllegalStateException("Cannot load class for: " + supervisedProtocol);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private Class<? extends Actor> supervisorFrom(final String supervisorClassname) {
-    try {
-      return (Class<? extends Actor>) Class.forName(supervisorClassname);
-    } catch (Exception e) {
-      throw new IllegalStateException("Cannot load class for: " + supervisorClassname);
-    }
   }
 }

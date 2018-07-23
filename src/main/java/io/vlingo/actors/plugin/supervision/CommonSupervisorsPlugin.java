@@ -16,10 +16,6 @@ import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.supervision.Ping;
-import io.vlingo.actors.supervision.PingSupervisorActor;
-import io.vlingo.actors.supervision.Pong;
-import io.vlingo.actors.supervision.PongSupervisorActor;
 
 public class CommonSupervisorsPlugin implements Plugin {
   private final CommonSupervisorsPluginConfiguration configuration;
@@ -89,8 +85,8 @@ public class CommonSupervisorsPlugin implements Plugin {
     @Override
     public void build(final Configuration configuration) {
       configuration.with(
-              supervisor("default", "pingSupervisor", Ping.class, PingSupervisorActor.class)
-             .supervisor("default", "pongSupervisor", Pong.class, PongSupervisorActor.class));
+              supervisor("default", "pingSupervisor", ConfiguredSupervisor.protocolFrom("io.vlingo.actors.supervision.Ping"), ConfiguredSupervisor.supervisorFrom("io.vlingo.actors.supervision.PingSupervisorActor"))
+             .supervisor("default", "pongSupervisor", ConfiguredSupervisor.protocolFrom("io.vlingo.actors.supervision.Pong"), ConfiguredSupervisor.supervisorFrom("io.vlingo.actors.supervision.PongSupervisorActor")));
     }
 
     @Override
