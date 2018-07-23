@@ -8,22 +8,33 @@
 package io.vlingo.actors.plugin.completes;
 
 import io.vlingo.actors.CompletesEventuallyProvider;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class PooledCompletesPlugin implements Plugin {
   private CompletesEventuallyProvider completesEventuallyProvider;
-  private String name;
-  
+  private final PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
+
+  public PooledCompletesPlugin() {
+    this.pooledCompletesPluginConfiguration = PooledCompletesPluginConfiguration.define();
+  }
+
   @Override
   public void close() {
     completesEventuallyProvider.close();
   }
 
   @Override
+  public PluginConfiguration configuration() {
+    return pooledCompletesPluginConfiguration;
+  }
+
+  @Override
   public String name() {
-    return name;
+    return pooledCompletesPluginConfiguration.name();
   }
 
   @Override
@@ -32,14 +43,54 @@ public class PooledCompletesPlugin implements Plugin {
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    final int poolSize = properties.getInteger("pool", 10);
-    final String mailboxName = properties.getString("mailbox", null);
-    
-    this.name = name;
-    
-    this.completesEventuallyProvider = new CompletesEventuallyPool(poolSize, mailboxName);
-    
-    registrar.register(name, completesEventuallyProvider);
+  public void start(final Registrar registrar) {
+    this.completesEventuallyProvider = new CompletesEventuallyPool(this.pooledCompletesPluginConfiguration.poolSize, this.pooledCompletesPluginConfiguration.mailbox);
+    registrar.register(pooledCompletesPluginConfiguration.name(), completesEventuallyProvider);
+  }
+
+  public static class PooledCompletesPluginConfiguration implements PluginConfiguration {
+    private String mailbox;
+    private String name = "pooledCompletes";
+    private int poolSize;
+
+    public static PooledCompletesPluginConfiguration define() {
+      return new PooledCompletesPluginConfiguration();
+    }
+
+    public PooledCompletesPluginConfiguration mailbox(final String mailbox) {
+      this.mailbox = mailbox;
+      return this;
+    }
+
+    public String mailbox() {
+      return mailbox;
+    }
+
+    public PooledCompletesPluginConfiguration poolSize(final int poolSize) {
+      this.poolSize = poolSize;
+      return this;
+    }
+
+    public int poolSize() {
+      return poolSize;
+    }
+
+    @Override
+    public void build(final Configuration configuration) {
+      configuration.with(mailbox("queueMailbox").poolSize(10));
+    }
+
+    @Override
+    public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      this.name = properties.name;
+      this.poolSize = properties.getInteger("pool", 10);
+      this.mailbox = properties.getString("mailbox", null);
+      configuration.with(this);
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
   }
 }

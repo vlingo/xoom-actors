@@ -35,8 +35,9 @@ public class PooledCompletesProviderTest {
     final PluginProperties pluginProperties = new PluginProperties("pooledCompletes", properties);
     
     final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
+    plugin.configuration().buildWith(world.configuration(), pluginProperties);
     
-    plugin.start(world, "pooledCompletes", pluginProperties);
+    plugin.start(world);
     
     final MockCompletes<Object> clientCompletes = new MockCompletes<Object>();
     

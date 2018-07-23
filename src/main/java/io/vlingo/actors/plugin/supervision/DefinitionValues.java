@@ -18,12 +18,12 @@ class DefinitionValues {
   private static final String PROTOCOL = "protocol=";
   private static final String SUPERVISOR = "supervisor=";
   
-  protected final String name;
-  protected final String protocol;
-  protected final String stageName;
-  protected final String supervisor;
+  final String name;
+  final String protocol;
+  final String stageName;
+  final String supervisor;
   
-  protected static List<DefinitionValues> allDefinitionValues(final PluginProperties properties) {
+  static List<DefinitionValues> allDefinitionValues(final PluginProperties properties) {
     final List<DefinitionValues> settings = new ArrayList<>();
     
     final String types = properties.getString("types", "");

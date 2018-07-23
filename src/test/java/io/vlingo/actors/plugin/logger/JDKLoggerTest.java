@@ -16,7 +16,9 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Test;
 
+import io.vlingo.actors.Actor;
 import io.vlingo.actors.CompletesEventuallyProvider;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
@@ -46,11 +48,11 @@ public class JDKLoggerTest {
     }
 
     @Override
-    public void registerCommonSupervisor(String stageName, String name, String fullyQualifiedProtocol, String fullyQualifiedSupervisor) {
+    public void registerCommonSupervisor(String stageName, String name, Class<?> supervisedProtocol, Class<? extends Actor> supervisorClass) {
     }
 
     @Override
-    public void registerDefaultSupervisor(String stageName, String name, String fullyQualifiedSupervisor) {
+    public void registerDefaultSupervisor(String stageName, String name, Class<? extends Actor> supervisorClass) {
     }
 
     @Override
@@ -62,18 +64,20 @@ public class JDKLoggerTest {
   @Test
   public void testLoggedMessagesCount() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty("plugin.name.jdkLogger", "true");
-    properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
-    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
-    properties.setProperty("plugin.jdkLogger.handler.classname", "java.util.logging.MemoryHandler");
-    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
-    properties.setProperty("plugin.jdkLogger.memoryhandler.target", "io.vlingo.actors.plugin.logger.MockHandler");
-    properties.setProperty("plugin.jdkLogger.memoryhandler.size", "1024");
-    properties.setProperty("plugin.jdkLogger.memoryhandler.pushLevel", "ALL");
+    properties.setProperty("plugin.name.testLoggedMessagesCount", "true");
+    properties.setProperty("plugin.testLoggedMessagesCount.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
+    properties.setProperty("plugin.testLoggedMessagesCount.defaultLogger", "true");
+    properties.setProperty("plugin.testLoggedMessagesCount.handler.classname", "java.util.logging.MemoryHandler");
+    properties.setProperty("plugin.testLoggedMessagesCount.handler.level", "ALL");
+    properties.setProperty("plugin.testLoggedMessagesCount.memoryhandler.target", "io.vlingo.actors.plugin.logger.MockHandler");
+    properties.setProperty("plugin.testLoggedMessagesCount.memoryhandler.size", "1024");
+    properties.setProperty("plugin.testLoggedMessagesCount.memoryhandler.pushLevel", "ALL");
     
-    JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    final Configuration configuration = Configuration.define();
+    final JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    plugin.configuration().buildWith(configuration, new PluginProperties("testLoggedMessagesCount", properties));
     
-    plugin.start(registrar, "testLoggedMessagesCount", new PluginProperties("jdkLogger", properties));
+    plugin.start(registrar);
     
     logger = plugin.logger();
     
@@ -89,15 +93,16 @@ public class JDKLoggerTest {
   @Test
   public void testNamedHandler() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty("plugin.name.jdkLogger", "true");
-    properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
-    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
-    properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logger.MockHandler");
-    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
+    properties.setProperty("plugin.name.testNamedHandler", "true");
+    properties.setProperty("plugin.testNamedHandler.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
+    properties.setProperty("plugin.testNamedHandler.defaultLogger", "true");
+    properties.setProperty("plugin.testNamedHandler.handler.classname", "io.vlingo.actors.plugin.logger.MockHandler");
+    properties.setProperty("plugin.testNamedHandler.handler.level", "ALL");
     
-    JDKLoggerPlugin plugin = new JDKLoggerPlugin();
-    
-    plugin.start(registrar, "testNamedHandler", new PluginProperties("jdkLogger", properties));
+    final Configuration configuration = Configuration.define();
+    final JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    plugin.configuration().buildWith(configuration, new PluginProperties("testNamedHandler", properties));
+    plugin.start(registrar);
     
     logger = plugin.logger();
     
@@ -114,9 +119,11 @@ public class JDKLoggerTest {
   public void testRegistration() throws Exception {
     registered = false;
     
-    JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    final Configuration configuration = Configuration.define();
+    final JDKLoggerPlugin plugin = new JDKLoggerPlugin();
+    plugin.configuration().buildWith(configuration, new PluginProperties("testRegistration", new Properties()));
     
-    plugin.start(registrar, "testRegistration", new PluginProperties("jdkLogger", new Properties()));
+    plugin.start(registrar);
     
     assertTrue(registered);
     

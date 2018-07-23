@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
 
 public class PluginLoader {
@@ -25,11 +26,17 @@ public class PluginLoader {
     this.plugins = new HashMap<>();
   }
 
-  public void loadEnabledPlugins(final Registrar registrar, final int pass, final boolean forceDefaults) {
-    final Properties properties = forceDefaults ? loadDefaultProperties() : io.vlingo.actors.Properties.properties;
+  public void loadEnabledPlugins(final Registrar registrar, final int pass, final Configuration configuration) {
+    if (!io.vlingo.actors.Properties.properties.isEmpty()) {
+      for (String enabledPlugin : findEnabledPlugins(io.vlingo.actors.Properties.properties)) {
+        buildPlugin(configuration, io.vlingo.actors.Properties.properties, enabledPlugin);
+      }
+    }
 
-    for (String enabledPlugin : findEnabledPlugins(properties)) {
-      registerPlugin(registrar, properties, enabledPlugin, pass);
+    for (final Plugin plugin : configuration.allPlugins()) {
+      if (plugin.pass() == pass) {
+        plugin.start(registrar);
+      }
     }
   }
 
@@ -47,22 +54,16 @@ public class PluginLoader {
     return enabledPlugins;
   }
 
-  private Properties loadDefaultProperties() {
-    final Properties properties = new Properties();
-    setUpDefaulted(properties);
-    return properties;
-  }
-
-  private void registerPlugin(final Registrar registrar, final Properties properties, final String enabledPlugin, final int pass) {
+  private void buildPlugin(final Configuration configuration, final Properties properties, final String enabledPlugin) {
     final String pluginName = enabledPlugin.substring(pluginNamePrefix.length());
     final String classnameKey = "plugin." + pluginName + ".classname";
     final String classname = properties.getProperty(classnameKey);
 
     try {
       final Plugin plugin = pluginOf(classname);
-      if (plugin.pass() == pass) {
-        plugin.start(registrar, pluginName, new PluginProperties(pluginName, properties));
-      }
+      final PluginConfiguration pluginConfiguration = plugin.configuration();
+      final PluginProperties pluginProperties = new PluginProperties(pluginName, properties);
+      pluginConfiguration.buildWith(configuration, pluginProperties);
     } catch (Exception e) {
       e.printStackTrace();
       throw new IllegalStateException("Cannot load plugin " + classname);
@@ -78,25 +79,5 @@ public class PluginLoader {
       return plugin;
     }
     return maybePlugin;
-  }
-
-  private void setUpDefaulted(final Properties properties) {
-    properties.setProperty("plugin.name.pooledCompletes", "true");
-    properties.setProperty("plugin.pooledCompletes.classname", "io.vlingo.actors.plugin.completes.PooledCompletesPlugin");
-    properties.setProperty("plugin.pooledCompletes.pool", "10");
-
-    properties.setProperty("plugin.name.queueMailbox", "true");
-    properties.setProperty("plugin.queueMailbox.classname", "io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin");
-    properties.setProperty("plugin.queueMailbox.defaultMailbox", "true");
-    properties.setProperty("plugin.queueMailbox.numberOfDispatchersFactor", "1.5");
-    properties.setProperty("plugin.queueMailbox.dispatcherThrottlingCount", "10");
-
-    properties.setProperty("plugin.name.jdkLogger", "true");
-    properties.setProperty("plugin.jdkLogger.classname", "io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin");
-    properties.setProperty("plugin.jdkLogger.name", "vlingo/actors");
-    properties.setProperty("plugin.jdkLogger.defaultLogger", "true");
-    properties.setProperty("plugin.jdkLogger.handler.classname", "io.vlingo.actors.plugin.logging.jdk.DefaultHandler");
-    properties.setProperty("plugin.jdkLogger.handler.name", "vlingo");
-    properties.setProperty("plugin.jdkLogger.handler.level", "ALL");
   }
 }

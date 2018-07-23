@@ -7,23 +7,21 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
-import java.util.Properties;
-
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class ConcurrentQueueMailboxPlugin implements Plugin, MailboxProvider {
-  private final Properties defaultProperties;
+  private final ConcurrentQueueMailboxPluginConfiguration configuration;
   private Dispatcher executorDispatcher;
-  private String name;
-  private int throttlingCount;
 
   public ConcurrentQueueMailboxPlugin() {
-    this.defaultProperties = new Properties();
+    this.configuration = new ConcurrentQueueMailboxPluginConfiguration();
   }
 
   @Override
@@ -32,8 +30,13 @@ public class ConcurrentQueueMailboxPlugin implements Plugin, MailboxProvider {
   }
 
   @Override
+  public PluginConfiguration configuration() {
+    return configuration;
+  }
+
+  @Override
   public String name() {
-    return name;
+    return configuration.name();
   }
 
   @Override
@@ -42,50 +45,81 @@ public class ConcurrentQueueMailboxPlugin implements Plugin, MailboxProvider {
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    this.name = name;
-    this.throttlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
+  public void start(final Registrar registrar) {
+    executorDispatcher =
+            new ExecutorDispatcher(
+                Runtime.getRuntime().availableProcessors(),
+                configuration.numberOfDispatchersFactor);
 
-    defaultProperties.setProperty("numberOfDispatchersFactor", String.valueOf(properties.getFloat("numberOfDispatchersFactor", 1.5f)));
-
-    createExecutorDispatcher(properties);
-
-    registerWith(registrar, properties);
+    registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
   public Mailbox provideMailboxFor(final int hashCode) {
-    return new ConcurrentQueueMailbox(executorDispatcher, throttlingCount);
-  }
-
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
-    return provideMailboxFor(hashCode, dispatcher, defaultProperties);
+    return new ConcurrentQueueMailbox(executorDispatcher, configuration.dispatcherThrottlingCount());
   }
 
   @Override
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher, final Properties properties) {
+  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
     if (dispatcher == null) {
       throw new IllegalArgumentException("Dispatcher must not be null.");
     }
 
-    if (properties == defaultProperties) {
-      return new ConcurrentQueueMailbox(dispatcher, throttlingCount);
+    return new ConcurrentQueueMailbox(dispatcher, configuration.dispatcherThrottlingCount());
+  }
+
+  public static class ConcurrentQueueMailboxPluginConfiguration implements PluginConfiguration {
+    private boolean defaultMailbox;
+    private int dispatcherThrottlingCount;
+    private String name = "queueMailbox";
+    private float numberOfDispatchersFactor;
+
+    public static ConcurrentQueueMailboxPluginConfiguration define() {
+      return new ConcurrentQueueMailboxPluginConfiguration();
     }
 
-    return new ConcurrentQueueMailbox(dispatcher, Integer.parseInt(properties.getProperty("dispatcherThrottlingCount", "1")));
-  }
+    public ConcurrentQueueMailboxPluginConfiguration defaultMailbox() {
+      this.defaultMailbox = true;
+      return this;
+    }
 
-  private void createExecutorDispatcher(final PluginProperties properties) {
-    final float numberOfDispatchersFactor = properties.getFloat("numberOfDispatchersFactor", 1.5f);
+    public boolean isDefaultMailbox() {
+      return defaultMailbox;
+    }
 
-    executorDispatcher =
-        new ExecutorDispatcher(
-            Runtime.getRuntime().availableProcessors(),
-            numberOfDispatchersFactor);
-  }
+    public ConcurrentQueueMailboxPluginConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
+      return this;
+    }
 
-  private void registerWith(final Registrar registrar, final PluginProperties properties) {
-    final boolean defaultMailbox = properties.getBoolean("defaultMailbox", true);
+    public int dispatcherThrottlingCount() {
+      return dispatcherThrottlingCount;
+    }
 
-    registrar.register(name, defaultMailbox, this);
+    public ConcurrentQueueMailboxPluginConfiguration numberOfDispatchersFactor(final float numberOfDispatchersFactor) {
+      this.numberOfDispatchersFactor = numberOfDispatchersFactor;
+      return this;
+    }
+
+    public float numberOfDispatchersFactor() {
+      return numberOfDispatchersFactor;
+    }
+
+    @Override
+    public void build(final Configuration configuration) {
+      configuration.with(defaultMailbox().numberOfDispatchersFactor(1.5f).dispatcherThrottlingCount(1));
+    }
+
+    @Override
+    public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      this.name = properties.name;
+      this.defaultMailbox = properties.getBoolean("defaultMailbox", true);
+      this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
+      this.numberOfDispatchersFactor = properties.getFloat("numberOfDispatchersFactor", 1.5f);
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
   }
 }

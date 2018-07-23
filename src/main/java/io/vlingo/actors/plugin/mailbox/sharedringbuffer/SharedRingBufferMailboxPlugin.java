@@ -8,24 +8,24 @@
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class SharedRingBufferMailboxPlugin implements Plugin, MailboxProvider {
-  private final Properties defaultProperties;
+  private final SharedRingBufferMailboxPluginConfiguration configuration;
   private final Map<Integer, RingBufferDispatcher> dispatchers;
-  private String name;
 
   public SharedRingBufferMailboxPlugin() {
+    this.configuration = new SharedRingBufferMailboxPluginConfiguration();
     this.dispatchers = new ConcurrentHashMap<>(1);
-    this.defaultProperties = new Properties();
   }
 
   @Override
@@ -34,7 +34,14 @@ public class SharedRingBufferMailboxPlugin implements Plugin, MailboxProvider {
   }
 
   @Override
-  public String name() { return name; }
+  public PluginConfiguration configuration() {
+    return configuration;
+  }
+
+  @Override
+  public String name() {
+    return configuration.name();
+  }
 
   @Override
   public int pass() {
@@ -42,41 +49,27 @@ public class SharedRingBufferMailboxPlugin implements Plugin, MailboxProvider {
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    this.name = name;
-
-    defaultProperties.setProperty("mailboxSize", String.valueOf(properties.getInteger("size", 1048576)));
-    defaultProperties.setProperty("fixedBackoff", String.valueOf(properties.getInteger("fixedBackoff", 2)));
-    defaultProperties.setProperty("dispatcherThrottlingCount", String.valueOf(properties.getInteger("dispatcherThrottlingCount", 1)));
-
-    registerWith(registrar, properties);
+  public void start(final Registrar registrar) {
+    registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }
 
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
-    return provideMailboxFor(hashCode, dispatcher, defaultProperties);
-  }
-
   @Override
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher, final Properties properties) {
+  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
     final RingBufferDispatcher maybeDispatcher =
             dispatcher != null ?
                     (RingBufferDispatcher) dispatcher :
                     dispatchers.get(hashCode);
 
     if (maybeDispatcher == null) {
-      final int mailboxSize = Integer.parseInt(properties.getProperty("mailboxSize"));
-      final int fixedBackoff = Integer.parseInt(properties.getProperty("fixedBackoff"));
-      final int dispatcherThrottlingCount = Integer.parseInt(properties.getProperty("dispatcherThrottlingCount"));
-
       final RingBufferDispatcher newDispatcher =
               new RingBufferDispatcher(
-                      mailboxSize,
-                      fixedBackoff,
-                      dispatcherThrottlingCount);
+                      configuration.ringSize(),
+                      configuration.fixedBackoff(),
+                      configuration.dispatcherThrottlingCount());
 
       final RingBufferDispatcher otherDispatcher =
               dispatchers.putIfAbsent(hashCode, newDispatcher);
@@ -93,9 +86,71 @@ public class SharedRingBufferMailboxPlugin implements Plugin, MailboxProvider {
     return maybeDispatcher.mailbox();
   }
 
-  private void registerWith(final Registrar registrar, final PluginProperties properties) {
-    final boolean defaultMailbox = properties.getBoolean("defaultMailbox", true);
+  public static class SharedRingBufferMailboxPluginConfiguration implements PluginConfiguration {
+    private boolean defaultMailbox;
+    private int dispatcherThrottlingCount;
+    private int fixedBackoff;
+    private String name = "ringMailbox";
+    private int ringSize;
 
-    registrar.register(name, defaultMailbox, this);
+    public static SharedRingBufferMailboxPluginConfiguration define() {
+      return new SharedRingBufferMailboxPluginConfiguration();
+    }
+
+    public SharedRingBufferMailboxPluginConfiguration defaultMailbox() {
+      this.defaultMailbox = true;
+      return this;
+    }
+
+    public boolean isDefaultMailbox() {
+      return defaultMailbox;
+    }
+
+    public SharedRingBufferMailboxPluginConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
+      return this;
+    }
+
+    public int dispatcherThrottlingCount() {
+      return dispatcherThrottlingCount;
+    }
+
+    public SharedRingBufferMailboxPluginConfiguration fixedBackoff(final int fixedBackoff) {
+      this.fixedBackoff = fixedBackoff;
+      return this;
+    }
+
+    public int fixedBackoff() {
+      return fixedBackoff;
+    }
+
+    public SharedRingBufferMailboxPluginConfiguration ringSize(final int ringSize) {
+      this.ringSize = ringSize;
+      return this;
+    }
+
+    public int ringSize() {
+      return ringSize;
+    }
+
+    @Override
+    public void build(final Configuration configuration) {
+      configuration.with(ringSize(65535).fixedBackoff(2).dispatcherThrottlingCount(10));
+    }
+
+    @Override
+    public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      this.name = properties.name;
+      this.defaultMailbox = properties.getBoolean("defaultMailbox", false);
+      this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
+      this.fixedBackoff = properties.getInteger("fixedBackoff", 2);
+      this.ringSize = properties.getInteger("size", 65535);
+      configuration.with(this);
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
   }
 }

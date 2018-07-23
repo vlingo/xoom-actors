@@ -19,6 +19,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.completes.PooledCompletesPlugin;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class RingBufferMailboxActorTest extends ActorsTest {
@@ -82,11 +83,12 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testRingMailbox.numberOfDispatchersFactor", "1.0");
     properties.setProperty("plugin.testRingMailbox.dispatcherThrottlingCount", "10");
     
-    PluginProperties pluginProps = new PluginProperties("testRingMailbox", properties);
-    
     SharedRingBufferMailboxPlugin provider = new SharedRingBufferMailboxPlugin();
-    
-    provider.start(world, "testRingMailbox", pluginProps);
+    final PluginProperties pluginProperties = new PluginProperties("testRingMailbox", properties);
+    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
+    plugin.configuration().buildWith(world.configuration(), pluginProperties);
+
+    provider.start(world);
   }
   
   public static interface CountTaker {

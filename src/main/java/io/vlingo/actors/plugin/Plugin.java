@@ -11,7 +11,8 @@ import io.vlingo.actors.Registrar;
 
 public interface Plugin {
   void close();
+  PluginConfiguration configuration();
   String name();
   int pass();
-  void start(final Registrar registrar, final String name, final PluginProperties properties);
+  void start(final Registrar registrar);
 }

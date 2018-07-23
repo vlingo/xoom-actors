@@ -9,14 +9,14 @@ package io.vlingo.actors.plugin.logging.jdk;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.MemoryHandler;
 
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Logger;
-import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
 
 public class JDKLogger implements Logger {
   private final Handler handler;
@@ -25,22 +25,18 @@ public class JDKLogger implements Logger {
   private final String name;
 
   public static Logger testInstance() {
-    final Properties properties = new Properties();
-    properties.setProperty("plugin.jdkLogger.handler.classname", "");
-    
-    final String name = "vlingo-test";
-    
-    final PluginProperties plugInProperties = new PluginProperties(name, properties);
-    
-    return new JDKLogger(name, plugInProperties);
+    final Configuration configuration = Configuration.define();
+    final JDKLoggerPluginConfiguration loggerConfiguration = JDKLoggerPluginConfiguration.define();
+    loggerConfiguration.build(configuration);
+    return new JDKLogger(loggerConfiguration.name(), loggerConfiguration);
   }
-  
-  protected JDKLogger(final String name, final PluginProperties properties) {
+
+  protected JDKLogger(final String name, final JDKLoggerPluginConfiguration confirguration) {
     this.name = name;
     this.logger = java.util.logging.Logger.getLogger(name);
-    this.level = determineLevel(properties);
+    this.level = java.util.logging.Level.parse(confirguration.handlerLevel());
     this.logger.setLevel(this.level);
-    this.handler = determineHandler(properties);
+    this.handler = determineHandler(confirguration);
     this.logger.addHandler(handler);
   }
 
@@ -83,63 +79,48 @@ public class JDKLogger implements Logger {
     return name;
   }
 
-  private Handler determineHandler(final PluginProperties properties) {
-    final String classname = properties.getString("handler.classname", "java.util.logging.ConsoleHandler");
-
+  private Handler determineHandler(final JDKLoggerPluginConfiguration confirguration) {
+    final String classname = confirguration.handlerClass().getName();
     try {
       if (classname.equals("java.util.logging.FileHandler")) {
-        return loadFileHandler(properties);
+        return loadFileHandler(confirguration);
       } else if (classname.equals("java.util.logging.MemoryHandler")) {
-        return loadMemoryHandler(properties);
+        return loadMemoryHandler(confirguration);
       } else {
-        return loadNamedHandler(classname);
+        return loadNamedHandler(confirguration);
       }
       
     } catch (Exception e) {
       final Handler handler = new DefaultHandler();
       this.logger.addHandler(handler);
-      this.logger.log(this.level, "vlingo/actors: Could not load the logger " + classname + " because: " + e.getMessage(), e);
+      this.logger.log(this.level, "vlingo/actors: Could not load the logger " + confirguration.name() + " because: " + e.getMessage(), e);
       this.logger.log(this.level, "vlingo/actors: Instead we defaulted to: " + handler.getClass().getName());
       return handler;
     }
   }
-
-  private Level determineLevel(final PluginProperties properties) {
-    final String levelName = properties.getString("handler.level", "ALL");
-    return java.util.logging.Level.parse(levelName);
-  }
   
-  private Handler loadFileHandler(final PluginProperties properties) throws Exception {
-    final String pattern = properties.getString("filehandler.pattern", "vlingo-actors-log");
-    final int limit = properties.getInteger("filehandler.limit", 100_000_000);
-    final int count = properties.getInteger("filehandler.count", 3);
-    final boolean append = properties.getBoolean("filehandler.append", false);
-    
-    return new FileHandler(pattern, limit, count, append);
+  private Handler loadFileHandler(final JDKLoggerPluginConfiguration confirguration) throws Exception {
+    return new FileHandler(confirguration.fileHandlerPattern(), confirguration.fileHandlerLimit(), confirguration.fileHandlerCount(), confirguration.fileHandlerAppend());
   }
 
-  private Handler loadMemoryHandler(final PluginProperties properties) throws Exception {
-    final String target = properties.getString("memoryhandler.target", null);
-    final int size = properties.getInteger("memoryhandler.size", -1);
-    final String level = properties.getString("memoryhandler.pushLevel", null);
-    
+  private Handler loadMemoryHandler(final JDKLoggerPluginConfiguration confirguration) throws Exception {
     final String message = "Must correctly configure target, size, and pushLevel for logging MemoryHandler.";
 
-    if (target == null || size == -1 || level == null) {
+    if (confirguration.memoryHandlerTarget() == null ||
+            confirguration.memoryHandlerSize() == -1 ||
+            confirguration.memoryHandlerPushLevel() == null) {
       throw new IllegalArgumentException(message);
     }
-    
+
     try {
-      Class<?> targetClass = Class.forName(target);
-      return new MemoryHandler((Handler) targetClass.newInstance(), size, Level.parse(level));
+      Class<?> targetClass = Class.forName(confirguration.memoryHandlerTarget());
+      return new MemoryHandler((Handler) targetClass.newInstance(), confirguration.memoryHandlerSize(), Level.parse(confirguration.memoryHandlerPushLevel()));
     } catch (Exception e) {
       throw new IllegalArgumentException(message, e);
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private Handler loadNamedHandler(final String classname) throws Exception {
-    Class<Handler> handlerClass = (Class<Handler>) Class.forName(classname);
-    return handlerClass.newInstance();
+  private Handler loadNamedHandler(final JDKLoggerPluginConfiguration confirguration) throws Exception {
+    return confirguration.handlerClass().newInstance();
   }
 }

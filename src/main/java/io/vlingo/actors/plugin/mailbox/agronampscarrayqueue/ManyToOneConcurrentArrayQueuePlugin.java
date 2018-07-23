@@ -8,24 +8,24 @@
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvider {
+  private final ManyToOneConcurrentArrayQueuePluginConfiguration configuration;
   private final Map<Integer, ManyToOneConcurrentArrayQueueDispatcher> dispatchers;
-  private String name;
-  private final Properties defaultProperties;
 
   public ManyToOneConcurrentArrayQueuePlugin() {
+    this.configuration = new ManyToOneConcurrentArrayQueuePluginConfiguration();
     this.dispatchers = new ConcurrentHashMap<>(1);
-    this.defaultProperties = new Properties();
   }
 
   @Override
@@ -34,8 +34,13 @@ public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvi
   }
 
   @Override
+  public PluginConfiguration configuration() {
+    return configuration;
+  }
+
+  @Override
   public String name() {
-    return name;
+    return configuration.name();
   }
 
   @Override
@@ -44,44 +49,28 @@ public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvi
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    this.name = name;
-
-    defaultProperties.setProperty("mailboxSize", String.valueOf(properties.getInteger("size", 1048576)));
-    defaultProperties.setProperty("fixedBackoff", String.valueOf(properties.getInteger("fixedBackoff", 2)));
-    defaultProperties.setProperty("dispatcherThrottlingCount", String.valueOf(properties.getInteger("dispatcherThrottlingCount", 1)));
-    defaultProperties.setProperty("sendRetires", String.valueOf(properties.getInteger("sendRetires", 10)));
-
-    registerWith(registrar, properties);
+  public void start(final Registrar registrar) {
+    registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }
 
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
-    return provideMailboxFor(hashCode, dispatcher, defaultProperties);
-  }
-
   @Override
-  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher, final Properties properties) {
+  public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
     final ManyToOneConcurrentArrayQueueDispatcher maybeDispatcher =
             dispatcher != null ?
                     (ManyToOneConcurrentArrayQueueDispatcher) dispatcher :
                     dispatchers.get(hashCode);
 
     if (maybeDispatcher == null) {
-      final int mailboxSize = Integer.parseInt(properties.getProperty("mailboxSize"));
-      final int fixedBackoff = Integer.parseInt(properties.getProperty("fixedBackoff"));
-      final int dispatcherThrottlingCount = Integer.parseInt(properties.getProperty("dispatcherThrottlingCount"));
-      final int totalSendRetries = Integer.parseInt(properties.getProperty("sendRetires"));
-
       final ManyToOneConcurrentArrayQueueDispatcher newDispatcher =
               new ManyToOneConcurrentArrayQueueDispatcher(
-                      mailboxSize,
-                      fixedBackoff,
-                      dispatcherThrottlingCount,
-                      totalSendRetries);
+                      configuration.ringSize(),
+                      configuration.fixedBackoff(),
+                      configuration.dispatcherThrottlingCount(),
+                      configuration.sendRetires());
 
       final ManyToOneConcurrentArrayQueueDispatcher otherDispatcher =
               dispatchers.putIfAbsent(hashCode, newDispatcher);
@@ -98,9 +87,82 @@ public class ManyToOneConcurrentArrayQueuePlugin implements Plugin, MailboxProvi
     return maybeDispatcher.mailbox();
   }
 
-  private void registerWith(final Registrar registrar, final PluginProperties properties) {
-    final boolean defaultMailbox = properties.getBoolean("defaultMailbox", true);
+  public static class ManyToOneConcurrentArrayQueuePluginConfiguration implements PluginConfiguration {
+    private boolean defaultMailbox;
+    private int dispatcherThrottlingCount;
+    private int fixedBackoff;
+    private String name = "arrayQueueMailbox";
+    private int ringSize;
+    private int sendRetires;
 
-    registrar.register(name, defaultMailbox, this);
+    public static ManyToOneConcurrentArrayQueuePluginConfiguration define() {
+      return new ManyToOneConcurrentArrayQueuePluginConfiguration();
+    }
+
+    public ManyToOneConcurrentArrayQueuePluginConfiguration defaultMailbox() {
+      this.defaultMailbox = true;
+      return this;
+    }
+
+    public boolean isDefaultMailbox() {
+      return defaultMailbox;
+    }
+
+    public ManyToOneConcurrentArrayQueuePluginConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
+      return this;
+    }
+
+    public int dispatcherThrottlingCount() {
+      return dispatcherThrottlingCount;
+    }
+
+    public ManyToOneConcurrentArrayQueuePluginConfiguration fixedBackoff(final int fixedBackoff) {
+      this.fixedBackoff = fixedBackoff;
+      return this;
+    }
+
+    public int fixedBackoff() {
+      return fixedBackoff;
+    }
+
+    public ManyToOneConcurrentArrayQueuePluginConfiguration ringSize(final int ringSize) {
+      this.ringSize = ringSize;
+      return this;
+    }
+
+    public int ringSize() {
+      return ringSize;
+    }
+
+    public ManyToOneConcurrentArrayQueuePluginConfiguration sendRetires(final int sendRetires) {
+      this.sendRetires = sendRetires;
+      return this;
+    }
+
+    public int sendRetires() {
+      return sendRetires;
+    }
+
+    @Override
+    public void build(final Configuration configuration) {
+      configuration.with(ringSize(65535).dispatcherThrottlingCount(1).fixedBackoff(2).sendRetires(10));
+    }
+
+    @Override
+    public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      this.name = properties.name;
+      this.defaultMailbox = properties.getBoolean("defaultMailbox", false);
+      this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
+      this.fixedBackoff = properties.getInteger("fixedBackoff", 2);
+      this.ringSize = properties.getInteger("size", 65535);
+      this.sendRetires = properties.getInteger("sendRetires", 10);
+      configuration.with(this);
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
   }
 }

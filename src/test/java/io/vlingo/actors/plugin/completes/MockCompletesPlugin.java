@@ -9,7 +9,7 @@ package io.vlingo.actors.plugin.completes;
 
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
-import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.completes.MockCompletesEventually.CompletesResults;
 
 public class MockCompletesPlugin implements Plugin {
@@ -25,6 +25,11 @@ public class MockCompletesPlugin implements Plugin {
   }
 
   @Override
+  public PluginConfiguration configuration() {
+    return null;
+  }
+
+  @Override
   public String name() {
     return null;
   }
@@ -35,8 +40,8 @@ public class MockCompletesPlugin implements Plugin {
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
+  public void start(final Registrar registrar) {
     completesEventuallyProvider = new MockCompletesEventuallyProvider(completesResults);
-    registrar.register(name, completesEventuallyProvider);
+    registrar.register("mock-completes-eventually", completesEventuallyProvider);
   }
 }

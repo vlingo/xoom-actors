@@ -24,6 +24,7 @@ public final class World implements Registrar {
   static final String DEFAULT_STAGE = "__defaultStage";
 
   private final CompletesEventuallyProviderKeeper completesProviderKeeper;
+  private final Configuration configuration;
   private final LoggerProviderKeeper loggerProviderKeeper;
   private final MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
@@ -37,15 +38,15 @@ public final class World implements Registrar {
   private Stoppable publicRoot;
 
   public static synchronized World start(final String name) {
-    return start(name, false);
+    return start(name, Configuration.define());
   }
 
-  public static synchronized World start(final String name, final boolean forceDefaultConfiguration) {
+  public static synchronized World start(final String name, final Configuration configuration) {
     if (name == null) {
       throw new IllegalArgumentException("The world name must not be null.");
     }
-    
-    return new World(name, forceDefaultConfiguration);
+
+    return new World(name, configuration);
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -62,6 +63,10 @@ public final class World implements Registrar {
     }
 
     return stage().actorFor(definition, protocols);
+  }
+
+  public Configuration configuration() {
+    return configuration;
   }
 
   public DeadLetters deadLetters() {
@@ -128,29 +133,25 @@ public final class World implements Registrar {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public void registerCommonSupervisor(final String stageName, final String name, final String fullyQualifiedProtocol, final String fullyQualifiedSupervisor) {
+  public void registerCommonSupervisor(final String stageName, final String name, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass) {
     try {
       final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
       final Stage stage = stageNamed(actualStageName);
-      final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       final Supervisor common = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
-      stage.registerCommonSupervisor(fullyQualifiedProtocol, common);
+      stage.registerCommonSupervisor(supervisedProtocol, common);
     } catch (Exception e) {
-      defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + fullyQualifiedSupervisor, e);
+      defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
     }
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public void registerDefaultSupervisor(final String stageName, final String name, final String fullyQualifiedSupervisor) {
+  public void registerDefaultSupervisor(final String stageName, final String name, final Class<? extends Actor> supervisorClass) {
     try {
       final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
       final Stage stage = stageNamed(actualStageName);
-      final Class<Actor> supervisorClass = (Class<Actor>) Class.forName(fullyQualifiedSupervisor);
       defaultSupervisor = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
     } catch (Exception e) {
-      defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + fullyQualifiedSupervisor, e);
+      defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + supervisorClass.getName(), e);
       e.printStackTrace();
     }
   }
@@ -251,8 +252,9 @@ public final class World implements Registrar {
     this.publicRoot = publicRoot;
   }
 
-  private World(final String name, final boolean forceDefaultConfiguration) {
+  private World(final String name, final Configuration configuration) {
     this.name = name;
+    this.configuration = configuration;
     this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
@@ -264,11 +266,11 @@ public final class World implements Registrar {
 
     final PluginLoader pluginLoader = new PluginLoader();
 
-    pluginLoader.loadEnabledPlugins(this, 1, forceDefaultConfiguration);
+    pluginLoader.loadEnabledPlugins(this, 1, configuration);
 
     startRootFor(defaultStage, defaultLogger());
 
-    pluginLoader.loadEnabledPlugins(this, 2, forceDefaultConfiguration);
+    pluginLoader.loadEnabledPlugins(this, 2, configuration);
   }
 
   private void startRootFor(final Stage stage, final Logger logger) {

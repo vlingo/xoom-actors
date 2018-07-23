@@ -22,7 +22,7 @@ public class PooledCompletesPluginTest {
     
     final MockRegistrar registrar = new MockRegistrar();
     
-    plugin.start(registrar, "pooledCompletes", null);
+    plugin.start(registrar);
     
     plugin.completesEventuallyProvider.completesEventually().with(new Object());
     

@@ -5,10 +5,12 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-package io.vlingo.actors;
+package io.vlingo.actors.plugin;
 
-public interface MailboxProvider {
-  void close();
-  Mailbox provideMailboxFor(final int hashCode);
-  Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher);
+import io.vlingo.actors.Configuration;
+
+public interface PluginConfiguration {
+  void build(final Configuration configuration);
+  void buildWith(final Configuration configuration, final PluginProperties properties);
+  String name();
 }

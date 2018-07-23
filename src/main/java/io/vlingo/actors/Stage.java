@@ -15,7 +15,7 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 
 public class Stage implements Stoppable {
-  private final Map<String, Supervisor> commonSupervisors;
+  private final Map<Class<?>, Supervisor> commonSupervisors;
   private final Directory directory;
   private final String name;
   private final Scheduler scheduler;
@@ -133,8 +133,8 @@ public class Stage implements Stoppable {
     return name;
   }
 
-  public void registerCommonSupervisor(final String fullyQualifiedProtocol, final Supervisor common) {
-    commonSupervisors.put(fullyQualifiedProtocol, common);
+  public void registerCommonSupervisor(final Class<?> protocol, final Supervisor common) {
+    commonSupervisors.put(protocol, common);
   }
 
   public Scheduler scheduler() {
@@ -236,7 +236,7 @@ public class Stage implements Stoppable {
   }
 
   Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {
-    final Supervisor common = commonSupervisors.get(protocol.getName());
+    final Supervisor common = commonSupervisors.get(protocol);
     
     if (common != null) {
       return common;

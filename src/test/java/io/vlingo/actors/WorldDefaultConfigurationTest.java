@@ -19,7 +19,7 @@ public class WorldDefaultConfigurationTest {
 
   @Test
   public void testStartWorldWithDefaultConfiguration() {
-    final World worldDefaultConfig = World.start("defaults", true);
+    final World worldDefaultConfig = World.start("defaults");
     
     final TestResults testResults = new TestResults();
     

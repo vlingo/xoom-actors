@@ -10,7 +10,7 @@ package io.vlingo.actors.plugin;
 import java.util.Properties;
 
 public class PluginProperties {
-  private final String name;
+  public final String name;
   private final Properties properties;
 
   public PluginProperties(final String name, final Properties properties) {

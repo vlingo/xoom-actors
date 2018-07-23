@@ -7,6 +7,7 @@
 
 package io.vlingo.actors.plugin.completes;
 
+import io.vlingo.actors.Actor;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.MailboxProvider;
@@ -31,11 +32,11 @@ public class MockRegistrar implements Registrar {
   }
 
   @Override
-  public void registerCommonSupervisor(String stageName, String name, String fullyQualifiedProtocol, String fullyQualifiedSupervisor) {
+  public void registerCommonSupervisor(String stageName, String name, Class<?> supervisedProtocol, Class<? extends Actor> supervisorClass) {
   }
 
   @Override
-  public void registerDefaultSupervisor(String stageName, String name, String fullyQualifiedSupervisor) {
+  public void registerDefaultSupervisor(String stageName, String name, Class<? extends Actor> supervisorClass) {
   }
 
   @Override

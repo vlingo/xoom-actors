@@ -7,20 +7,35 @@
 
 package io.vlingo.actors.plugin.supervision;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.vlingo.actors.Actor;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class DefaultSupervisorOverridePlugin implements Plugin {
-  private String name;
-  
+  private final DefaultSupervisorOverridePluginConfiguration configuration;
+
+  public DefaultSupervisorOverridePlugin() {
+    this.configuration = new DefaultSupervisorOverridePluginConfiguration();
+  }
+
   @Override
   public void close() {
   }
 
   @Override
+  public PluginConfiguration configuration() {
+    return configuration;
+  }
+
+  @Override
   public String name() {
-    return name;
+    return "override_supervisor";
   }
 
   @Override
@@ -29,11 +44,65 @@ public class DefaultSupervisorOverridePlugin implements Plugin {
   }
 
   @Override
-  public void start(final Registrar registrar, final String name, final PluginProperties properties) {
-    this.name = name;
-    
-    for (final DefinitionValues values : DefinitionValues.allDefinitionValues(properties)) {
-      registrar.registerDefaultSupervisor(values.stageName, values.name, values.supervisor);
+  public void start(final Registrar registrar) {
+    for (final ConfiguredSupervisor supervisor : configuration.supervisors) {
+      registrar.registerDefaultSupervisor(supervisor.stageName, supervisor.supervisorName, supervisor.supervisorClass);
+    }
+  }
+
+  public static class DefaultSupervisorOverridePluginConfiguration implements PluginConfiguration {
+    private final List<ConfiguredSupervisor> supervisors;
+
+    public static DefaultSupervisorOverridePluginConfiguration define() {
+      return new DefaultSupervisorOverridePluginConfiguration();
+    }
+
+    public DefaultSupervisorOverridePluginConfiguration supervisor(final String stageName, final String supervisorName, final Class<? extends Actor> supervisorClass) {
+      supervisors.add(new ConfiguredSupervisor(stageName, supervisorName, supervisorClass));
+      return this;
+    }
+
+    public int count() {
+      return supervisors.size();
+    }
+
+    public String name(final int index) {
+      return supervisors.get(index).supervisorName;
+    }
+
+    public String stageName(final int index) {
+      return supervisors.get(index).stageName;
+    }
+
+    public Class<? extends Actor> supervisorClass(final int index) {
+      return supervisors.get(index).supervisorClass;
+    }
+
+    @Override
+    public void build(final Configuration configuration) {
+      configuration.with(supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class));
+    }
+
+    @Override
+    public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      for (final DefinitionValues values : DefinitionValues.allDefinitionValues(properties)) {
+        final ConfiguredSupervisor supervisor =
+                new ConfiguredSupervisor(
+                        values.stageName,
+                        values.name,
+                        values.supervisor);
+
+        supervisors.add(supervisor);
+      }
+    }
+
+    @Override
+    public String name() {
+      return name(0);
+    }
+
+    private DefaultSupervisorOverridePluginConfiguration() {
+      this.supervisors = new ArrayList<>();
     }
   }
 }
