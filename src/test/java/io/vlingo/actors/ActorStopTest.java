@@ -122,7 +122,7 @@ public class ActorStopTest extends ActorsTest {
       } else {
         final int count = testResults.stopCount.incrementAndGet();
         System.out.print("STOPPED: " + count + " ");
-        testResults.stopCount.incrementAndGet();
+        //testResults.stopCount.incrementAndGet();
         testResults.untilStop.happened();
       }
     }
