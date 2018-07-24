@@ -13,11 +13,12 @@ import java.util.List;
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class DefaultSupervisorOverridePlugin implements Plugin {
+public class DefaultSupervisorOverridePlugin extends AbstractPlugin implements Plugin {
   private final DefaultSupervisorOverridePluginConfiguration configuration;
 
   public DefaultSupervisorOverridePlugin() {
@@ -94,6 +95,7 @@ public class DefaultSupervisorOverridePlugin implements Plugin {
 
         supervisors.add(supervisor);
       }
+      configuration.with(this);
     }
 
     @Override

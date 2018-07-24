@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.vlingo.actors.Address;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
@@ -42,12 +43,26 @@ public class TestWorld implements AutoCloseable {
     return new TestWorld(world, name);
   }
 
+  public static synchronized TestWorld start(final String name, final java.util.Properties properties) {
+    final World world = World.start(name, properties);
+    return new TestWorld(world, name);
+  }
+
+  public static TestWorld start(final String name, final Configuration configuration) {
+    final World world = World.start(name, configuration);
+    return new TestWorld(world, name);
+  }
+
   public static TestWorld start(final String name, final LoggerProvider loggerProvider) {
     return new TestWorld(World.start(name), name);
   }
 
   public static TestWorld startWith(final World world) {
     return new TestWorld(world, world.name());
+  }
+
+  public static synchronized TestWorld startWithDefaults(final String name) {
+    return new TestWorld(World.start(name, Configuration.define()), name);
   }
 
   public static void track(final Message message) {

@@ -13,11 +13,12 @@ import java.util.List;
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class CommonSupervisorsPlugin implements Plugin {
+public class CommonSupervisorsPlugin extends AbstractPlugin implements Plugin {
   private final CommonSupervisorsPluginConfiguration configuration;
 
   public CommonSupervisorsPlugin() {
@@ -84,9 +85,6 @@ public class CommonSupervisorsPlugin implements Plugin {
 
     @Override
     public void build(final Configuration configuration) {
-      configuration.with(
-              supervisor("default", "pingSupervisor", ConfiguredSupervisor.protocolFrom("io.vlingo.actors.supervision.Ping"), ConfiguredSupervisor.supervisorFrom("io.vlingo.actors.supervision.PingSupervisorActor"))
-             .supervisor("default", "pongSupervisor", ConfiguredSupervisor.protocolFrom("io.vlingo.actors.supervision.Pong"), ConfiguredSupervisor.supervisorFrom("io.vlingo.actors.supervision.PongSupervisorActor")));
     }
 
     @Override
@@ -99,8 +97,12 @@ public class CommonSupervisorsPlugin implements Plugin {
                         values.protocol,
                         values.supervisor);
 
+        if (supervisors.contains(supervisor)) {
+          supervisors.remove(supervisor);
+        } 
         supervisors.add(supervisor);
       }
+      configuration.with(this);
     }
 
     @Override

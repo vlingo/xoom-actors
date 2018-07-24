@@ -32,6 +32,25 @@ class ConfiguredSupervisor {
     }
   }
 
+  @Override
+  public int hashCode() {
+    return 31 * this.stageName.hashCode() + this.supervisorName.hashCode();
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    if (other == null || other.getClass() != this.getClass()) {
+      return false;
+    }
+    final ConfiguredSupervisor otherSupervisor = (ConfiguredSupervisor) other;
+    return this.stageName.equals(otherSupervisor.stageName) &&
+           this.supervisorName.equals(otherSupervisor.supervisorName) && 
+           (this.supervisedProtocol == null && otherSupervisor.supervisedProtocol == null) ||
+           (this.supervisedProtocol != null && otherSupervisor.supervisedProtocol != null &&
+            this.supervisedProtocol.equals(otherSupervisor.supervisedProtocol)) &&
+           this.supervisorClass.equals(otherSupervisor.supervisorClass);
+  }
+
   ConfiguredSupervisor(final String stageName, final String supervisorName, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass) {
     this.stageName = stageName;
     this.supervisorName = supervisorName;

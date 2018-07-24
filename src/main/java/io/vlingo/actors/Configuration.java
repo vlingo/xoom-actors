@@ -11,9 +11,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginLoader;
+import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
 import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
@@ -40,6 +45,14 @@ public class Configuration {
 
   public static Configuration define() {
     return new Configuration();
+  }
+
+  public static Configuration defineAlongWith(final Properties properties) {
+    return new Configuration(properties, true);
+  }
+
+  public static Configuration defineWith(final Properties properties) {
+    return new Configuration(properties, false);
   }
 
   public Collection<Plugin> allPlugins() {
@@ -145,8 +158,16 @@ public class Configuration {
     return testProxyGeneratedSourcesPath;
   }
 
+  public void startPlugins(final World world, final int pass) {
+    for (final Plugin plugin : plugins) {
+      if (plugin.pass() == pass) {
+        plugin.start(world);
+      }
+    }
+  }
+
   private Configuration() {
-    this.plugins = loadPlugins();
+    this.plugins = loadPlugins(true);
 
     this
       .usingMainProxyGeneratedClassesPath("target/classes/")
@@ -155,7 +176,25 @@ public class Configuration {
       .usingTestProxyGeneratedSourcesPath("target/generated-test-sources/");
   }
 
-  private List<Plugin> loadPlugins() {
+  private Configuration(final Properties properties, final boolean includeBaseLoad) {
+    if (includeBaseLoad) {
+      final List<Plugin> plugins = loadPlugins(false);
+      this.plugins = loadPropertiesPlugins(properties, plugins);
+    } else {
+      this.plugins = loadPropertiesPlugins(properties, new ArrayList<>());
+    }
+  }
+
+  private List<Plugin> loadPropertiesPlugins(final Properties properties, final List<Plugin> plugins) {
+    final Set<Plugin> unique = new HashSet<>(plugins);
+    unique.addAll(new PluginLoader().loadEnabledPlugins(this, properties));
+    for (final Plugin plugin : unique) {
+      plugin.configuration().buildWith(this, new PluginProperties(plugin.name(), properties));
+    }
+    return new ArrayList<>(unique);
+  }
+
+  private List<Plugin> loadPlugins(final boolean build) {
     final List<Class<?>> pluginClasses = Arrays.asList(
             io.vlingo.actors.plugin.completes.PooledCompletesPlugin.class,
             io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.class,
@@ -170,7 +209,7 @@ public class Configuration {
       final String classname = pluginClass.getName();
       try {
         final Plugin plugin = (Plugin) pluginClass.newInstance();
-        plugin.configuration().build(this);
+        if (build) { plugin.configuration().build(this); }
         plugins.add(plugin);
       } catch (Exception e) {
         throw new IllegalStateException("Cannot load plugin class: " + classname);

@@ -15,11 +15,12 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class SharedRingBufferMailboxPlugin implements Plugin, MailboxProvider {
+public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plugin, MailboxProvider {
   private final SharedRingBufferMailboxPluginConfiguration configuration;
   private final Map<Integer, RingBufferDispatcher> dispatchers;
 

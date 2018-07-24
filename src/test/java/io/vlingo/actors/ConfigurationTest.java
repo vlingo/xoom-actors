@@ -159,17 +159,6 @@ public class ConfigurationTest {
     assertEquals("vlingo", configuration.jdkLoggerPluginConfiguration().handlerName());
     assertEquals("ALL", configuration.jdkLoggerPluginConfiguration().handlerLevel());
 
-    assertNotNull(configuration.commonSupervisorsPluginConfiguration());
-    assertEquals(2, configuration.commonSupervisorsPluginConfiguration().count());
-    assertEquals("default", configuration.commonSupervisorsPluginConfiguration().stageName(0));
-    assertEquals("pingSupervisor", configuration.commonSupervisorsPluginConfiguration().name(0));
-    assertEquals(Ping.class, configuration.commonSupervisorsPluginConfiguration().supervisedProtocol(0));
-    assertEquals(PingSupervisorActor.class, configuration.commonSupervisorsPluginConfiguration().supervisorClass(0));
-    assertEquals("default", configuration.commonSupervisorsPluginConfiguration().stageName(1));
-    assertEquals("pongSupervisor", configuration.commonSupervisorsPluginConfiguration().name(1));
-    assertEquals(Pong.class, configuration.commonSupervisorsPluginConfiguration().supervisedProtocol(1));
-    assertEquals(PongSupervisorActor.class, configuration.commonSupervisorsPluginConfiguration().supervisorClass(1));
-
     assertNotNull(configuration.defaultSupervisorOverridePluginConfiguration());
     assertEquals(1, configuration.defaultSupervisorOverridePluginConfiguration().count());
     assertEquals("default", configuration.defaultSupervisorOverridePluginConfiguration().stageName(0));

@@ -11,14 +11,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.supervision.PingActor.PingTestResults;
 import io.vlingo.actors.supervision.PongActor.PongTestResults;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.TestWorld;
 
 public class CommonSupervisionTest extends ActorsTest {
 
@@ -104,5 +108,18 @@ public class CommonSupervisionTest extends ActorsTest {
     assertTrue(pong.actorInside().isStopped());
     assertEquals(11, testResults.pongCount.get());
     assertEquals(11, PongSupervisorActor.instance.get().testResults.informedCount.get());
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    final Properties properties = new Properties();
+    properties.setProperty("plugin.name.common_supervisors", "true");
+    properties.setProperty("plugin.common_supervisors.classname", "io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin");
+    properties.setProperty("plugin.common_supervisors.types",
+              "[stage=default name=pingSupervisor protocol=io.vlingo.actors.supervision.Ping supervisor=io.vlingo.actors.supervision.PingSupervisorActor] " +
+              "[stage=default name=pongSupervisor protocol=io.vlingo.actors.supervision.Pong supervisor=io.vlingo.actors.supervision.PongSupervisorActor]");
+
+    testWorld = TestWorld.start("test", Configuration.defineAlongWith(properties));
+    world = testWorld.world();
   }
 }

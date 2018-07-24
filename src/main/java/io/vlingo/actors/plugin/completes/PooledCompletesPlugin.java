@@ -10,11 +10,12 @@ package io.vlingo.actors.plugin.completes;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class PooledCompletesPlugin implements Plugin {
+public class PooledCompletesPlugin extends AbstractPlugin implements Plugin {
   private CompletesEventuallyProvider completesEventuallyProvider;
   private final PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
 

@@ -11,10 +11,11 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 
-public class TestMailboxPlugin implements Plugin, MailboxProvider {
+public class TestMailboxPlugin extends AbstractPlugin implements Plugin, MailboxProvider {
   public TestMailboxPlugin(final Registrar registrar) {
     this.start(registrar);
   }

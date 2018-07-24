@@ -10,8 +10,6 @@ package io.vlingo.actors;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.vlingo.actors.plugin.PluginLoader;
-
 public final class World implements Registrar {
   static final int PRIVATE_ROOT_ID = Integer.MAX_VALUE;
   static final String PRIVATE_ROOT_NAME = "#private";
@@ -38,7 +36,11 @@ public final class World implements Registrar {
   private Stoppable publicRoot;
 
   public static synchronized World start(final String name) {
-    return start(name, Configuration.define());
+    return start(name, io.vlingo.actors.Properties.properties);
+  }
+
+  public static synchronized World start(final String name, final java.util.Properties properties) {
+    return start(name, Configuration.defineWith(properties));
   }
 
   public static synchronized World start(final String name, final Configuration configuration) {
@@ -47,6 +49,10 @@ public final class World implements Registrar {
     }
 
     return new World(name, configuration);
+  }
+
+  public static synchronized World startWithDefaults(final String name) {
+    return start(name, Configuration.define());
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -264,13 +270,11 @@ public final class World implements Registrar {
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
-    final PluginLoader pluginLoader = new PluginLoader();
-
-    pluginLoader.loadEnabledPlugins(this, 1, configuration);
+    configuration.startPlugins(this, 1);
 
     startRootFor(defaultStage, defaultLogger());
 
-    pluginLoader.loadEnabledPlugins(this, 2, configuration);
+    configuration.startPlugins(this, 2);
   }
 
   private void startRootFor(final Stage stage, final Logger logger) {

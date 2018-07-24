@@ -12,11 +12,12 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class ConcurrentQueueMailboxPlugin implements Plugin, MailboxProvider {
+public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plugin, MailboxProvider {
   private final ConcurrentQueueMailboxPluginConfiguration configuration;
   private Dispatcher executorDispatcher;
 

@@ -15,11 +15,12 @@ import io.vlingo.actors.Definition;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class JDKLoggerPlugin implements Plugin, LoggerProvider {
+public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerProvider {
   private final JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration;
   private Logger logger;
   private int pass = 0;
