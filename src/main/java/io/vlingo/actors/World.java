@@ -171,6 +171,7 @@ public final class World implements Registrar {
     
     if (stage == null) {
       stage = new Stage(this, name);
+      if (!name.equals(DEFAULT_STAGE)) stage.startDirectoryScanner();
       stages.put(name, stage);
     }
     
@@ -275,6 +276,8 @@ public final class World implements Registrar {
     startRootFor(defaultStage, defaultLogger());
 
     configuration.startPlugins(this, 2);
+
+    defaultStage.startDirectoryScanner();
   }
 
   private void startRootFor(final Stage stage, final Logger logger) {
