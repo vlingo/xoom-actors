@@ -10,14 +10,18 @@ package io.vlingo.actors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class Directory {
+final class Directory {
   private final Map<Address, Actor>[] maps;
 
-  protected Directory() {
+  Directory() {
     this.maps = build();
   }
 
-  protected int count() {
+  Actor actorOf(final Address address) {
+    return this.maps[mapIndex(address)].get(address);
+  }
+
+  int count() {
     int count = 0;
     for (final Map<Address, Actor> map : maps) {
       count += map.size();
@@ -25,30 +29,30 @@ public final class Directory {
     return count;
   }
 
-  protected void dump(final Logger logger) {
+  void dump(final Logger logger) {
     if (logger.isEnabled()) {
       for (final Map<Address, Actor> map : maps) {
         for (final Actor actor : map.values()) {
           final Address address = actor.address();
           final Address parent = actor.lifeCycle.environment.parent == null ? Address.None : actor.lifeCycle.environment.parent.address();
-          logger.log("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent);
+          logger.log("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent + " TYPE: " + actor.getClass());
         }
       }
     }
   }
 
-  protected boolean isRegistered(final Address address) {
+  boolean isRegistered(final Address address) {
     return this.maps[mapIndex(address)].containsKey(address);
   }
 
-  protected void register(final Address address, final Actor actor) {
+  void register(final Address address, final Actor actor) {
     if (isRegistered(address)) {
       throw new IllegalArgumentException("The actor address is already registered: " + address);
     }
     this.maps[mapIndex(address)].put(address, actor);
   }
 
-  protected Actor remove(final Address address) {
+  Actor remove(final Address address) {
     return this.maps[mapIndex(address)].remove(address);
   }
 
@@ -61,7 +65,7 @@ public final class Directory {
     // up to around 75% of 1024 actors, but very average if not poor performance
     // following that.
     //
-    // TODO: Changed to configuration based values to enable the
+    // TODO: Change to configuration-based values to enable the
     // application to estimate how many actors are likely to exist at
     // any one time. For example, there will be very few actors in some
     // "applications" such as vlingo/cluster, but then the application
