@@ -18,7 +18,19 @@ public final class Address implements Comparable<Address> {
   private final int id;
   private final String name;
 
-  public static Address from(final String name) {
+  public static Address findableBy(final int id) {
+    return new Address(id, ""+id);
+  }
+
+  public static Address unique() {
+    return new Address();
+  }
+
+  public static Address uniquePrefixedWith(final String prefixedWith) {
+    return new Address(prefixedWith, true);
+  }
+
+  public static Address uniqueWith(final String name) {
     return new Address(name);
   }
 
@@ -43,17 +55,35 @@ public final class Address implements Comparable<Address> {
     return nextId.get(); // for test only
   }
 
+  Address() {
+    this(null);
+  }
+
   Address(final String name) {
     this(nextId.getAndIncrement(), name);
   }
 
+  Address(final String name, final boolean prefixName) {
+    this(nextId.getAndIncrement(), name, prefixName);
+  }
+
   Address(final int reservedId, final String name) {
+    this(reservedId, name, false);
+  }
+
+  Address(final int reservedId, final String name, final boolean prefixName) {
     this.id = reservedId;
-    this.name = name == null ? Integer.toString(reservedId) : name;
+    this.name = name == null ?
+            Integer.toString(reservedId) :
+            prefixName ? (name + id) : name;
   }
 
   public int id() {
     return id;
+  }
+
+  public String ids() {
+    return ""+id;
   }
 
   public final String name() {
