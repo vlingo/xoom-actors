@@ -17,12 +17,13 @@ import io.vlingo.actors.testkit.TestActor;
 public class Stage implements Stoppable {
   private final Map<Class<?>, Supervisor> commonSupervisors;
   private final Directory directory;
+  private DirectoryScanner directoryScanner;
   private final String name;
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
   private final World world;
 
-  public <T> T actorAs(final Actor actor, Class<T> protocol) {
+  public <T> T actorAs(final Actor actor, final Class<T> protocol) {
     return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
   }
 
@@ -33,6 +34,20 @@ public class Stage implements Stoppable {
             definition.parentOr(world.defaultParent()),
             definition.supervisor(),
             definition.loggerOr(world.defaultLogger()));
+  }
+
+  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address) {
+    final ActorProtocolActor<T> actor =
+            actorProtocolFor(
+              definition,
+              protocol,
+              definition.parentOr(world.defaultParent()),
+              address,
+              null,
+              definition.supervisor(),
+              definition.loggerOr(world.defaultLogger()));
+
+    return actor.protocolActor();
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Logger logger) {
@@ -68,6 +83,10 @@ public class Stage implements Stoppable {
                     definition.loggerOr(world.defaultLogger()));
 
     return new Protocols(ActorProtocolActor.toActors(all));
+  }
+
+  public <T> Completes<T> actorOf(final Address address, final Class<T> protocol) {
+    return directoryScanner.actorOf(address, protocol);
   }
 
   public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
@@ -245,9 +264,17 @@ public class Stage implements Stoppable {
     return defaultSupervisor;
   }
 
+  Directory directory() {
+    return directory; // FOR TESTING ONLY
+  }
+
   void handleFailureOf(final Supervised supervised) {
     supervised.suspend();
     supervised.supervisor().inform(supervised.throwable(), supervised);
+  }
+
+  void startDirectoryScanner() {
+    this.directoryScanner = actorFor(Definition.has(DirectoryScannerActor.class, Definition.parameters(directory)), DirectoryScanner.class);
   }
 
   void stop(final Actor actor) {
@@ -272,7 +299,7 @@ public class Stage implements Stoppable {
     }
 
     final Address address = maybeAddress != null ?
-            maybeAddress : Address.from(definition.actorName());
+            maybeAddress : Address.uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
       throw new IllegalStateException("Address already exists: " + address);
