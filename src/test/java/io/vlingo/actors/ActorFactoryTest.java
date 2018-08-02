@@ -23,7 +23,7 @@ public class ActorFactoryTest {
   public void testActorForWithNoParametersAndDefaults() throws Exception {
     final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters);
     
-    final Address address = Address.from("test-actor");
+    final Address address = Address.uniqueWith("test-actor");
     
     final Mailbox mailbox = new TestMailbox();
     
@@ -64,7 +64,7 @@ public class ActorFactoryTest {
                     ParentInterfaceActor.instance.get(),
                     actorName);
     
-    final Address address = Address.from(actorName);
+    final Address address = Address.uniqueWith(actorName);
     
     final Mailbox mailbox = new TestMailbox();
     
