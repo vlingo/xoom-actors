@@ -17,7 +17,7 @@ public class AddressTest {
 
   @Test
   public void testNameGiven() throws Exception {
-    final Address address = Address.from("test-address");
+    final Address address = Address.uniqueWith("test-address");
     
     final int id = Address.testNextIdValue() - 1;
     
@@ -25,7 +25,7 @@ public class AddressTest {
     assertEquals(id, address.id());
     assertEquals("test-address", address.name());
     
-    final Address another = Address.from("another-address");
+    final Address another = Address.uniqueWith("another-address");
     
     assertNotEquals(another, address);
     
