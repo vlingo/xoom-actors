@@ -9,14 +9,18 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
+import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.TestWorld;
 
 public class StageTest {
+  private int scanFound = 0;
   private World world;
   
   @Test
@@ -48,9 +52,69 @@ public class StageTest {
     assertNotNull(TestInterfaceActor.instance.get());
   }
 
+  @Test
+  public void testDirectoryScan() {
+    final Address address1 = Address.uniqueWith("test-actor1");
+    final Address address2 = Address.uniqueWith("test-actor2");
+    final Address address3 = Address.uniqueWith("test-actor3");
+    final Address address4 = Address.uniqueWith("test-actor4");
+    final Address address5 = Address.uniqueWith("test-actor5");
+
+    final Address address6 = Address.uniqueWith("test-actor6");
+    final Address address7 = Address.uniqueWith("test-actor7");
+
+    world.stage().directory().register(address1, new TestInterfaceActor());
+    world.stage().directory().register(address2, new TestInterfaceActor());
+    world.stage().directory().register(address3, new TestInterfaceActor());
+    world.stage().directory().register(address4, new TestInterfaceActor());
+    world.stage().directory().register(address5, new TestInterfaceActor());
+    
+    final TestUntil until = TestUntil.happenings(7);
+
+    world.stage().actorOf(address5, NoProtocol.class).after(actor -> {
+      assertNotNull(actor);
+      ++scanFound;
+      until.happened();
+    });
+    world.stage().actorOf(address4, NoProtocol.class).after(actor -> {
+      assertNotNull(actor);
+      ++scanFound;
+      until.happened();
+    });
+    world.stage().actorOf(address3, NoProtocol.class).after(actor -> {
+      assertNotNull(actor);
+      ++scanFound;
+      until.happened();
+    });
+    world.stage().actorOf(address2, NoProtocol.class).after(actor -> {
+      assertNotNull(actor);
+      ++scanFound;
+      until.happened();
+    });
+    world.stage().actorOf(address1, NoProtocol.class).after(actor -> {
+      assertNotNull(actor);
+      ++scanFound;
+      until.happened();
+    });
+
+    world.stage().actorOf(address6, NoProtocol.class).after(actor -> {
+      assertNull(actor);
+      until.happened();
+    });
+    world.stage().actorOf(address7, NoProtocol.class).after(actor -> {
+      assertNull(actor);
+      until.happened();
+    });
+
+    until.completes();
+
+    assertEquals(5, scanFound);
+  }
+
   @Before
   public void setUp() {
-    world = World.start("test");
+    final TestWorld testWorld = TestWorld.start("test");
+    world = testWorld.world();
   }
   
   @After
