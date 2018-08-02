@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -19,7 +20,7 @@ public class DirectoryTest extends ActorsTest {
   public void testDirectoryRegister() {
     final Directory directory = new Directory();
     
-    final Address address = Address.from("test-actor");
+    final Address address = Address.uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -27,14 +28,14 @@ public class DirectoryTest extends ActorsTest {
     
     assertTrue(directory.isRegistered(address));
     
-    assertFalse(directory.isRegistered(Address.from("another-actor")));
+    assertFalse(directory.isRegistered(Address.uniqueWith("another-actor")));
   }
 
   @Test
   public void testDirectoryRemove() {
     final Directory directory = new Directory();
     
-    final Address address = Address.from("test-actor");
+    final Address address = Address.uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -51,7 +52,7 @@ public class DirectoryTest extends ActorsTest {
   public void testDirectoryAlreadyRegistered() {
     final Directory directory = new Directory();
     
-    final Address address = Address.from("test-actor");
+    final Address address = Address.uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -59,7 +60,32 @@ public class DirectoryTest extends ActorsTest {
     
     directory.register(address, new TestInterfaceActor());
   }
-  
+
+  @Test
+  public void testDirectoryFindsRegistered() {
+    final Directory directory = new Directory();
+    
+    final Address address1 = Address.uniqueWith("test-actor1");
+    final Address address2 = Address.uniqueWith("test-actor2");
+    final Address address3 = Address.uniqueWith("test-actor3");
+    final Address address4 = Address.uniqueWith("test-actor4");
+    final Address address5 = Address.uniqueWith("test-actor5");
+    
+    directory.register(address1, new TestInterfaceActor());
+    directory.register(address2, new TestInterfaceActor());
+    directory.register(address3, new TestInterfaceActor());
+    directory.register(address4, new TestInterfaceActor());
+    directory.register(address5, new TestInterfaceActor());
+
+    assertNotNull(directory.actorOf(address5));
+    assertNotNull(directory.actorOf(address4));
+    assertNotNull(directory.actorOf(address3));
+    assertNotNull(directory.actorOf(address2));
+    assertNotNull(directory.actorOf(address1));
+
+    assertNull(directory.actorOf(Address.uniqueWith("test-actor6")));
+  }
+
   public interface TestInterface { }
   
   public static class TestInterfaceActor extends Actor implements TestInterface { }
