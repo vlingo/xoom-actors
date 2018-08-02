@@ -17,7 +17,7 @@ public class TestEnvironment extends Environment {
   public TestEnvironment() {
     super(
             TestWorld.testWorld.world().stage(),
-            Address.from("test"),
+            Address.uniqueWith("test"),
             Definition.has(null, Definition.NoParameters),
             TestWorld.testWorld.world().defaultParent(),
             new TestMailbox(),
