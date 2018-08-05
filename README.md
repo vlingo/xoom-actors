@@ -4,7 +4,7 @@
 
 The vlingo-actors toolkit is nearly full featured, so don't be fooled by the seemingly low version number.
 
-A brief tutorial can be found here: https://forcomprehension.com/2018/01/26/vlingo-actors-tutorial-1/
+A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-tutorial-1/
 
 ### Bintray
 
