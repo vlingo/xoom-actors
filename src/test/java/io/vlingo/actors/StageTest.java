@@ -54,14 +54,14 @@ public class StageTest {
 
   @Test
   public void testDirectoryScan() {
-    final Address address1 = Address.uniqueWith("test-actor1");
-    final Address address2 = Address.uniqueWith("test-actor2");
-    final Address address3 = Address.uniqueWith("test-actor3");
-    final Address address4 = Address.uniqueWith("test-actor4");
-    final Address address5 = Address.uniqueWith("test-actor5");
+    final Address address1 = world.addressFactory().uniqueWith("test-actor1");
+    final Address address2 = world.addressFactory().uniqueWith("test-actor2");
+    final Address address3 = world.addressFactory().uniqueWith("test-actor3");
+    final Address address4 = world.addressFactory().uniqueWith("test-actor4");
+    final Address address5 = world.addressFactory().uniqueWith("test-actor5");
 
-    final Address address6 = Address.uniqueWith("test-actor6");
-    final Address address7 = Address.uniqueWith("test-actor7");
+    final Address address6 = world.addressFactory().uniqueWith("test-actor6");
+    final Address address7 = world.addressFactory().uniqueWith("test-actor7");
 
     world.stage().directory().register(address1, new TestInterfaceActor());
     world.stage().directory().register(address2, new TestInterfaceActor());

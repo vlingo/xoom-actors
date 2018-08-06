@@ -20,7 +20,7 @@ public class DirectoryTest extends ActorsTest {
   public void testDirectoryRegister() {
     final Directory directory = new Directory();
     
-    final Address address = Address.uniqueWith("test-actor");
+    final Address address = world.addressFactory().uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -28,14 +28,14 @@ public class DirectoryTest extends ActorsTest {
     
     assertTrue(directory.isRegistered(address));
     
-    assertFalse(directory.isRegistered(Address.uniqueWith("another-actor")));
+    assertFalse(directory.isRegistered(world.addressFactory().uniqueWith("another-actor")));
   }
 
   @Test
   public void testDirectoryRemove() {
     final Directory directory = new Directory();
     
-    final Address address = Address.uniqueWith("test-actor");
+    final Address address = world.addressFactory().uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -52,7 +52,7 @@ public class DirectoryTest extends ActorsTest {
   public void testDirectoryAlreadyRegistered() {
     final Directory directory = new Directory();
     
-    final Address address = Address.uniqueWith("test-actor");
+    final Address address = world.addressFactory().uniqueWith("test-actor");
     
     final Actor actor = new TestInterfaceActor();
     
@@ -65,11 +65,11 @@ public class DirectoryTest extends ActorsTest {
   public void testDirectoryFindsRegistered() {
     final Directory directory = new Directory();
     
-    final Address address1 = Address.uniqueWith("test-actor1");
-    final Address address2 = Address.uniqueWith("test-actor2");
-    final Address address3 = Address.uniqueWith("test-actor3");
-    final Address address4 = Address.uniqueWith("test-actor4");
-    final Address address5 = Address.uniqueWith("test-actor5");
+    final Address address1 = world.addressFactory().uniqueWith("test-actor1");
+    final Address address2 = world.addressFactory().uniqueWith("test-actor2");
+    final Address address3 = world.addressFactory().uniqueWith("test-actor3");
+    final Address address4 = world.addressFactory().uniqueWith("test-actor4");
+    final Address address5 = world.addressFactory().uniqueWith("test-actor5");
     
     directory.register(address1, new TestInterfaceActor());
     directory.register(address2, new TestInterfaceActor());
@@ -83,7 +83,7 @@ public class DirectoryTest extends ActorsTest {
     assertNotNull(directory.actorOf(address2));
     assertNotNull(directory.actorOf(address1));
 
-    assertNull(directory.actorOf(Address.uniqueWith("test-actor6")));
+    assertNull(directory.actorOf(world.addressFactory().uniqueWith("test-actor6")));
   }
 
   public interface TestInterface { }

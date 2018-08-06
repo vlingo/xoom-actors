@@ -7,7 +7,6 @@
 
 package io.vlingo.actors.testkit;
 
-import io.vlingo.actors.Address;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.Environment;
 import io.vlingo.actors.plugin.logging.jdk.JDKLogger;
@@ -17,7 +16,7 @@ public class TestEnvironment extends Environment {
   public TestEnvironment() {
     super(
             TestWorld.testWorld.world().stage(),
-            Address.uniqueWith("test"),
+            TestWorld.testWorld.world().addressFactory().uniqueWith("test"),
             Definition.has(null, Definition.NoParameters),
             TestWorld.testWorld.world().defaultParent(),
             new TestMailbox(),

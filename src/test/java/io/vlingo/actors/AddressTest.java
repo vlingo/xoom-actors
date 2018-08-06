@@ -14,18 +14,19 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 public class AddressTest {
+  private final World world = World.start("test");
 
   @Test
   public void testNameGiven() throws Exception {
-    final Address address = Address.uniqueWith("test-address");
+    final Address address = world.addressFactory().uniqueWith("test-address");
     
-    final int id = Address.testNextIdValue() - 1;
+    final int id = world.addressFactory().testNextIdValue() - 1;
     
     assertNotNull(address);
     assertEquals(id, address.id());
     assertEquals("test-address", address.name());
     
-    final Address another = Address.uniqueWith("another-address");
+    final Address another = world.addressFactory().uniqueWith("another-address");
     
     assertNotEquals(another, address);
     
@@ -38,21 +39,21 @@ public class AddressTest {
   public void testNameAndIdGiven() throws Exception {
     final int id = 123;
     
-    final Address address = Address.from(id, "test-address");
+    final Address address = world.addressFactory().from(id, "test-address");
     
     assertNotNull(address);
     assertEquals(123, address.id());
     assertEquals("test-address", address.name());
     
-    final Address another = Address.from(456, "test-address");
+    final Address another = world.addressFactory().from(456, "test-address");
     
     assertNotEquals(another, address);
     
     assertNotEquals(0, address.compareTo(another));
     
-    assertEquals(address, Address.from(123, "test-address"));
+    assertEquals(address, world.addressFactory().from(123, "test-address"));
     
-    assertEquals(0, address.compareTo(Address.from(123, "test-address")));
+    assertEquals(0, address.compareTo(world.addressFactory().from(123, "test-address")));
     
     assertEquals(id, address.hashCode());
   }

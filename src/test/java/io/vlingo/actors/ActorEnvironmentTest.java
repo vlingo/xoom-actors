@@ -34,7 +34,7 @@ public class ActorEnvironmentTest {
     
     assertEquals(0, TestWorld.allMessagesFor(env.address()).size());
     
-    assertEquals(Address.testNextIdValue() - 1, ((Address) state.valueOf("address")).id());
+    assertEquals(world.world().addressFactory().testNextIdValue() - 1, ((Address) state.valueOf("address")).id());
     
     assertEquals(definition.actorName(), actorDefinition.actorName());
     

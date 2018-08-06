@@ -299,7 +299,7 @@ public class Stage implements Stoppable {
     }
 
     final Address address = maybeAddress != null ?
-            maybeAddress : Address.uniqueWith(definition.actorName());
+            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
       throw new IllegalStateException("Address already exists: " + address);

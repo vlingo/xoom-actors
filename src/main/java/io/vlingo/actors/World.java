@@ -21,6 +21,7 @@ public final class World implements Registrar {
 
   static final String DEFAULT_STAGE = "__defaultStage";
 
+  private final AddressFactory addressFactory;
   private final CompletesEventuallyProviderKeeper completesProviderKeeper;
   private final Configuration configuration;
   private final LoggerProviderKeeper loggerProviderKeeper;
@@ -69,6 +70,10 @@ public final class World implements Registrar {
     }
 
     return stage().actorFor(definition, protocols);
+  }
+
+  public AddressFactory addressFactory() {
+    return addressFactory;
   }
 
   public Configuration configuration() {
@@ -262,12 +267,11 @@ public final class World implements Registrar {
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
+    this.addressFactory = new AddressFactory();
     this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
     this.mailboxProviderKeeper = new MailboxProviderKeeper();
     this.stages = new HashMap<>();
-
-    Address.initialize();
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
@@ -285,7 +289,7 @@ public final class World implements Registrar {
             Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
             Stoppable.class,
             null,
-            Address.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
+            addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
             null,
             null,
             logger);
