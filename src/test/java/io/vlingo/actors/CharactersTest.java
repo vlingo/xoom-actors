@@ -82,9 +82,9 @@ public class CharactersTest {
       this.characters = new Characters<>(3);
       this.characters.canBecome(
               Arrays.asList(
-                      new ThreeBehaviorsState(characters, results, 1),
-                      new ThreeBehaviorsState(characters, results, 2),
-                      new ThreeBehaviorsState(characters, results, 3)));
+                      new ThreeBehaviorsState(results, 1),
+                      new ThreeBehaviorsState(results, 2),
+                      new ThreeBehaviorsState(results, 3)));
     }
 
     @Override
@@ -101,38 +101,36 @@ public class CharactersTest {
     public void three() {
       characters.current().three();
     }
-  }
 
-  public static class ThreeBehaviorsState implements ThreeBehaviors {
-    private final int incrementBy;
-    private final Characters<ThreeBehaviors> characters;
-    private final Results results;
+    private class ThreeBehaviorsState implements ThreeBehaviors {
+      private final int incrementBy;
+      private final Results results;
 
-    public ThreeBehaviorsState(final Characters<ThreeBehaviors> characters, final Results results, final int incrementBy) {
-      this.characters = characters;
-      this.results = results;
-      this.incrementBy = incrementBy;
-    }
+      public ThreeBehaviorsState(final Results results, final int incrementBy) {
+        this.results = results;
+        this.incrementBy = incrementBy;
+      }
 
-    @Override
-    public void one() {
-      results.one += incrementBy;
-      characters.become(Two);
-      results.until.happened();
-    }
+      @Override
+      public void one() {
+        results.one += incrementBy;
+        characters.become(Two);
+        results.until.happened();
+      }
 
-    @Override
-    public void two() {
-      results.two += incrementBy;
-      characters.become(Three);
-      results.until.happened();
-    }
+      @Override
+      public void two() {
+        results.two += incrementBy;
+        characters.become(Three);
+        results.until.happened();
+      }
 
-    @Override
-    public void three() {
-      results.three += incrementBy;
-      characters.become(One);
-      results.until.happened();
+      @Override
+      public void three() {
+        results.three += incrementBy;
+        characters.become(One);
+        results.until.happened();
+      }
     }
   }
 }
