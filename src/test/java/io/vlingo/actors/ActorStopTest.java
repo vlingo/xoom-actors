@@ -51,8 +51,12 @@ public class ActorStopTest extends ActorsTest {
 
     System.out.println("Test: testStopActors: terminating world");
 
+    testResults.untilTerminatingStop = TestUntil.happenings(0);
+    
     testResults.terminating.set(true);
     world.terminate();
+    
+    testResults.untilTerminatingStop.completes();
     
     assertEquals(0, testResults.terminatingStopCount.get());
   }
@@ -117,12 +121,12 @@ public class ActorStopTest extends ActorsTest {
     @Override
     protected synchronized void afterStop() {
       if (testResults.terminating.get()) {
-        testResults.terminatingStopCount.incrementAndGet();
+        final int count = testResults.terminatingStopCount.incrementAndGet();
+        System.out.print("TERMINATING AND STOPPED: " + count + " ");
         testResults.untilTerminatingStop.happened();
       } else {
         final int count = testResults.stopCount.incrementAndGet();
         System.out.print("STOPPED: " + count + " ");
-        //testResults.stopCount.incrementAndGet();
         testResults.untilStop.happened();
       }
     }
