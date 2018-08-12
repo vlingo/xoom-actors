@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
+import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
 
 import java.util.HashMap;
@@ -24,19 +26,19 @@ public final class World implements Registrar {
   static final String DEFAULT_STAGE = "__defaultStage";
 
   private final AddressFactory addressFactory;
-  private final CompletesEventuallyProviderKeeper completesProviderKeeper;
   private final Configuration configuration;
-  private final LoggerProviderKeeper loggerProviderKeeper;
   private final String name;
   private final Map<String, Stage> stages;
 
+  private CompletesEventuallyProviderKeeper completesProviderKeeper;
   private DeadLetters deadLetters;
   private Logger defaultLogger;
   private Actor defaultParent;
   private Supervisor defaultSupervisor;
+  private LoggerProviderKeeper loggerProviderKeeper;
+  private MailboxProviderKeeper mailboxProviderKeeper;
   private Stoppable privateRoot;
   private Stoppable publicRoot;
-  private MailboxProviderKeeper mailboxProviderKeeper;
 
   public static synchronized World start(final String name) {
     return start(name, io.vlingo.actors.Properties.properties);
@@ -169,6 +171,30 @@ public final class World implements Registrar {
     }
   }
 
+  @Override
+  public void registerCompletesEventuallyProviderKeeper(final CompletesEventuallyProviderKeeper keeper) {
+    if (this.completesProviderKeeper != null) {
+      this.completesProviderKeeper.close();
+    }
+    this.completesProviderKeeper = keeper;
+  }
+
+  @Override
+  public void registerLoggerProviderKeeper(final LoggerProviderKeeper keeper) {
+    if (this.loggerProviderKeeper != null) {
+      this.loggerProviderKeeper.close();
+    }
+    this.loggerProviderKeeper = keeper;
+  }
+
+  @Override
+  public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
+    if (this.mailboxProviderKeeper != null) {
+      this.mailboxProviderKeeper.close();
+    }
+    this.mailboxProviderKeeper = keeper;
+  }
+
   public Stage stage() {
     return stageNamed(DEFAULT_STAGE);
   }
@@ -266,21 +292,12 @@ public final class World implements Registrar {
     this.publicRoot = publicRoot;
   }
 
-  @Override
-  public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
-    if (this.mailboxProviderKeeper != null) {
-      this.mailboxProviderKeeper.close();
-    }
-
-    this.mailboxProviderKeeper = keeper;
-  }
-
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
     this.addressFactory = new AddressFactory();
-    this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
-    this.loggerProviderKeeper = new LoggerProviderKeeper();
+    this.completesProviderKeeper = new DefaultCompletesEventuallyProviderKeeper();
+    this.loggerProviderKeeper = new DefaultLoggerProviderKeeper();
     this.mailboxProviderKeeper = new DefaultMailboxProviderKeeper();
     this.stages = new HashMap<>();
 

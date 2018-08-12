@@ -7,44 +7,9 @@
 
 package io.vlingo.actors;
 
-final class CompletesEventuallyProviderKeeper {
-  private CompletesEventuallyProviderInfo completesEventuallyProviderInfo;
-
-  CompletesEventuallyProviderKeeper() { }
-
-  CompletesEventuallyProvider providerFor(final String name) {
-    if (completesEventuallyProviderInfo == null) {
-      throw new IllegalStateException("No registered CompletesEventuallyProvider named " + name);
-    }
-    return completesEventuallyProviderInfo.completesEventuallyProvider;
-  }
-
-  void close() {
-    if (completesEventuallyProviderInfo != null) {
-      completesEventuallyProviderInfo.completesEventuallyProvider.close();
-    }
-  }
-
-  CompletesEventuallyProvider findDefault() {
-    if (completesEventuallyProviderInfo == null) {
-      throw new IllegalStateException("No registered default CompletesEventuallyProvider.");
-    }
-    return completesEventuallyProviderInfo.completesEventuallyProvider;
-  }
-
-  void keep(final String name, final CompletesEventuallyProvider completesEventuallyProvider) {
-    completesEventuallyProviderInfo = new CompletesEventuallyProviderInfo(name, completesEventuallyProvider, true);
-  }
-
-  final class CompletesEventuallyProviderInfo {
-    final boolean isDefault;
-    final CompletesEventuallyProvider completesEventuallyProvider;
-    final String name;
-
-    CompletesEventuallyProviderInfo(final String name, final CompletesEventuallyProvider completesEventuallyProvider, final boolean isDefault) {
-      this.name = name;
-      this.completesEventuallyProvider = completesEventuallyProvider;
-      this.isDefault = isDefault;
-    }
-  }
+public interface CompletesEventuallyProviderKeeper {
+  CompletesEventuallyProvider providerFor(final String name);
+  void close();
+  CompletesEventuallyProvider findDefault();
+  void keep(final String name, final CompletesEventuallyProvider completesEventuallyProvider);
 }
