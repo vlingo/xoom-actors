@@ -27,7 +27,6 @@ public final class World implements Registrar {
   private final CompletesEventuallyProviderKeeper completesProviderKeeper;
   private final Configuration configuration;
   private final LoggerProviderKeeper loggerProviderKeeper;
-  private MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
   private final Map<String, Stage> stages;
 
@@ -37,6 +36,7 @@ public final class World implements Registrar {
   private Supervisor defaultSupervisor;
   private Stoppable privateRoot;
   private Stoppable publicRoot;
+  private MailboxProviderKeeper mailboxProviderKeeper;
 
   public static synchronized World start(final String name) {
     return start(name, io.vlingo.actors.Properties.properties);
