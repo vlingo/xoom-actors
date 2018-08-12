@@ -55,9 +55,7 @@ public final class DefaultMailboxProviderKeeper implements MailboxProviderKeeper
   }
 
   public boolean isValidMailboxName(final String candidateMailboxName) {
-    final MailboxProviderInfo info = mailboxProviderInfos.get(candidateMailboxName);
-
-    return info != null;
+    return mailboxProviderInfos.containsKey(candidateMailboxName);
   }
 
   private static final class MailboxProviderInfo {
