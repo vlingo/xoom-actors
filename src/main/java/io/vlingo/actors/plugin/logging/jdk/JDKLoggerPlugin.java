@@ -55,8 +55,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
 
   @Override
   public int pass() {
-    pass = pass == 0 ? 1 : 2;
-    return pass;
+    return ++pass;
   }
 
   @Override
