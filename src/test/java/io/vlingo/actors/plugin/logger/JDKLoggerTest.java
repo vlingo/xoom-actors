@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import io.vlingo.actors.plugin.completes.MockRegistrar;
 import org.junit.After;
 import org.junit.Test;
 
@@ -32,32 +33,10 @@ public class JDKLoggerTest {
   private boolean registered;
   private World world;
   
-  final Registrar registrar = new Registrar() {
-    @Override
-    public void register(String name, CompletesEventuallyProvider completesEventuallyProvider) {
-      
-    }
-
-    @Override
-    public void register(String name, boolean isDefault, MailboxProvider mailboxProvider) {
-    }
-
+  final Registrar registrar = new MockRegistrar() {
     @Override
     public void register(String name, boolean isDefault, LoggerProvider loggerProvider) {
       registered = true;
-    }
-
-    @Override
-    public void registerCommonSupervisor(String stageName, String name, Class<?> supervisedProtocol, Class<? extends Actor> supervisorClass) {
-    }
-
-    @Override
-    public void registerDefaultSupervisor(String stageName, String name, Class<? extends Actor> supervisorClass) {
-    }
-
-    @Override
-    public World world() {
-      return null;
     }
   };
 
