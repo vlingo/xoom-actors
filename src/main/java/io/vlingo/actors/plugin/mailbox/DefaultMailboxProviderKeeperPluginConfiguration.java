@@ -24,6 +24,6 @@ public class DefaultMailboxProviderKeeperPluginConfiguration implements PluginCo
 
   @Override
   public String name() {
-    return "mailbox-provider-keeper-plugin-configuration";
+    return "defaultMailboxProviderKeeper";
   }
 }

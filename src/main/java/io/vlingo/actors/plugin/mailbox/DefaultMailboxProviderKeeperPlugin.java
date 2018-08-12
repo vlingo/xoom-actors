@@ -14,9 +14,11 @@ import io.vlingo.actors.plugin.PluginConfiguration;
 
 public class DefaultMailboxProviderKeeperPlugin implements Plugin {
   private final MailboxProviderKeeper keeper;
+  private final DefaultMailboxProviderKeeperPluginConfiguration configuration;
 
-  public DefaultMailboxProviderKeeperPlugin(final MailboxProviderKeeper keeper) {
+  public DefaultMailboxProviderKeeperPlugin(final MailboxProviderKeeper keeper, final DefaultMailboxProviderKeeperPluginConfiguration configuration) {
     this.keeper = keeper;
+    this.configuration = configuration;
   }
 
   @Override
@@ -26,12 +28,12 @@ public class DefaultMailboxProviderKeeperPlugin implements Plugin {
 
   @Override
   public PluginConfiguration configuration() {
-    return new DefaultMailboxProviderKeeperPluginConfiguration();
+    return configuration;
   }
 
   @Override
   public String name() {
-    return "default-mailbox-provider-keeper";
+    return configuration.name();
   }
 
   @Override
