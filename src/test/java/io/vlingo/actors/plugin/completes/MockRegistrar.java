@@ -27,16 +27,15 @@ public class MockRegistrar implements Registrar {
   }
 
   @Override
-  public void registerCommonSupervisor(String stageName, String name, Class<?> supervisedProtocol, Class<? extends Actor> supervisorClass) {
+  public void registerCommonSupervisor(String stageName, String name, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass) {
   }
 
   @Override
-  public void registerDefaultSupervisor(String stageName, String name, Class<? extends Actor> supervisorClass) {
+  public void registerDefaultSupervisor(String stageName, String name, final Class<? extends Actor> supervisorClass) {
   }
 
   @Override
   public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
-
   }
 
   @Override
