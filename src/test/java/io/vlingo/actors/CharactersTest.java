@@ -79,9 +79,8 @@ public class CharactersTest {
     private final Characters<ThreeBehaviors> characters;
 
     public ThreeBehaviorsActor(final Results results) {
-      this.characters = new Characters<>(3);
-      this.characters.canBecome(
-              Arrays.asList(
+      this.characters =
+              new Characters<>(Arrays.asList(
                       new ThreeBehaviorsState(results, 1),
                       new ThreeBehaviorsState(results, 2),
                       new ThreeBehaviorsState(results, 3)));
