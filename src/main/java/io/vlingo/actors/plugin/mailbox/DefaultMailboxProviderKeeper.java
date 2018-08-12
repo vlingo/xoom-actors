@@ -16,9 +16,11 @@ import java.util.Map;
 
 public final class DefaultMailboxProviderKeeper implements MailboxProviderKeeper {
   private final Map<String, MailboxProviderInfo> mailboxProviderInfos;
+  private MailboxProviderInfo defaultProvider;
 
   public DefaultMailboxProviderKeeper() {
     this.mailboxProviderInfos = new HashMap<>();
+    this.defaultProvider = null;
   }
 
   public Mailbox assignMailbox(final String name, final int hashCode) {
@@ -32,31 +34,24 @@ public final class DefaultMailboxProviderKeeper implements MailboxProviderKeeper
   }
 
   public void close() {
-    for (final MailboxProviderInfo info : mailboxProviderInfos.values()) {
-      info.mailboxProvider.close();
-    }
+    mailboxProviderInfos.values().forEach(info -> info.mailboxProvider.close());
   }
 
   public String findDefault() {
-    for (final MailboxProviderInfo info : mailboxProviderInfos.values()) {
-      if (info.isDefault) {
-        return info.name;
-      }
+    if (defaultProvider == null) {
+      throw new IllegalStateException("No registered default MailboxProvider.");
     }
 
-    throw new IllegalStateException("No registered default MailboxProvider.");
+    return defaultProvider.name;
   }
 
   public void keep(final String name, boolean isDefault, final MailboxProvider mailboxProvider) {
-    if (mailboxProviderInfos.isEmpty()) {
-      isDefault = true;
-    }
-    
-    if (isDefault) {
-      undefaultCurrentDefault();
-    }
+    MailboxProviderInfo providerInfo = new MailboxProviderInfo(name, mailboxProvider);
 
-    mailboxProviderInfos.put(name, new MailboxProviderInfo(name, mailboxProvider, isDefault));
+    mailboxProviderInfos.put(name, providerInfo);
+    if (defaultProvider == null || isDefault) {
+      defaultProvider = providerInfo;
+    }
   }
 
   public boolean isValidMailboxName(final String candidateMailboxName) {
@@ -65,25 +60,13 @@ public final class DefaultMailboxProviderKeeper implements MailboxProviderKeeper
     return info != null;
   }
 
-    private void undefaultCurrentDefault() {
-        for (final String key : mailboxProviderInfos.keySet()) {
-            final MailboxProviderInfo info = mailboxProviderInfos.get(key);
-
-            if (info.isDefault) {
-                mailboxProviderInfos.put(key, new MailboxProviderInfo(info.name, info.mailboxProvider, false));
-            }
-        }
-    }
-
   private static final class MailboxProviderInfo {
-    final boolean isDefault;
     final MailboxProvider mailboxProvider;
     final String name;
 
-    MailboxProviderInfo(final String name, final MailboxProvider mailboxProvider, final boolean isDefault) {
+    MailboxProviderInfo(final String name, final MailboxProvider mailboxProvider) {
       this.name = name;
       this.mailboxProvider = mailboxProvider;
-      this.isDefault = isDefault;
     }
   }
 }
