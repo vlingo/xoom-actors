@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,16 +27,16 @@ public final class World implements Registrar {
   private final CompletesEventuallyProviderKeeper completesProviderKeeper;
   private final Configuration configuration;
   private final LoggerProviderKeeper loggerProviderKeeper;
-  private final MailboxProviderKeeper mailboxProviderKeeper;
   private final String name;
-  private final Map<String,Stage> stages;
-  
+  private final Map<String, Stage> stages;
+
   private DeadLetters deadLetters;
   private Logger defaultLogger;
   private Actor defaultParent;
   private Supervisor defaultSupervisor;
   private Stoppable privateRoot;
   private Stoppable publicRoot;
+  private MailboxProviderKeeper mailboxProviderKeeper;
 
   public static synchronized World start(final String name) {
     return start(name, io.vlingo.actors.Properties.properties);
@@ -92,14 +94,14 @@ public final class World implements Registrar {
     if (this.defaultLogger != null) {
       return defaultLogger;
     }
-    
+
     if (loggerProviderKeeper != null) {
       final LoggerProvider maybeLoggerProvider = loggerProviderKeeper.findDefault();
       this.defaultLogger = maybeLoggerProvider != null ?
-              maybeLoggerProvider.logger() :
-              LoggerProvider.noOpLoggerProvider().logger();
+          maybeLoggerProvider.logger() :
+          LoggerProvider.noOpLoggerProvider().logger();
     }
-    
+
     if (this.defaultLogger == null) {
       this.defaultLogger = LoggerProvider.standardLoggerProvider(this, "vlingo").logger();
     }
@@ -173,13 +175,13 @@ public final class World implements Registrar {
 
   public synchronized Stage stageNamed(final String name) {
     Stage stage = stages.get(name);
-    
+
     if (stage == null) {
       stage = new Stage(this, name);
       if (!name.equals(DEFAULT_STAGE)) stage.startDirectoryScanner();
       stages.put(name, stage);
     }
-    
+
     return stage;
   }
 
@@ -192,7 +194,7 @@ public final class World implements Registrar {
       for (final Stage stage : stages.values()) {
         stage.stop();
       }
-      
+
       loggerProviderKeeper.close();
       mailboxProviderKeeper.close();
       completesProviderKeeper.close();
@@ -226,7 +228,7 @@ public final class World implements Registrar {
     if (defaultParent != null && this.defaultParent != null) {
       throw new IllegalStateException("Default parent already exists.");
     }
-    
+
     this.defaultParent = defaultParent;
   }
 
@@ -248,7 +250,7 @@ public final class World implements Registrar {
       privateRoot.stop();
       throw new IllegalStateException("Private root already exists.");
     }
-    
+
     this.privateRoot = privateRoot;
   }
 
@@ -264,17 +266,27 @@ public final class World implements Registrar {
     this.publicRoot = publicRoot;
   }
 
+  @Override
+  public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
+    if (this.mailboxProviderKeeper != null) {
+      this.mailboxProviderKeeper.close();
+    }
+
+    this.mailboxProviderKeeper = keeper;
+  }
+
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
     this.addressFactory = new AddressFactory();
     this.completesProviderKeeper = new CompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new LoggerProviderKeeper();
-    this.mailboxProviderKeeper = new MailboxProviderKeeper();
+    this.mailboxProviderKeeper = new DefaultMailboxProviderKeeper();
     this.stages = new HashMap<>();
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
+    configuration.startPlugins(this, 0);
     configuration.startPlugins(this, 1);
 
     startRootFor(defaultStage, defaultLogger());
@@ -286,12 +298,12 @@ public final class World implements Registrar {
 
   private void startRootFor(final Stage stage, final Logger logger) {
     stage.actorProtocolFor(
-            Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
-            Stoppable.class,
-            null,
-            addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
-            null,
-            null,
-            logger);
+        Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
+        Stoppable.class,
+        null,
+        addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
+        null,
+        null,
+        logger);
   }
 }

@@ -7,6 +7,10 @@ public class JDKLoggerActor extends Actor implements Logger {
   private final JDKLogger logger;
   
   public JDKLoggerActor(final JDKLogger logger) {
+    if (logger == null) {
+      throw new NullPointerException("JDKLogger can not be null");
+    }
+
     this.logger = logger;
   }
 

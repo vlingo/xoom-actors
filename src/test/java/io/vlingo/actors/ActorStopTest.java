@@ -17,7 +17,7 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorStopTest extends ActorsTest {
-  @Test
+  @Test(timeout = 1000)
   public void testStopActors() throws Exception {
     System.out.println("Test: testStopActors");
 
@@ -61,7 +61,7 @@ public class ActorStopTest extends ActorsTest {
     assertEquals(0, testResults.terminatingStopCount.get());
   }
 
-  @Test
+  @Test(timeout = 1000)
   public void testWorldTerminateToStopAllActors() throws Exception {
     final TestResults testSpecs = new TestResults();
     
