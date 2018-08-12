@@ -268,6 +268,10 @@ public final class World implements Registrar {
 
   @Override
   public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
+    if (this.mailboxProviderKeeper != null) {
+      this.mailboxProviderKeeper.close();
+    }
+
     this.mailboxProviderKeeper = keeper;
   }
 
@@ -282,7 +286,7 @@ public final class World implements Registrar {
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
-//    configuration.startPlugins(this, 0);
+    configuration.startPlugins(this, 0);
     configuration.startPlugins(this, 1);
 
     startRootFor(defaultStage, defaultLogger());

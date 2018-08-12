@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class DefaultMailboxProviderKeeper implements MailboxProviderKeeper {
-  private final Map<String,MailboxProviderInfo> mailboxProviderInfos;
+  private final Map<String, MailboxProviderInfo> mailboxProviderInfos;
 
   public DefaultMailboxProviderKeeper() {
     this.mailboxProviderInfos = new HashMap<>();

@@ -21,9 +21,12 @@ public class DefaultMailboxProviderKeeperPlugin implements Plugin {
     this.configuration = configuration;
   }
 
+  public DefaultMailboxProviderKeeperPlugin() {
+    this(new DefaultMailboxProviderKeeper(), new DefaultMailboxProviderKeeperPluginConfiguration());
+  }
+
   @Override
   public void close() {
-
   }
 
   @Override
