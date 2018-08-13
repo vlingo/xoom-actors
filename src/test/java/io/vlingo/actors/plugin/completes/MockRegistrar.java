@@ -35,6 +35,14 @@ public class MockRegistrar implements Registrar {
   }
 
   @Override
+  public void registerCompletesEventuallyProviderKeeper(CompletesEventuallyProviderKeeper keeper) {
+  }
+
+  @Override
+  public void registerLoggerProviderKeeper(LoggerProviderKeeper keeper) {
+  }
+
+  @Override
   public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
   }
 

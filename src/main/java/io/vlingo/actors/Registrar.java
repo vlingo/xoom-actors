@@ -14,6 +14,8 @@ public interface Registrar {
 
   void registerCommonSupervisor(final String stageName, final String name, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass);
   void registerDefaultSupervisor(final String stageName, final String name, final Class<? extends Actor> supervisorClass);
+  void registerCompletesEventuallyProviderKeeper(final CompletesEventuallyProviderKeeper keeper);
+  void registerLoggerProviderKeeper(final LoggerProviderKeeper keeper);
   void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper);
 
   World world();
