@@ -48,7 +48,7 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   }
 
   private void assertGaugesForMessageAre(final int expectedPerActor, final int expectedGlobal) {
-    AtomicInteger lag = telemetry.gauges().get("RandomActor." + addressOfActor + ".lag");
+    AtomicInteger lag = telemetry.gauges().get("RandomActor::Instance." + addressOfActor + ".lag");
     assertEquals(expectedPerActor, lag.get());
 
     AtomicInteger globalLagOfActorClass = telemetry.gauges().get("RandomActor::Class.lag");
