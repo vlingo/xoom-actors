@@ -43,10 +43,12 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onSendMessageFailed(final Message message, final Throwable exception) {
-    String exceptionName = exception.getClass().getSimpleName();
+    Class<? extends Throwable> exceptionClass = exception.getClass();
+    String exceptionName = exceptionClass.getSimpleName();
 
     counterFor(message, SCOPE_INSTANCE, FAILED_SEND + "." + exceptionName).increment();
     counterFor(message, SCOPE_CLASS, FAILED_SEND + "." + exceptionName).increment();
+    counterForException(exceptionClass).increment();
   }
 
   @Override
@@ -62,7 +64,7 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onPullMessageFailed(final Throwable exception) {
-
+    counterForException(exception.getClass()).increment();
   }
 
   public final AtomicInteger gaugeFor(final Message message, final String scope, final String concept) {
@@ -107,6 +109,15 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
         registry.counter(
             PREFIX + actorClassName + "." + concept,
             tags));
+
+    counters.put(key, counter);
+    return counter;
+  }
+
+  public final Counter counterForException(final Class<? extends Throwable> ex) {
+    String exceptionName = ex.getSimpleName();
+    String key = "Exception." + exceptionName;
+    Counter counter = counters.getOrDefault(key, registry.counter(PREFIX + exceptionName));
 
     counters.put(key, counter);
     return counter;
