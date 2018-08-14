@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Collections.singleton;
 
 public class DefaultMailboxTelemetry implements MailboxTelemetry {
+  private static final String LAG = "lag";
+
   private final MeterRegistry registry;
   private final Map<String, AtomicInteger> gauges;
 
@@ -22,8 +24,8 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onSendMessage(final Message message) {
-    actorGaugeFor(message).incrementAndGet();
-    actorClassGaugeFor(message).incrementAndGet();
+    actorGaugeFor(message, LAG).incrementAndGet();
+    actorClassGaugeFor(message, LAG).incrementAndGet();
   }
 
   @Override
@@ -38,8 +40,8 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onPulledMessage(final Message message) {
-    actorGaugeFor(message).decrementAndGet();
-    actorClassGaugeFor(message).decrementAndGet();
+    actorGaugeFor(message, LAG).decrementAndGet();
+    actorClassGaugeFor(message, LAG).decrementAndGet();
   }
 
   @Override
@@ -51,29 +53,32 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
     return gauges;
   }
 
-  private AtomicInteger actorGaugeFor(final Message message) {
+  private AtomicInteger actorGaugeFor(final Message message, final String concept) {
     Actor actor = message.actor();
     String actorClassName = actor.getClass().getSimpleName();
     String metricId = (actor.address().name() != null ? actor.address().name() : "" + actor.address().id());
 
-    String key = actorClassName + "." + metricId;
+    String key = actorClassName + "." + metricId + "." + concept;
+
     AtomicInteger gauge = gauges.getOrDefault(
         key,
-        registry.gauge(actorClassName, singleton(new ImmutableTag("Actor", metricId)), new AtomicInteger(0))
-    );
+        registry.gauge(
+            actorClassName + "." + concept,
+            singleton(new ImmutableTag("Address", metricId)),
+            new AtomicInteger(0)));
 
     gauges.put(key, gauge);
     return gauge;
   }
 
-  private AtomicInteger actorClassGaugeFor(final Message message) {
+  private AtomicInteger actorClassGaugeFor(final Message message, final String concept) {
     Actor actor = message.actor();
     String actorClassName = actor.getClass().getSimpleName();
-    String key = actorClassName + "::Class";
+    String key = actorClassName + "::Class." + concept;
 
     AtomicInteger gauge = gauges.getOrDefault(
         key,
-        registry.gauge(actorClassName, new AtomicInteger(0))
+        registry.gauge(actorClassName + "." + concept, new AtomicInteger(0))
     );
 
     gauges.put(key, gauge);
