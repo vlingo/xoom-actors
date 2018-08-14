@@ -41,18 +41,30 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   @Test
   public void testThatSendAndPullRegistersACounterOnTheActorsMailbox() {
     telemetry.onSendMessage(message);
-    assertGaugesForMessageAre(1, 1);
+    assertLagsAre(1, 1);
 
     telemetry.onPulledMessage(message);
-    assertGaugesForMessageAre(0, 0);
+    assertLagsAre(0, 0);
   }
 
-  private void assertGaugesForMessageAre(final int expectedPerActor, final int expectedGlobal) {
-    AtomicInteger lag = telemetry.gauges().get("RandomActor::Instance." + addressOfActor + ".lag");
-    assertEquals(expectedPerActor, lag.get());
+  @Test
+  public void testThatPullingAnEmptyMailboxCountsAsIdle() {
+    telemetry.onPullEmptyMailbox();
+    assertIdlesAre(1);
+  }
 
-    AtomicInteger globalLagOfActorClass = telemetry.gauges().get("RandomActor::Class.lag");
-    assertEquals(expectedGlobal, globalLagOfActorClass.get());
+
+  private void assertLagsAre(final int expectedActor, final int expectedClass) {
+    AtomicInteger lag = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.LAG);
+    assertEquals(expectedActor, lag.get());
+
+    AtomicInteger globalLagOfActorClass = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.LAG);
+    assertEquals(expectedClass, globalLagOfActorClass.get());
+  }
+
+  private void assertIdlesAre(final int expectedIdles) {
+    double idle = telemetry.idleCounter().count();
+    assertEquals(expectedIdles, idle, 0.0);
   }
 
   public static class RandomActor extends Actor {
