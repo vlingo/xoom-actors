@@ -105,6 +105,32 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
   }
 
   @Override
+  public T await() {
+    return await(-1);
+  }
+
+  @Override
+  public T await(final long timeout) {
+    long countDown = timeout;
+    while (true) {
+      if (hasOutcome()) {
+        return outcome();
+      }
+      try {
+        Thread.sleep(100);
+      } catch (Exception e) {
+        // ignore
+      }
+      if (timeout >= 0) {
+        countDown -= 100;
+        if (countDown <= 0) {
+          return null;
+        }
+      }
+    }
+  }
+
+  @Override
   public boolean hasOutcome() {
     return outcome.get() != null;
   }
@@ -117,11 +143,7 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
   @Override
   @SuppressWarnings("unchecked")
   public <O> Completes<O> with(final O outcome) {
-    if (state == null) {
-      this.outcome.set(new Outcome((T) outcome));
-    } else {
-      completedWith(false, (T) outcome);
-    }
+    completedWith(false, (T) outcome);
 
     return (Completes<O>) this;
   }
@@ -129,11 +151,6 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
   @Override
   public void intervalSignal(final Scheduled scheduled, final Object data) {
     completedWith(true, null);
-  }
-
-  BasicCompletes() {
-    this.outcome = new AtomicReference<>(null);
-    this.state = null;
   }
 
   void clearOutcome() {

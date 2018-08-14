@@ -9,6 +9,7 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -99,6 +100,39 @@ public class BasicCompletesTest {
     
     assertNotEquals(new Integer(10), andThenValue);
     assertEquals(new Integer(0), andThenValue);
+  }
+
+  @Test
+  public void testThatAwaitTimesout() throws Exception {
+    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    
+    final Integer completed = completes.await(10);
+    
+    completes.with(5);
+    
+    assertNotEquals(new Integer(5), completed);
+    assertNull(completed);
+  }
+
+  @Test
+  public void testThatAwaitCompletes() throws Exception {
+    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    
+    new Thread() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(100);
+          completes.with(5);
+        } catch (Exception e) {
+          // ignore
+        }
+      }
+    }.start();
+
+    final Integer completed = completes.await();
+
+    assertEquals(new Integer(5), completed);
   }
 
   private class Sender {

@@ -41,13 +41,13 @@ public class BasicSupervisionTest extends ActorsTest {
             world.actorFor(
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"),
                     FailureControl.class);
-    
+
     failureControlTestResults.untilFailNow = until(1);
     assertEquals(0, failureControlTestResults.failNowCount.get());
     failure.failNow();
     failureControlTestResults.untilFailNow.completes();
     assertEquals(1, failureControlTestResults.failNowCount.get());
-    
+
     // actor may or may not be resumed by now
     
     failureControlTestResults.untilAfterFail = until(1);

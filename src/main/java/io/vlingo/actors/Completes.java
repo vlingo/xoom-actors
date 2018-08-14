@@ -36,6 +36,8 @@ public interface Completes<T> {
   Completes<T> andThen(final Consumer<T> consumer);
   Completes<T> atLast(final Consumer<T> consumer);
   Completes<T> atLast(final Supplier<T> supplier);
+  T await();
+  T await(final long timeout);
   boolean hasOutcome();
   T outcome();
   <O> Completes<O> with(final O outcome);
