@@ -53,6 +53,11 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
     assertIdlesAre(1);
   }
 
+  @Test
+  public void testThatFailedSentsAreCounted() {
+    telemetry.onSendMessageFailed(message, new IllegalStateException("Expected exception"));
+    assertSendingFailuresAre(1, 1);
+  }
 
   private void assertLagsAre(final int expectedActor, final int expectedClass) {
     AtomicInteger lag = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.LAG);
@@ -60,6 +65,14 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
 
     AtomicInteger globalLagOfActorClass = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.LAG);
     assertEquals(expectedClass, globalLagOfActorClass.get());
+  }
+
+  private void assertSendingFailuresAre(final int expectedActor, final int expectedClass) {
+    double failures = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.FAILED_SEND + ".IllegalStateException").count();
+    assertEquals(expectedActor, failures, 0.0);
+
+    double globalFailuresOfActorClass = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.FAILED_SEND + ".IllegalStateException").count();
+    assertEquals(expectedClass, globalFailuresOfActorClass, 0.0);
   }
 
   private void assertIdlesAre(final int expectedIdles) {
