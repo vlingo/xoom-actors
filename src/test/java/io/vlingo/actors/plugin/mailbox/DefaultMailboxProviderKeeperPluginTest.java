@@ -7,20 +7,21 @@
 
 package io.vlingo.actors.plugin.mailbox;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.MailboxProviderKeeper;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
 
 public class DefaultMailboxProviderKeeperPluginTest extends ActorsTest {
   private Plugin plugin;
@@ -63,9 +64,8 @@ public class DefaultMailboxProviderKeeperPluginTest extends ActorsTest {
 
   @Test
   public void testThatRegistersTheProvidedKeeperInARealWorld() {
-    final Properties properties = new Properties() {{
-      setProperty("plugin.name.defaultMailboxProviderKeeper", "true");
-    }};
+    final Properties properties = new Properties();
+    properties.setProperty("plugin.name.defaultMailboxProviderKeeper", "true");
 
     final PluginProperties pluginProperties = new PluginProperties("defaultMailboxProviderKeeper", properties);
     plugin.configuration().buildWith(world.configuration(), pluginProperties);
