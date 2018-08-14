@@ -38,7 +38,8 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onPulledMessage(final Message message) {
-
+    actorGaugeFor(message).decrementAndGet();
+    actorClassGaugeFor(message).decrementAndGet();
   }
 
   @Override

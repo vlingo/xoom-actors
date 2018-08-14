@@ -5,10 +5,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.vlingo.actors.*;
-import io.vlingo.actors.testkit.TestActor;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +19,6 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   private MeterRegistry registry;
   private Message message;
   private String addressOfActor;
-  private Actor receiver;
   private DefaultMailboxTelemetry telemetry;
 
   @Before
@@ -29,7 +26,7 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
     super.setUp();
 
     addressOfActor = UUID.randomUUID().toString();
-    receiver = testWorld.actorFor(
+    final Actor receiver = testWorld.actorFor(
         Definition.has(RandomActor.class, Definition.NoParameters, addressOfActor),
         NoProtocol.class
     ).actorInside();
@@ -42,14 +39,20 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   }
 
   @Test
-  public void testThatSendRegistersACounterOnTheActorsMailbox() {
+  public void testThatSendAndPullRegistersACounterOnTheActorsMailbox() {
     telemetry.onSendMessage(message);
+    assertGaugesForMessageAre(1, 1);
 
+    telemetry.onPulledMessage(message);
+    assertGaugesForMessageAre(0, 0);
+  }
+
+  private void assertGaugesForMessageAre(final int expectedPerActor, final int expectedGlobal) {
     AtomicInteger lag = telemetry.gauges().get("RandomActor."+addressOfActor);
-    assertEquals(lag.get(), 1);
+    assertEquals(expectedPerActor, lag.get());
 
     AtomicInteger globalLagOfActorClass = telemetry.gauges().get("RandomActor::Class");
-    assertEquals(globalLagOfActorClass.get(), 1);
+    assertEquals(expectedGlobal, globalLagOfActorClass.get());
   }
 
   public static class RandomActor extends Actor {
