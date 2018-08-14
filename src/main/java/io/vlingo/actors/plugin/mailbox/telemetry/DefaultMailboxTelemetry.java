@@ -14,6 +14,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 public class DefaultMailboxTelemetry implements MailboxTelemetry {
+  public static final String PREFIX = "vlingo.MailboxTelemetry.";
+
   public static final String SCOPE_INSTANCE = "Instance";
   public static final String SCOPE_CLASS = "Class";
 
@@ -30,7 +32,7 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
     this.registry = registry;
     this.gauges = new HashMap<>();
     this.counters = new HashMap<>();
-    this.idleCounter = registry.counter(IDLE);
+    this.idleCounter = registry.counter(PREFIX + IDLE);
   }
 
   @Override
@@ -79,7 +81,7 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
     AtomicInteger gauge = gauges.getOrDefault(
         key,
         registry.gauge(
-            actorClassName + "." + concept,
+            PREFIX + actorClassName + "." + concept,
             tags,
             new AtomicInteger(0)));
 
@@ -103,7 +105,7 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
     Counter counter = counters.getOrDefault(
         key,
         registry.counter(
-            actorClassName + "." + concept,
+            PREFIX + actorClassName + "." + concept,
             tags));
 
     counters.put(key, counter);
