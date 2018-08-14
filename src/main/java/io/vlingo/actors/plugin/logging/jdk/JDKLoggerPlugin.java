@@ -23,7 +23,7 @@ import io.vlingo.actors.plugin.PluginProperties;
 public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerProvider {
   private final JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration;
   private Logger logger;
-  private int pass = 0;
+  private int pass = 1;
 
   public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
     final JDKLoggerPlugin plugin = new JDKLoggerPlugin();
@@ -55,7 +55,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
 
   @Override
   public int pass() {
-    return ++pass;
+    return pass;
   }
 
   @Override
@@ -69,6 +69,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
     if (pass < 2) {
       logger = new JDKLogger(jdkLoggerPluginConfiguration.name(), jdkLoggerPluginConfiguration);
       registrar.register(jdkLoggerPluginConfiguration.name(), jdkLoggerPluginConfiguration.isDefaultLogger(), this);
+      pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
       logger = registrar.world().actorFor(Definition.has(JDKLoggerActor.class, Definition.parameters(logger), logger), Logger.class);
       registrar.register(jdkLoggerPluginConfiguration.name(), jdkLoggerPluginConfiguration.isDefaultLogger(), this);
