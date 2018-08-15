@@ -93,7 +93,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
     private String memoryHandlerPushLevel;
     private int memoryHandlerSize = -1;
     private String memoryHandlerTarget;
-    private String name = "jdkLogger";
+    private String name = "vlingo/actors";
 
     public static JDKLoggerPluginConfiguration define() {
       return new JDKLoggerPluginConfiguration();
