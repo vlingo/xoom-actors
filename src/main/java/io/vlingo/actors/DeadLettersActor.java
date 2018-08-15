@@ -20,7 +20,7 @@ public class DeadLettersActor extends Actor implements DeadLetters {
   }
 
   public void failedDelivery(final DeadLetter deadLetter) {
-    logger().log("vlingo/actors: " + deadLetter);
+    logger().log(deadLetter.toString());
 
     for (final DeadLettersListener listener : listeners) {
       try {
