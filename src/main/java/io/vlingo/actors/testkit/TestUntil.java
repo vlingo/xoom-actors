@@ -40,6 +40,26 @@ public final class TestUntil {
     }
   }
 
+  public boolean completesWithin(final long timeout) {
+    long countDown = timeout;
+    while (true) {
+      if (latch.getCount() == 0) {
+        return true;
+      }
+      try {
+        Thread.sleep(100);
+      } catch (Exception e) {
+        // ignore
+      }
+      if (timeout >= 0) {
+        countDown -= 100;
+        if (countDown <= 0) {
+          return false;
+        }
+      }
+    }
+  }
+
   public TestUntil happened() {
     latch.countDown();
     return this;
