@@ -8,6 +8,8 @@
 package io.vlingo.actors.testkit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +59,32 @@ public class TestkitTest {
     
     assertEquals(3, (int) pongCounter.viewTestState().valueOf("count"));
   }
-  
+
+  @Test
+  public void testThatUntilCompletesTimesOut() {
+    final TestUntil until = TestUntil.happenings(1);
+    assertFalse(until.completesWithin(100));
+  }
+
+  @Test
+  public void testThatUntilCompletesWithinTimeOut() {
+    final TestUntil until = TestUntil.happenings(1);
+
+    new Thread() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(50);
+          until.happened();
+        } catch (Exception e) {
+          // ignore
+        }
+      }
+    }.start();
+
+    assertTrue(until.completesWithin(500));
+  }
+
   @Before
   public void setUp() {
     world = TestWorld.start("test-world");
