@@ -121,6 +121,9 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
       } catch (Exception e) {
         // ignore
       }
+      if (hasOutcome()) {
+        return outcome();
+      }
       if (timeout >= 0) {
         countDown -= 100;
         if (countDown <= 0) {

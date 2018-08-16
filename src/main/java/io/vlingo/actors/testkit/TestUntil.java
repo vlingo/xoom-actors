@@ -51,6 +51,9 @@ public final class TestUntil {
       } catch (Exception e) {
         // ignore
       }
+      if (latch.getCount() == 0) {
+        return true;
+      }
       if (timeout >= 0) {
         countDown -= 100;
         if (countDown <= 0) {
