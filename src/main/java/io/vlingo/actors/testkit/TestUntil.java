@@ -47,7 +47,7 @@ public final class TestUntil {
         return true;
       }
       try {
-        Thread.sleep(100);
+        Thread.sleep((countDown >= 0 && countDown < 100) ? countDown : 100);
       } catch (Exception e) {
         // ignore
       }

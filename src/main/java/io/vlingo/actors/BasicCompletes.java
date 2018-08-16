@@ -117,7 +117,7 @@ public class BasicCompletes<T> implements Completes<T>, Scheduled {
         return outcome();
       }
       try {
-        Thread.sleep(100);
+        Thread.sleep((countDown >= 0 && countDown < 100) ? countDown : 100);
       } catch (Exception e) {
         // ignore
       }
