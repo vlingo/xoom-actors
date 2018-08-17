@@ -74,10 +74,22 @@ public class Stowage {
     this.dispersing.set(true);
   }
 
+  void restow(final Stowage other) {
+    for (Message message = head(); message != null; message = head()) {
+      other.stow(message);
+    }
+  }
+
   @SuppressWarnings({ "rawtypes", "unchecked" })
   void stow(final Message message) {
     if (isStowing()) {
-      stowedMessages.add(new StowedLocalMessage((LocalMessage) message));
+      final Message toStow;
+      if (message.isStowed()) {
+        toStow = message;
+      } else {
+        toStow = new StowedLocalMessage((LocalMessage) message);
+      }
+      stowedMessages.add(toStow);
     }
   }
 

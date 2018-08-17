@@ -178,6 +178,7 @@ final class LifeCycle {
 
   void suspend() {
     environment.suspended.stowingMode();
+    environment.stowage.restow(environment.suspended);
   }
 
   Supervisor supervisor(final Class<?> protocol) {
