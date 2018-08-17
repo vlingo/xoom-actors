@@ -127,12 +127,22 @@ final class LifeCycle {
     sendFirstIn(environment.stowage);
   }
 
-  void sendFirstIn(final Stowage stowage) {
+  void nextDispersing() {
+    if (isDispersing()) {
+      if (!sendFirstIn(environment.stowage)) {
+        environment.stowage.reset();
+      }
+    }
+  }
+
+  boolean sendFirstIn(final Stowage stowage) {
     final Message maybeMessage = stowage.head();
     if (maybeMessage != null) {
       //stowage.dump(environment.logger);
       environment.mailbox.send(maybeMessage);
+      return true;
     }
+    return false;
   }
 
   boolean isStowing() {

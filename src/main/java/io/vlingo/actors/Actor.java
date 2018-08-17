@@ -148,19 +148,20 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   //=======================================
 
   protected boolean isDispersing() {
-    return lifeCycle.environment.stowage.isDispersing();
+    return lifeCycle.isDispersing();
   }
 
   protected void disperseStowedMessages() {
-    lifeCycle.environment.stowage.dispersingMode();
+    lifeCycle.disperseStowedMessages();
   }
 
   protected boolean isStowing() {
-    return lifeCycle.environment.stowage.isStowing();
+    return lifeCycle.isStowing();
   }
 
-  protected void stowMessages() {
-    lifeCycle.environment.stowage.stowingMode();
+  protected void stowMessages(final Class<?>... stowageOverrides) {
+    lifeCycle.stowMessages();
+    lifeCycle.environment.stowageOverrides(stowageOverrides);
   }
 
   //=======================================

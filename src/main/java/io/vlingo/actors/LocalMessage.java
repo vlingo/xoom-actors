@@ -10,12 +10,12 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class LocalMessage<T> implements Message {
-  protected final Actor actor;
-  protected final Completes<Object> completes;
-  protected final Consumer<T> consumer;
-  protected final Class<T> protocol;
-  protected final String representation;
-  
+  final Actor actor;
+  final Completes<Object> completes;
+  final Consumer<T> consumer;
+  final Class<T> protocol;
+  final String representation;
+
   @SuppressWarnings("unchecked")
   public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Completes<?> completes, final String representation) {
     this.actor = actor;
@@ -48,7 +48,8 @@ public class LocalMessage<T> implements Message {
       }
       actor.lifeCycle.nextResuming();
     } else if (actor.isDispersing()) {
-      internalDeliver(actor.lifeCycle.environment.stowage.swapWith(this));
+      internalDeliver(this);
+      actor.lifeCycle.nextDispersing();
     } else {
       internalDeliver(this);
     }
@@ -85,7 +86,7 @@ public class LocalMessage<T> implements Message {
       deadLetter();
     } else if (actor.lifeCycle.isSuspended()) {
       actor.lifeCycle.environment.suspended.stow(message);
-    } else if (actor.isStowing()) {
+    } else if (actor.isStowing() && !actor.lifeCycle.environment.isStowageOverride(protocol)) {
       actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {

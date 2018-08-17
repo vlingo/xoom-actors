@@ -22,21 +22,27 @@ public class Stowage {
     reset();
   }
 
-  protected int count() {
+  @Override
+  public String toString() {
+    return "Stowage[stowing=" + stowing.get() + ", dispersing=" + dispersing.get() +
+           " messages=" + stowedMessages + "]";
+  }
+
+  int count() {
     return stowedMessages.size();
   }
 
-  protected void dump(final Logger logger) {
+  void dump(final Logger logger) {
     for (final Message message : stowedMessages) {
       logger.log("STOWED: " + message);
     }
   }
 
-  protected boolean hasMessages() {
+  boolean hasMessages() {
     return !stowedMessages.isEmpty();
   }
 
-  protected Message head() {
+  Message head() {
     if (stowedMessages.isEmpty()) {
       reset();
       return null;
@@ -44,39 +50,39 @@ public class Stowage {
     return stowedMessages.poll();
   }
 
-  protected void reset() {
+  void reset() {
     this.stowedMessages = new LinkedList<>();
     this.stowing.set(false);
     this.dispersing.set(false);
   }
 
-  protected boolean isStowing() {
+  boolean isStowing() {
     return stowing.get();
   }
 
-  protected void stowingMode() {
+  void stowingMode() {
     this.stowing.set(true);
     this.dispersing.set(false);
   }
 
-  protected boolean isDispersing() {
+  boolean isDispersing() {
     return dispersing.get();
   }
 
-  protected void dispersingMode() {
+  void dispersingMode() {
     this.stowing.set(false);
     this.dispersing.set(true);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  protected void stow(final Message message) {
+  void stow(final Message message) {
     if (isStowing()) {
       stowedMessages.add(new StowedLocalMessage((LocalMessage) message));
     }
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  protected Message swapWith(final Message newerMessage) {
+  Message swapWith(final Message newerMessage) {
     if (stowedMessages.isEmpty()) {
       reset();
       return newerMessage;

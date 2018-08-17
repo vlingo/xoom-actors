@@ -30,6 +30,8 @@ public class Environment {
   private final AtomicBoolean secured;
   private final AtomicBoolean stopped;
 
+  private Class<?>[] stowageOverrides;
+
   protected Environment(
           final Stage stage,
           final Address address,
@@ -54,6 +56,7 @@ public class Environment {
     this.children = new ArrayList<Actor>(0);
     this.proxyCache = new HashMap<>();
     this.stowage = new Stowage();
+    this.stowageOverrides = null;
     this.suspended = new Stowage();
     
     this.secured = new AtomicBoolean(false);
@@ -95,6 +98,21 @@ public class Environment {
 
       mailbox.close();
     }
+  }
+
+  boolean isStowageOverride(final Class<?> protocol) {
+    if (stowageOverrides != null) {
+      for (final Class<?> override : stowageOverrides) {
+        if (override == protocol) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  void stowageOverrides(final Class<?>... overrides) {
+    stowageOverrides = overrides;
   }
 
   private void stopChildren() {
