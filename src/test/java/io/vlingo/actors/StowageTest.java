@@ -102,10 +102,10 @@ public class StowageTest {
   }
   
   private Message localMessage() {
-    return new LocalMessage<Object>(null, null, null, null);
+    return new LocalMessage<Object>(null, Object.class, null, "");
   }
   
   private Message localMessage(final String encode) {
-    return new LocalMessage<Object>(null, null, null, encode);
+    return new LocalMessage<Object>(null, Object.class, null, encode);
   }
 }

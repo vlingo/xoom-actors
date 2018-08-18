@@ -30,7 +30,7 @@ public class LocalMessage<T> implements Message {
   }
 
   public LocalMessage(final LocalMessage<T> message) {
-    this(message.actor, message.protocol, message.consumer, null, message.representation);
+    this(message.actor, message.protocol, message.consumer, message.completes, message.representation);
   }
 
   @Override
