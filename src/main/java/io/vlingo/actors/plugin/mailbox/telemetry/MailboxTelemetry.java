@@ -9,4 +9,5 @@ public interface MailboxTelemetry {
   void onPullEmptyMailbox();
   void onPulledMessage(final Message message);
   void onPullMessageFailed(final Throwable exception);
+  void onDeliverMessageFailed(final Message message, final Throwable exception);
 }

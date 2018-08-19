@@ -35,7 +35,7 @@ public class TelemetryMailbox implements Mailbox {
   @Override
   public void send(final Message message) {
     try {
-      delegate.send(message);
+      delegate.send(new TelemetryMessage(message, telemetry));
       telemetry.onSendMessage(message);
     } catch (Exception e) {
       telemetry.onSendMessageFailed(message, e);

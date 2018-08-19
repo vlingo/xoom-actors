@@ -92,7 +92,7 @@ public class MailboxTelemetryPlugin implements Plugin {
     World world = World.start("happyname");
 
     DelayedPinger pinger = world.actorFor(Definition.has(DelayedPingerActor.class, Collections.emptyList()), DelayedPinger.class);
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10000; i++) {
       pinger.ping();
     }
   }
