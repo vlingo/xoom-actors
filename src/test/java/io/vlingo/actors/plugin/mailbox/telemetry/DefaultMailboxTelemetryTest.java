@@ -67,10 +67,10 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   }
 
   private void assertLagsAre(final int expectedActor, final int expectedClass) {
-    AtomicInteger lag = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.LAG);
+    AtomicInteger lag = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.PENDING);
     assertEquals(expectedActor, lag.get());
 
-    AtomicInteger globalLagOfActorClass = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.LAG);
+    AtomicInteger globalLagOfActorClass = telemetry.gaugeFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.PENDING);
     assertEquals(expectedClass, globalLagOfActorClass.get());
   }
 

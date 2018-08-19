@@ -8,6 +8,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Message;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.emptyList;
@@ -19,26 +20,26 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
   public static final String SCOPE_INSTANCE = "Instance";
   public static final String SCOPE_CLASS = "Class";
 
-  public static final String LAG = "lag";
+  public static final String PENDING = "pending";
   public static final String IDLE = "idle";
   public static final String FAILED_SEND = "failed.send";
 
   private final MeterRegistry registry;
-  private final Map<String, AtomicInteger> gauges;
-  private final Map<String, Counter> counters;
+  private final ConcurrentHashMap<String, AtomicInteger> gauges;
+  private final ConcurrentHashMap<String, Counter> counters;
   private final Counter idleCounter;
 
   public DefaultMailboxTelemetry(final MeterRegistry registry) {
     this.registry = registry;
-    this.gauges = new HashMap<>();
-    this.counters = new HashMap<>();
+    this.gauges = new ConcurrentHashMap<>();
+    this.counters = new ConcurrentHashMap<>();
     this.idleCounter = registry.counter(PREFIX + IDLE);
   }
 
   @Override
   public void onSendMessage(final Message message) {
-    gaugeFor(message, SCOPE_INSTANCE, LAG).incrementAndGet();
-    gaugeFor(message, SCOPE_CLASS, LAG).incrementAndGet();
+    gaugeFor(message, SCOPE_INSTANCE, PENDING).incrementAndGet();
+    gaugeFor(message, SCOPE_CLASS, PENDING).incrementAndGet();
   }
 
   @Override
@@ -58,8 +59,8 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
 
   @Override
   public void onPulledMessage(final Message message) {
-    gaugeFor(message, SCOPE_INSTANCE, LAG).decrementAndGet();
-    gaugeFor(message, SCOPE_CLASS, LAG).decrementAndGet();
+    gaugeFor(message, SCOPE_INSTANCE, PENDING).decrementAndGet();
+    gaugeFor(message, SCOPE_CLASS, PENDING).decrementAndGet();
   }
 
   @Override

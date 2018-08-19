@@ -105,6 +105,11 @@
       <artifactId>micrometer-core</artifactId>
       <version>1.0.6</version>
     </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-jmx</artifactId>
+      <version>1.0.6</version>
+    </dependency>
   </dependencies>
   <distributionManagement>
     <repository>
