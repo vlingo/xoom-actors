@@ -19,21 +19,21 @@ public class TelemetryMessage implements Message {
 
   @Override
   public void deliver() {
-    telemetry.onPulledMessage(this);
     try {
       delegate.deliver();
+      telemetry.onPulledMessage(delegate);
     } catch (RuntimeException ex) {
-      telemetry.onDeliverMessageFailed(this, ex);
+      telemetry.onDeliverMessageFailed(delegate, ex);
     }
   }
 
   @Override
   public String representation() {
-    return null;
+    return delegate.representation();
   }
 
   @Override
   public boolean isStowed() {
-    return false;
+    return delegate.isStowed();
   }
 }
