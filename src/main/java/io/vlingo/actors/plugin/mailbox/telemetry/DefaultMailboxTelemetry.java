@@ -23,7 +23,7 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
   public static final String PENDING = "pending";
   public static final String IDLE = "idle";
   public static final String FAILED_SEND = "failed.send";
-  public static final String FAILED_RECEIVE = "failed.receive";
+  public static final String FAILED_DELIVER = "failed.deliver";
 
   private final MeterRegistry registry;
   private final ConcurrentHashMap<String, AtomicInteger> gauges;
@@ -74,8 +74,8 @@ public class DefaultMailboxTelemetry implements MailboxTelemetry {
     Class<? extends Throwable> exceptionClass = exception.getClass();
     String exceptionName = exceptionClass.getSimpleName();
 
-    counterFor(message, SCOPE_INSTANCE, FAILED_RECEIVE + "." + exceptionName).increment();
-    counterFor(message, SCOPE_CLASS, FAILED_RECEIVE + "." + exceptionName).increment();
+    counterFor(message, SCOPE_INSTANCE, FAILED_DELIVER + "." + exceptionName).increment();
+    counterFor(message, SCOPE_CLASS, FAILED_DELIVER + "." + exceptionName).increment();
     counterForException(exceptionClass).increment();
   }
 

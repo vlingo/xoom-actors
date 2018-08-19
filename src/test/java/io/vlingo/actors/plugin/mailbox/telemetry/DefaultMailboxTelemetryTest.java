@@ -56,13 +56,21 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   @Test
   public void testThatFailedSentsAreCounted() {
     telemetry.onSendMessageFailed(message, new IllegalStateException("Expected exception"));
-    assertSendingFailuresAre(1, 1);
+    assertFailuresAre(1, 1, DefaultMailboxTelemetry.FAILED_SEND);
     assertIllegalStateExceptionCount(1);
   }
 
   @Test
   public void testThatPullingFailuresAreCounted() {
     telemetry.onPullMessageFailed(new IllegalStateException("Expected exception"));
+    assertIllegalStateExceptionCount(1);
+  }
+
+  @Test
+  public void testThatDeliveringFailuresAreCountedFromMessage() {
+    telemetry.onDeliverMessageFailed(message, new IllegalStateException("Expected exception"));
+
+    assertFailuresAre(1, 1, DefaultMailboxTelemetry.FAILED_DELIVER);
     assertIllegalStateExceptionCount(1);
   }
 
@@ -74,11 +82,11 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
     assertEquals(expectedClass, globalLagOfActorClass.get());
   }
 
-  private void assertSendingFailuresAre(final int expectedActor, final int expectedClass) {
-    double failures = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, DefaultMailboxTelemetry.FAILED_SEND + ".IllegalStateException").count();
+  private void assertFailuresAre(final int expectedActor, final int expectedClass, final String typeOfOp) {
+    double failures = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_INSTANCE, typeOfOp + ".IllegalStateException").count();
     assertEquals(expectedActor, failures, 0.0);
 
-    double globalFailuresOfActorClass = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, DefaultMailboxTelemetry.FAILED_SEND + ".IllegalStateException").count();
+    double globalFailuresOfActorClass = telemetry.counterFor(message, DefaultMailboxTelemetry.SCOPE_CLASS, typeOfOp + ".IllegalStateException").count();
     assertEquals(expectedClass, globalFailuresOfActorClass, 0.0);
   }
 
