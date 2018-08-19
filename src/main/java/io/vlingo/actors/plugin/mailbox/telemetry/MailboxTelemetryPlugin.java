@@ -11,21 +11,36 @@ import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+import io.vlingo.actors.plugin.telemetry.JMXRegistryProvider;
+import io.vlingo.actors.plugin.telemetry.RegistryProvider;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Properties;
 
 public class MailboxTelemetryPlugin implements Plugin {
   public static class MailboxTelemetryPluginConfiguration implements PluginConfiguration {
+    private static final String NO_NAME = "_No_Name_";
+    private RegistryProvider registryProvider;
+
     @Override
     public void build(final Configuration configuration) {
-
+      buildWith(configuration, new PluginProperties(NO_NAME, new Properties()));
     }
 
     @Override
     public void buildWith(final Configuration configuration, final PluginProperties properties) {
+      String provider = properties.getString("registryProvider", JMXRegistryProvider.class.getCanonicalName());
+      try {
+        registryProvider = RegistryProvider.fromClass(provider);
+      } catch (final RegistryProvider.InvalidRegistryProviderException e) {
+        throw new IllegalStateException(e);
+      }
+    }
 
+    public final RegistryProvider registryProvider() {
+      return registryProvider;
     }
 
     @Override
@@ -35,21 +50,10 @@ public class MailboxTelemetryPlugin implements Plugin {
   }
 
   private final MailboxTelemetryPluginConfiguration configuration;
-  private final MeterRegistry registry;
+  private MeterRegistry registry;
 
   public MailboxTelemetryPlugin() {
     this.configuration = new MailboxTelemetryPluginConfiguration();
-    this.registry = new JmxMeterRegistry(new JmxConfig() {
-      @Override
-      public String get(final String s) {
-        return null;
-      }
-
-      @Override
-      public Duration step() {
-        return Duration.ofSeconds(1);
-      }
-    }, Clock.SYSTEM);
   }
 
   @Override
@@ -74,6 +78,7 @@ public class MailboxTelemetryPlugin implements Plugin {
 
   @Override
   public void start(final Registrar registrar) {
+    registry = configuration.registryProvider().provide(registrar.world());
     registrar.registerMailboxProviderKeeper(new TelemetryMailboxProviderKeeper(new DefaultMailboxProviderKeeper(), new DefaultMailboxTelemetry(registry)));
   }
 
