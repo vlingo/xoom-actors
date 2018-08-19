@@ -30,20 +30,20 @@ public class TelemetryMailboxTest {
   public void testThatSendingAMessageIsTracked() {
     telemetryMailbox.send(message);
 
-    verify(delegate).send(message);
-    verify(telemetry).onSendMessage(message);
+    verify(delegate).send(any());
+    verify(telemetry).onSendMessage(any());
   }
 
   @Test
   public void testThatFailingSendAMessageIsTracked() {
     final Throwable expectedException = new IllegalStateException("Expected exception ocurred");
-    doThrow(expectedException).when(delegate).send(message);
+    doThrow(expectedException).when(delegate).send(any());
 
     telemetryMailbox.send(message);
 
-    verify(delegate).send(message);
-    verify(telemetry).onSendMessageFailed(message, expectedException);
-    verify(telemetry, never()).onSendMessage(message);
+    verify(delegate).send(any());
+    verify(telemetry).onSendMessageFailed(any(), eq(expectedException));
+    verify(telemetry, never()).onSendMessage(any());
   }
 
   @Test

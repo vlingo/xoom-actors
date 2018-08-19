@@ -61,13 +61,6 @@ public class TelemetryMailbox implements Mailbox {
 
   @Override
   public void run() {
-    for (;;) {
-      final Message message = receive();
-      if (message != null) {
-        message.deliver();
-      } else {
-        break;
-      }
-    }
+    delegate.run();
   }
 }
