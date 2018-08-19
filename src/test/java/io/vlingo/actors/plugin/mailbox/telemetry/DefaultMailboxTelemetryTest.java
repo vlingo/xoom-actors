@@ -55,20 +55,20 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
 
   @Test
   public void testThatFailedSentsAreCounted() {
-    telemetry.onSendMessageFailed(message, new IllegalStateException("Expected exception"));
+    telemetry.onSendMessageFailed(message, expectedException());
     assertFailuresAre(1, 1, DefaultMailboxTelemetry.FAILED_SEND);
     assertIllegalStateExceptionCount(1);
   }
 
   @Test
   public void testThatPullingFailuresAreCounted() {
-    telemetry.onPullMessageFailed(new IllegalStateException("Expected exception"));
+    telemetry.onPullMessageFailed(expectedException());
     assertIllegalStateExceptionCount(1);
   }
 
   @Test
   public void testThatDeliveringFailuresAreCountedFromMessage() {
-    telemetry.onDeliverMessageFailed(message, new IllegalStateException("Expected exception"));
+    telemetry.onDeliverMessageFailed(message, expectedException());
 
     assertFailuresAre(1, 1, DefaultMailboxTelemetry.FAILED_DELIVER);
     assertIllegalStateExceptionCount(1);
@@ -98,6 +98,10 @@ public class DefaultMailboxTelemetryTest extends ActorsTest {
   private void assertIdlesAre(final int expectedIdles) {
     double idle = telemetry.idleCounter().count();
     assertEquals(expectedIdles, idle, 0.0);
+  }
+
+  private IllegalStateException expectedException() {
+    return new IllegalStateException("Expected exception");
   }
 
   public static class RandomActor extends Actor {
