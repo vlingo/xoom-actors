@@ -172,7 +172,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
-    final String completesStatement = returnType.completes ? MessageFormat.format("      final Completes<{0}> completes = new BasicCompletes<>(actor.scheduler());\n", returnType.simpleGeneric) : "";
+    final String completesStatement = returnType.completes ? MessageFormat.format("      final Completes<{0}> completes = new BasicCompletes<>(actor.scheduler());\n", returnType.innerGeneric) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String mailboxSendStatement = MessageFormat.format("      mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2}));", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
     final String completesReturnStatement = returnType.completes ? "      return completes;\n" : "";
@@ -369,7 +369,8 @@ public class ProxyGenerator implements AutoCloseable {
         imports.add("import " + returnType.type + ";\n");
       }
       if (returnType.acceptGenericImport()) {
-        imports.add("import " + returnType.generic + ";\n");
+        imports.add("import " + returnType.outerGeneric + ";\n");
+        imports.add("import " + returnType.innerGeneric + ";\n");
       }
     }
 
@@ -430,20 +431,24 @@ public class ProxyGenerator implements AutoCloseable {
     static final String fullCompletes = Completes.class.getName();
 
     final boolean completes;
-    final String generic;
-    String simpleGeneric;
+    final String fullGeneric;
+    final String innerGeneric;
+    final String miniInnerGeneric;
+    final String outerGeneric;
     final String type;
 
     ReturnType(final Method method) {
       final String outerType = method.getReturnType().getName();
       this.completes = outerType.equals(fullCompletes);
       this.type = outerType;
-      this.generic = genericParameter(method.getGenericReturnType().getTypeName(), outerType);
-      this.simpleGeneric = simpleGeneric();
+      this.fullGeneric = genericParameter(method.getGenericReturnType().getTypeName(), outerType);
+      this.innerGeneric = innerGenericType(this.fullGeneric);
+      this.miniInnerGeneric = stripPackage(this.innerGeneric);
+      this.outerGeneric = genericParameter(this.fullGeneric, outerType);
     }
 
     public boolean acceptGenericImport() {
-      return !generic.isEmpty() && !isPrimitive() && !generic.startsWith("java.lang");
+      return !fullGeneric.isEmpty() && !isPrimitive() && !fullGeneric.startsWith("java.lang");
     }
 
     public boolean acceptTypeImport() {
@@ -458,6 +463,19 @@ public class ProxyGenerator implements AutoCloseable {
       final String rawGeneric = genericTypeName.substring(begin + 1, end);
       final String generic = rawGeneric.replace('$', '.');
       return generic;
+    }
+
+    private String innerGenericType(final String fullGeneric) {
+      final int angle = fullGeneric.indexOf("<");
+      if (angle == -1) return fullGeneric;
+      return fullGeneric.substring(0, angle);
+    }
+
+    private String stripPackage(final String full) {
+      final int dot = full.lastIndexOf(".");
+      if (dot == -1) return full;
+      final int endOffset = full.endsWith(">") ? 1 : 0;
+      return full.substring(dot + 1, full.length() - endOffset);
     }
 
     private boolean isPrimitive() {
@@ -481,16 +499,11 @@ public class ProxyGenerator implements AutoCloseable {
       
       builder.append(simpleType());
       
-      if (!generic.equals(type)) {
-        builder.append("<").append(simpleGeneric).append(">");
+      if (!fullGeneric.equals(type)) {
+        builder.append("<").append(miniInnerGeneric).append(">");
       }
       
       return builder.toString();
-    }
-
-    private String simpleGeneric() {
-      final int endPackage = generic.lastIndexOf(".");
-      return endPackage != -1 ? generic.substring(endPackage + 1) : generic;
     }
 
     private String simpleType() {
