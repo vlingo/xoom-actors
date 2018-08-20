@@ -102,6 +102,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     return (Completes<T>) completes;
   }
 
+  protected CompletesEventually completesEventually() {
+    return lifeCycle.environment.stage.world().completesFor(completes());
+  }
+
   protected Definition definition() {
     return lifeCycle.definition();
   }
