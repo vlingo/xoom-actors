@@ -313,8 +313,7 @@ public class Stage implements Stoppable {
     try {
       actor = ActorFactory.actorFor(this, parent, definition, address, mailbox, maybeSupervisor, logger);
     } catch (Exception e) {
-      logger.log("Actor instantiation failed because: " + e.getMessage());
-      e.printStackTrace();
+      logger.log("Actor instantiation failed because: " + e.getMessage(), e);
       throw new IllegalArgumentException("Actor instantiation failed because: " + e.getMessage(), e);
     }
 
