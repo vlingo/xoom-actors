@@ -17,10 +17,8 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorStopTest extends ActorsTest {
-  @Test(timeout = 1000)
-  public void testStopActors() throws Exception {
-    System.out.println("Test: testStopActors");
 
+  public void testStopActors() throws Exception {
     final TestResults testResults = new TestResults();
     
     testResults.untilStart = TestUntil.happenings(12);
@@ -33,7 +31,7 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    testResults.untilStart.completes();
+    testResults.untilStart.completesWithin(2000);
 
     System.out.println("Test: testStopActors: stopping actors");
 
@@ -43,7 +41,7 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].stop();
     }
     
-    testResults.untilStop.completes();
+    testResults.untilStop.completesWithin(2000);
     
     System.out.println("Test: testStopActors: stopped actors");
 
@@ -56,12 +54,11 @@ public class ActorStopTest extends ActorsTest {
     testResults.terminating.set(true);
     world.terminate();
     
-    testResults.untilTerminatingStop.completes();
+    testResults.untilTerminatingStop.completesWithin(2000);
     
     assertEquals(0, testResults.terminatingStopCount.get());
   }
 
-  @Test(timeout = 1000)
   public void testWorldTerminateToStopAllActors() throws Exception {
     final TestResults testSpecs = new TestResults();
     
@@ -73,14 +70,14 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].createChildren();
     }
 
-    testSpecs.untilStart.completes();
+    testSpecs.untilStart.completesWithin(2000);
     
     testSpecs.untilTerminatingStop = TestUntil.happenings(12);
 
     testSpecs.terminating.set(true);
     world.terminate();
     
-    testSpecs.untilTerminatingStop.completes();
+    testSpecs.untilTerminatingStop.completesWithin(2000);
     
     assertEquals(12, testSpecs.terminatingStopCount.get());
   }
