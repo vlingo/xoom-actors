@@ -19,7 +19,7 @@ public final class ActorProxy {
   private static final DynaClassLoader classLoader = new DynaClassLoader(ActorProxy.class.getClassLoader());
   private static final DynaCompiler proxyCompiler = new DynaCompiler();
   
-  public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
+  public static synchronized <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
     
     final T maybeProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
