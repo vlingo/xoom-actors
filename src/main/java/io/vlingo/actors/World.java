@@ -29,6 +29,7 @@ public final class World implements Registrar {
   private final Configuration configuration;
   private final String name;
   private final Map<String, Stage> stages;
+  private final Map<String, Object> dynamicDependencies;
 
   private CompletesEventuallyProviderKeeper completesProviderKeeper;
   private DeadLetters deadLetters;
@@ -300,6 +301,7 @@ public final class World implements Registrar {
     this.loggerProviderKeeper = new DefaultLoggerProviderKeeper();
     this.mailboxProviderKeeper = new DefaultMailboxProviderKeeper();
     this.stages = new HashMap<>();
+    this.dynamicDependencies = new HashMap<>();
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
@@ -322,5 +324,13 @@ public final class World implements Registrar {
         null,
         null,
         logger);
+  }
+
+  public void registerDynamic(final String name, final Object dep) {
+    this.dynamicDependencies.put(name, dep);
+  }
+
+  public <DEPENDENCY> DEPENDENCY resolveDynamic(final String name, final Class<DEPENDENCY> anyDependencyClass) {
+    return anyDependencyClass.cast(this.dynamicDependencies.get(name));
   }
 }
