@@ -196,6 +196,15 @@ public final class World implements Registrar {
     this.mailboxProviderKeeper = keeper;
   }
 
+
+  public void registerDynamic(final String name, final Object dep) {
+    this.dynamicDependencies.put(name, dep);
+  }
+
+  public <DEPENDENCY> DEPENDENCY resolveDynamic(final String name, final Class<DEPENDENCY> anyDependencyClass) {
+    return anyDependencyClass.cast(this.dynamicDependencies.get(name));
+  }
+
   public Stage stage() {
     return stageNamed(DEFAULT_STAGE);
   }
@@ -326,11 +335,4 @@ public final class World implements Registrar {
         logger);
   }
 
-  public void registerDynamic(final String name, final Object dep) {
-    this.dynamicDependencies.put(name, dep);
-  }
-
-  public <DEPENDENCY> DEPENDENCY resolveDynamic(final String name, final Class<DEPENDENCY> anyDependencyClass) {
-    return anyDependencyClass.cast(this.dynamicDependencies.get(name));
-  }
 }
