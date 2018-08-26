@@ -12,12 +12,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
+import org.mockito.Mockito;
 
 public class WorldTest extends ActorsTest {
   @Test
@@ -51,6 +53,17 @@ public class WorldTest extends ActorsTest {
     assertTrue(testResults.invoked.get());
   }
 
+  @Test
+  public void testThatARegisteredDependencyCanBeResolved() throws Exception {
+    String name = UUID.randomUUID().toString();
+
+    AnyDependency dep = Mockito.mock(AnyDependency.class);
+    world.registerDynamic(name, dep);
+
+    AnyDependency result = world.resolveDynamic(name, AnyDependency.class);
+    assertEquals(dep, result);
+  }
+
   @After
   @Override
   public void tearDown() throws Exception {
@@ -82,4 +95,6 @@ public class WorldTest extends ActorsTest {
     public AtomicBoolean invoked = new AtomicBoolean(false);
     public TestUntil untilSimple = TestUntil.happenings(0);
   }
+
+  public interface AnyDependency {}
 }
