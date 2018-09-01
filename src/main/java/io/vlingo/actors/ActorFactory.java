@@ -44,8 +44,18 @@ public class ActorFactory {
             actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
             actor.lifeCycle.sendStart(actor);
           } catch (Throwable t) {
-            logger.log("vlingo/actors: ActorFactory: failed because: " + t.getMessage(), t);
-            t.printStackTrace();
+            final Throwable cause = (t.getCause() == null ? t : t.getCause());
+            logger.log("ActorFactory: failed actor creation. "
+                    + "This is sometimes cause be the constructor parameter types not matching "
+                    + "the types in the Definition.parameters(). Often it is caused by a "
+                    + "failure in the actor constructor. We have attempted to uncover "
+                    + "the root cause here, but that may not be available in some cases.\n"
+                    + "The root cause may be: " + cause + "\n"
+                    + "See stacktrace for more information. We strongly recommend reviewing your "
+                    + "constructor for possible failures in dependencies that it creates.",
+                    cause);
+
+            throw new InstantiationException("ActorFactory failed actor creation for: " + address);
           }
           break;
         }
