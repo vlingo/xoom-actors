@@ -9,22 +9,21 @@ package io.vlingo.actors;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Stowage {
   private Queue<Message> stowedMessages;
-  private AtomicBoolean dispersing;
-  private AtomicBoolean stowing;
+  private boolean dispersing;
+  private boolean stowing;
 
   public Stowage() {
-    this.dispersing = new AtomicBoolean(false);
-    this.stowing = new AtomicBoolean(false);
+    this.dispersing = false;
+    this.stowing = false;
     reset();
   }
 
   @Override
   public String toString() {
-    return "Stowage[stowing=" + stowing.get() + ", dispersing=" + dispersing.get() +
+    return "Stowage[stowing=" + stowing + ", dispersing=" + dispersing +
            " messages=" + stowedMessages + "]";
   }
 
@@ -52,26 +51,26 @@ public class Stowage {
 
   void reset() {
     this.stowedMessages = new LinkedList<>();
-    this.stowing.set(false);
-    this.dispersing.set(false);
+    this.stowing = false;
+    this.dispersing = false;
   }
 
   boolean isStowing() {
-    return stowing.get();
+    return stowing;
   }
 
   void stowingMode() {
-    this.stowing.set(true);
-    this.dispersing.set(false);
+    this.stowing = true;
+    this.dispersing = false;
   }
 
   boolean isDispersing() {
-    return dispersing.get();
+    return dispersing;
   }
 
   void dispersingMode() {
-    this.stowing.set(false);
-    this.dispersing.set(true);
+    this.stowing = false;
+    this.dispersing = true;
   }
 
   void restow(final Stowage other) {
