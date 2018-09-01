@@ -66,7 +66,7 @@ public class JDKLogger implements Logger {
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         final PrintStream stream = new PrintStream(output);
         throwable.printStackTrace(stream);
-        final String stacktrace = output.toString("UTF8");
+        final String stacktrace = output.toString("UTF-8");
         logger.log(this.level, stacktrace);
       } catch (Exception e) {
         logger.severe("JDKLogger: Failed to log exception about: " + message + " and reason: " + throwable.getMessage());
