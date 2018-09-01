@@ -92,6 +92,31 @@ public class ActorFactoryTest {
     assertEquals(mailbox, actor.lifeCycle.environment.mailbox);
   }
 
+  @Test(expected = InstantiationException.class)
+  public void testConstructorFailure() throws Exception {
+    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), ParentInterface.class);
+
+    final Address address = world.addressFactory().uniqueWith("test-actor-ctor-failure");
+
+    final Definition definition =
+            Definition.has(
+                    FailureActor.class,
+                    Definition.parameters("test-ctor-failure", -100),
+                    ParentInterfaceActor.instance.get(),
+                    address.name());
+
+    final Mailbox mailbox = new TestMailbox();
+
+    ActorFactory.actorFor(
+            world.stage(),
+            definition.parent(),
+            definition,
+            address,
+            mailbox,
+            null,
+            world.defaultLogger());
+  }
+
   @Before
   public void setUp() {
     world = World.start("test-world");
@@ -117,6 +142,12 @@ public class ActorFactoryTest {
   public static class TestInterfaceWithParamsActor extends Actor implements TestInterface {
     public TestInterfaceWithParamsActor(final String text, final int val) {
       
+    }
+  }
+  
+  public static class FailureActor extends Actor implements TestInterface {
+    public FailureActor(final String text, final int val) {
+      throw new IllegalStateException("Failed in ctor with: " + text + " and: " + val);
     }
   }
 }
