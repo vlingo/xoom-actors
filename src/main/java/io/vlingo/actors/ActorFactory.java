@@ -12,6 +12,38 @@ import java.lang.reflect.Constructor;
 public class ActorFactory {
   static final ThreadLocal<Environment> threadLocalEnvironment = new ThreadLocal<Environment>();
 
+  @SuppressWarnings("unchecked")
+  public static Class<? extends Actor> actorClassWithProtocol(final String actorClassname, final Class<?> protocolClass) {
+    try {
+      final Class<? extends Actor> actorClass = (Class<? extends Actor>) Class.forName(actorClassname);
+      assertActorWithProtocol(actorClass, protocolClass);
+      return actorClass;
+    } catch (Exception e) {
+      throw new IllegalArgumentException("The class " + actorClassname + " cannot be loaded because: " + e.getMessage(), e);
+    }
+  }
+
+  public static void assertActorWithProtocol(final Class<?> candidateActorClass, final Class<?> protocolClass) {
+    Class<?> superclass = candidateActorClass.getSuperclass();
+    while (superclass != null) {
+      if (superclass == Actor.class) {
+        break;
+      }
+      superclass = superclass.getSuperclass();
+    }
+
+    if (superclass == null) {
+      throw new IllegalStateException("Class must extend io.vlingo.actors.Actor: " + candidateActorClass.getName());
+    }
+
+    for (final Class<?> protocolInterfaceClass : candidateActorClass.getInterfaces()) {
+      if (protocolClass == protocolInterfaceClass) {
+        return;
+      }
+    }
+    throw new IllegalStateException("Actor class " + candidateActorClass.getName() + "must implement: " + protocolClass.getName());
+  }
+
   static Actor actorFor(
           final Stage stage,
           final Actor parent,
