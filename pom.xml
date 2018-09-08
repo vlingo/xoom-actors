@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo</groupId>
   <artifactId>vlingo-actors</artifactId>
-  <version>0.6.1</version>
+  <version>0.6.1-SNAPSHOT</version>
   <name>vlingo-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
   <url>https://github.com/vlingo/vlingo-actors</url>
@@ -102,10 +102,18 @@
     </dependency>
   </dependencies>
   <distributionManagement>
-    <repository>
+    <!-- <repository>
       <id>bintray-vlingo-vlingo-platform-java</id>
       <name>vlingo-vlingo-platform-java</name>
       <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
+    </repository> -->
+    <repository>
+      <id>oss-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </distributionManagement>
 </project>

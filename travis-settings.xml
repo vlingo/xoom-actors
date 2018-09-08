@@ -1,0 +1,10 @@
+<settings>
+    <servers>
+        <server>
+        <!--  not sure -->
+        <id>bintray-vlingo-vlingo-platform-java</id>
+        <username>${env.SONATYPE_USERNAME}</username>
+        <password>${env.SONATYPE_PASSWORD}</password>
+    </server>
+</servers>
+</settings>
