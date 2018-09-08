@@ -18,5 +18,5 @@ deploy:
   passphrase:
     secure: jno/hK+LJjINavDAPfUnNcBtXYqih1HETU7TcaTJbo3zePzfXLJSx2YdVyXFRcf3yEnTIv2Ib7yyry3KSYBiMcZPFMOinP0jwERH+ylIfa0IsiEASwhytG1uTBiURhqQuLeST4FsL/sO/XEfGkfY585RzcnYEKyWpb59b69sqgs91T9uGZBDjnq+a1W+5qei02A63K+vK0vRzAFGhutLcSzIwgGnwjEDbXIXJnG9W9iuK9CGoGqIz50TCwWDek+gSNdTL5H/rjZqVPuIaetoqSd0kh3PFdkjSiHxQJ/mmNZWAM1o7H1TA+efywvCmKgan344d+LyKMkR3kVfb2yl7Rb0a2Bqd3g4+16omf0P53q1fZgPO+oRcXb6kC80jqKNGJX67sS8C1w1HpcVZp/tNuVmUzw/9/SmQ1G76IrWA3XTdmlgqvZUu+gH14dN24ofoBu6vWAmt2bKN3nBkp4Xck+eDnoe2zs6yaE0Q2WpM1ULLnpgzvxSlyGdJf2lf6w1DRoaoFF7B3cXqXMNF4X8N+rmJw8WcG4y7nndtuuIGxoCE+/aQWZCRB9Z7sByv2plaDuaXt/mgnA8lHCR/CZgAqgYRHHYEA9T8Jk+Fp20bC9kKd6j9Oa8kDaIpPQwy/I5jj536g/msctJykuFBh2nlJdCNFyVgX/xegDE2r0IC/g=
 after_success:
-  - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then echo "deploying a snapshot..." fi
-  - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then mvn deploy --settings travis-settings.xml -DskipTests=true -B fi
+  - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then echo "deploying a snapshot..."; fi
+  - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then mvn deploy --settings travis-settings.xml -DskipTests=true -B; fi
