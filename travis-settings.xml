@@ -2,7 +2,7 @@
     <servers>
         <server>
             <!--  not sure -->
-            <id>${server}</id>
+            <id>oss-snapshots</id>
             <username>${env.SONATYPE_USERNAME}</username>
             <password>${env.SONATYPE_PASSWORD}</password>
         </server>
