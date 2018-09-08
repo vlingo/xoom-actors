@@ -20,3 +20,5 @@ deploy:
 after_success:
   - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then echo "deploying a snapshot..."; fi
   - if [ "$TRAVIS_BRANCH" == "snapshots" ]; then mvn deploy --settings travis-settings.xml -DskipTests=true -B; fi
+
+  
