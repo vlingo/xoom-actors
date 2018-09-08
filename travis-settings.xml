@@ -2,7 +2,7 @@
     <servers>
         <server>
             <!--  not sure -->
-            <id>io.vlingo</id>
+            <id>${server}</id>
             <username>${env.SONATYPE_USERNAME}</username>
             <password>${env.SONATYPE_PASSWORD}</password>
         </server>
