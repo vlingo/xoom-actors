@@ -39,11 +39,9 @@ public class CompletesActorProtocolTest extends ActorsTest {
   @Test
   public void testAfterAndThenCompletes() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
-
     final Completes<Hello> helloCompletes = uc.getHello();
     helloCompletes.after(() -> new Hello(Prefix + helloCompletes.outcome().greeting))
          .andThen((hello) -> setHello(hello.greeting));
-
     untilHello.completes();
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
     assertNotEquals(Hello, this.greeting);
@@ -53,7 +51,6 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final Completes<Integer> one = uc.getOne();
     one.after(() -> one.outcome() + 1)
        .andThen((value) -> setValue(value));
-
     untilOne.completes();
     assertNotEquals(new Integer(1), one.outcome());
     assertNotEquals(1, this.value);
@@ -90,6 +87,11 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     public Hello(final String greeting) {
       this.greeting = greeting;
+    }
+
+    @Override
+    public String toString() {
+      return "Hello[" + greeting + "]";
     }
   }
 
