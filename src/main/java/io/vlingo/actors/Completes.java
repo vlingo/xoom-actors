@@ -16,15 +16,31 @@ public interface Completes<T> {
   }
 
   static <T> Completes<T> withSuccess(final T outcome) {
-    return new BasicCompletes<T>(outcome);
+    return new BasicCompletes<T>(outcome, true);
   }
 
   static <T> Completes<T> withFailure(final T outcome) {
-    return new BasicCompletes<T>(outcome);
+    return new BasicCompletes<T>(outcome, false);
   }
 
   static <T> Completes<T> withFailure() {
-    return new BasicCompletes<T>((T) null);
+    return new BasicCompletes<T>((T) null, false);
+  }
+
+  static <T> Completes<T> repeatableUsing(final Scheduler scheduler) {
+    return new BasicCompletes<T>(scheduler);
+  }
+
+  static <T> Completes<T> repeatableWithSuccess(final T outcome) {
+    return new RepeatableCompletes<T>(outcome, true);
+  }
+
+  static <T> Completes<T> repeatableWithFailure(final T outcome) {
+    return new RepeatableCompletes<T>(outcome, false);
+  }
+
+  static <T> Completes<T> repeatableWithFailure() {
+    return new RepeatableCompletes<T>((T) null, false);
   }
 
   Completes<T> after(final Supplier<T> supplier);
@@ -38,7 +54,11 @@ public interface Completes<T> {
   Completes<T> atLast(final Supplier<T> supplier);
   T await();
   T await(final long timeout);
+  boolean isCompleted();
+  boolean hasFailed();
+  void failed();
   boolean hasOutcome();
   T outcome();
+  Completes<T> repeat();
   <O> Completes<O> with(final O outcome);
 }
