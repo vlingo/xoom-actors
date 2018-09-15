@@ -90,11 +90,10 @@ public class LocalMessage<T> implements Message {
       actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
-        actor.completes = completes;
+        actor.completes.reset(completes);
         consumer.accept((T) actor);
-        if (actor.completes != null && actor.completes.hasOutcome()) {
-          final Object outcome = actor.completes.outcome();
-          actor.lifeCycle.environment.stage.world().completesFor(completes).with(outcome);
+        if (actor.completes.outcomeSet) {
+          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.outcome);
         }
       } catch (Throwable t) {
         actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
