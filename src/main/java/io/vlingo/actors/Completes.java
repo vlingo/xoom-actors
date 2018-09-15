@@ -28,7 +28,7 @@ public interface Completes<T> {
   }
 
   static <T> Completes<T> repeatableUsing(final Scheduler scheduler) {
-    return new BasicCompletes<T>(scheduler);
+    return new RepeatableCompletes<T>(scheduler);
   }
 
   static <T> Completes<T> repeatableWithSuccess(final T outcome) {
