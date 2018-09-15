@@ -10,7 +10,7 @@ package io.vlingo.actors.testkit;
 import java.util.concurrent.CountDownLatch;
 
 public final class TestUntil {
-  private final CountDownLatch latch;
+  private CountDownLatch latch;
   private final boolean zero;
   
   public static TestUntil happenings(final int times) {
@@ -70,6 +70,10 @@ public final class TestUntil {
 
   public int remaining() {
     return (int) latch.getCount();
+  }
+
+  public void resetHappeningsTo(final int times) {
+    this.latch = new CountDownLatch(times);
   }
 
   @Override
