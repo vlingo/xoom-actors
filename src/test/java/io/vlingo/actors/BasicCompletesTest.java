@@ -10,6 +10,7 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class BasicCompletesTest {
 
   @Test
   public void testCompletesWith() {
-    final Completes<Integer> completes = new BasicCompletes<>(5);
+    final Completes<Integer> completes = new BasicCompletes<>(5, false);
 
     assertEquals(new Integer(5), completes.outcome());
   }
@@ -62,13 +63,15 @@ public class BasicCompletesTest {
   public void testCompletesAfterAndThenMessageOut() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
-    final Sender sender = new Sender();
+    final Holder holder = new Holder();
 
     completes
       .after(() -> completes.outcome() * 2)
-      .andThen((value) -> sender.send(value));
+      .andThen((value) -> holder.hold(value));
 
     completes.with(5);
+
+    completes.await();
 
     assertEquals(new Integer(10), andThenValue);
   }
@@ -83,6 +86,8 @@ public class BasicCompletesTest {
     
     completes.with(5);
     
+    completes.await(10);
+
     assertEquals(new Integer(10), andThenValue);
   }
 
@@ -97,7 +102,10 @@ public class BasicCompletesTest {
     Thread.sleep(100);
     
     completes.with(5);
-    
+
+    completes.await();
+
+    assertTrue(completes.hasFailed());
     assertNotEquals(new Integer(10), andThenValue);
     assertEquals(new Integer(0), andThenValue);
   }
@@ -135,8 +143,8 @@ public class BasicCompletesTest {
     assertEquals(new Integer(5), completed);
   }
 
-  private class Sender {
-    private void send(final Integer value) {
+  private class Holder {
+    private void hold(final Integer value) {
       andThenValue = value;
     }
   }
