@@ -7,21 +7,21 @@
 
 package io.vlingo.actors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public final class World implements Registrar {
-  static final int PRIVATE_ROOT_ID = Integer.MAX_VALUE;
+  static final long PRIVATE_ROOT_ID = Long.MAX_VALUE;
   static final String PRIVATE_ROOT_NAME = "#private";
-  static final int PUBLIC_ROOT_ID = PRIVATE_ROOT_ID - 1;
+  static final long PUBLIC_ROOT_ID = PRIVATE_ROOT_ID - 1;
   static final String PUBLIC_ROOT_NAME = "#public";
-  static final int DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
+  static final long DEADLETTERS_ID = PUBLIC_ROOT_ID - 1;
   static final String DEADLETTERS_NAME = "#deadLetters";
-  static final int HIGH_ROOT_ID = DEADLETTERS_ID - 1;
+  public static final long HIGH_ROOT_ID = DEADLETTERS_ID - 1;
 
   static final String DEFAULT_STAGE = "__defaultStage";
 
@@ -305,7 +305,7 @@ public final class World implements Registrar {
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
-    this.addressFactory = new AddressFactory();
+    this.addressFactory = new BasicAddressFactory();
     this.completesProviderKeeper = new DefaultCompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new DefaultLoggerProviderKeeper();
     this.mailboxProviderKeeper = new DefaultMailboxProviderKeeper();
@@ -334,5 +334,4 @@ public final class World implements Registrar {
         null,
         logger);
   }
-
 }
