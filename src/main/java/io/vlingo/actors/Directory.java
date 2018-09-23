@@ -11,9 +11,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 final class Directory {
+  private final Address none;
   private final Map<Address, Actor>[] maps;
 
-  Directory() {
+  Directory(final Address none) {
+    this.none = none;
     this.maps = build();
   }
 
@@ -34,7 +36,7 @@ final class Directory {
       for (final Map<Address, Actor> map : maps) {
         for (final Actor actor : map.values()) {
           final Address address = actor.address();
-          final Address parent = actor.lifeCycle.environment.parent == null ? Address.None : actor.lifeCycle.environment.parent.address();
+          final Address parent = actor.lifeCycle.environment.parent == null ? none : actor.lifeCycle.environment.parent.address();
           logger.log("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent + " TYPE: " + actor.getClass());
         }
       }
