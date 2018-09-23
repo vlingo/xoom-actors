@@ -27,7 +27,7 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailboxPlugin;
 public class TestWorld implements AutoCloseable {
   public static TestWorld testWorld;
   
-  private static final Map<Integer, List<Message>> actorMessages = new HashMap<>();
+  private static final Map<Long, List<Message>> actorMessages = new HashMap<>();
   
   private final MailboxProvider mailboxProvider;
   private final World world;
@@ -66,7 +66,7 @@ public class TestWorld implements AutoCloseable {
   }
 
   public static void track(final Message message) {
-    final int id = message.actor().address().id();
+    final long id = message.actor().address().id();
     final List<Message> messages = actorMessages.computeIfAbsent(id, k -> new ArrayList<>());
     messages.add(message);
   }
