@@ -186,7 +186,7 @@ public class Stage implements Stoppable {
   Stage(final World world, final String name) {
     this.world = world;
     this.name = name;
-    this.directory = new Directory();
+    this.directory = new Directory(world.addressFactory().none());
     this.commonSupervisors = new HashMap<>();
     this.scheduler = new Scheduler();
     this.stopped = new AtomicBoolean(false);
