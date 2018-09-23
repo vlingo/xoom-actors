@@ -20,6 +20,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private final Queue<Message> queue;
   private final byte throttlingCount;
 
+  @Override
   public void close() {
     queue.clear();
     dispatcher.close();
@@ -30,6 +31,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     return dispatcher.isClosed();
   }
 
+  @Override
   public void send(final Message message) {
     queue.add(message);
     if (!isDelivering()) {
@@ -37,18 +39,22 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     }
   }
 
+  @Override
   public Message receive() {
     return queue.poll();
   }
 
+  @Override
   public boolean isDelivering() {
     return delivering.get();
   }
 
+  @Override
   public boolean delivering(final boolean flag) {
     return delivering.compareAndSet(!flag, flag);
   }
 
+  @Override
   public void run() {
     final int total = (int) throttlingCount;
     for (int count = 0; count < total; ++count) {
