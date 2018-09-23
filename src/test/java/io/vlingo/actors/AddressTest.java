@@ -20,7 +20,7 @@ public class AddressTest {
   public void testNameGiven() throws Exception {
     final Address address = world.addressFactory().uniqueWith("test-address");
     
-    final int id = world.addressFactory().testNextIdValue() - 1;
+    final long id = world.addressFactory().testNextIdValue() - 1;
     
     assertNotNull(address);
     assertEquals(id, address.id());
