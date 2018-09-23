@@ -18,7 +18,7 @@ public class DirectoryTest extends ActorsTest {
 
   @Test
   public void testDirectoryRegister() {
-    final Directory directory = new Directory();
+    final Directory directory = new Directory(new BasicAddress(0, ""));
     
     final Address address = world.addressFactory().uniqueWith("test-actor");
     
@@ -33,7 +33,7 @@ public class DirectoryTest extends ActorsTest {
 
   @Test
   public void testDirectoryRemove() {
-    final Directory directory = new Directory();
+    final Directory directory = new Directory(new BasicAddress(0, ""));
     
     final Address address = world.addressFactory().uniqueWith("test-actor");
     
@@ -50,7 +50,7 @@ public class DirectoryTest extends ActorsTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testDirectoryAlreadyRegistered() {
-    final Directory directory = new Directory();
+    final Directory directory = new Directory(new BasicAddress(0, ""));
     
     final Address address = world.addressFactory().uniqueWith("test-actor");
     
@@ -63,7 +63,7 @@ public class DirectoryTest extends ActorsTest {
 
   @Test
   public void testDirectoryFindsRegistered() {
-    final Directory directory = new Directory();
+    final Directory directory = new Directory(new BasicAddress(0, ""));
     
     final Address address1 = world.addressFactory().uniqueWith("test-actor1");
     final Address address2 = world.addressFactory().uniqueWith("test-actor2");
