@@ -33,7 +33,7 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
               Definition.has(PublicRootActor.class, Definition.NoParameters, World.PUBLIC_ROOT_NAME),
               NoProtocol.class,
               this,
-              new Address(World.PUBLIC_ROOT_ID, World.PUBLIC_ROOT_NAME),
+              stage().world().addressFactory().from(World.PUBLIC_ROOT_ID, World.PUBLIC_ROOT_NAME),
               null,
               null,
               logger());
@@ -42,7 +42,7 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
               Definition.has(DeadLettersActor.class, Definition.NoParameters, World.DEADLETTERS_NAME),
               DeadLetters.class,
               this,
-              new Address(World.DEADLETTERS_ID, World.DEADLETTERS_NAME),
+              stage().world().addressFactory().from(World.DEADLETTERS_ID, World.DEADLETTERS_NAME),
               null,
               null,
               logger());
