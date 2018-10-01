@@ -125,7 +125,6 @@ public class ProxyGenerator implements AutoCloseable {
     final Tuple2<List<ReturnType>,Boolean> returnTypes = returnTypes(protocolInterface);
 
     builder
-      .append("import java.util.function.Consumer;").append("\n\n")
       .append("import io.vlingo.actors.Actor;").append("\n")
       .append(returnTypes._2 ? "import io.vlingo.actors.BasicCompletes;\n" : "")
       .append(returnTypes._2 ? "import io.vlingo.actors.Completes;\n" : "")
@@ -171,7 +170,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}({3})", passedGenericTypes(method), returnType.simple(), method.getName(), parametersFor(method));
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
-    final String consumerStatement = MessageFormat.format("      final Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
+    final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = returnType.completes ? MessageFormat.format("      final Completes<{0}> completes = new BasicCompletes<>(actor.scheduler());\n", returnType.innerGeneric) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String mailboxSendStatement = MessageFormat.format("      mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2}));", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
