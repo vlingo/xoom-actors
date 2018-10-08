@@ -100,22 +100,22 @@ public class StageTest {
     });
 
     world.stage().actorOf(address6, NoProtocol.class)
-      .after(null, actor -> {
+      .after(actor -> {
         assertNull(actor);
         until.happened();
       })
-      .uponFailure((NoProtocol actor) -> {
+      .otherwise((NoProtocol actor) -> {
         assertNull(actor);
         until.happened();
         return null;
       });
     world.stage().actorOf(address7, NoProtocol.class)
-      .after(null, actor -> {
+      .after(actor -> {
         assertNull(actor);
         until.happened();
         return null;
       })
-      .uponFailure((NoProtocol actor) -> {
+      .otherwise((NoProtocol actor) -> {
         assertNull(actor);
         until.happened();
         return null;
