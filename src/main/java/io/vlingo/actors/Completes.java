@@ -8,6 +8,7 @@
 package io.vlingo.actors;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface Completes<T> {
@@ -44,14 +45,24 @@ public interface Completes<T> {
   }
 
   Completes<T> after(final Supplier<T> supplier);
-  Completes<T> after(final Supplier<T> supplier, final long timeout);
-  Completes<T> after(final Supplier<T> supplier, final long timeout, final T timedOutValue);
+  Completes<T> after(final long timeout, final Supplier<T> supplier);
+  Completes<T> after(final T failedOutcomeValue, final Supplier<T> supplier);
+  Completes<T> after(final long timeout, final T failedOutcomeValue, final Supplier<T> supplier);
   Completes<T> after(final Consumer<T> consumer);
-  Completes<T> after(final Consumer<T> consumer, final long timeout);
-  Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue);
+  Completes<T> after(final long timeout, final Consumer<T> consumer);
+  Completes<T> after(final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> after(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> after(final Function<T,T> function);
+  Completes<T> after(final long timeout, final Function<T,T> function);
+  Completes<T> after(final T failedOutcomeValue, final Function<T,T> function);
+  Completes<T> after(final long timeout, final T failedOutcomeValue, final Function<T,T> function);
   Completes<T> andThen(final Consumer<T> consumer);
+  Completes<T> andThen(final Function<T,T> function);
   Completes<T> atLast(final Consumer<T> consumer);
   Completes<T> atLast(final Supplier<T> supplier);
+  Completes<T> atLast(final Function<T,T> function);
+  Completes<T> uponException(final Function<Exception,T> function);
+  Completes<T> uponFailure(final Function<T,T> function);
   T await();
   T await(final long timeout);
   boolean isCompleted();
