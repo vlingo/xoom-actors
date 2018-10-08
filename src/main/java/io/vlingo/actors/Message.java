@@ -7,9 +7,12 @@
 
 package io.vlingo.actors;
 
+import java.util.function.Consumer;
+
 public interface Message {
   Actor actor();
   void deliver();
   String representation();
   boolean isStowed();
+  void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation);
 }
