@@ -73,33 +73,39 @@ public class StageTest {
     world.stage().directory().register(address5, new TestInterfaceActor());
     
     final TestUntil until = TestUntil.happenings(7);
+    System.out.println("testDirectoryScan(5)");
 
     world.stage().actorOf(address5, NoProtocol.class).after(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
+    System.out.println("testDirectoryScan(4)");
     world.stage().actorOf(address4, NoProtocol.class).after(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
+    System.out.println("testDirectoryScan3)");
     world.stage().actorOf(address3, NoProtocol.class).after(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
+    System.out.println("testDirectoryScan(2)");
     world.stage().actorOf(address2, NoProtocol.class).after(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
+    System.out.println("testDirectoryScan(1)");
     world.stage().actorOf(address1, NoProtocol.class).after(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
 
+    System.out.println("testDirectoryScan(6)");
     world.stage().actorOf(address6, NoProtocol.class)
       .after(null, actor -> {
         assertNull(actor);
@@ -110,12 +116,18 @@ public class StageTest {
         until.happened();
         return null;
       });
+    System.out.println("testDirectoryScan(7)");
     world.stage().actorOf(address7, NoProtocol.class)
       .after(null, actor -> {
         assertNull(actor);
         until.happened();
         return null;
-    });
+      })
+      .uponFailure((NoProtocol actor) -> {
+        assertNull(actor);
+        until.happened();
+        return null;
+      });
 
     until.completes();
 
