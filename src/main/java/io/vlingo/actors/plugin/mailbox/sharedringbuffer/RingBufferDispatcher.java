@@ -23,6 +23,7 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
 
   public void close() {
     closed.set(true);
+    mailbox.close();
   }
 
   @Override
