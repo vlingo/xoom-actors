@@ -97,13 +97,21 @@ public class StageTest {
       until.happened();
     });
 
-    world.stage().actorOf(address6, NoProtocol.class).after(actor -> {
-      assertNull(actor);
-      until.happened();
-    });
-    world.stage().actorOf(address7, NoProtocol.class).after(actor -> {
-      assertNull(actor);
-      until.happened();
+    world.stage().actorOf(address6, NoProtocol.class)
+      .after(null, actor -> {
+        assertNull(actor);
+        until.happened();
+      })
+      .uponFailure((NoProtocol actor) -> {
+        assertNull(actor);
+        until.happened();
+        return null;
+      });
+    world.stage().actorOf(address7, NoProtocol.class)
+      .after(null, actor -> {
+        assertNull(actor);
+        until.happened();
+        return null;
     });
 
     until.completes();
