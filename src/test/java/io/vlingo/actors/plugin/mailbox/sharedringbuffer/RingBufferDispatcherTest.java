@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
-import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.testkit.TestUntil;
 
@@ -37,27 +36,25 @@ public class RingBufferDispatcherTest extends ActorsTest {
     final CountTakerActor actor = new CountTakerActor(testResults);
     
     testResults.until = until(mailboxSize);
-    
+
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
-      mailbox.send(message);
+      mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
-    
+
     testResults.until.completes();
 
     dispatcher.close();
     
     final int neverRevieved = mailboxSize * 2;
-    
+
     for (int count = mailboxSize + 1; count <= neverRevieved; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
-      mailbox.send(message);
+      mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
 
     until(0).completes();
@@ -84,9 +81,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
-      mailbox.send(message);
+      mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
     
     testResults.until.completes();
@@ -112,9 +108,8 @@ public class RingBufferDispatcherTest extends ActorsTest {
     for (int count = 1; count <= overflowSize; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       
-      mailbox.send(message);
+      mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
     
     dispatcher.start();
