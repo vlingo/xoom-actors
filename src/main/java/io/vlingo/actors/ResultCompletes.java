@@ -102,12 +102,12 @@ public class ResultCompletes implements Completes<Object> {
   }
 
   @Override
-  public Completes<Object> uponException(final Function<Exception, Object> function) {
+  public Completes<Object> otherwise(final Function<Object, Object> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> uponFailure(final Function<Object, Object> function) {
+  public Completes<Object> uponException(final Function<Exception, Object> function) {
     throw new UnsupportedOperationException();
   }
 
