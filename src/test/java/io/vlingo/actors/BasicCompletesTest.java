@@ -16,6 +16,7 @@ import org.junit.Test;
 
 public class BasicCompletesTest {
   private Integer andThenValue;
+  private Integer failureValue;
 
   @Test
   public void testCompletesWith() {
@@ -39,7 +40,7 @@ public class BasicCompletesTest {
   public void testCompletesAfterConsumer() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
     
-    completes.after((value) -> andThenValue = value);
+    completes.after((Integer value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -52,7 +53,7 @@ public class BasicCompletesTest {
 
     completes
       .after(() -> completes.outcome() * 2)
-      .andThen((value) -> andThenValue = value);
+      .andThen((Integer value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -67,7 +68,7 @@ public class BasicCompletesTest {
 
     completes
       .after(() -> completes.outcome() * 2)
-      .andThen((value) -> holder.hold(value));
+      .andThen((Integer value) -> holder.hold(value));
 
     completes.with(5);
 
@@ -81,8 +82,8 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(() -> completes.outcome() * 2, 1000)
-      .andThen((value) -> andThenValue = value);
+      .after(1000, () -> completes.outcome() * 2)
+      .andThen((Integer value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -96,8 +97,8 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(() -> completes.outcome() * 2, 1, 0)
-      .andThen((value) -> andThenValue = value);
+      .after(1, 0, () -> completes.outcome() * 2)
+      .andThen((Integer value) -> andThenValue = value);
     
     Thread.sleep(100);
     
@@ -107,7 +108,43 @@ public class BasicCompletesTest {
 
     assertTrue(completes.hasFailed());
     assertNotEquals(new Integer(10), andThenValue);
-    assertEquals(new Integer(0), andThenValue);
+    assertNull(andThenValue);
+  }
+
+  @Test
+  public void testThatFailureOutcomeFails() {
+    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    
+    completes
+      .after(null, () -> completes.outcome() * 2)
+      .andThen((Integer value) -> andThenValue = value)
+      .uponFailure((failedValue) -> failureValue = 1000);
+
+    completes.with(null);
+
+    completes.await();
+
+    assertTrue(completes.hasFailed());
+    assertNull(andThenValue);
+    assertEquals(new Integer(1000), failureValue);
+  }
+
+  @Test
+  public void testThatExceptionOutcomeFails() {
+    final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
+    
+    completes
+      .after(null, () -> completes.outcome() * 2)
+      .andThen((Integer value) -> { throw new IllegalStateException("" + (value * 2)); })
+      .uponException((e) -> failureValue = Integer.parseInt(e.getMessage()));
+
+    completes.with(2);
+
+    completes.await();
+
+    assertTrue(completes.hasFailed());
+    assertNull(andThenValue);
+    assertEquals(new Integer(8), failureValue);
   }
 
   @Test
