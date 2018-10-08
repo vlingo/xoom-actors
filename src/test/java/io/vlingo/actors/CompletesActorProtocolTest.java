@@ -65,7 +65,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final Completes<Hello> helloCompletes =
             uc.getHello()
               .after(2, new Hello(HelloNot), (Hello hello) -> setHello(hello.greeting))
-              .uponFailure((Hello failedHello) -> { setHello(failedHello.greeting); return failedHello; });
+              .otherwise((Hello failedHello) -> { setHello(failedHello.greeting); return failedHello; });
     untilHello.completes();
     assertNotEquals(Hello, greeting);
     assertEquals(HelloNot, helloCompletes.outcome().greeting);
@@ -73,7 +73,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final Completes<Integer> oneCompletes =
             uc.getOne()
               .after(2, 0, (Integer value) -> setValue(value))
-              .uponFailure((Integer value) -> { untilOne.happened(); return 0; });
+              .otherwise((Integer value) -> { untilOne.happened(); return 0; });
     try { Thread.sleep(100); } catch (Exception e) { }
     oneCompletes.with(1);
     untilOne.completes();
