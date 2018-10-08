@@ -132,12 +132,6 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     return lifeCycle.environment.stage.actorProxyFor(protocol, this, lifeCycle.environment.mailbox);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  protected OutcomeInterest selfAsOutcomeInterest(final Object reference) {
-    final OutcomeAware outcomeAware = lifeCycle.environment.stage.actorProxyFor(OutcomeAware.class, this, lifeCycle.environment.mailbox);
-    return new OutcomeInterestActorProxy(outcomeAware, reference);
-  }
-
   protected final Stage stage() {
     if (lifeCycle.environment.isSecured()) {
       throw new IllegalStateException("A secured actor cannot provide its stage.");
