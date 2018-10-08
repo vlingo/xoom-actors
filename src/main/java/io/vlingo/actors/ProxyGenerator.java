@@ -173,7 +173,8 @@ public class ProxyGenerator implements AutoCloseable {
     final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = returnType.completes ? MessageFormat.format("      final Completes<{0}> completes = new BasicCompletes<>(actor.scheduler());\n", returnType.innerGeneric) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
-    final String mailboxSendStatement = MessageFormat.format("      mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2}));", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
+    final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, consumer, {1}{2}); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"null, ", representationName);
+    final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2})); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
     final String completesReturnStatement = returnType.completes ? "      return completes;\n" : "";
     final String elseDead = MessageFormat.format("      actor.deadLetters().failedDelivery(new DeadLetter(actor, {0}));", representationName);
     final String returnValue = returnValue(method.getReturnType());
@@ -184,6 +185,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(ifNotStopped).append("\n")
       .append(consumerStatement).append("\n")
       .append(completesStatement)
+      .append(preallocatedMailbox).append("\n")
       .append(mailboxSendStatement).append("\n")
       .append(completesReturnStatement)
       .append("    } else {\n")
