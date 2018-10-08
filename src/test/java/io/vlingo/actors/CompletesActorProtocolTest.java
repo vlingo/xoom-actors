@@ -28,10 +28,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testReturnsCompletes() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    uc.getHello().after((hello) -> setHello(hello.greeting));
+    uc.getHello().after((Hello hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertEquals(Hello, greeting);
-    uc.getOne().after((value) -> setValue(value));
+    uc.getOne().after((Integer value) -> setValue(value));
     untilOne.completes();
     assertEquals(1, value);
   }
@@ -41,7 +41,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
     final Completes<Hello> helloCompletes = uc.getHello();
     helloCompletes.after(() -> new Hello(Prefix + helloCompletes.outcome().greeting))
-         .andThen((hello) -> setHello(hello.greeting));
+         .andThen((Hello hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
     assertNotEquals(Hello, this.greeting);
@@ -50,7 +50,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     final Completes<Integer> one = uc.getOne();
     one.after(() -> one.outcome() + 1)
-       .andThen((value) -> setValue(value));
+       .andThen((Integer value) -> setValue(value));
     untilOne.completes();
     assertNotEquals(new Integer(1), one.outcome());
     assertNotEquals(1, this.value);
@@ -62,11 +62,20 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testThatTimeOutOccurs() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesCausesTimeoutActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    final Completes<Hello> helloCompletes = uc.getHello().after((hello) -> setHello(hello.greeting), 2, new Hello(HelloNot));
+    final Completes<Hello> helloCompletes =
+            uc.getHello()
+              .after(2, new Hello(HelloNot), (Hello hello) -> setHello(hello.greeting))
+              .uponFailure((Hello failedHello) -> { setHello(failedHello.greeting); return failedHello; });
     untilHello.completes();
     assertNotEquals(Hello, greeting);
     assertEquals(HelloNot, helloCompletes.outcome().greeting);
-    final Completes<Integer> oneCompletes = uc.getOne().after((value) -> setValue(value), 2, 0);
+
+    final Completes<Integer> oneCompletes =
+            uc.getOne()
+              .after(2, 0, (Integer value) -> setValue(value))
+              .uponFailure((Integer value) -> { untilOne.happened(); return 0; });
+    try { Thread.sleep(100); } catch (Exception e) { }
+    oneCompletes.with(1);
     untilOne.completes();
     assertNotEquals(1, value);
     assertEquals(new Integer(0), oneCompletes.outcome());
