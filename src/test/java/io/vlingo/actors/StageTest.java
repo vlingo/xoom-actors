@@ -25,6 +25,7 @@ public class StageTest {
   
   @Test
   public void testActorForDefinitionAndProtocol() throws Exception {
+    System.out.println("testActorForDefinitionAndProtocol()");
     final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters);
 
     final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
@@ -36,6 +37,7 @@ public class StageTest {
   
   @Test
   public void testActorForAll() throws Exception {
+    System.out.println("testActorForAll()");
     world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), NoProtocol.class);
     
     final Definition definition =
@@ -54,6 +56,7 @@ public class StageTest {
 
   @Test
   public void testDirectoryScan() {
+    System.out.println("testDirectoryScan()");
     final Address address1 = world.addressFactory().uniqueWith("test-actor1");
     final Address address2 = world.addressFactory().uniqueWith("test-actor2");
     final Address address3 = world.addressFactory().uniqueWith("test-actor3");
