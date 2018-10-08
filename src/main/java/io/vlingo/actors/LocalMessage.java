@@ -10,11 +10,11 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class LocalMessage<T> implements Message {
-  final Actor actor;
-  final Completes<Object> completes;
-  final Consumer<T> consumer;
-  final Class<T> protocol;
-  final String representation;
+  Actor actor;
+  Completes<Object> completes;
+  Consumer<T> consumer;
+  Class<T> protocol;
+  String representation;
 
   @SuppressWarnings("unchecked")
   public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Completes<?> completes, final String representation) {
@@ -31,6 +31,10 @@ public class LocalMessage<T> implements Message {
 
   public LocalMessage(final LocalMessage<T> message) {
     this(message.actor, message.protocol, message.consumer, message.completes, message.representation);
+  }
+
+  public LocalMessage(final Mailbox mailbox) {
+    assert mailbox.isPreallocated();
   }
 
   @Override
@@ -63,6 +67,15 @@ public class LocalMessage<T> implements Message {
   @Override
   public boolean isStowed() {
     return false;
+  }
+
+  @SuppressWarnings("unchecked")
+  public void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation) {
+    this.actor = actor;
+    this.consumer = (Consumer<T>) consumer;
+    this.protocol = (Class<T>) protocol;
+    this.representation = representation;
+    this.completes = (Completes<Object>) completes;
   }
 
   @Override
