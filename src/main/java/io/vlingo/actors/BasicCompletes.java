@@ -182,14 +182,14 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
-  public Completes<T> uponException(final Function<Exception, T> function) {
-    state.exceptionAction(function);
+  public Completes<T> otherwise(final Function<T,T> function) {
+    state.failureAction(function);
     return this;
   }
 
   @Override
-  public Completes<T> uponFailure(final Function<T,T> function) {
-    state.failureAction(function);
+  public Completes<T> uponException(final Function<Exception, T> function) {
+    state.exceptionAction(function);
     return this;
   }
 
