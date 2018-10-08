@@ -8,6 +8,8 @@
 package io.vlingo.actors;
 
 public interface Address extends Comparable<Address> {
+  static Actor NoActor = new Actor() {};
+
   long id();
   long idSequence();
   String idSequenceString();
