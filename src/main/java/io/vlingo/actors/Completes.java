@@ -61,8 +61,8 @@ public interface Completes<T> {
   Completes<T> atLast(final Consumer<T> consumer);
   Completes<T> atLast(final Supplier<T> supplier);
   Completes<T> atLast(final Function<T,T> function);
+  Completes<T> otherwise(final Function<T,T> function);
   Completes<T> uponException(final Function<Exception,T> function);
-  Completes<T> uponFailure(final Function<T,T> function);
   T await();
   T await(final long timeout);
   boolean isCompleted();
