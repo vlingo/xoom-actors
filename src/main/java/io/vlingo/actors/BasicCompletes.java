@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BasicCompletes<T> implements Completes<T> {
@@ -50,19 +51,25 @@ public class BasicCompletes<T> implements Completes<T> {
 
   @Override
   public Completes<T> after(final Supplier<T> supplier) {
-    after(supplier, -1L, null);
+    after(-1L, null, supplier);
     return this;
   }
 
   @Override
-  public Completes<T> after(final Supplier<T> supplier, final long timeout) {
-    after(supplier, timeout, null);
+  public Completes<T> after(final long timeout, final Supplier<T> supplier) {
+    after(timeout, null, supplier);
     return this;
   }
 
   @Override
-  public Completes<T> after(final Supplier<T> supplier, final long timeout, final T timedOutValue) {
-    state.failedValue(timedOutValue);
+  public Completes<T> after(final T failedOutcomeValue, final Supplier<T> supplier) {
+    after(-1L, failedOutcomeValue, supplier);
+    return this;
+  }
+
+  @Override
+  public Completes<T> after(final long timeout, final T failedOutcomeValue, final Supplier<T> supplier) {
+    state.failedValue(failedOutcomeValue);
     state.action(Action.with(supplier));
     if (state.isCompleted()) {
       state.completeActions();
@@ -74,20 +81,53 @@ public class BasicCompletes<T> implements Completes<T> {
 
   @Override
   public Completes<T> after(final Consumer<T> consumer) {
-    after(consumer, -1L, null);
+    after(-1L, null, consumer);
     return this;
   }
 
   @Override
-  public Completes<T> after(final Consumer<T> consumer, final long timeout) {
-    after(consumer, timeout, null);
+  public Completes<T> after(final long timeout, final Consumer<T> consumer) {
+    after(timeout, null, consumer);
     return this;
   }
 
   @Override
-  public Completes<T> after(final Consumer<T> consumer, final long timeout, final T timedOutValue) {
-    state.failedValue(timedOutValue);
+  public Completes<T> after(final T failedOutcomeValue, final Consumer<T> consumer) {
+    after(-1L, failedOutcomeValue, consumer);
+    return this;
+  }
+
+  @Override
+  public Completes<T> after(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer) {
+    state.failedValue(failedOutcomeValue);
     state.action(Action.with(consumer));
+    if (state.isCompleted()) {
+      state.completeActions();
+    } else {
+      state.startTimer(timeout);
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> after(final Function<T,T> function) {
+    return after(-1L, null, function);
+  }
+
+  @Override
+  public Completes<T> after(final long timeout, final Function<T,T> function) {
+    return after(timeout, null, function);
+  }
+
+  @Override
+  public Completes<T> after(final T failedOutcomeValue, final Function<T,T> function) {
+    return after(-1L, failedOutcomeValue, function);
+  }
+
+  @Override
+  public Completes<T> after(final long timeout, final T failedOutcomeValue, final Function<T,T> function) {
+    state.failedValue(failedOutcomeValue);
+    state.action(Action.with(function));
     if (state.isCompleted()) {
       state.completeActions();
     } else {
@@ -106,11 +146,19 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
+  public Completes<T> andThen(final Function<T,T> function) {
+    state.action(Action.with(function));
+    if (state.isCompleted()) {
+      state.completeActions();
+    }
+    return this;
+  }
+
+  @Override
   public Completes<T> atLast(final Supplier<T> supplier) {
     state.action(Action.with(supplier));
     if (state.isCompleted()) {
       state.completeActions();
-      state.outcome(supplier.get());
     }
     return this;
   }
@@ -119,8 +167,29 @@ public class BasicCompletes<T> implements Completes<T> {
   public Completes<T> atLast(final Consumer<T> consumer) {
     state.action(Action.with(consumer));
     if (state.isCompleted()) {
-      consumer.accept(state.outcome());
+      state.completeActions();
     }
+    return this;
+  }
+
+  @Override
+  public Completes<T> atLast(final Function<T,T> function) {
+    state.action(Action.with(function));
+    if (state.isCompleted()) {
+      state.completeActions();
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> uponException(final Function<Exception, T> function) {
+    state.exceptionAction(function);
+    return this;
+  }
+
+  @Override
+  public Completes<T> uponFailure(final Function<T,T> function) {
+    state.failureAction(function);
     return this;
   }
 
@@ -165,7 +234,7 @@ public class BasicCompletes<T> implements Completes<T> {
 
   @Override
   public void failed() {
-    state.failed();
+    with(state.failedValue());
   }
 
   @Override
@@ -186,7 +255,9 @@ public class BasicCompletes<T> implements Completes<T> {
   @Override
   @SuppressWarnings("unchecked")
   public <O> Completes<O> with(final O outcome) {
-    state.completedWith((T) outcome);
+    if (!state.handleFailure((T) outcome)) {
+      state.completedWith((T) outcome);
+    }
 
     return (Completes<O>) this;
   }
@@ -231,6 +302,15 @@ public class BasicCompletes<T> implements Completes<T> {
     }
 
     @SuppressWarnings("unchecked")
+    Function<T,T> asFunction() {
+      return (Function<T,T>) function;
+    }
+
+    boolean isFunction() {
+      return (function instanceof Function);
+    }
+
+    @SuppressWarnings("unchecked")
     Supplier<T> asSupplier() {
       return (Supplier<T>) function;
     }
@@ -250,7 +330,14 @@ public class BasicCompletes<T> implements Completes<T> {
     void completedWith(final T outcome);
     boolean hasFailed();
     void failed();
-    void failedValue(final T timedOutValue);
+    void failedValue(final T failedOutcomeValue);
+    T failedValue();
+    void failureAction(final Function<T,T> function);
+    void failureAction();
+    boolean handleFailure(final T outcome);
+    void exceptionAction(final Function<Exception,T> function);
+    void handleException(final Exception e);
+    boolean hasException();
     boolean hasOutcome();
     boolean outcomeMustDefault();
     void outcome(final T outcome);
@@ -261,25 +348,33 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   protected static class BasicActiveState<T> implements ActiveState<T>, Scheduled {
+    private static final Object UnfailedValue = new Object();
+
     private Queue<Action<T>> actions;
     private Cancellable cancellable;
     private final AtomicBoolean completed;
     private final AtomicBoolean completing;
     private final AtomicBoolean executingActions;
-    private volatile boolean failed;
-    private T failedValue;
+    private final AtomicBoolean failed;
+    private T failedOutcomeValue;
+    private Function<T,T> failureAction;
+    private AtomicReference<Exception> exception;
+    private Function<Exception,T> exceptionAction;
     private final AtomicReference<T> outcome;
     private Scheduler scheduler;
     private final AtomicBoolean timedOut;
 
+    @SuppressWarnings("unchecked")
     protected BasicActiveState(final Scheduler scheduler) {
       this.scheduler = scheduler;
       this.actions = new ConcurrentLinkedQueue<>();
       this.completed = new AtomicBoolean(false);
       this.completing = new AtomicBoolean(false);
       this.executingActions = new AtomicBoolean(false);
-      this.failed = false;
-      this.outcome = new AtomicReference<T>(null);
+      this.failed = new AtomicBoolean(false);
+      this.failedOutcomeValue = (T) UnfailedValue;
+      this.exception = new AtomicReference<>(null);
+      this.outcome = new AtomicReference<>(null);
       this.timedOut = new AtomicBoolean(false);
     }
 
@@ -344,18 +439,83 @@ public class BasicCompletes<T> implements Completes<T> {
 
     @Override
     public boolean hasFailed() {
-      return failed;
+      return failed.get();
     }
 
     @Override
     public void failed() {
-      failed = true;
-      this.completedWith(failedValue);
+      handleFailure(failedOutcomeValue);
     }
 
     @Override
-    public void failedValue(final T timedOutValue) {
-      this.failedValue = timedOutValue;
+    public void failedValue(final T failedOutcomeValue) {
+      this.failedOutcomeValue = failedOutcomeValue;
+    }
+
+    @Override
+    public T failedValue() {
+      return failedOutcomeValue;
+    }
+
+    @Override
+    public void failureAction(final Function<T,T> function) {
+      this.failureAction = function;
+      if (isCompleted() && hasFailed()) {
+        failureAction();
+      }
+    }
+
+    @Override
+    public void failureAction() {
+      failed.set(true);
+      if (failureAction != null) {
+        outcome.set(failureAction.apply(outcome.get()));
+      }
+    }
+
+    @Override
+    public boolean handleFailure(final T outcome) {
+      if (isCompleted() && hasFailed()) {
+        return true; // already reached below
+      }
+      boolean handle = false;
+      if (outcome == failedOutcomeValue) {
+        handle = true;
+      } else if (outcome != null && failedOutcomeValue != null && failedOutcomeValue.equals(outcome)) {
+        handle = true;
+      }
+      if (handle) {
+        failed.set(true);
+        actions.clear();
+        this.outcome.set(failedOutcomeValue);
+        completed.set(true);
+        failureAction();
+      }
+      return handle;
+    }
+
+    @Override
+    public void exceptionAction(final Function<Exception, T> function) {
+      exceptionAction = function;
+      if (hasException()) {
+        handleException(exception.get());
+      }
+    }
+
+    @Override
+    public void handleException(final Exception e) {
+      exception.set(e);
+      if (exceptionAction != null) {
+        failed.set(true);
+        actions.clear();
+        outcome.set(exceptionAction.apply(e));
+        completed.set(true);
+      }
+    }
+
+    @Override
+    public boolean hasException() {
+      return exception.get() != null;
     }
 
     @Override
@@ -398,8 +558,8 @@ public class BasicCompletes<T> implements Completes<T> {
 
     @Override
     public void intervalSignal(final Scheduled scheduled, final Object data) {
-      failed();
       timedOut.set(true);
+      failed();
     }
 
     protected void executeActions() {
@@ -410,10 +570,17 @@ public class BasicCompletes<T> implements Completes<T> {
         if (action.hasDefaultValue && outcomeMustDefault()) {
           outcome(action.defaultValue);
         } else {
-          if (action.isSupplier()) {
-            outcome.set(action.asSupplier().get());
-          } else if (action.isConsumer()) {
-            action.asConsumer().accept(outcome.get());
+          try {
+            if (action.isSupplier()) {
+              outcome.set(action.asSupplier().get());
+            } else if (action.isConsumer()) {
+              action.asConsumer().accept(outcome.get());
+            } else if (action.isFunction()) {
+              outcome.set(action.asFunction().apply(outcome.get()));
+            }
+          } catch (Exception e) {
+            handleException(e);
+            break;
           }
         }
       }
