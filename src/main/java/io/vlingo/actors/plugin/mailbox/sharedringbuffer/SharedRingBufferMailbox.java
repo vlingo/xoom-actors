@@ -7,35 +7,36 @@
 
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
-import io.vlingo.actors.Backoff;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+
+import io.vlingo.actors.Actor;
+import io.vlingo.actors.Completes;
 import io.vlingo.actors.Dispatcher;
+import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 public class SharedRingBufferMailbox implements Mailbox {
-  private boolean closed;
+  private final AtomicBoolean closed;
   private final Dispatcher dispatcher;
   private final int mailboxSize;
   private final Message[] messages;
-  private final OverflowQueue overflowQueue;
-  private int sendIndex;
-  private int receiveIndex;
+  private final AtomicLong sendIndex;
+  private final AtomicLong readyIndex;
+  private final AtomicLong receiveIndex;
 
   public void close() {
-    if (!closed) {
-      closed = true;
+    if (!closed.get()) {
+      closed.set(true);
       dispatcher.close();
-      overflowQueue.close();
-      clear();
     }
   }
 
   @Override
   public boolean isClosed() {
-    return closed;
+    return closed.get();
   }
 
   public boolean isDelivering() {
@@ -46,39 +47,47 @@ public class SharedRingBufferMailbox implements Mailbox {
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
 
-  public int overflowCount() {
-    return overflowQueue.messages.size();
+  @Override
+  public boolean isPreallocated() {
+    return true;
   }
 
   public void send(final Message message) {
-    synchronized(messages) {
-      if (messages[sendIndex] == null) {
-        messages[sendIndex] = message;
-        if (++sendIndex >= mailboxSize) {
-          sendIndex = 0;
+    throw new UnsupportedOperationException("Use claimPreallocatedMessage() for preallocated mailbox.");
+  }
+
+  @Override
+  public void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation) {
+    final long messageIndex = sendIndex.incrementAndGet();
+    final int ringSendIndex = (int) (messageIndex % mailboxSize);
+
+    int retries = 0;
+    while (ringSendIndex == (int) (receiveIndex.get() % mailboxSize)) {
+      if (++retries >= mailboxSize) {
+        if (closed.get()) {
+          return;
+        } else {
+          retries = 0;
         }
-        if (dispatcher.requiresExecutionNotification()) {
-          dispatcher.execute(this);
-        }
-      } else {
-        overflowQueue.delayedSend(message);
-        dispatcher.execute(this);
       }
     }
+
+    messages[ringSendIndex].set(actor, protocol, consumer, completes, representation);
+
+    while (!readyIndex.compareAndSet(messageIndex - 1, messageIndex))
+      ;
   }
 
   public Message receive() {
-    final Message message = messages[receiveIndex];
-    if (message != null) {
-      messages[receiveIndex] = null;
-      if (++receiveIndex >= mailboxSize) {
-        receiveIndex = 0;
-      }
-      if (overflowQueue.isOverflowed()) {
-        overflowQueue.execute();
-      }
+    final long messageIndex = receiveIndex.get();
+
+    if (messageIndex < readyIndex.get()) {
+      final int index = (int) (receiveIndex.incrementAndGet() % mailboxSize);
+
+      return messages[index];
     }
-    return message;
+
+    return null;
   }
 
   public void run() {
@@ -88,76 +97,18 @@ public class SharedRingBufferMailbox implements Mailbox {
   protected SharedRingBufferMailbox(final Dispatcher dispatcher, final int mailboxSize) {
     this.dispatcher = dispatcher;
     this.mailboxSize = mailboxSize;
+    this.closed = new AtomicBoolean(false);
     this.messages = new Message[mailboxSize];
-    this.overflowQueue = new OverflowQueue();
-    this.receiveIndex = 0;
-    this.sendIndex = 0;
+    this.readyIndex = new AtomicLong(-1);
+    this.receiveIndex = new AtomicLong(-1);
+    this.sendIndex = new AtomicLong(-1);
+
+    initPreallocated();
   }
 
-  private boolean canSend() {
-    int index = sendIndex;
-    if (index >= mailboxSize) {
-      index = 0;
-    }
-    
-    return messages[index] == null;
-  }
-  
-  private void clear() {
-    for (int idx = 0; idx < mailboxSize; ++idx)
-      messages[idx] = null;
-  }
-
-  private class OverflowQueue extends Thread {
-    private final Backoff backoff;
-    private final Queue<Message> messages;
-    private boolean open;
-
-    @Override
-    public void run() {
-      while (open) {
-        if (canSend()) {
-          final Message delayed = messages.poll();
-          if (delayed != null) {
-            backoff.reset();
-            send(delayed);
-          } else {
-            backoff.now();
-          }
-        } else {
-          backoff.now();
-        }
-      }
-    }
-
-    private OverflowQueue() {
-      backoff = new Backoff();
-      messages = new LinkedList<Message>();
-      open = false;
-    }
-
-    private void close() {
-      open = false;
-      messages.clear();
-    }
-
-    private void delayedSend(final Message message) {
-      messages.add(message);
-
-      if (!open) {
-        open = true;
-        start();
-      } else {
-        execute();
-      }
-    }
-
-    private boolean isOverflowed() {
-      return open && !messages.isEmpty();
-    }
-    
-    private void execute() {
-      interrupt();
+  private void initPreallocated() {
+    for (int idx = 0; idx < mailboxSize; ++idx) {
+      messages[idx] = new LocalMessage<>(this);
     }
   }
 }
