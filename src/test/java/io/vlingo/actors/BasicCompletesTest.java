@@ -118,7 +118,7 @@ public class BasicCompletesTest {
     completes
       .after(null, () -> completes.outcome() * 2)
       .andThen((Integer value) -> andThenValue = value)
-      .uponFailure((failedValue) -> failureValue = 1000);
+      .otherwise((failedValue) -> failureValue = 1000);
 
     completes.with(null);
 
