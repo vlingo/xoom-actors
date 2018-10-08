@@ -10,9 +10,7 @@ package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
@@ -26,8 +24,14 @@ public class RingBufferMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
   
+  private static final int ThroughputMailboxSize = 1048576;
+  private static final int ThroughputMaxCount = 4194304; // 104857600;
+  private static final int ThroughputWarmUpCount = 4194304;
+
   @Test
   public void testBasicDispatch() throws Exception {
+    init(MailboxSize);
+
     final TestResults testResults = new TestResults();
     
     final CountTaker countTaker =
@@ -38,6 +42,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     final int totalCount = MailboxSize / 2;
     
     testResults.until = until(MaxCount);
+    testResults.maximum = MaxCount;
     
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
@@ -45,43 +50,61 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     testResults.until.completes();
     
-    assertEquals(MaxCount, testResults.highest.get());
+    assertEquals(MaxCount, testResults.highest);
   }
 
   @Test
-  public void testOverflowDispatch() throws Exception {
+  public void testThroughput() throws Exception {
+    System.out.println("WARMING UP...");
+
+    init(ThroughputMailboxSize);
+
     final TestResults testResults = new TestResults();
-    
+
     final CountTaker countTaker =
             world.actorFor(
-                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"),
+                    Definition.has(ThroughputCountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"),
                     CountTaker.class);
-    
-    final int totalCount = MailboxSize * 2;
-    
-    testResults.until = until(MaxCount);
-    
-    for (int count = 1; count <= totalCount; ++count) {
+
+    testResults.maximum = ThroughputWarmUpCount;
+
+    for (int count = 1; count <= ThroughputWarmUpCount; ++count) {
       countTaker.take(count);
     }
-    
-    testResults.until.completes();
-    
-    assertEquals(MaxCount, testResults.highest.get());
+
+    while (testResults.highest < ThroughputWarmUpCount)
+      ;
+
+    System.out.println("STARTING TEST...");
+
+    testResults.highest = 0;
+    testResults.maximum = ThroughputMaxCount;
+
+    final long startTime = System.currentTimeMillis();
+
+    for (int count = 1; count <= ThroughputMaxCount; ++count) {
+      countTaker.take(count);
+    }
+
+    while (testResults.highest < ThroughputMaxCount)
+      ;
+
+    final long ticks = System.currentTimeMillis() - startTime;
+
+    System.out.println("TICKS: " + ticks + " FOR " + ThroughputMaxCount + " MESSAGES IS " + (ThroughputMaxCount / ticks * 1000) + " PER SECOND");
+
+    assertEquals(ThroughputMaxCount, testResults.highest);
   }
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    
+  private void init(final int mailboxSize) {
     Properties properties = new Properties();
     properties.setProperty("plugin.name.testRingMailbox", "true");
     properties.setProperty("plugin.testRingMailbox.classname", "io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin");
     properties.setProperty("plugin.testRingMailbox.defaultMailbox", "false");
-    properties.setProperty("plugin.testRingMailbox.size", ""+MailboxSize);
+    properties.setProperty("plugin.testRingMailbox.size", ""+mailboxSize);
     properties.setProperty("plugin.testRingMailbox.fixedBackoff", "2");
     properties.setProperty("plugin.testRingMailbox.numberOfDispatchersFactor", "1.0");
-    properties.setProperty("plugin.testRingMailbox.dispatcherThrottlingCount", "10");
+    properties.setProperty("plugin.testRingMailbox.dispatcherThrottlingCount", "20");
     
     SharedRingBufferMailboxPlugin provider = new SharedRingBufferMailboxPlugin();
     final PluginProperties pluginProperties = new PluginProperties("testRingMailbox", properties);
@@ -106,11 +129,11 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     
     @Override
     public void take(final int count) {
-      if (count > testResults.highest.get()) {
-        testResults.highest.set(count);
+      if (count > testResults.highest) {
+        testResults.highest = count;
         testResults.until.happened();
       }
-      if (count < MaxCount) {
+      if (count < testResults.maximum) {
         self.take(count + 1);
       } else {
         testResults.until.completeNow();
@@ -118,8 +141,22 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     }
   }
   
+  public static class ThroughputCountTakerActor extends Actor implements CountTaker {
+    private final TestResults testResults;
+    
+    public ThroughputCountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
+    }
+    
+    @Override
+    public void take(final int count) {
+      testResults.highest = count;
+    }
+  }
+
   private static class TestResults {
-    public AtomicInteger highest = new AtomicInteger(0);
+    public volatile int highest = 0;
+    public int maximum = 0;
     public TestUntil until = TestUntil.happenings(0);
   }
 }
