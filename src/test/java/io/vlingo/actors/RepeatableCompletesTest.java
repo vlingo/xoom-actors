@@ -20,7 +20,7 @@ public class RepeatableCompletesTest {
 
     completes
       .after(() -> completes.outcome() * 2)
-      .andThen((value) -> andThenValue = value)
+      .andThen((Integer value) -> andThenValue = value)
       .repeat();
     
     completes.with(5);
