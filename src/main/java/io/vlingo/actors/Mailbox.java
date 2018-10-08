@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import java.util.function.Consumer;
+
 public interface Mailbox extends Runnable {
   void close();
   boolean isClosed();
@@ -14,4 +16,9 @@ public interface Mailbox extends Runnable {
   boolean delivering(final boolean flag);
   void send(final Message message);
   Message receive();
+
+  default boolean isPreallocated()
+    { return false; }
+  default void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation)
+    { throw new UnsupportedOperationException("Not a preallocated mailbox."); }
 }
