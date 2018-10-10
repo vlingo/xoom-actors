@@ -37,13 +37,15 @@ public class Stage implements Stoppable {
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address) {
+    final Address actorAddress = this.allocateAddress(definition, address);
+    final Mailbox actorMailbox = this.allocateMailbox(definition, actorAddress, null);
     final ActorProtocolActor<T> actor =
             actorProtocolFor(
               definition,
               protocol,
               definition.parentOr(world.defaultParent()),
-              address,
-              null,
+              actorAddress,
+              actorMailbox,
               definition.supervisor(),
               definition.loggerOr(world.defaultLogger()));
 
@@ -60,13 +62,15 @@ public class Stage implements Stoppable {
   }
 
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address, final Logger logger) {
+    final Address actorAddress = this.allocateAddress(definition, address);
+    final Mailbox actorMailbox = this.allocateMailbox(definition, actorAddress, null);
     final ActorProtocolActor<T> actor =
             actorProtocolFor(
               definition,
               protocol,
               definition.parentOr(world.defaultParent()),
-              address,
-              null,
+              actorAddress,
+              actorMailbox,
               definition.supervisor(),
               logger);
 
@@ -283,6 +287,18 @@ public class Stage implements Stoppable {
     if (actor == removedActor) {
       removedActor.lifeCycle.stop(actor);
     }
+  }
+
+  private Address allocateAddress(final Definition definition, final Address maybeAddress) {
+    final Address address = maybeAddress != null ?
+            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+    return address;
+  }
+
+  private Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
+    final Mailbox mailbox = maybeMailbox != null ?
+            maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
+    return mailbox;
   }
 
   private <T> Actor createRawActor(
