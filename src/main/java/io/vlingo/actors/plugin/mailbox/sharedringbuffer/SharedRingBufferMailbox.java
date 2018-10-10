@@ -53,7 +53,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   public void send(final Message message) {
-    throw new UnsupportedOperationException("Use claimPreallocatedMessage() for preallocated mailbox.");
+    throw new UnsupportedOperationException("Use preallocated mailbox send(Actor, ...).");
   }
 
   @Override
