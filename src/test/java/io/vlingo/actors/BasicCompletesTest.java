@@ -26,10 +26,10 @@ public class BasicCompletesTest {
   }
 
   @Test
-  public void testCompletesAfterSupplier() {
+  public void testCompletesAfterFunction() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
-    completes.after(() -> completes.outcome() * 2);
+    completes.after((value) -> value * 2);
 
     completes.with(5);
 
@@ -40,7 +40,7 @@ public class BasicCompletesTest {
   public void testCompletesAfterConsumer() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
     
-    completes.after((Integer value) -> andThenValue = value);
+    completes.after((value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -52,12 +52,13 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
     completes
-      .after(() -> completes.outcome() * 2)
-      .andThen((Integer value) -> andThenValue = value);
+      .after((value) -> value * 2)
+      .andThen((value) -> andThenValue = value);
     
     completes.with(5);
     
     assertEquals(new Integer(10), andThenValue);
+    assertEquals(new Integer(10), completes.outcome());
   }
 
   @Test
@@ -67,8 +68,8 @@ public class BasicCompletesTest {
     final Holder holder = new Holder();
 
     completes
-      .after(() -> completes.outcome() * 2)
-      .andThen((Integer value) -> holder.hold(value));
+      .after((value) -> value * 2)
+      .andThen((value) -> { holder.hold(value); return value; } );
 
     completes.with(5);
 
@@ -82,8 +83,8 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(1000, () -> completes.outcome() * 2)
-      .andThen((Integer value) -> andThenValue = value);
+      .after(1000, (value) -> value * 2)
+      .andThen((value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -97,8 +98,8 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(1, 0, () -> completes.outcome() * 2)
-      .andThen((Integer value) -> andThenValue = value);
+      .after(1, 0, (value) -> value * 2)
+      .andThen((value) -> andThenValue = value);
     
     Thread.sleep(100);
     
@@ -116,7 +117,7 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(null, () -> completes.outcome() * 2)
+      .after(null, (value) -> value * 2)
       .andThen((Integer value) -> andThenValue = value)
       .otherwise((failedValue) -> failureValue = 1000);
 
@@ -134,9 +135,9 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(null, () -> completes.outcome() * 2)
+      .after(null, (value) -> value * 2)
       .andThen((Integer value) -> { throw new IllegalStateException("" + (value * 2)); })
-      .uponException((e) -> failureValue = Integer.parseInt(e.getMessage()));
+      .exception((e) -> failureValue = Integer.parseInt(e.getMessage()));
 
     completes.with(2);
 

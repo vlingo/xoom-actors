@@ -25,23 +25,23 @@ public class CompletesActorProtocolTest extends ActorsTest {
   private TestUntil untilOne = TestUntil.happenings(1);
 
   @Test
-  public void testReturnsCompletes() {
+  public void testReturnsCompletesForSideEffects() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    uc.getHello().after((Hello hello) -> setHello(hello.greeting));
+    uc.getHello().consumeAfter((hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertEquals(Hello, greeting);
-    uc.getOne().after((Integer value) -> setValue(value));
+    uc.getOne().consumeAfter((value) -> setValue(value));
     untilOne.completes();
     assertEquals(1, value);
   }
 
   @Test
-  public void testAfterAndThenCompletes() {
+  public void testAfterAndThenCompletesForSideEffects() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
     final Completes<Hello> helloCompletes = uc.getHello();
-    helloCompletes.after(() -> new Hello(Prefix + helloCompletes.outcome().greeting))
-         .andThen((Hello hello) -> setHello(hello.greeting));
+    helloCompletes.after((hello) -> new Hello(Prefix + helloCompletes.outcome().greeting))
+         .andThenConsume((hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
     assertNotEquals(Hello, this.greeting);
@@ -49,8 +49,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     assertEquals(Prefix + Hello, this.greeting);
 
     final Completes<Integer> one = uc.getOne();
-    one.after(() -> one.outcome() + 1)
-       .andThen((Integer value) -> setValue(value));
+    one.after((value) -> one.outcome() + 1).andThenConsume((value) -> setValue(value));
     untilOne.completes();
     assertNotEquals(new Integer(1), one.outcome());
     assertNotEquals(1, this.value);
@@ -59,20 +58,20 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   @Test
-  public void testThatTimeOutOccurs() {
+  public void testThatTimeOutOccursForSideEffects() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesCausesTimeoutActor.class, Definition.NoParameters), UsesCompletes.class);
 
     final Completes<Hello> helloCompletes =
             uc.getHello()
-              .after(2, new Hello(HelloNot), (Hello hello) -> setHello(hello.greeting))
-              .otherwise((Hello failedHello) -> { setHello(failedHello.greeting); return failedHello; });
+              .consumeAfter(2, new Hello(HelloNot), (hello) -> setHello(hello.greeting))
+              .otherwise((failedHello) -> { setHello(failedHello.greeting); return failedHello; });
     untilHello.completes();
     assertNotEquals(Hello, greeting);
     assertEquals(HelloNot, helloCompletes.outcome().greeting);
 
     final Completes<Integer> oneCompletes =
             uc.getOne()
-              .after(2, 0, (Integer value) -> setValue(value))
+              .consumeAfter(2, 0, (Integer value) -> setValue(value))
               .otherwise((Integer value) -> { untilOne.happened(); return 0; });
     try { Thread.sleep(100); } catch (Exception e) { }
     oneCompletes.with(1);
