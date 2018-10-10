@@ -106,8 +106,12 @@ final class LifeCycle {
   void sendStart(final Actor targetActor) {
     try {
       final Consumer<Startable> consumer = (actor) -> actor.start();
-      final Message message = new LocalMessage<Startable>(targetActor, Startable.class, consumer, "start()");
-      environment.mailbox.send(message);
+      if (!environment.mailbox.isPreallocated()) {
+        final Message message = new LocalMessage<Startable>(targetActor, Startable.class, consumer, "start()");
+        environment.mailbox.send(message);
+      } else {
+        environment.mailbox.send(targetActor, Startable.class, consumer, null, "start()");
+      }
     } catch (Throwable t) {
       environment.logger.log("vlingo/actors: Actor start() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, targetActor, t));
