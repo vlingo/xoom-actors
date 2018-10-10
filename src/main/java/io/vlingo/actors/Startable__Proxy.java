@@ -21,6 +21,7 @@ public class Startable__Proxy implements Startable {
   @Override
   public void start() {
     final Consumer<Startable> consumer = (actor) -> actor.start();
-    mailbox.send(new LocalMessage<Startable>(actor, Startable.class, consumer, "start()"));
+    if (mailbox.isPreallocated()) { mailbox.send(actor, Startable.class, consumer, null, "start()"); }
+    else { mailbox.send(new LocalMessage<Startable>(actor, Startable.class, consumer, "start()")); }
   }
 }

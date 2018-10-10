@@ -22,7 +22,8 @@ public class Cancellable__Proxy implements Cancellable {
   public boolean cancel() {
     if (!actor.isStopped()) {
       final Consumer<Cancellable> consumer = (actor) -> actor.cancel();
-      mailbox.send(new LocalMessage<Cancellable>(actor, Cancellable.class, consumer, "cancel()"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Cancellable.class, consumer, null, "cancel()"); }
+      else { mailbox.send(new LocalMessage<Cancellable>(actor, Cancellable.class, consumer, "cancel()")); }
       return true;
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "cancel()"));

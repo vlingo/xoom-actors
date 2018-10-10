@@ -22,7 +22,8 @@ public class DeadLettersListener__Proxy implements DeadLettersListener {
   public void handle(final DeadLetter deadLetter) {
     if (!actor.isStopped()) {
       final Consumer<DeadLettersListener> consumer = (actor) -> actor.handle(deadLetter);
-      mailbox.send(new LocalMessage<DeadLettersListener>(actor, DeadLettersListener.class, consumer, "handle(DeadLetter)"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLettersListener.class, consumer, null, "handle(DeadLetter)"); }
+      else { mailbox.send(new LocalMessage<DeadLettersListener>(actor, DeadLettersListener.class, consumer, "handle(DeadLetter)")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "handle(DeadLetter)"));
     }

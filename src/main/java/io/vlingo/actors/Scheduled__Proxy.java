@@ -24,7 +24,8 @@ public class Scheduled__Proxy implements Scheduled {
   public void intervalSignal(final Scheduled scheduled, final Object data) {
     if (!actor.isStopped()) {
       final Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(scheduled, data);
-      mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, representationIntervalSignal1));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Scheduled.class, consumer, null, representationIntervalSignal1); }
+      else { mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, representationIntervalSignal1)); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, representationIntervalSignal1));
     }

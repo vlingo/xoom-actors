@@ -27,7 +27,8 @@ public class DeadLetters__Proxy implements DeadLetters {
   public void stop() {
     if (!actor.isStopped()) {
       final Consumer<DeadLetters> consumer = (actor) -> actor.stop();
-      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "stop()"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, "stop()"); }
+      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "stop()")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "stop()"));
     }
@@ -37,7 +38,8 @@ public class DeadLetters__Proxy implements DeadLetters {
   public void failedDelivery(final DeadLetter deadLetter) {
     if (!actor.isStopped()) {
       final Consumer<DeadLetters> consumer = (actor) -> actor.failedDelivery(deadLetter);
-      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "failedDelivery(DeadLetter)"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, "failedDelivery(DeadLetter)"); }
+      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "failedDelivery(DeadLetter)")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "failedDelivery(DeadLetter)"));
     }
@@ -47,7 +49,8 @@ public class DeadLetters__Proxy implements DeadLetters {
   public void registerListener(final DeadLettersListener listener) {
     if (!actor.isStopped()) {
       final Consumer<DeadLetters> consumer = (actor) -> actor.registerListener(listener);
-      mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "registerListener(DeadLettersListener)"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, "registerListener(DeadLettersListener)"); }
+      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "registerListener(DeadLettersListener)")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "registerListener(DeadLettersListener)"));
     }

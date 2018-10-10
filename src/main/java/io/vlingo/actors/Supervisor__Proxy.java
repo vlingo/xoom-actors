@@ -23,7 +23,8 @@ public class Supervisor__Proxy implements Supervisor {
   public void inform(final Throwable throwable, final Supervised supervised) {
     if (!actor.isStopped()) {
       final Consumer<Supervisor> consumer = (actor) -> actor.inform(throwable, supervised);
-      mailbox.send(new LocalMessage<Supervisor>(actor, Supervisor.class, consumer, representationInform1));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Supervisor.class, consumer, null, representationInform1); }
+      else { mailbox.send(new LocalMessage<Supervisor>(actor, Supervisor.class, consumer, representationInform1)); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, representationInform1));
     }

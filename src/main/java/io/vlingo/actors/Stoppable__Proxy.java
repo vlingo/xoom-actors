@@ -27,7 +27,8 @@ public class Stoppable__Proxy implements Stoppable {
   public void stop() {
     if (!actor.isStopped()) {
       final Consumer<Stoppable> consumer = (actor) -> actor.stop();
-      mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "stop()"));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, "stop()"); }
+      else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "stop()")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "stop()"));
     }

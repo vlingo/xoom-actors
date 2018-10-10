@@ -33,7 +33,8 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.actorOf(arg0, arg1);
       final Completes<T> completes = new BasicCompletes<>(actor.scheduler());
-      mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, completes, actorOfRepresentation1));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, completes, actorOfRepresentation1); }
+      else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, completes, actorOfRepresentation1)); }
       return completes;
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, actorOfRepresentation1));

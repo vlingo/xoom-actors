@@ -30,7 +30,8 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   public void stop() {
     if (!actor.isStopped()) {
       final Consumer<Stoppable> consumer = (actor) -> actor.stop();
-      mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, representationStop1));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, representationStop1); }
+      else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, representationStop1)); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, representationStop1));
     }
@@ -40,7 +41,8 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   public void with(final Object outcome) {
     if (!actor.isStopped()) {
       final Consumer<CompletesEventually> consumer = (actor) -> actor.with(outcome);
-      mailbox.send(new LocalMessage<CompletesEventually>(actor, CompletesEventually.class, consumer, representationWith2));
+      if (mailbox.isPreallocated()) { mailbox.send(actor, CompletesEventually.class, consumer, null, representationWith2); }
+      else { mailbox.send(new LocalMessage<CompletesEventually>(actor, CompletesEventually.class, consumer, representationWith2)); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, representationWith2));
     }
