@@ -9,7 +9,6 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public interface Completes<T> {
   static <T> Completes<T> using(final Scheduler scheduler) {
@@ -43,26 +42,23 @@ public interface Completes<T> {
   static <T> Completes<T> repeatableWithFailure() {
     return new RepeatableCompletes<T>((T) null, false);
   }
-
-  Completes<T> after(final Supplier<T> supplier);
-  Completes<T> after(final long timeout, final Supplier<T> supplier);
-  Completes<T> after(final T failedOutcomeValue, final Supplier<T> supplier);
-  Completes<T> after(final long timeout, final T failedOutcomeValue, final Supplier<T> supplier);
-  Completes<T> after(final Consumer<T> consumer);
-  Completes<T> after(final long timeout, final Consumer<T> consumer);
-  Completes<T> after(final T failedOutcomeValue, final Consumer<T> consumer);
-  Completes<T> after(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
+  
   Completes<T> after(final Function<T,T> function);
   Completes<T> after(final long timeout, final Function<T,T> function);
   Completes<T> after(final T failedOutcomeValue, final Function<T,T> function);
   Completes<T> after(final long timeout, final T failedOutcomeValue, final Function<T,T> function);
-  Completes<T> andThen(final Consumer<T> consumer);
   Completes<T> andThen(final Function<T,T> function);
-  Completes<T> atLast(final Consumer<T> consumer);
-  Completes<T> atLast(final Supplier<T> supplier);
   Completes<T> atLast(final Function<T,T> function);
   Completes<T> otherwise(final Function<T,T> function);
-  Completes<T> uponException(final Function<Exception,T> function);
+  Completes<T> exception(final Function<Exception,T> function);
+
+  Completes<T> consumeAfter(final Consumer<T> consumer);
+  Completes<T> consumeAfter(final long timeout, final Consumer<T> consumer);
+  Completes<T> consumeAfter(final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> consumeAfter(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> andThenConsume(final Consumer<T> consumer);
+  Completes<T> atLastConsume(final Consumer<T> consumer);
+
   T await();
   T await(final long timeout);
   boolean isCompleted();
