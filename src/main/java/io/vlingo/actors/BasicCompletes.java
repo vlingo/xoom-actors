@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class BasicCompletes<T> implements Completes<T> {
   protected final ActiveState<T> state;
@@ -50,66 +49,6 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
-  public Completes<T> after(final Supplier<T> supplier) {
-    after(-1L, null, supplier);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final long timeout, final Supplier<T> supplier) {
-    after(timeout, null, supplier);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final T failedOutcomeValue, final Supplier<T> supplier) {
-    after(-1L, failedOutcomeValue, supplier);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final long timeout, final T failedOutcomeValue, final Supplier<T> supplier) {
-    state.failedValue(failedOutcomeValue);
-    state.action(Action.with(supplier));
-    if (state.isCompleted()) {
-      state.completeActions();
-    } else {
-      state.startTimer(timeout);
-    }
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final Consumer<T> consumer) {
-    after(-1L, null, consumer);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final long timeout, final Consumer<T> consumer) {
-    after(timeout, null, consumer);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final T failedOutcomeValue, final Consumer<T> consumer) {
-    after(-1L, failedOutcomeValue, consumer);
-    return this;
-  }
-
-  @Override
-  public Completes<T> after(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer) {
-    state.failedValue(failedOutcomeValue);
-    state.action(Action.with(consumer));
-    if (state.isCompleted()) {
-      state.completeActions();
-    } else {
-      state.startTimer(timeout);
-    }
-    return this;
-  }
-
-  @Override
   public Completes<T> after(final Function<T,T> function) {
     return after(-1L, null, function);
   }
@@ -137,35 +76,8 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
-  public Completes<T> andThen(final Consumer<T> consumer) {
-    state.action(Action.with(consumer));
-    if (state.isCompleted()) {
-      state.completeActions();
-    }
-    return this;
-  }
-
-  @Override
   public Completes<T> andThen(final Function<T,T> function) {
     state.action(Action.with(function));
-    if (state.isCompleted()) {
-      state.completeActions();
-    }
-    return this;
-  }
-
-  @Override
-  public Completes<T> atLast(final Supplier<T> supplier) {
-    state.action(Action.with(supplier));
-    if (state.isCompleted()) {
-      state.completeActions();
-    }
-    return this;
-  }
-
-  @Override
-  public Completes<T> atLast(final Consumer<T> consumer) {
-    state.action(Action.with(consumer));
     if (state.isCompleted()) {
       state.completeActions();
     }
@@ -188,8 +100,53 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
-  public Completes<T> uponException(final Function<Exception, T> function) {
+  public Completes<T> exception(final Function<Exception,T> function) {
     state.exceptionAction(function);
+    return this;
+  }
+
+  @Override
+  public Completes<T> consumeAfter(final Consumer<T> consumer) {
+    return consumeAfter(-1, null, consumer);
+  }
+
+  @Override
+  public Completes<T> consumeAfter(final long timeout, final Consumer<T> consumer) {
+    return consumeAfter(timeout, null, consumer);
+  }
+
+  @Override
+  public Completes<T> consumeAfter(final T failedOutcomeValue, final Consumer<T> consumer) {
+    return consumeAfter(-1, failedOutcomeValue, consumer);
+  }
+
+  @Override
+  public Completes<T> consumeAfter(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer) {
+    state.failedValue(failedOutcomeValue);
+    state.action(Action.with(consumer));
+    if (state.isCompleted()) {
+      state.completeActions();
+    } else {
+      state.startTimer(timeout);
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> andThenConsume(final Consumer<T> consumer) {
+    state.action(Action.with(consumer));
+    if (state.isCompleted()) {
+      state.completeActions();
+    }
+    return this;
+  }
+
+  @Override
+  public Completes<T> atLastConsume(final Consumer<T> consumer) {
+    state.action(Action.with(consumer));
+    if (state.isCompleted()) {
+      state.completeActions();
+    }
     return this;
   }
 
@@ -309,15 +266,6 @@ public class BasicCompletes<T> implements Completes<T> {
     boolean isFunction() {
       return (function instanceof Function);
     }
-
-    @SuppressWarnings("unchecked")
-    Supplier<T> asSupplier() {
-      return (Supplier<T>) function;
-    }
-
-    boolean isSupplier() {
-      return (function instanceof Supplier);
-    }
   }
 
   protected static interface ActiveState<T> {
@@ -357,9 +305,9 @@ public class BasicCompletes<T> implements Completes<T> {
     private final AtomicBoolean executingActions;
     private final AtomicBoolean failed;
     private T failedOutcomeValue;
-    private Function<T,T> failureAction;
+    private Function<T,Completes<?>> failureAction;
     private AtomicReference<Exception> exception;
-    private Function<Exception,T> exceptionAction;
+    private Function<Exception,?> exceptionAction;
     private final AtomicReference<T> outcome;
     private Scheduler scheduler;
     private final AtomicBoolean timedOut;
@@ -458,18 +406,20 @@ public class BasicCompletes<T> implements Completes<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void failureAction(final Function<T,T> function) {
-      this.failureAction = function;
+      this.failureAction = Function.class.cast(function); // this really, really stinks
       if (isCompleted() && hasFailed()) {
         failureAction();
       }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void failureAction() {
       failed.set(true);
       if (failureAction != null) {
-        outcome.set(failureAction.apply(outcome.get()));
+        outcome.set((T) failureAction.apply(outcome.get()));
       }
     }
 
@@ -495,7 +445,7 @@ public class BasicCompletes<T> implements Completes<T> {
     }
 
     @Override
-    public void exceptionAction(final Function<Exception, T> function) {
+    public void exceptionAction(final Function<Exception,T> function) {
       exceptionAction = function;
       if (hasException()) {
         handleException(exception.get());
@@ -503,12 +453,13 @@ public class BasicCompletes<T> implements Completes<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void handleException(final Exception e) {
       exception.set(e);
       if (exceptionAction != null) {
         failed.set(true);
         actions.clear();
-        outcome.set(exceptionAction.apply(e));
+        outcome.set((T) exceptionAction.apply(e));
         completed.set(true);
       }
     }
@@ -571,9 +522,7 @@ public class BasicCompletes<T> implements Completes<T> {
           outcome(action.defaultValue);
         } else {
           try {
-            if (action.isSupplier()) {
-              outcome.set(action.asSupplier().get());
-            } else if (action.isConsumer()) {
+            if (action.isConsumer()) {
               action.asConsumer().accept(outcome.get());
             } else if (action.isFunction()) {
               outcome.set(action.asFunction().apply(outcome.get()));
