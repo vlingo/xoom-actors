@@ -32,7 +32,7 @@ public class ActorEnvironmentTest {
     
     final Definition actorDefinition = (Definition) state.valueOf("definition");
     
-    assertEquals(0, TestWorld.allMessagesFor(env.address()).size());
+    assertEquals(0, TestWorld.Instance.get().allMessagesFor(env.address()).size());
     
     assertEquals(world.world().addressFactory().testNextIdValue() - 1, ((Address) state.valueOf("address")).id());
     
@@ -53,7 +53,7 @@ public class ActorEnvironmentTest {
 
     TestState state = env.viewTestState();
     
-    assertEquals(0, TestWorld.allMessagesFor(env.address()).size());
+    assertEquals(0, TestWorld.Instance.get().allMessagesFor(env.address()).size());
     
     assertNotNull(state.valueOf("address"));
     assertNull(state.valueOf("defintion"));

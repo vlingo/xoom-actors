@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
 
 public class DeadLettersTest {
@@ -26,18 +27,33 @@ public class DeadLettersTest {
   
   @Test
   public void testStoppedActorToDeadLetters() throws Exception {
+    final TestResult result = new TestResult(3);
+    nothing = world.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
+    listener = world.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.parameters(result), "deadletters-listener"), DeadLettersListener.class);
+    world.world().deadLetters().registerListener(listener.actor());
+
     nothing.actor().stop();
     nothing.actor().doNothing(1);
     nothing.actor().doNothing(2);
     nothing.actor().doNothing(3);
-    
-    DeadLettersListenerActor.waitForExpectedMessages(3);
-    
-    assertEquals(3, DeadLettersListenerActor.deadLetters.size());
-    
-    for (final DeadLetter deadLetter : DeadLettersListenerActor.deadLetters) {
+
+    result.until.completes();
+
+    assertEquals(3, result.deadLetters.size());
+
+    for (final DeadLetter deadLetter : result.deadLetters) {
       assertEquals("doNothing(int)", deadLetter.representation);
     }
+  }
+
+  @Before
+  public void setUp() {
+    world = TestWorld.start("test-dead-letters");
+  }
+  
+  @After
+  public void tearDown() {
+    world.terminate();
   }
   
   public static interface Nothing extends Stoppable {
@@ -45,39 +61,32 @@ public class DeadLettersTest {
   }
 
   public static class NothingActor extends Actor implements Nothing {
+
     @Override
-    public void doNothing(final int withValue) { }
+    public void doNothing(final int value) { }
   }
 
   public static class DeadLettersListenerActor extends Actor implements DeadLettersListener {
-    protected static final List<DeadLetter> deadLetters = new ArrayList<DeadLetter>();
-    
+    private final TestResult result;
+
+    public DeadLettersListenerActor(final TestResult result) {
+      this.result = result;
+    }
+
     @Override
     public void handle(final DeadLetter deadLetter) {
-      deadLetters.add(deadLetter);
-    }
-    
-    protected static void waitForExpectedMessages(final int count) {
-      for (int idx = 0; idx < 1000; ++idx) {
-        if (deadLetters.size() >= count) {
-          return;
-        } else {
-          try { Thread.sleep(10L); } catch (Exception e) { }
-        }
-      }
+      result.deadLetters.add(deadLetter);
+      result.until.happened();
     }
   }
-  
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test-dead-letters");
-    nothing = world.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
-    listener = world.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.NoParameters, "deadletters-listener"), DeadLettersListener.class);
-    world.world().deadLetters().registerListener(listener.actor());
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
+
+  public static class TestResult {
+    public final List<DeadLetter> deadLetters;
+    public final TestUntil until;
+
+    public TestResult(final int happenings) {
+      this.deadLetters = new ArrayList<>();
+      this.until = TestUntil.happenings(happenings);
+    }
   }
 }

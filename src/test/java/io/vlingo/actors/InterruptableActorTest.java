@@ -35,7 +35,7 @@ public class InterruptableActorTest {
       interruptable.actor().doThisOrThat();
     }
     
-    assertEquals(6, TestWorld.allMessagesFor(interruptable.address()).size()); // includes stop()
+    assertEquals(6, TestWorld.Instance.get().allMessagesFor(interruptable.address()).size()); // includes stop()
     
     assertEquals(5, (int) interruptable.viewTestState().valueOf("totalReceived"));
   }

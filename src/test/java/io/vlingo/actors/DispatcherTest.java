@@ -33,7 +33,7 @@ public class DispatcherTest {
       test.actor().tellMeSomething("Hello!", i);
     }
     
-    assertEquals(total100Thousand, TestWorld.allMessagesFor(test.address()).size());
+    assertEquals(total100Thousand, TestWorld.Instance.get().allMessagesFor(test.address()).size());
     
     assertEquals(total100Thousand, (int) test.viewTestState().valueOf("times"));
   }
@@ -49,7 +49,7 @@ public class DispatcherTest {
       test.actor().tellWhatITellYou(i);
     }
 
-    assertEquals(total100Thousand, TestWorld.allMessagesFor(test.address()).size());
+    assertEquals(total100Thousand, TestWorld.Instance.get().allMessagesFor(test.address()).size());
     
     assertEquals(total100Thousand - 1, (int) test.viewTestState().valueOf("lastValue"));
   }

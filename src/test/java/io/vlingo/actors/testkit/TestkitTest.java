@@ -32,7 +32,7 @@ public class TestkitTest {
     pingCounter.actor().ping();
     pingCounter.actor().ping();
     
-    assertEquals(3, TestWorld.allMessagesFor(pingCounter.address()).size());
+    assertEquals(3, TestWorld.Instance.get().allMessagesFor(pingCounter.address()).size());
     
     assertEquals(3, (int) pingCounter.viewTestState().valueOf("count"));
   }
@@ -53,7 +53,7 @@ public class TestkitTest {
     pingCounter.actor().ping();
     pingCounter.actor().ping();
     
-    assertEquals(3, TestWorld.allMessagesFor(pingCounter.address()).size());
+    assertEquals(3, TestWorld.Instance.get().allMessagesFor(pingCounter.address()).size());
     
     assertEquals(3, (int) pingCounter.viewTestState().valueOf("count"));
     

@@ -57,9 +57,9 @@ public class StageNamedTest {
     
     final Stage stageHolder = (Stage) result.viewTestState().valueOf("stageHolder");
     
-    assertEquals(1, TestWorld.allMessagesFor(query.address()).size());
+    assertEquals(1, TestWorld.Instance.get().allMessagesFor(query.address()).size());
     
-    assertEquals(1, TestWorld.allMessagesFor(result.address()).size());
+    assertEquals(1, TestWorld.Instance.get().allMessagesFor(result.address()).size());
     
     assertNotSame(defaultStage, stageHolder);
     assertSame(stageHolder, testWorld.stageNamed(uniqueName));
