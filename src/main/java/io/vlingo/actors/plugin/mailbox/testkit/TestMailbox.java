@@ -16,12 +16,15 @@ import io.vlingo.actors.testkit.TestWorld;
 
 public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
-  
+
   private final List<String> lifecycleMessages = Arrays.asList("start", "afterStop", "beforeRestart", "afterRestart");
   private boolean closed;
-  
-  public TestMailbox() { }
-  
+  private final TestWorld world;
+
+  public TestMailbox() {
+    this.world = TestWorld.Instance.get();
+  }
+
   @Override
   public void run() {
     throw new UnsupportedOperationException("TestMailbox does not support this operation.");
@@ -52,7 +55,7 @@ public class TestMailbox implements Mailbox {
     try {
       if (!message.actor().isStopped()) {
         if (!isLifecycleMessage(message)) {
-          TestWorld.track(message);
+          world.track(message);
         }
       }
 
