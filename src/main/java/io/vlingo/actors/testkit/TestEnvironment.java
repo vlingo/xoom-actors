@@ -15,12 +15,12 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 public class TestEnvironment extends Environment {
   public TestEnvironment() {
     super(
-            TestWorld.testWorld.world().stage(),
-            TestWorld.testWorld.world().addressFactory().uniqueWith("test"),
+            TestWorld.Instance.get().world().stage(),
+            TestWorld.Instance.get().world().addressFactory().uniqueWith("test"),
             Definition.has(null, Definition.NoParameters),
-            TestWorld.testWorld.world().defaultParent(),
+            TestWorld.Instance.get().world().defaultParent(),
             new TestMailbox(),
-            TestWorld.testWorld.world().defaultSupervisor(),
+            TestWorld.Instance.get().world().defaultSupervisor(),
             JDKLogger.testInstance());
   }
 }
