@@ -25,18 +25,11 @@ import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailboxPlugin;
 
 public class TestWorld implements AutoCloseable {
-  public static TestWorld testWorld;
-  
-  private static final Map<Long, List<Message>> actorMessages = new HashMap<>();
-  
+  public static ThreadLocal<TestWorld> Instance = new ThreadLocal<>();
+
+  private final Map<Long, List<Message>> actorMessages;
   private final MailboxProvider mailboxProvider;
   private final World world;
-
-  public static List<Message> allMessagesFor(final Address address) {
-    final List<Message> all = actorMessages.get(address.id());
-    
-    return all == null ? new ArrayList<>() : all;
-  }
 
   public static TestWorld start(final String name) {
     final World world = World.start(name);
@@ -65,12 +58,6 @@ public class TestWorld implements AutoCloseable {
     return new TestWorld(World.start(name, Configuration.define()), name);
   }
 
-  public static void track(final Message message) {
-    final long id = message.actor().address().id();
-    final List<Message> messages = actorMessages.computeIfAbsent(id, k -> new ArrayList<>());
-    messages.add(message);
-  }
-
   public <T> TestActor<T> actorFor(final Definition definition, final Class<T> protocol) {
     if (world.isTerminated()) {
       throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
@@ -85,6 +72,23 @@ public class TestWorld implements AutoCloseable {
     }
 
     return world.stage().testActorFor(definition, protocols);
+  }
+
+  public List<Message> allMessagesFor(final Address address) {
+    final List<Message> all = actorMessages.get(address.id());
+    
+    return all == null ? new ArrayList<>() : all;
+  }
+
+  public void clearTrackedMessages() {
+    actorMessages.clear();
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (!isTerminated()) {
+      terminate();
+    }
   }
 
   public Logger defaultLogger() {
@@ -109,8 +113,14 @@ public class TestWorld implements AutoCloseable {
 
   public void terminate() {
     world.terminate();
-    testWorld = null;
     actorMessages.clear();
+    Instance.set(null);
+  }
+
+  public void track(final Message message) {
+    final long id = message.actor().address().id();
+    final List<Message> messages = actorMessages.computeIfAbsent(id, k -> new ArrayList<>());
+    messages.add(message);
   }
 
   public World world() {
@@ -121,21 +131,10 @@ public class TestWorld implements AutoCloseable {
     return this.mailboxProvider;
   }
 
-  public void clearTrackedMessages() {
-    actorMessages.clear();
-  }
-
   private TestWorld(final World world, final String name) {
+    Instance.set(this);
     this.world = world;
+    this.actorMessages = new HashMap<>();
     this.mailboxProvider = new TestMailboxPlugin(this.world);
-    
-    testWorld = this;
-  }
-
-  @Override
-  public void close() throws Exception {
-    if (!isTerminated()) {
-      terminate();
-    }
   }
 }
