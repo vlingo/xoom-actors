@@ -42,22 +42,24 @@ public interface Completes<T> {
   static <T> Completes<T> repeatableWithFailure() {
     return new RepeatableCompletes<T>((T) null, false);
   }
-  
-  Completes<T> after(final Function<T,T> function);
-  Completes<T> after(final long timeout, final Function<T,T> function);
-  Completes<T> after(final T failedOutcomeValue, final Function<T,T> function);
-  Completes<T> after(final long timeout, final T failedOutcomeValue, final Function<T,T> function);
-  Completes<T> andThen(final Function<T,T> function);
-  Completes<T> atLast(final Function<T,T> function);
-  Completes<T> otherwise(final Function<T,T> function);
-  Completes<T> exception(final Function<Exception,T> function);
 
-  Completes<T> consumeAfter(final Consumer<T> consumer);
-  Completes<T> consumeAfter(final long timeout, final Consumer<T> consumer);
-  Completes<T> consumeAfter(final T failedOutcomeValue, final Consumer<T> consumer);
-  Completes<T> consumeAfter(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> andThen(final long timeout, final T failedOutcomeValue, final Function<T,T> function);
+  Completes<T> andThen(final T failedOutcomeValue, final Function<T,T> function);
+  Completes<T> andThen(final long timeout, final Function<T,T> function);
+  Completes<T> andThen(final Function<T,T> function);
+
+  Completes<T> andThenConsume(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> andThenConsume(final T failedOutcomeValue, final Consumer<T> consumer);
+  Completes<T> andThenConsume(final long timeout, final Consumer<T> consumer);
   Completes<T> andThenConsume(final Consumer<T> consumer);
-  Completes<T> atLastConsume(final Consumer<T> consumer);
+
+  <F,O> O andThenInto(final long timeout, final F failedOutcomeValue, final Function<T,O> function);
+  <F,O> O andThenInto(final F failedOutcomeValue, final Function<T,O> function);
+  <O> O andThenInto(final long timeout, final Function<T,O> function);
+  <O> O andThenInto(final Function<T,O> function);
+
+  Completes<T> otherwise(final Function<T,T> function);
+  Completes<T> recoverFrom(final Function<Exception,T> function);
 
   T await();
   T await(final long timeout);
