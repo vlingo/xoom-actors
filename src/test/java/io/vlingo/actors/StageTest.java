@@ -73,34 +73,34 @@ public class StageTest {
     
     final TestUntil until = TestUntil.happenings(7);
 
-    world.stage().actorOf(address5, NoProtocol.class).consumeAfter(actor -> {
+    world.stage().actorOf(address5, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
-    world.stage().actorOf(address4, NoProtocol.class).consumeAfter(actor -> {
+    world.stage().actorOf(address4, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
-    world.stage().actorOf(address3, NoProtocol.class).consumeAfter(actor -> {
+    world.stage().actorOf(address3, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
-    world.stage().actorOf(address2, NoProtocol.class).consumeAfter(actor -> {
+    world.stage().actorOf(address2, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
-    world.stage().actorOf(address1, NoProtocol.class).consumeAfter(actor -> {
+    world.stage().actorOf(address1, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
       ++scanFound;
       until.happened();
     });
 
     world.stage().actorOf(address6, NoProtocol.class)
-      .consumeAfter(actor -> {
+      .andThenConsume(actor -> {
         assertNull(actor);
         until.happened();
       })
@@ -110,7 +110,7 @@ public class StageTest {
         return null;
       });
     world.stage().actorOf(address7, NoProtocol.class)
-      .after(actor -> {
+      .andThen(actor -> {
         assertNull(actor);
         until.happened();
         return null;
