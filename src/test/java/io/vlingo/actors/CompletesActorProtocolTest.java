@@ -28,10 +28,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testReturnsCompletesForSideEffects() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
 
-    uc.getHello().consumeAfter((hello) -> setHello(hello.greeting));
+    uc.getHello().andThenConsume((hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertEquals(Hello, greeting);
-    uc.getOne().consumeAfter((value) -> setValue(value));
+    uc.getOne().andThenConsume((value) -> setValue(value));
     untilOne.completes();
     assertEquals(1, value);
   }
@@ -40,7 +40,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testAfterAndThenCompletesForSideEffects() {
     final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
     final Completes<Hello> helloCompletes = uc.getHello();
-    helloCompletes.after((hello) -> new Hello(Prefix + helloCompletes.outcome().greeting))
+    helloCompletes.andThen((hello) -> new Hello(Prefix + helloCompletes.outcome().greeting))
          .andThenConsume((hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
@@ -49,7 +49,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     assertEquals(Prefix + Hello, this.greeting);
 
     final Completes<Integer> one = uc.getOne();
-    one.after((value) -> one.outcome() + 1).andThenConsume((value) -> setValue(value));
+    one.andThen((value) -> one.outcome() + 1).andThenConsume((value) -> setValue(value));
     untilOne.completes();
     assertNotEquals(new Integer(1), one.outcome());
     assertNotEquals(1, this.value);
@@ -63,7 +63,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     final Completes<Hello> helloCompletes =
             uc.getHello()
-              .consumeAfter(2, new Hello(HelloNot), (hello) -> setHello(hello.greeting))
+              .andThenConsume(2, new Hello(HelloNot), (hello) -> setHello(hello.greeting))
               .otherwise((failedHello) -> { setHello(failedHello.greeting); return failedHello; });
     untilHello.completes();
     assertNotEquals(Hello, greeting);
@@ -71,7 +71,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     final Completes<Integer> oneCompletes =
             uc.getOne()
-              .consumeAfter(2, 0, (Integer value) -> setValue(value))
+              .andThenConsume(2, 0, (Integer value) -> setValue(value))
               .otherwise((Integer value) -> { untilOne.happened(); return 0; });
     try { Thread.sleep(100); } catch (Exception e) { }
     oneCompletes.with(1);
