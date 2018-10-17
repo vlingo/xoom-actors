@@ -59,6 +59,7 @@ public interface Completes<T> {
   <O> O andThenInto(final Function<T,O> function);
 
   Completes<T> otherwise(final Function<T,T> function);
+  Completes<T> otherwiseConsume(final Consumer<T> consumer);
   Completes<T> recoverFrom(final Function<Exception,T> function);
 
   T await();
