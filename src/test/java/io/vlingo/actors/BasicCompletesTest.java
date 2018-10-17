@@ -14,9 +14,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import io.vlingo.actors.testkit.TestUntil;
+
 public class BasicCompletesTest {
   private Integer andThenValue;
   private Integer failureValue;
+  private Object failedOutcome;
 
   @Test
   public void testCompletesWith() {
@@ -29,7 +32,7 @@ public class BasicCompletesTest {
   public void testCompletesAfterFunction() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
-    completes.after((value) -> value * 2);
+    completes.andThen((value) -> value * 2);
 
     completes.with(5);
 
@@ -40,7 +43,7 @@ public class BasicCompletesTest {
   public void testCompletesAfterConsumer() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
     
-    completes.after((value) -> andThenValue = value);
+    completes.andThen((value) -> andThenValue = value);
     
     completes.with(5);
     
@@ -52,7 +55,7 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
     completes
-      .after((value) -> value * 2)
+      .andThen((value) -> value * 2)
       .andThen((value) -> andThenValue = value);
     
     completes.with(5);
@@ -68,7 +71,7 @@ public class BasicCompletesTest {
     final Holder holder = new Holder();
 
     completes
-      .after((value) -> value * 2)
+      .andThen((value) -> value * 2)
       .andThen((value) -> { holder.hold(value); return value; } );
 
     completes.with(5);
@@ -79,11 +82,107 @@ public class BasicCompletesTest {
   }
 
   @Test
+  public void testThatCompletesPipesToNestedAsyncCompletes() {
+    final TestUntil until = TestUntil.happenings(1);
+
+    final TripleValue triple =
+            World
+              .startWithDefaults("pipe")
+              .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
+
+    final Completes<Integer> completes = new BasicCompletes<>(0);
+
+    completes
+      .andThen((value) -> value * 2)
+      .andThenConsume((value) -> andThenValue = value)
+      .andThenInto((value) -> triple.compute(value))
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)))
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)))
+      .andThenConsume((value) -> {
+        assertEquals("270", value);
+        until.happened();
+      });
+
+    completes.with(5);
+    completes.await();
+    until.completes();
+    assertEquals(new Integer(10), andThenValue);
+  }
+
+  @Test
+  public void testThatCompletesFailsNestedAsyncCompletes() {
+    final TripleValue triple =
+            World
+              .startWithDefaults("pipe")
+              .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
+
+    final TestUntil until = TestUntil.happenings(1);
+
+    final Completes<Integer> completes1 = new BasicCompletes<>(0);
+
+    completes1
+      .andThen(new Integer(0), (value) -> value * 2)
+      .andThenInto("X-10", (value) -> triple.compute(value, false))
+      .otherwise((failed) -> {
+        failedOutcome = failed;
+        until.happened();
+        return failed;
+      })
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)))
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)));
+
+    completes1.with(5);
+    completes1.await();
+    until.completes();
+    assertEquals("X-10", failedOutcome);
+
+    until.resetHappeningsTo(1);
+
+    final Completes<Integer> completes2 = new BasicCompletes<>(0);
+
+    completes2
+      .andThen(new Integer(0), (value) -> value * 2)
+      .andThenInto((value) -> triple.compute(value))
+      .andThenInto("X-30", (value) -> triple.compute(Integer.parseInt(value), false))
+      .otherwise((failed) -> {
+        failedOutcome = failed;
+        until.happened();
+        return failed;
+      })
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)));
+
+    completes2.with(5);
+    completes2.await();
+    until.completes();
+    assertEquals("X-30", failedOutcome);
+
+    until.resetHappeningsTo(1);
+
+    final Completes<Integer> completes3 = new BasicCompletes<>(0);
+
+    completes3
+      .andThen(new Integer(0), (value) -> value * 2)
+      .andThenInto((value) -> triple.compute(value))
+      .andThenInto((value) -> triple.compute(Integer.parseInt(value)))
+      .andThenInto("X-90", (value) -> triple.compute(Integer.parseInt(value), false))
+      .otherwise((failed) -> {
+        failedOutcome = failed;
+        until.happened();
+        return failed;
+      });
+
+    completes3.with(5);
+    completes3.await();
+    until.completes();
+    assertEquals("X-90", failedOutcome);
+  }
+
+  @Test
   public void testOutcomeBeforeTimeout() {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(1000, (value) -> value * 2)
+      .andThen(1000, (value) -> value * 2)
       .andThen((value) -> andThenValue = value);
     
     completes.with(5);
@@ -98,7 +197,7 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(1, 0, (value) -> value * 2)
+      .andThen(1, 0, (value) -> value * 2)
       .andThen((value) -> andThenValue = value);
     
     Thread.sleep(100);
@@ -117,7 +216,7 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(null, (value) -> value * 2)
+      .andThen(null, (value) -> value * 2)
       .andThen((Integer value) -> andThenValue = value)
       .otherwise((failedValue) -> failureValue = 1000);
 
@@ -135,9 +234,9 @@ public class BasicCompletesTest {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
     
     completes
-      .after(null, (value) -> value * 2)
+      .andThen(null, (value) -> value * 2)
       .andThen((Integer value) -> { throw new IllegalStateException("" + (value * 2)); })
-      .exception((e) -> failureValue = Integer.parseInt(e.getMessage()));
+      .recoverFrom((e) -> failureValue = Integer.parseInt(e.getMessage()));
 
     completes.with(2);
 
@@ -184,6 +283,26 @@ public class BasicCompletesTest {
   private class Holder {
     private void hold(final Integer value) {
       andThenValue = value;
+    }
+  }
+  
+  public static interface TripleValue {
+    Completes<String> compute(final Integer value);
+    Completes<String> compute(final Integer value, final boolean succeed);
+  }
+
+  public static class TripleValueActor extends Actor implements TripleValue {
+    @Override
+    public Completes<String> compute(final Integer value) {
+      return completes().with("" + (value * 3));
+    }
+
+    @Override
+    public Completes<String> compute(final Integer value, final boolean succeed) {
+      if (!succeed) {
+        return completes().with("X-" + value);
+      }
+      return compute(value);
     }
   }
 }
