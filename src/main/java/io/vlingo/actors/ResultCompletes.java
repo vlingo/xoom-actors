@@ -16,62 +16,42 @@ public class ResultCompletes implements Completes<Object> {
   boolean outcomeSet = false;
 
   @Override
-  public Completes<Object> after(final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> after(final long timeout, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> after(final Object failedOutcomeValue, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> after(final long timeout, final Object failedOutcomeValue, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Completes<Object> andThen(final Function<Object,Object> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> atLast(Function<Object,Object> function) {
+  public Completes<Object> andThen(final long timeout, final Function<Object,Object> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> otherwise(final Function<Object,Object> function) {
+  public Completes<Object> andThen(final Object failedOutcomeValue, final Function<Object,Object> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> exception(final Function<Exception,Object> function) {
+  public Completes<Object> andThen(final long timeout, final Object failedOutcomeValue, final Function<Object,Object> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> consumeAfter(final Consumer<Object> consumer) {
+  public <F,O> O andThenInto(final long timeout, final F failedOutcomeValue, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> consumeAfter(final long timeout, final Consumer<Object> consumer) {
+  public <F,O> O andThenInto(final F failedOutcomeValue, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> consumeAfter(final Object failedOutcomeValue, final Consumer<Object> consumer) {
+  public <O> O andThenInto(final long timeout, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> consumeAfter(final long timeout, final Object failedOutcomeValue, final Consumer<Object> consumer) {
+  public <O> O andThenInto(final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
@@ -81,7 +61,32 @@ public class ResultCompletes implements Completes<Object> {
   }
 
   @Override
-  public Completes<Object> atLastConsume(final Consumer<Object> consumer) {
+  public Completes<Object> andThenConsume(final long timeout, final Consumer<Object> consumer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Completes<Object> andThenConsume(final Object failedOutcomeValue, final Consumer<Object> consumer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Completes<Object> andThenConsume(final long timeout, final Object failedOutcomeValue, final Consumer<Object> consumer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Completes<Object> otherwise(final Function<Object,Object> function) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Completes<Object> otherwiseConsume(final Consumer<Object> function) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Completes<Object> recoverFrom(final Function<Exception,Object> function) {
     throw new UnsupportedOperationException();
   }
 
