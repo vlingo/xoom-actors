@@ -45,6 +45,13 @@ public class ProxyGeneratorTest {
 
         assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy implements ProtocolWithGenerics<RuntimeException>"));
     }
+
+    @Test
+    public void testThatProxyImportsDependenciesFromGenerics() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
+
+        assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
+    }
 }
 
 interface ProtocolWithGenericMethods {
