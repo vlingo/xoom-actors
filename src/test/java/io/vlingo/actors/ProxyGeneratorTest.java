@@ -3,9 +3,11 @@ package io.vlingo.actors;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ProxyGeneratorTest {
@@ -50,7 +52,10 @@ public class ProxyGeneratorTest {
     public void testThatProxyImportsDependenciesFromGenerics() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
+        assertFalse("A generic type is imported", result.source.contains("import A;"));
+        assertFalse("B generic type is imported", result.source.contains("import B;"));
         assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
+        assertTrue("IOException is not imported", result.source.contains("import java.io.IOException;"));
     }
 }
 
@@ -58,6 +63,7 @@ interface ProtocolWithGenericMethods {
     Completes<Optional<List<Boolean>>> someMethod();
 }
 
-interface ProtocolWithGenerics<A extends RuntimeException> {
+interface ProtocolWithGenerics<A extends RuntimeException, B extends Optional<IOException>> {
     Completes<Optional<List<A>>> someMethod();
+    Completes<Optional<List<B>>> otherMethod();
 }

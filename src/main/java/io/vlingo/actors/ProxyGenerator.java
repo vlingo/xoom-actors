@@ -17,18 +17,13 @@ import static io.vlingo.common.compiler.DynaNaming.classnameFor;
 import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
@@ -366,13 +361,9 @@ public class ProxyGenerator implements AutoCloseable {
     final Set<String> imports = new TreeSet<>();
 
     for (final ReturnType returnType : returnTypes) {
-      if (!returnType.completes && returnType.acceptTypeImport()) {
-        imports.add("import " + returnType.type + ";\n");
-      }
-      if (returnType.acceptGenericImport()) {
-        imports.add("import " + returnType.outerGeneric + ";\n");
-        imports.add("import " + returnType.innerGeneric + ";\n");
-      }
+      returnType.dependenciesToImport.forEach(dependency -> {
+        imports.add("import " + dependency + ";\n");
+      });
     }
 
     return imports;
@@ -437,6 +428,8 @@ public class ProxyGenerator implements AutoCloseable {
     final String miniInnerGeneric;
     final String outerGeneric;
     final String type;
+    final Set<String> dependenciesToImport;
+    final Set<String> knownTypeParameters;
 
     ReturnType(final Method method) {
       final String outerType = method.getReturnType().getName();
@@ -446,14 +439,43 @@ public class ProxyGenerator implements AutoCloseable {
       this.innerGeneric = innerGenericType(this.fullGeneric);
       this.miniInnerGeneric = stripPackage(this.innerGeneric);
       this.outerGeneric = genericParameter(this.fullGeneric, outerType);
+
+      this.knownTypeParameters = findTypeParameters(method);
+      this.dependenciesToImport = findDependenciesOfMethod(method);
     }
 
-    public boolean acceptGenericImport() {
-      return !fullGeneric.isEmpty() && !isPrimitive() && !fullGeneric.startsWith("java.lang");
+    private Set<String> findTypeParameters(Method method) {
+      TypeVariable<? extends Class<?>>[] typeParameters = method.getDeclaringClass().getTypeParameters();
+      return Arrays.stream(typeParameters).map(TypeVariable::getName).collect(Collectors.toSet());
     }
 
-    public boolean acceptTypeImport() {
-      return !isPrimitive() && !type.startsWith("java.lang");
+    private Set<String> findGenericClassDependencies(Class<?> declaringClass) {
+      TypeVariable<? extends Class<?>>[] typeParameters = declaringClass.getTypeParameters();
+      return Arrays.stream(typeParameters).flatMap(typeVar -> {
+        Type[] bounds = typeVar.getBounds();
+        return Arrays.stream(bounds).flatMap(type -> findDependenciesOfType(type).stream());
+      }).collect(Collectors.toSet());
+    }
+
+    private Set<String> findDependenciesOfType(Type type) {
+      if (type instanceof ParameterizedType) {
+        ParameterizedType paramType = (ParameterizedType) type;
+        return Arrays.stream(paramType.getActualTypeArguments())
+                .flatMap(typeArg -> findDependenciesOfType(typeArg).stream())
+                .collect(Collectors.toSet());
+      } else {
+        return Arrays.stream(new String[] { type.getTypeName() }).collect(Collectors.toSet());
+      }
+    }
+
+    private Set<String> findDependenciesOfMethod(Method method) {
+      Set<String> fromClass = findGenericClassDependencies(method.getDeclaringClass());
+
+      String fullTypeName = method.getGenericReturnType().getTypeName().replaceAll("[<>]", ";;");
+      Set<String> methodDeps = new HashSet<>(Arrays.asList(fullTypeName.split(";;")));
+      fromClass.addAll(methodDeps);
+
+      return fromClass.stream().filter(e -> !knownTypeParameters.contains(e)).collect(Collectors.toSet());
     }
 
     private String genericParameter(final String genericTypeName, final String returnType) {
