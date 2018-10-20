@@ -16,22 +16,22 @@ public class ResultCompletes implements Completes<Object> {
   boolean outcomeSet = false;
 
   @Override
-  public Completes<Object> andThen(final Function<Object,Object> function) {
+  public <O> Completes<O> andThen(final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> andThen(final long timeout, final Function<Object,Object> function) {
+  public <O> Completes<O> andThen(final long timeout, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> andThen(final Object failedOutcomeValue, final Function<Object,Object> function) {
+  public <O> Completes<O> andThen(final Object failedOutcomeValue, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Completes<Object> andThen(final long timeout, final Object failedOutcomeValue, final Function<Object,Object> function) {
+  public <O> Completes<O> andThen(final long timeout, final Object failedOutcomeValue, final Function<Object,O> function) {
     throw new UnsupportedOperationException();
   }
 

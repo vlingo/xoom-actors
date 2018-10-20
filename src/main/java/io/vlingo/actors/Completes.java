@@ -43,10 +43,10 @@ public interface Completes<T> {
     return new RepeatableCompletes<T>((T) null, false);
   }
 
-  Completes<T> andThen(final long timeout, final T failedOutcomeValue, final Function<T,T> function);
-  Completes<T> andThen(final T failedOutcomeValue, final Function<T,T> function);
-  Completes<T> andThen(final long timeout, final Function<T,T> function);
-  Completes<T> andThen(final Function<T,T> function);
+  <O> Completes<O> andThen(final long timeout, final T failedOutcomeValue, final Function<T,O> function);
+  <O> Completes<O> andThen(final T failedOutcomeValue, final Function<T,O> function);
+  <O> Completes<O> andThen(final long timeout, final Function<T,O> function);
+  <O> Completes<O> andThen(final Function<T,O> function);
 
   Completes<T> andThenConsume(final long timeout, final T failedOutcomeValue, final Consumer<T> consumer);
   Completes<T> andThenConsume(final T failedOutcomeValue, final Consumer<T> consumer);

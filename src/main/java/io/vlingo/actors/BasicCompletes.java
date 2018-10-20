@@ -49,29 +49,23 @@ public class BasicCompletes<T> implements Completes<T> {
   }
 
   @Override
-  public Completes<T> andThen(final long timeout, final T failedOutcomeValue, final Function<T,T> function) {
-    state.failedValue(failedOutcomeValue);
-    state.action(Action.with(function));
-    if (state.isCompleted()) {
-      state.completeActions();
-    } else {
-      state.startTimer(timeout);
-    }
-    return this;
+  @SuppressWarnings("unchecked")
+  public <O> Completes<O> andThen(final long timeout, final T failedOutcomeValue, final Function<T,O> function) {
+    return Completes.withSuccess(andThenInto(timeout,failedOutcomeValue, function));
   }
 
   @Override
-  public Completes<T> andThen(final T failedOutcomeValue, final Function<T,T> function) {
+  public <O> Completes<O> andThen(final T failedOutcomeValue, final Function<T,O> function) {
     return andThen(-1L, failedOutcomeValue, function);
   }
 
   @Override
-  public Completes<T> andThen(final long timeout, final Function<T,T> function) {
+  public <O> Completes<O> andThen(final long timeout, final Function<T,O> function) {
     return andThen(timeout, null, function);
   }
 
   @Override
-  public Completes<T> andThen(final Function<T,T> function) {
+  public <O> Completes<O> andThen(final Function<T,O> function) {
     return andThen(-1L, null, function);
   }
 
