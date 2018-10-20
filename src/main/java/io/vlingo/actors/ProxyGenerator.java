@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import io.vlingo.actors.reflect.GenericParser;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
-import io.vlingo.common.fn.Tuple2;
 
 public class ProxyGenerator implements AutoCloseable {
   public static class Result {
@@ -125,7 +124,9 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.Mailbox;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
-    returnTypesToImports(protocolInterface).forEach(builder::append);
+    GenericParser.dependenciesOf(protocolInterface)
+            .map(type1 -> "import " + type1 + ";\n")
+            .collect(Collectors.toSet()).forEach(builder::append);
     return builder.toString();
   }
 
@@ -203,7 +204,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String parameterNamesFor(final Method method) {
-    return GenericParser.methodCallArgumentListTemplateOf(method);
+    return Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", ", "(", ")"));
   }
 
   private String parameterTypesFor(final Method method) {
@@ -251,8 +252,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private Class<?> readProtocolInterface(final String actorProtocol) throws Exception {
-    final Class<?> protocolInterface = urlClassLoader.loadClass(actorProtocol);
-    return protocolInterface;
+    return urlClassLoader.loadClass(actorProtocol);
   }
 
   private String representationStatements(final Method[] methods) {
@@ -274,12 +274,6 @@ public class ProxyGenerator implements AutoCloseable {
     }
 
     return builder.toString();
-  }
-
-  private Set<String> returnTypesToImports(final Class<?> protocolInterface) {
-    return GenericParser.dependenciesOf(protocolInterface)
-            .map(type -> "import " + type + ";\n")
-            .collect(Collectors.toSet());
   }
 
   private String returnValue(final Class<?> returnType) {
@@ -325,10 +319,8 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String rootOfGeneratedSources(final DynaType type) {
-    final String root = 
-            type == DynaType.Main ?
-                    Properties.properties.getProperty("proxy.generated.sources.main", GeneratedSources) :
-                    Properties.properties.getProperty("proxy.generated.sources.test", GeneratedTestSources);
-    return root;
+    return type == DynaType.Main ?
+            Properties.properties.getProperty("proxy.generated.sources.main", GeneratedSources) :
+            Properties.properties.getProperty("proxy.generated.sources.test", GeneratedTestSources);
   }
 }

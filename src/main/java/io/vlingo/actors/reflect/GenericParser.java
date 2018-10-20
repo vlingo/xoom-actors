@@ -95,10 +95,6 @@ public final class GenericParser {
         return normalizeTypeName(method.getGenericReturnType().getTypeName());
     }
 
-    public static String methodCallArgumentListTemplateOf(final Method method) {
-        return Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", ", "(", ")"));
-    }
-
     private static Stream<String> typeToGenericString(final Set<String> classAlias, final Type type) {
         if (type instanceof TypeVariable) {
             final TypeVariable typeVariable = (TypeVariable) type;
