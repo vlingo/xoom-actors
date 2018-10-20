@@ -25,6 +25,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.vlingo.actors.reflect.GenericParser;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 import io.vlingo.common.fn.Tuple2;
@@ -440,42 +441,8 @@ public class ProxyGenerator implements AutoCloseable {
       this.miniInnerGeneric = stripPackage(this.innerGeneric);
       this.outerGeneric = genericParameter(this.fullGeneric, outerType);
 
-      this.knownTypeParameters = findTypeParameters(method);
-      this.dependenciesToImport = findDependenciesOfMethod(method);
-    }
-
-    private Set<String> findTypeParameters(Method method) {
-      TypeVariable<? extends Class<?>>[] typeParameters = method.getDeclaringClass().getTypeParameters();
-      return Arrays.stream(typeParameters).map(TypeVariable::getName).collect(Collectors.toSet());
-    }
-
-    private Set<String> findGenericClassDependencies(Class<?> declaringClass) {
-      TypeVariable<? extends Class<?>>[] typeParameters = declaringClass.getTypeParameters();
-      return Arrays.stream(typeParameters).flatMap(typeVar -> {
-        Type[] bounds = typeVar.getBounds();
-        return Arrays.stream(bounds).flatMap(type -> findDependenciesOfType(type).stream());
-      }).collect(Collectors.toSet());
-    }
-
-    private Set<String> findDependenciesOfType(Type type) {
-      if (type instanceof ParameterizedType) {
-        ParameterizedType paramType = (ParameterizedType) type;
-        return Arrays.stream(paramType.getActualTypeArguments())
-                .flatMap(typeArg -> findDependenciesOfType(typeArg).stream())
-                .collect(Collectors.toSet());
-      } else {
-        return Arrays.stream(new String[] { type.getTypeName() }).collect(Collectors.toSet());
-      }
-    }
-
-    private Set<String> findDependenciesOfMethod(Method method) {
-      Set<String> fromClass = findGenericClassDependencies(method.getDeclaringClass());
-
-      String fullTypeName = method.getGenericReturnType().getTypeName().replaceAll("[<>]", ";;");
-      Set<String> methodDeps = new HashSet<>(Arrays.asList(fullTypeName.split(";;")));
-      fromClass.addAll(methodDeps);
-
-      return fromClass.stream().filter(e -> !knownTypeParameters.contains(e)).collect(Collectors.toSet());
+      this.knownTypeParameters = GenericParser.genericReferencesOf(method).collect(Collectors.toSet());
+      this.dependenciesToImport = GenericParser.dependenciesOf(method).collect(Collectors.toSet());
     }
 
     private String genericParameter(final String genericTypeName, final String returnType) {
@@ -501,22 +468,6 @@ public class ProxyGenerator implements AutoCloseable {
       return full.substring(dot + 1, full.length() - endOffset);
     }
 
-    private boolean isPrimitive() {
-      switch (type) {
-      case "boolean":
-      case "int":
-      case "long":
-      case "byte":
-      case "double":
-      case "float":
-      case "short":
-      case "char":
-      case "void":
-        return true;
-      }
-      return false;
-    }
-    
     private String simple() {
       final StringBuilder builder = new StringBuilder();
       
