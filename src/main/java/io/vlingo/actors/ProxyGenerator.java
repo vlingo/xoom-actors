@@ -166,12 +166,12 @@ public class ProxyGenerator implements AutoCloseable {
     final String genericTemplate = GenericParser.genericTemplateOf(method);
     final String parameterTemplate = GenericParser.parametersTemplateOf(method);
     final String signatureReturnType = GenericParser.returnTypeOf(method);
-
+    final boolean isACompletes = signatureReturnType.startsWith("io.vlingo.actors.Completes");
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
-    final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
-    final String completesStatement = returnType.completes ? MessageFormat.format("      final Completes<{0}> completes = new BasicCompletes<>(actor.scheduler());\n", returnType.innerGeneric) : "";
+    final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
+    final String completesStatement = isACompletes ? MessageFormat.format("      final {0} completes = new BasicCompletes<>(actor.scheduler());\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, consumer, {1}{2}); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"null, ", representationName);
     final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2})); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
@@ -215,39 +215,8 @@ public class ProxyGenerator implements AutoCloseable {
     return MessageFormat.format("package {0};", protocolInterface.getPackage().getName());
   }
 
-  private String parametersFor(final Method method) {
-    final StringBuilder builder = new StringBuilder();
-
-    String separator = ", ";
-    int parameterIndex = 0;
-    final Parameter[] parameters = method.getParameters();
-
-    for (final Parameter parameter : parameters) {
-      final Type type = parameter.getParameterizedType();
-      builder.append(type.getTypeName().replace('$', '.')).append(" ").append(parameter.getName());
-      if (++parameterIndex < parameters.length) {
-        builder.append(separator);
-      }
-    }
-
-    return builder.toString();
-  }
-
   private String parameterNamesFor(final Method method) {
-    final StringBuilder builder = new StringBuilder();
-
-    String separator = ", ";
-    int parameterIndex = 0;
-    final Parameter[] parameters = method.getParameters();
-
-    for (final Parameter parameter : parameters) {
-      builder.append(parameter.getName());
-      if (++parameterIndex < parameters.length) {
-        builder.append(separator);
-      }
-    }
-
-    return builder.toString();
+    return GenericParser.methodCallArgumentListTemplateOf(method);
   }
 
   private String parameterTypesFor(final Method method) {
@@ -264,33 +233,6 @@ public class ProxyGenerator implements AutoCloseable {
         builder.append(separator);
       }
     }
-
-    return builder.toString();
-  }
-
-  private Object passedGenericTypes(final Method method) {
-    final StringBuilder builder = new StringBuilder();
-
-    final Parameter[] parameters = method.getParameters();
-
-    boolean first = true;
-
-    for (final Parameter parameter : parameters) {
-      final String parameterizedType = parameter.getParameterizedType().getTypeName();
-      final String parameterType = parameter.getType().getTypeName();
-
-      if (parameterType.equals("java.lang.Object") && !parameterizedType.equals(parameterType)) {
-        if (first) {
-          builder.append("<");
-        } else {
-          builder.append(", ");
-        }
-        builder.append(parameterizedType);
-        first = false;
-      }
-    }
-
-    if (builder.length() > 0) builder.append("> ");
 
     return builder.toString();
   }

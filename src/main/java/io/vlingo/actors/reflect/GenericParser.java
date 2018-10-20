@@ -1,14 +1,24 @@
 package io.vlingo.actors.reflect;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class GenericParser {
     private GenericParser() {}
+
+    private static Map<String, Boolean> GENERICS = new HashMap<String, Boolean>() {{
+        put("byte", true);
+        put("short", true);
+        put("int", true);
+        put("long", true);
+        put("char", true);
+        put("float", true);
+        put("double", true);
+        put("boolean", true);
+        put("void", true);
+    }};
 
     public static Stream<String> genericReferencesOf(Method method) {
         return Stream.concat(
@@ -21,7 +31,10 @@ public final class GenericParser {
     }
 
     public static Stream<String> dependenciesOf(Class<?> classRef) {
-        return Arrays.stream(classRef.getMethods()).flatMap(GenericParser::dependenciesOf);
+        return Arrays.stream(classRef.getMethods())
+                .flatMap(GenericParser::dependenciesOf)
+                .filter(GenericParser::onlyNotPrimitives)
+                .map(GenericParser::normalizeTypeName);
     }
 
     public static Stream<String> dependenciesOf(Method method) {
@@ -29,7 +42,9 @@ public final class GenericParser {
 
         return Stream.concat(Arrays.stream(method.getGenericParameterTypes()), Stream.of(method.getGenericReturnType()))
                 .flatMap(GenericParser::typeNameToTypeStream)
-                .filter(type -> !genericTypeAlias.contains(normalizeTypeAlias(type)));
+                .filter(type -> !genericTypeAlias.contains(normalizeTypeAlias(type)))
+                .filter(GenericParser::onlyNotPrimitives)
+                .map(GenericParser::normalizeTypeName);
     }
 
     private static Stream<String> typeNameToTypeStream(Type type) {
@@ -58,6 +73,7 @@ public final class GenericParser {
                 .flatMap(type -> typeToGenericString(knownAlias, type))
                 .distinct()
                 .sorted()
+                .map(GenericParser::normalizeTypeName)
                 .forEach(typeVariable -> template.append(typeVariable).append(", "));
 
         return template.append(">").toString().replace(", >", ">").replace("<>", "");
@@ -66,7 +82,7 @@ public final class GenericParser {
     public static String parametersTemplateOf(Method method) {
         StringBuilder template = new StringBuilder("(");
         Arrays.stream(method.getParameters())
-                .map(param -> String.format("%s %s, ", param.getParameterizedType().getTypeName(), param.getName()))
+                .map(param -> String.format("%s %s, ", normalizeTypeName(param.getParameterizedType().getTypeName()), param.getName()))
                 .forEach(template::append);
 
         return template.append(")").toString().replace(", )", ")");
@@ -97,7 +113,11 @@ public final class GenericParser {
     }
 
     public static String returnTypeOf(Method method) {
-        return method.getGenericReturnType().getTypeName();
+        return normalizeTypeName(method.getGenericReturnType().getTypeName());
+    }
+
+    public static String methodCallArgumentListTemplateOf(Method method) {
+        return Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", ", "(", ")"));
     }
 
     private static Stream<String> typeToGenericString(Set<String> classAlias, Type type) {
@@ -114,7 +134,7 @@ public final class GenericParser {
                 return Stream.of(genericAlias);
             }
 
-            return Stream.of(String.format("%s extends %s", genericAlias, boundaryType));
+            return Stream.of(String.format("%s extends %s", genericAlias, normalizeTypeName(boundaryType)));
         } else if (type instanceof ParameterizedType) {
             ParameterizedType paramType = (ParameterizedType) type;
             return Arrays.stream(paramType.getActualTypeArguments())
@@ -149,5 +169,11 @@ public final class GenericParser {
 
     private static String normalizeTypeAlias(String typeName) {
         return typeName.replace("[]", "");
+    }
+    private static String normalizeTypeName(String typeName) {
+        return typeName.replace("$", ".");
+    }
+    private static boolean onlyNotPrimitives(String type) {
+        return !GENERICS.getOrDefault(type, false);
     }
 }

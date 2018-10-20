@@ -109,8 +109,14 @@ public class GenericParserTest {
 
     @Test
     public void testThatGeneratesAValidClassName() {
-        String result = GenericParser.implementsInterfaceTemplateOf("MyNewClass", MyGenericInterfaceWithMethods.class);
+        String result = implementsInterfaceTemplateOf("MyNewClass", MyGenericInterfaceWithMethods.class);
         assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> implements io.vlingo.actors.reflect.MyGenericInterfaceWithMethods<T>", result);
+    }
+
+    @Test
+    public void testThatGeneratesAValidMethodArgumentListForACall() {
+        String result = methodCallArgumentListTemplateOf(methodOf(MyInterfaceWithGenericMethods.class, "getBWithAParameter"));
+        assertEquals("(arg0)", result);
     }
 
     private static Method methodOf(final Class<?> _class, final String methodName) {
@@ -128,6 +134,7 @@ interface MyInterfaceWithGenericMethods {
     <B extends IOException, C extends RuntimeException> C getBWithAParameter(List<Set<B>> bs);
     <A extends IOException> Optional<List<A>> getFailures();
     <A extends Integer> A sumAll(A... all);
+    void doSomething();
 }
 
 interface MyGenericInterfaceWithMethods<T extends RuntimeException> {

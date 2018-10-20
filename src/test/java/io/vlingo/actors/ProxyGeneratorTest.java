@@ -39,7 +39,7 @@ public class ProxyGeneratorTest {
     public void testThatCompletesHasValidSignature() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
-        assertTrue("Completes has not a valid generic signature", result.source.contains("final Completes<Optional<List<Boolean>>> completes = new BasicCompletes<>(actor.scheduler());"));
+        assertTrue("Completes has not a valid generic signature", result.source.contains("final io.vlingo.actors.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> completes = new BasicCompletes<>(actor.scheduler());"));
     }
 
     @Test
