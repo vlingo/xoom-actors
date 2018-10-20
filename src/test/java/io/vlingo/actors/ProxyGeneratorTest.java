@@ -25,6 +25,7 @@ public class ProxyGeneratorTest {
         assertTrue("Completes is not imported", result.source.contains("import io.vlingo.actors.Completes;"));
         assertTrue("Optional is not imported", result.source.contains("import java.util.Optional;"));
         assertTrue("List is not imported", result.source.contains("import java.util.List;"));
+        assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
     }
 
     @Test
@@ -61,6 +62,7 @@ public class ProxyGeneratorTest {
 
 interface ProtocolWithGenericMethods {
     Completes<Optional<List<Boolean>>> someMethod();
+    <T extends RuntimeException> T someOtherMethod();
 }
 
 interface ProtocolWithGenerics<A extends RuntimeException, B extends Optional<IOException>> {
