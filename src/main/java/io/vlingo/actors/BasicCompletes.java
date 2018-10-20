@@ -51,7 +51,16 @@ public class BasicCompletes<T> implements Completes<T> {
   @Override
   @SuppressWarnings("unchecked")
   public <O> Completes<O> andThen(final long timeout, final T failedOutcomeValue, final Function<T,O> function) {
-    return Completes.withSuccess(andThenInto(timeout,failedOutcomeValue, function));
+    final BasicCompletes<O> nestedCompletes = new BasicCompletes<>(state.scheduler());
+    nestedCompletes.state.failedValue(failedOutcomeValue);
+    nestedCompletes.state.failureAction((Action<O>) state.failureActionFunction());
+    state.action((Action<T>) Action.with(function, nestedCompletes));
+    if (state.isCompleted()) {
+      state.completeActions();
+    } else {
+      state.startTimer(timeout);
+    }
+    return nestedCompletes;
   }
 
   @Override
@@ -571,8 +580,12 @@ public class BasicCompletes<T> implements Completes<T> {
               action.asConsumer().accept((T) outcome.get());
             } else if (action.isFunction()) {
               if (action.hasNestedCompletes()) {
-                ((Completes<T>) action.asFunction().apply((T) outcome.get()))
-                  .andThenConsume(value -> action.nestedCompletes().with(value));
+                final Object result = action.asFunction().apply((T) outcome.get());
+                if (result instanceof Completes) {
+                  ((Completes<T>) result).andThenConsume(value -> action.nestedCompletes().with(value));
+                } else {
+                  action.nestedCompletes().with(result);
+                }
               } else {
                 outcome.set(action.asFunction().apply((T) outcome.get()));
               }

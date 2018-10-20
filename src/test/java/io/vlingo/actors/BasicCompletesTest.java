@@ -7,14 +7,10 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import io.vlingo.actors.testkit.TestUntil;
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestUntil;
+import static org.junit.Assert.*;
 
 public class BasicCompletesTest {
   private Integer andThenValue;
@@ -30,11 +26,15 @@ public class BasicCompletesTest {
 
   @Test
   public void testCompletesAfterFunction() {
+    final TestUntil until = TestUntil.happenings(1);
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
-    completes.andThen((value) -> value * 2);
+    completes
+      .andThen((value) -> value * 2)
+      .andThenConsume((ignored) -> until.happened());
 
     completes.with(5);
+    until.completes();
 
     assertEquals(new Integer(10), completes.outcome());
   }
@@ -42,11 +42,11 @@ public class BasicCompletesTest {
   @Test
   public void testCompletesAfterConsumer() {
     final Completes<Integer> completes = new BasicCompletes<>(0);
-    
+
     completes.andThen((value) -> andThenValue = value);
-    
+
     completes.with(5);
-    
+
     assertEquals(new Integer(5), completes.outcome());
   }
 
@@ -57,26 +57,33 @@ public class BasicCompletesTest {
     completes
       .andThen((value) -> value * 2)
       .andThen((value) -> andThenValue = value);
-    
+
     completes.with(5);
-    
+
     assertEquals(new Integer(10), andThenValue);
     assertEquals(new Integer(10), completes.outcome());
   }
 
   @Test
   public void testCompletesAfterAndThenMessageOut() {
+    final TestUntil until = TestUntil.happenings(1);
+
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
     final Holder holder = new Holder();
 
     completes
       .andThen((value) -> value * 2)
-      .andThen((value) -> { holder.hold(value); return value; } );
+      .andThen((value) -> {
+        holder.hold(value);
+        return value;
+      })
+      .andThenConsume((ignored) -> until.happened());
 
     completes.with(5);
 
     completes.await();
+    until.completes();
 
     assertEquals(new Integer(10), andThenValue);
   }
@@ -86,9 +93,9 @@ public class BasicCompletesTest {
     final TestUntil until = TestUntil.happenings(1);
 
     final TripleValue triple =
-            World
-              .startWithDefaults("pipe")
-              .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
+      World
+        .startWithDefaults("pipe")
+        .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
 
     final Completes<Integer> completes = new BasicCompletes<>(0);
 
@@ -112,9 +119,9 @@ public class BasicCompletesTest {
   @Test
   public void testThatCompletesFailsNestedAsyncCompletes() {
     final TripleValue triple =
-            World
-              .startWithDefaults("pipe")
-              .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
+      World
+        .startWithDefaults("pipe")
+        .actorFor(Definition.has(TripleValueActor.class, Definition.NoParameters), TripleValue.class);
 
     final TestUntil until = TestUntil.happenings(1);
 
@@ -180,13 +187,13 @@ public class BasicCompletesTest {
   @Test
   public void testOutcomeBeforeTimeout() {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     completes
       .andThen(1000, (value) -> value * 2)
       .andThen((value) -> andThenValue = value);
-    
+
     completes.with(5);
-    
+
     completes.await(10);
 
     assertEquals(new Integer(10), andThenValue);
@@ -195,13 +202,13 @@ public class BasicCompletesTest {
   @Test
   public void testTimeoutBeforeOutcome() throws Exception {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     completes
       .andThen(1, 0, (value) -> value * 2)
       .andThen((value) -> andThenValue = value);
-    
+
     Thread.sleep(100);
-    
+
     completes.with(5);
 
     completes.await();
@@ -214,7 +221,7 @@ public class BasicCompletesTest {
   @Test
   public void testThatFailureOutcomeFails() {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     completes
       .andThen(null, (value) -> value * 2)
       .andThen((Integer value) -> andThenValue = value)
@@ -232,10 +239,12 @@ public class BasicCompletesTest {
   @Test
   public void testThatExceptionOutcomeFails() {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     completes
       .andThen(null, (value) -> value * 2)
-      .andThen((Integer value) -> { throw new IllegalStateException("" + (value * 2)); })
+      .andThen((Integer value) -> {
+        throw new IllegalStateException("" + (value * 2));
+      })
       .recoverFrom((e) -> failureValue = Integer.parseInt(e.getMessage()));
 
     completes.with(2);
@@ -250,11 +259,11 @@ public class BasicCompletesTest {
   @Test
   public void testThatAwaitTimesout() throws Exception {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     final Integer completed = completes.await(10);
-    
+
     completes.with(5);
-    
+
     assertNotEquals(new Integer(5), completed);
     assertNull(completed);
   }
@@ -262,7 +271,7 @@ public class BasicCompletesTest {
   @Test
   public void testThatAwaitCompletes() throws Exception {
     final Completes<Integer> completes = new BasicCompletes<>(new Scheduler());
-    
+
     new Thread() {
       @Override
       public void run() {
@@ -285,9 +294,10 @@ public class BasicCompletesTest {
       andThenValue = value;
     }
   }
-  
+
   public static interface TripleValue {
     Completes<String> compute(final Integer value);
+
     Completes<String> compute(final Integer value, final boolean succeed);
   }
 
