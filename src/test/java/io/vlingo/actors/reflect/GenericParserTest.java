@@ -2,7 +2,6 @@ package io.vlingo.actors.reflect;
 
 import org.junit.Test;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -100,6 +99,18 @@ public class GenericParserTest {
     public void testThatGeneratesTheCorrectParameterListWithVarArgs() {
         String result = parametersTemplateOf(methodOf(MyInterfaceWithGenericMethods.class, "getBWithAParameter"));
         assertEquals("(java.util.List<java.util.Set<B>> arg0)", result);
+    }
+
+    @Test
+    public void testThatGeneratesAValidReturnType() {
+        String result = returnTypeOf(methodOf(MyInterfaceWithGenericMethods.class, "getFailures"));
+        assertEquals("java.util.Optional<java.util.List<A>>", result);
+    }
+
+    @Test
+    public void testThatGeneratesAValidClassName() {
+        String result = GenericParser.implementsInterfaceTemplateOf("MyNewClass", MyGenericInterfaceWithMethods.class);
+        assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> implements io.vlingo.actors.reflect.MyGenericInterfaceWithMethods<T>", result);
     }
 
     private static Method methodOf(final Class<?> _class, final String methodName) {

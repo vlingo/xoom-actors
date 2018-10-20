@@ -32,7 +32,7 @@ public class ProxyGeneratorTest {
     public void testThatMethodDefinitionIsValid() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
-        assertTrue("Method signature is invalid", result.source.contains("public Completes<Optional<List<Boolean>>> someMethod()"));
+        assertTrue("Method signature is invalid", result.source.contains("public io.vlingo.actors.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> someMethod()"));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class ProxyGeneratorTest {
     public void testThatProxyGeneratesValidClassDefinitionForGenericProtocol() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
-        assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy implements ProtocolWithGenerics<RuntimeException>"));
+        assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Optional<java.io.IOException>> implements io.vlingo.actors.ProtocolWithGenerics<A, B>"));
     }
 
     @Test

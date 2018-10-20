@@ -98,7 +98,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String classStatement(final Class<?> protocolInterface) {
-    return MessageFormat.format("public class {0} implements {1} '{'\n", classnameFor(protocolInterface, "__Proxy"), protocolInterface.getSimpleName());
+    return GenericParser.implementsInterfaceTemplateOf(classnameFor(protocolInterface, "__Proxy"), protocolInterface) + " {\n";
   }
 
   private String constructor(final Class<?> protocolInterface) {
@@ -163,7 +163,11 @@ public class ProxyGenerator implements AutoCloseable {
 
     final ReturnType returnType = new ReturnType(method);
 
-    final String methodSignature = MessageFormat.format("  public {0}{1} {2}({3})", passedGenericTypes(method), returnType.simple(), method.getName(), parametersFor(method));
+    final String genericTemplate = GenericParser.genericTemplateOf(method);
+    final String parameterTemplate = GenericParser.parametersTemplateOf(method);
+    final String signatureReturnType = GenericParser.returnTypeOf(method);
+
+    final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}({2});", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));

@@ -2,6 +2,7 @@ package io.vlingo.actors.reflect;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,7 +60,7 @@ public final class GenericParser {
                 .sorted()
                 .forEach(typeVariable -> template.append(typeVariable).append(", "));
 
-        return template.append(">").toString().replace(", >", ">");
+        return template.append(">").toString().replace(", >", ">").replace("<>", "");
     }
 
     public static String parametersTemplateOf(Method method) {
@@ -69,6 +70,34 @@ public final class GenericParser {
                 .forEach(template::append);
 
         return template.append(")").toString().replace(", )", ")");
+    }
+
+    public static String implementsInterfaceTemplateOf(String newClassName, Class<?> classToExtend) {
+        StringBuilder template = new StringBuilder("public class ")
+                .append(newClassName)
+                .append("<");
+
+
+        Arrays.stream(classToExtend.getTypeParameters())
+            .flatMap(type -> typeToGenericString(new HashSet<>(), type))
+            .forEach(typeVariable -> template.append(typeVariable).append(", "));
+
+        template.append(">")
+                .append(" implements ")
+                .append(classToExtend.getCanonicalName())
+                .append("<");
+
+
+        Stream<String> typeAliases = Arrays.stream(classToExtend.getTypeParameters())
+                .flatMap(GenericParser::genericReferencesOf);
+
+        typeAliases.forEach(typeAlias -> template.append(typeAlias).append(", "));
+
+        return template.append(">").toString().replaceAll(", >", ">").replaceAll("<>", "");
+    }
+
+    public static String returnTypeOf(Method method) {
+        return method.getGenericReturnType().getTypeName();
     }
 
     private static Stream<String> typeToGenericString(Set<String> classAlias, Type type) {
