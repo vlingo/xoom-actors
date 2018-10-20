@@ -118,26 +118,14 @@ public class ProxyGenerator implements AutoCloseable {
   private String importStatements(final Class<?> protocolInterface) {
     final StringBuilder builder = new StringBuilder();
 
-    final Tuple2<List<ReturnType>,Boolean> returnTypes = returnTypes(protocolInterface);
-
     builder
       .append("import io.vlingo.actors.Actor;").append("\n")
-      .append(returnTypes._2 ? "import io.vlingo.actors.BasicCompletes;\n" : "")
-      .append(returnTypes._2 ? "import io.vlingo.actors.Completes;\n" : "")
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
-      .append("import io.vlingo.actors.Mailbox;").append("\n");
+      .append("import io.vlingo.actors.Mailbox;").append("\n")
+      .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
-    final Class<?> outerClass = protocolInterface.getDeclaringClass();
-
-    if (outerClass != null) {
-      builder.append("import " + outerClass.getName() + "." + protocolInterface.getSimpleName() + ";").append("\n");
-    }
-    
-    for (final String importStatement : returnTypesToImports(returnTypes._1)) {
-      builder.append(importStatement);
-    }
-
+    returnTypesToImports(protocolInterface).forEach(builder::append);
     return builder.toString();
   }
 
@@ -161,21 +149,20 @@ public class ProxyGenerator implements AutoCloseable {
   private String methodDefinition(final Class<?> protocolInterface, final Method method, final int count) {
     final StringBuilder builder = new StringBuilder();
 
-    final ReturnType returnType = new ReturnType(method);
-
     final String genericTemplate = GenericParser.genericTemplateOf(method);
     final String parameterTemplate = GenericParser.parametersTemplateOf(method);
     final String signatureReturnType = GenericParser.returnTypeOf(method);
     final boolean isACompletes = signatureReturnType.startsWith("io.vlingo.actors.Completes");
+
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = isACompletes ? MessageFormat.format("      final {0} completes = new BasicCompletes<>(actor.scheduler());\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
-    final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, consumer, {1}{2}); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"null, ", representationName);
-    final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2})); '}'", protocolInterface.getSimpleName(), returnType.completes ? "completes, ":"", representationName);
-    final String completesReturnStatement = returnType.completes ? "      return completes;\n" : "";
+    final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, consumer, {1}{2}); '}'", protocolInterface.getSimpleName(), isACompletes ? "completes, ":"null, ", representationName);
+    final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, consumer, {1}{2})); '}'", protocolInterface.getSimpleName(), isACompletes ? "completes, ":"", representationName);
+    final String completesReturnStatement = isACompletes ? "      return completes;\n" : "";
     final String elseDead = MessageFormat.format("      actor.deadLetters().failedDelivery(new DeadLetter(actor, {0}));", representationName);
     final String returnValue = returnValue(method.getReturnType());
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);
@@ -289,31 +276,10 @@ public class ProxyGenerator implements AutoCloseable {
     return builder.toString();
   }
 
-  private Tuple2<List<ReturnType>, Boolean> returnTypes(final Class<?> protocolInterface) {
-    final List<ReturnType> returnTypes = new ArrayList<>();
-    boolean anyCompletes = false;
-    
-    for (final Method method : protocolInterface.getMethods()) {
-      if (!Modifier.isStatic(method.getModifiers())) {
-        final ReturnType returnType = new ReturnType(method);
-        returnTypes.add(returnType);
-        if (returnType.completes) anyCompletes = true;
-      }
-    }
-
-    return Tuple2.from(returnTypes, anyCompletes);
-  }
-
-  private Set<String> returnTypesToImports(final List<ReturnType> returnTypes) {
-    final Set<String> imports = new TreeSet<>();
-
-    for (final ReturnType returnType : returnTypes) {
-      returnType.dependenciesToImport.forEach(dependency -> {
-        imports.add("import " + dependency + ";\n");
-      });
-    }
-
-    return imports;
+  private Set<String> returnTypesToImports(final Class<?> protocolInterface) {
+    return GenericParser.dependenciesOf(protocolInterface)
+            .map(type -> "import " + type + ";\n")
+            .collect(Collectors.toSet());
   }
 
   private String returnValue(final Class<?> returnType) {
@@ -364,71 +330,5 @@ public class ProxyGenerator implements AutoCloseable {
                     Properties.properties.getProperty("proxy.generated.sources.main", GeneratedSources) :
                     Properties.properties.getProperty("proxy.generated.sources.test", GeneratedTestSources);
     return root;
-  }
-
-  private static class ReturnType {
-    static final String fullCompletes = Completes.class.getName();
-
-    final boolean completes;
-    final String fullGeneric;
-    final String innerGeneric;
-    final String miniInnerGeneric;
-    final String outerGeneric;
-    final String type;
-    final Set<String> dependenciesToImport;
-    final Set<String> knownTypeParameters;
-
-    ReturnType(final Method method) {
-      final String outerType = method.getReturnType().getName();
-      this.completes = outerType.equals(fullCompletes);
-      this.type = outerType;
-      this.fullGeneric = genericParameter(method.getGenericReturnType().getTypeName(), outerType);
-      this.innerGeneric = innerGenericType(this.fullGeneric);
-      this.miniInnerGeneric = stripPackage(this.innerGeneric);
-      this.outerGeneric = genericParameter(this.fullGeneric, outerType);
-
-      this.knownTypeParameters = GenericParser.genericReferencesOf(method).collect(Collectors.toSet());
-      this.dependenciesToImport = GenericParser.dependenciesOf(method).collect(Collectors.toSet());
-    }
-
-    private String genericParameter(final String genericTypeName, final String returnType) {
-      final int begin = genericTypeName.indexOf("<");
-      if (begin == -1) return returnType;
-      final int end = genericTypeName.lastIndexOf(">");
-      if (end == -1) return returnType;
-      final String rawGeneric = genericTypeName.substring(begin + 1, end);
-      final String generic = rawGeneric.replace('$', '.');
-      return generic;
-    }
-
-    private String innerGenericType(final String fullGeneric) {
-      final int angle = fullGeneric.indexOf("<");
-      if (angle == -1) return fullGeneric;
-      return fullGeneric.substring(0, angle);
-    }
-
-    private String stripPackage(final String full) {
-      final int dot = full.lastIndexOf(".");
-      if (dot == -1) return full;
-      final int endOffset = full.endsWith(">") ? 1 : 0;
-      return full.substring(dot + 1, full.length() - endOffset);
-    }
-
-    private String simple() {
-      final StringBuilder builder = new StringBuilder();
-      
-      builder.append(simpleType());
-      
-      if (!fullGeneric.equals(type)) {
-        builder.append("<").append(miniInnerGeneric).append(">");
-      }
-      
-      return builder.toString();
-    }
-
-    private String simpleType() {
-      final String[] parts = type.split("\\.");
-      return parts[parts.length - 1];
-    }
   }
 }

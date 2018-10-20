@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 public final class GenericParser {
     private GenericParser() {}
 
-    private static Map<String, Boolean> GENERICS = new HashMap<String, Boolean>() {{
+    private static final Map<String, Boolean> GENERICS = new HashMap<String, Boolean>() {{
         put("byte", true);
         put("short", true);
         put("int", true);
@@ -20,7 +20,7 @@ public final class GenericParser {
         put("void", true);
     }};
 
-    public static Stream<String> genericReferencesOf(Method method) {
+    public static Stream<String> genericReferencesOf(final Method method) {
         return Stream.concat(
                 Stream.concat(
                     Stream.of(method.getGenericReturnType()),
@@ -30,14 +30,14 @@ public final class GenericParser {
         ).flatMap(GenericParser::genericReferencesOf);
     }
 
-    public static Stream<String> dependenciesOf(Class<?> classRef) {
+    public static Stream<String> dependenciesOf(final Class<?> classRef) {
         return Arrays.stream(classRef.getMethods())
                 .flatMap(GenericParser::dependenciesOf)
                 .filter(GenericParser::onlyNotPrimitives)
                 .map(GenericParser::normalizeTypeName);
     }
 
-    public static Stream<String> dependenciesOf(Method method) {
+    public static Stream<String> dependenciesOf(final Method method) {
         Set<String> genericTypeAlias = genericReferencesOf(method).collect(Collectors.toSet());
 
         return Stream.concat(Arrays.stream(method.getGenericParameterTypes()), Stream.of(method.getGenericReturnType()))
@@ -47,7 +47,7 @@ public final class GenericParser {
                 .map(GenericParser::normalizeTypeName);
     }
 
-    private static Stream<String> typeNameToTypeStream(Type type) {
+    private static Stream<String> typeNameToTypeStream(final Type type) {
         if (type instanceof TypeVariable) {
             return Arrays.stream(((TypeVariable) type).getBounds())
                     .flatMap(GenericParser::typeNameToTypeStream);
@@ -62,7 +62,7 @@ public final class GenericParser {
         return Arrays.stream(type.getTypeName().replaceAll("[<>]", "==").split("=="));
     }
 
-    public static String genericTemplateOf(Method method) {
+    public static String genericTemplateOf(final Method method) {
         Set<String> knownAlias = Arrays.stream(method.getDeclaringClass().getTypeParameters())
                 .flatMap(GenericParser::genericReferencesOf)
                 .collect(Collectors.toSet());
@@ -79,7 +79,7 @@ public final class GenericParser {
         return template.append(">").toString().replace(", >", ">").replace("<>", "");
     }
 
-    public static String parametersTemplateOf(Method method) {
+    public static String parametersTemplateOf(final Method method) {
         StringBuilder template = new StringBuilder("(");
         Arrays.stream(method.getParameters())
                 .map(param -> String.format("%s %s, ", normalizeTypeName(param.getParameterizedType().getTypeName()), param.getName()))
@@ -88,7 +88,7 @@ public final class GenericParser {
         return template.append(")").toString().replace(", )", ")");
     }
 
-    public static String implementsInterfaceTemplateOf(String newClassName, Class<?> classToExtend) {
+    public static String implementsInterfaceTemplateOf(final String newClassName, final Class<?> classToExtend) {
         StringBuilder template = new StringBuilder("public class ")
                 .append(newClassName)
                 .append("<");
@@ -112,15 +112,15 @@ public final class GenericParser {
         return template.append(">").toString().replaceAll(", >", ">").replaceAll("<>", "");
     }
 
-    public static String returnTypeOf(Method method) {
+    public static String returnTypeOf(final Method method) {
         return normalizeTypeName(method.getGenericReturnType().getTypeName());
     }
 
-    public static String methodCallArgumentListTemplateOf(Method method) {
+    public static String methodCallArgumentListTemplateOf(final Method method) {
         return Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", ", "(", ")"));
     }
 
-    private static Stream<String> typeToGenericString(Set<String> classAlias, Type type) {
+    private static Stream<String> typeToGenericString(final Set<String> classAlias, final Type type) {
         if (type instanceof TypeVariable) {
             TypeVariable typeVariable = (TypeVariable) type;
             String boundaryType = typeVariable.getBounds()[0].getTypeName();
@@ -144,7 +144,7 @@ public final class GenericParser {
         return Stream.empty();
     }
 
-    private static Stream<String> genericReferencesOf(Type type) {
+    private static Stream<String> genericReferencesOf(final Type type) {
         if (type instanceof TypeVariable) {
             TypeVariable variable = (TypeVariable) type;
             return Stream.of(variable.getName());
@@ -157,7 +157,7 @@ public final class GenericParser {
         return Stream.empty();
     }
 
-    private static Stream<Type> allTypesOfMethodSignature(Method method) {
+    private static Stream<Type> allTypesOfMethodSignature(final Method method) {
         return Stream.concat(
             Stream.concat(
                 Arrays.stream(method.getGenericParameterTypes()),
@@ -167,13 +167,13 @@ public final class GenericParser {
         );
     }
 
-    private static String normalizeTypeAlias(String typeName) {
+    private static String normalizeTypeAlias(final String typeName) {
         return typeName.replace("[]", "");
     }
-    private static String normalizeTypeName(String typeName) {
+    private static String normalizeTypeName(final String typeName) {
         return typeName.replace("$", ".");
     }
-    private static boolean onlyNotPrimitives(String type) {
+    private static boolean onlyNotPrimitives(final String type) {
         return !GENERICS.getOrDefault(type, false);
     }
 }
