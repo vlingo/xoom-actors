@@ -122,6 +122,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
       .append("import io.vlingo.actors.Mailbox;").append("\n")
+      .append("import io.vlingo.actors.BasicCompletes;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)

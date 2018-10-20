@@ -151,7 +151,7 @@ public final class GenericParser {
     }
 
     private static boolean onlyNotPrimitives(final String type) {
-        return !GENERICS.getOrDefault(type, false);
+        return !GENERICS.getOrDefault(normalizeTypeAlias(type), false);
     }
 
     private static Stream<String> typeNameToTypeStream(final Type type) {
