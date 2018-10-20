@@ -59,7 +59,8 @@ public final class GenericParser {
                 .distinct()
                 .sorted()
                 .map(GenericParser::normalizeTypeName)
-                .collect(Collectors.joining(", ", "<", ">"));
+                .collect(Collectors.joining(", ", "<", ">"))
+                .replace("<>", "");
     }
 
     public static String parametersTemplateOf(final Method method) {
@@ -75,6 +76,7 @@ public final class GenericParser {
                 Arrays.stream(classToExtend.getTypeParameters())
                         .flatMap(type -> typeToGenericString(new HashSet<>(), type))
                         .collect(Collectors.joining(", ", "<", ">"))
+                        .replace("<>", "")
         );
 
         template.append(" implements ").append(classToExtend.getCanonicalName());
@@ -83,6 +85,7 @@ public final class GenericParser {
                 Arrays.stream(classToExtend.getTypeParameters())
                         .flatMap(GenericParser::genericReferencesOf)
                         .collect(Collectors.joining(", ", "<", ">"))
+                        .replace("<>", "")
         );
 
         return template.toString();
