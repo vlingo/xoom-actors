@@ -51,16 +51,7 @@ public class BasicCompletes<T> implements Completes<T> {
   @Override
   @SuppressWarnings("unchecked")
   public <O> Completes<O> andThen(final long timeout, final T failedOutcomeValue, final Function<T,O> function) {
-    final BasicCompletes<O> nestedCompletes = new BasicCompletes<>(state.scheduler());
-    nestedCompletes.state.failedValue(failedOutcomeValue);
-    nestedCompletes.state.failureAction((Action<O>) state.failureActionFunction());
-    state.action((Action<T>) Action.with(function, nestedCompletes));
-    if (state.isCompleted()) {
-      state.completeActions();
-    } else {
-      state.startTimer(timeout);
-    }
-    return nestedCompletes;
+    return (Completes<O>) andThenInto(timeout, failedOutcomeValue, function);
   }
 
   @Override
