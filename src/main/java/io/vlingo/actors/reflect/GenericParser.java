@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class GenericParser {
-    private static final Map<String, Boolean> GENERICS = new HashMap<String, Boolean>() {{
+    private static final Map<String, Boolean> PRIMITIVES = new HashMap<String, Boolean>() {{
         put("byte", true);
         put("short", true);
         put("int", true);
@@ -151,7 +151,7 @@ public final class GenericParser {
     }
 
     private static boolean onlyNotPrimitives(final String type) {
-        return !GENERICS.getOrDefault(normalizeTypeAlias(type), false);
+        return !PRIMITIVES.getOrDefault(normalizeTypeAlias(type), false);
     }
 
     private static Stream<String> typeNameToTypeStream(final Type type) {
