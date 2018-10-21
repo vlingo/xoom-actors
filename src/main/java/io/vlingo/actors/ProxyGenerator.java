@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import io.vlingo.common.Completes;
+import io.vlingo.common.Tuple2;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
-import io.vlingo.common.fn.Tuple2;
 
 public class ProxyGenerator implements AutoCloseable {
   public static class Result {
