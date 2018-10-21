@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.common.Completes;
+
 public class PooledCompletes implements CompletesEventually {
   public final Completes<Object> clientCompletes;
   public final CompletesEventually completesEventually;

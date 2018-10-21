@@ -7,12 +7,12 @@
 
 package io.vlingo.actors.plugin.completes;
 
-import io.vlingo.actors.Completes;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.Stage;
 import io.vlingo.actors.plugin.completes.MockCompletesEventually.CompletesResults;
+import io.vlingo.common.Completes;
 
 public class MockCompletesEventuallyProvider implements CompletesEventuallyProvider {
   public int initializeUsing;

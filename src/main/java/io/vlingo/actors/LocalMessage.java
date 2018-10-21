@@ -9,6 +9,8 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
+import io.vlingo.common.Completes;
+
 public class LocalMessage<T> implements Message {
   Actor actor;
   Completes<Object> completes;
@@ -105,8 +107,8 @@ public class LocalMessage<T> implements Message {
       try {
         actor.completes.reset(completes);
         consumer.accept((T) actor);
-        if (actor.completes.outcomeSet) {
-          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.outcome);
+        if (actor.completes.__internal__outcomeSet) {
+          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.__internal__outcome);
         }
       } catch (Throwable t) {
         actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);

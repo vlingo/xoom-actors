@@ -9,6 +9,8 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
+import io.vlingo.common.Scheduled;
+
 public class Scheduled__Proxy implements Scheduled {
   private static final String representationIntervalSignal1 = "intervalSignal(Scheduled, Object)";
 

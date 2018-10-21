@@ -10,6 +10,9 @@ package io.vlingo.actors;
 import io.vlingo.actors.testkit.TestEnvironment;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
+import io.vlingo.common.Completes;
+import io.vlingo.common.ResultCompletes;
+import io.vlingo.common.Scheduler;
 
 public abstract class Actor implements Startable, Stoppable, TestStateView {
   final ResultCompletes completes;
@@ -105,7 +108,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   protected CompletesEventually completesEventually() {
-    return lifeCycle.environment.stage.world().completesFor(completes.clientCompletes);
+    return lifeCycle.environment.stage.world().completesFor(completes.clientCompletes());
   }
 
   protected Definition definition() {

@@ -1,12 +1,28 @@
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors.reflect;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class GenericParser {
-    private static final Map<String, Boolean> PRIMITIVES = new HashMap<String, Boolean>() {{
+    private static final Map<String, Boolean> PRIMITIVES = new HashMap<String, Boolean>() {
+      private static final long serialVersionUID = 1L;
+    {
         put("byte", true);
         put("short", true);
         put("int", true);
@@ -95,6 +111,7 @@ public final class GenericParser {
         return normalizeTypeName(method.getGenericReturnType().getTypeName());
     }
 
+    @SuppressWarnings("rawtypes")
     private static Stream<String> typeToGenericString(final Set<String> classAlias, final Type type) {
         if (type instanceof TypeVariable) {
             final TypeVariable typeVariable = (TypeVariable) type;
@@ -119,6 +136,7 @@ public final class GenericParser {
         return Stream.empty();
     }
 
+    @SuppressWarnings("rawtypes")
     private static Stream<String> genericReferencesOf(final Type type) {
         if (type instanceof TypeVariable) {
             final TypeVariable variable = (TypeVariable) type;
@@ -154,6 +172,7 @@ public final class GenericParser {
         return !PRIMITIVES.getOrDefault(normalizeTypeAlias(type), false);
     }
 
+    @SuppressWarnings("rawtypes")
     private static Stream<String> typeNameToTypeStream(final Type type) {
         if (type instanceof TypeVariable) {
             return Arrays.stream(((TypeVariable) type).getBounds())

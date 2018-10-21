@@ -11,6 +11,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import io.vlingo.common.Completes;
+import io.vlingo.common.RepeatableCompletes;
+
 public class RepeatableCompletesTest {
   private Integer andThenValue;
 

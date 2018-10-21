@@ -12,11 +12,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.Completes;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
+import io.vlingo.common.Completes;
 
 public class SharedRingBufferMailbox implements Mailbox {
   private final AtomicBoolean closed;

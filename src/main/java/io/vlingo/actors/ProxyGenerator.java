@@ -125,7 +125,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
       .append("import io.vlingo.actors.Mailbox;").append("\n")
-      .append("import io.vlingo.actors.BasicCompletes;").append("\n")
+      .append("import io.vlingo.common.BasicCompletes;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)
@@ -157,7 +157,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String genericTemplate = GenericParser.genericTemplateOf(method);
     final String parameterTemplate = GenericParser.parametersTemplateOf(method);
     final String signatureReturnType = GenericParser.returnTypeOf(method);
-    final boolean isACompletes = signatureReturnType.startsWith("io.vlingo.actors.Completes");
+    final boolean isACompletes = signatureReturnType.startsWith("io.vlingo.common.Completes");
 
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);

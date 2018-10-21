@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.common.Scheduled;
+import io.vlingo.common.Scheduler;
 
 public class SchedulerTest extends ActorsTest {
   private Scheduled scheduled;

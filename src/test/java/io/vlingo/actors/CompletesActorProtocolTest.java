@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.common.Completes;
 
 public class CompletesActorProtocolTest extends ActorsTest {
   private static final String Hello = "Hello, Completes!";

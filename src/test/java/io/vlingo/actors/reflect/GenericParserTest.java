@@ -1,3 +1,10 @@
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors.reflect;
 
 import org.junit.Test;
@@ -56,7 +63,7 @@ public class GenericParserTest {
                 "java.util.Set",
                 "java.lang.Object",
                 "java.lang.RuntimeException",
-                "java.lang.Integer"
+                "io.vlingo.actors.reflect.LargeNumber"
         ));
     }
 
@@ -130,12 +137,15 @@ public class GenericParserTest {
     }
 }
 
+interface LargeNumber { }
+
+@SuppressWarnings("unchecked")
 interface MyInterfaceWithGenericMethods {
     <A, B> A getA(B x);
     <B extends IOException> B getB();
     <B extends IOException, C extends RuntimeException> C getBWithAParameter(List<Set<B>> bs);
     <A extends IOException> Optional<List<A>> getFailures();
-    <A extends Integer> A sumAll(A... all);
+    <A extends LargeNumber> A sumAll(final A... all);
     void doSomething();
 }
 

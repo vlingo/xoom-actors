@@ -9,13 +9,13 @@ package io.vlingo.actors.plugin.completes;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.vlingo.actors.Completes;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyActor;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.PooledCompletes;
 import io.vlingo.actors.Stage;
+import io.vlingo.common.Completes;
 
 public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   private final AtomicLong completesEventuallyId;

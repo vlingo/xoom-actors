@@ -9,6 +9,8 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
+import io.vlingo.common.Completes;
+
 public interface Message {
   Actor actor();
   void deliver();

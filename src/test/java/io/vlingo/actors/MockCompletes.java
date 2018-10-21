@@ -8,6 +8,9 @@
 package io.vlingo.actors;
 
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.common.BasicCompletes;
+import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduler;
 
 public class MockCompletes<T> extends BasicCompletes<T> {
   public TestUntil untilWith;

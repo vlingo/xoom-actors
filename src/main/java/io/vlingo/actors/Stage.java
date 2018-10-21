@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduler;
 
 public class Stage implements Stoppable {
   private final Map<Class<?>, Supervisor> commonSupervisors;

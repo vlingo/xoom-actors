@@ -9,6 +9,8 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
+import io.vlingo.common.Cancellable;
+
 public class Cancellable__Proxy implements Cancellable {
   private final Actor actor;
   private final Mailbox mailbox;

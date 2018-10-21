@@ -9,6 +9,8 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
+import io.vlingo.common.Completes;
+
 public class StowedLocalMessage<T> extends LocalMessage<T> {
   public StowedLocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Completes<?> completes, final String representation) {
     super(actor, protocol, consumer, completes, representation);

@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.common.Completes;
+
 public class DirectoryScannerActor extends Actor implements DirectoryScanner {
   private final Directory directory;
 

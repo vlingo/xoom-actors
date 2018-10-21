@@ -13,6 +13,7 @@ import java.util.Map;
 import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+import io.vlingo.common.Completes;
 
 public final class World implements Registrar {
   static final long PRIVATE_ROOT_ID = Long.MAX_VALUE;

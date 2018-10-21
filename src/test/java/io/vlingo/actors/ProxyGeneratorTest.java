@@ -1,14 +1,24 @@
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
+import io.vlingo.common.Completes;
 
 public class ProxyGeneratorTest {
     private ProxyGenerator proxyGenerator;
@@ -22,7 +32,7 @@ public class ProxyGeneratorTest {
     public void testThatImportsNestedGenerics() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
-        assertTrue("Completes is not imported", result.source.contains("import io.vlingo.actors.Completes;"));
+        assertTrue("Completes is not imported", result.source.contains("import io.vlingo.common.Completes;"));
         assertTrue("Optional is not imported", result.source.contains("import java.util.Optional;"));
         assertTrue("List is not imported", result.source.contains("import java.util.List;"));
         assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
@@ -32,21 +42,21 @@ public class ProxyGeneratorTest {
     public void testThatMethodDefinitionIsValid() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
-        assertTrue("Method signature is invalid", result.source.contains("public io.vlingo.actors.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> someMethod()"));
+        assertTrue("Method signature is invalid", result.source.contains("public io.vlingo.common.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> someMethod()"));
     }
 
     @Test
     public void testThatCompletesHasValidSignature() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
-        assertTrue("Completes has not a valid generic signature", result.source.contains("final io.vlingo.actors.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> completes = new BasicCompletes<>(actor.scheduler());"));
+        assertTrue("Completes has not a valid generic signature", result.source.contains("final io.vlingo.common.Completes<java.util.Optional<java.util.List<java.lang.Boolean>>> completes = new BasicCompletes<>(actor.scheduler());"));
     }
 
     @Test
     public void testThatProxyGeneratesValidClassDefinitionForGenericProtocol() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
-        assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Optional<java.io.IOException>> implements io.vlingo.actors.ProtocolWithGenerics<A, B>"));
+        assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> implements io.vlingo.actors.ProtocolWithGenerics<A, B>"));
     }
 
     @Test
@@ -65,7 +75,7 @@ interface ProtocolWithGenericMethods {
     <T extends RuntimeException> T someOtherMethod();
 }
 
-interface ProtocolWithGenerics<A extends RuntimeException, B extends Optional<IOException>> {
-    Completes<Optional<List<A>>> someMethod();
-    Completes<Optional<List<B>>> otherMethod();
+interface ProtocolWithGenerics<A extends RuntimeException, B extends Queue<IOException>> {
+    Completes<Queue<List<A>>> someMethod();
+    Completes<Queue<List<B>>> otherMethod();
 }
