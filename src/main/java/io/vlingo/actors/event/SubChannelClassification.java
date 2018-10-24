@@ -1,3 +1,10 @@
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors.event;
 
 import io.vlingo.common.Changes;
@@ -32,4 +39,13 @@ public abstract class SubChannelClassification<E, S, C> implements EventBus<E, S
         return changes.hasAny();
     }
 
+    @Override
+    public void unsubscribe(final S subscriber) {
+        subscriptions.removeValues(subscriber);
+    }
+
+    @Override
+    public void publish(final E event) {
+        subscriptions.findValues(classify(event)).forEach(subscriber -> publish(event, subscriber));
+    }
 }

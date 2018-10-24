@@ -15,6 +15,6 @@ public interface EventBus<E, S, C> {
 
     void unsubscribe(final S subscriber);
 
-    void publish(E event);
+    void publish(final E event);
 
 }
