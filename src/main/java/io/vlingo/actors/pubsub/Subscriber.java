@@ -5,16 +5,9 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-package io.vlingo.actors.event;
+package io.vlingo.actors.pubsub;
 
-public interface EventBus<E, S, C> {
+public interface Subscriber<P extends Publication> {
 
-    boolean subscribe(final S subscriber, final C to);
-
-    boolean unsubscribe(final S subscriber, final C from);
-
-    void unsubscribe(final S subscriber);
-
-    void publish(final E event);
-
+    void receive(final P publication);
 }
