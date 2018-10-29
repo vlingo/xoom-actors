@@ -7,7 +7,7 @@
 
 package io.vlingo.actors.pubsub;
 
-public interface Subscriber<P extends Publication> {
+public interface Subscriber<M extends Message> {
 
-    void receive(final P publication);
+    void receive(final M message);
 }

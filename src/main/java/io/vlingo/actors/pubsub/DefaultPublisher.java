@@ -12,8 +12,8 @@ public class DefaultPublisher implements Publisher {
     private final Subscriptions subscriptions = new Subscriptions();
 
     @Override
-    public void publish(final Publication publication) {
-        subscriptions.forTopic(publication.topic()).forEach(subscriber -> subscriber.receive(publication));
+    public void publish(final Topic topic, final Message message) {
+        subscriptions.forTopic(topic).forEach(subscriber -> subscriber.receive(message));
     }
 
     @Override

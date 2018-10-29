@@ -9,7 +9,7 @@ package io.vlingo.actors.pubsub;
 
 public interface Publisher {
 
-    void publish(final Publication publication);
+    void publish(final Topic topic, final Message message);
 
     boolean subscribe(final Topic topic, final Subscriber subscriber);
 

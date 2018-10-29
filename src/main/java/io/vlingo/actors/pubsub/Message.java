@@ -7,7 +7,6 @@
 
 package io.vlingo.actors.pubsub;
 
-public interface Publication {
+public interface Message {
 
-    Topic topic();
 }
