@@ -25,6 +25,11 @@ public class TestActor<T> implements TestStateView {
     return protocolActor;
   }
 
+  @SuppressWarnings("unchecked")
+  public <O> O actorAs() {
+    return (O) protocolActor;
+  }
+
   public Address address() {
     return address;
   }
