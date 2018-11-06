@@ -10,6 +10,7 @@ package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
@@ -70,7 +71,13 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
       dispatcher.execute(this);
     }
   }
-
+  
+  /* @see io.vlingo.actors.Mailbox#pendingMessages() */
+  @Override
+  public int pendingMessages() {
+    return queue.size();
+  }
+  
   protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
     this.dispatcher = dispatcher;
     this.delivering = new AtomicBoolean(false);
