@@ -1,46 +1,33 @@
-/* Copyright (c) 2005-2018 - Blue River Systems Group, LLC - All Rights Reserved */
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
 import java.util.List;
 /**
  * SmallestMailboxRoutingStrategy
- *
- * @author davem
- * @since Oct 27, 2018
  */
-public class SmallestMailboxRoutingStrategy<T> implements RoutingStrategy<T> {
+public class SmallestMailboxRoutingStrategy implements RoutingStrategy {
   
-  /* @see io.vlingo.actors.RoutingStrategy#chooseRouteeFor(java.lang.Object, java.util.List) */
-  @SuppressWarnings("unchecked")
+  /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
   @Override
-  public <R> Routing<T> chooseRouteFor(R routable, List<T> routees) {
-    int leastSize = Integer.MAX_VALUE;
-    Actor chosen = null;
-    for (T routee : routees) {
-      
-      /* unfortunate need to cast from T to Actor */
-      Actor actor = (Actor) routee;
-      int msgCount = actor.lifeCycle.environment.mailbox.pendingMessages();
-      
-      /* 
-       * This implementation simply considers current mailbox size, but should
-       * be enhanced to consider whether the actor is busy, stopped, etc.
-       */
-      
-      /* zero is the smallest mailbox possible, so stop searching */
-      if (msgCount == 0) {
-        chosen = actor;
+  public <T> Routing chooseRouteFor(T routable, List<Routee> routees) {
+    Routee least = null;
+    int leastCount = Integer.MAX_VALUE;
+    for (Routee routee : routees) {
+      int count = routee.mailboxSize();
+      if (count == 0) {
+        least = routee;
         break;
       }
-      
-      /* remember the smallest mailbox seen so far */
-      else if (msgCount < leastSize) {
-        leastSize = msgCount;
-        chosen = actor;
+      else if (count < leastCount) {
+        least = routee;
+        leastCount = count;
       }
     }
-    
-    /* unfortunate need to cast from Actor to T */
-    return Routing.with((T) chosen);
+    return least == null ? Routing.empty() : Routing.with(least);
   }
 }

@@ -6,13 +6,13 @@ package io.vlingo.actors;
  * @author davem
  * @since Oct 26, 2018
  */
-public class RouterSpecification<T> {
+public class RouterSpecification {
   
   private final int poolSize; //TODO: refactor towards resizable pool
   private final Definition routerDefinition;
-  private final Class<T> routerProtocol;
+  private final Class<?> routerProtocol;
   
-  public RouterSpecification(final int poolSize, final Definition routerDefinition, final Class<T> routerProtocol) {
+  public RouterSpecification(final int poolSize, final Definition routerDefinition, final Class<?> routerProtocol) {
     this.poolSize = poolSize;
     this.routerDefinition = routerDefinition;
     this.routerProtocol = routerProtocol;
@@ -26,7 +26,7 @@ public class RouterSpecification<T> {
     return routerDefinition;
   }
   
-  public Class<T> routerProtocol() {
+  public Class<?> routerProtocol() {
     return routerProtocol;
   }
 }

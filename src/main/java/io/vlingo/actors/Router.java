@@ -1,34 +1,29 @@
-/* Copyright (c) 2005-2018 - Blue River Systems Group, LLC - All Rights Reserved */
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 /**
  * Router
- *
- * @author davem
- * @since Oct 26, 2018
  */
-public abstract class Router<T> extends Actor {
+public abstract class Router extends Actor {
   
-  private final List<T> routees;
-  private final RoutingStrategy<T> routingStrategy;
+  private final List<Routee> routees;
+  private final RoutingStrategy routingStrategy;
   
-  protected Router(final RouterSpecification<T> specification, final RoutingStrategy<T> routingStrategy) {
-    this.routees = new ArrayList<>();
+  protected Router(final RouterSpecification specification, final RoutingStrategy routingStrategy) {
     for (int i = 0; i < specification.poolSize(); i++) {
-      T child = childActorFor(specification.routerDefinition(), specification.routerProtocol());
-      routees.add(child);
+      childActorFor(specification.routerDefinition(), specification.routerProtocol());
     }
+    this.routees = Routee.forAll(lifeCycle.environment.children);
     this.routingStrategy = routingStrategy;
   }
   
-  public List<T> routees() {
-    return Collections.unmodifiableList(routees);
-  }
-  
-  protected <R> Routing<T> computeRouting(R routable) {
+  protected <T> Routing computeRouting(T routable) {
     return routingStrategy.chooseRouteFor(routable, routees);
   }
 }

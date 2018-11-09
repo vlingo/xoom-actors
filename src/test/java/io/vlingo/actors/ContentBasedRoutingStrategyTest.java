@@ -4,17 +4,21 @@
 // Mozilla Public License, v. 2.0. If a copy of the MPL
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.actors;
 
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
+
 /**
- * RandomRouterTest
+ * ContentBasedRoutingStrategyTest
  */
-public class RandomRouterTest {
+public class ContentBasedRoutingStrategyTest {
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
@@ -25,30 +29,54 @@ public class RandomRouterTest {
             Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
             OrderRouter.class);
     
+    String[] customerIds = {"Customer1", "Customer2", "Customer3","Customer4"};
+    Random random = new Random();
+    
     /* is this the right approach? */
     while (until.remaining() > 0) {
-      orderRouter.routeOrder(new Order());
+      String customerId = customerIds[random.nextInt(customerIds.length)];
+      orderRouter.routeOrder(new Order(customerId));
     }
     
     until.completes();
   }
+  
+  static class ContentBasedRoutingStrategy implements RoutingStrategy {
+
+    /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
+    @Override
+    public <T> Routing chooseRouteFor(T routable, List<Routee> routees) {
+      Order order = (Order) routable;
+      String customerId = order.customerId();
+      /* simple example of routing based on content; all orders for Customer1 go to first Routee, everything else to the second */
+      return customerId.equals("Customer1")
+        ? Routing.with(routees.get(0))
+        : Routing.with(routees.get(1));
+    }
+  }
 
   public static class Order {
     private final String orderId;
+    private final String customerId;
 
-    public Order() {
+    public Order(String customerId) {
       super();
-      orderId = UUID.randomUUID().toString();
+      this.orderId = UUID.randomUUID().toString();
+      this.customerId = customerId;
     }
 
     public String orderId() {
       return orderId;
     }
+    
+    public String customerId() {
+      return customerId;
+    }
 
     /* @see java.lang.Object#toString() */
     @Override
     public String toString() {
-      return "Order[orderId=" + orderId + "]";
+      return "Order[orderId=" + orderId + ", customerId=" + customerId + "]";
     }
   }
 
@@ -85,7 +113,7 @@ public class RandomRouterTest {
               new RouterSpecification(
                       poolSize,
                       Definition.has(OrderRouterWorker.class, Definition.parameters(testUntil)), OrderRouter.class),
-                      new RandomRoutingStrategy()
+                      new ContentBasedRoutingStrategy()
               );
     }
 

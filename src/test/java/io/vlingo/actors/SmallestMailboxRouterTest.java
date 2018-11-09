@@ -13,9 +13,6 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestUntil;
 /**
  * SmallestMailboxRouterTest
- *
- * @author davem
- * @since Oct 29, 2018
  */
 public class SmallestMailboxRouterTest {
 
@@ -66,8 +63,8 @@ public class SmallestMailboxRouterTest {
 
     /*
      * @see
-     * io.vlingo.actors.SmallestMailboxRouterTest.OrderRouter#routeOrder(io.vlingo.
-     * actors.SmallestMailboxRouterTest.Order)
+     * io.vlingo.actors.RandomRouterTest.OrderRouter#routeOrder(io.vlingo.
+     * actors.RandomRouterTest.Order)
      */
     @Override
     public void routeOrder(Order order) {
@@ -77,26 +74,31 @@ public class SmallestMailboxRouterTest {
 
   }
 
-  public static class OrderRouterActor extends Router<OrderRouter> implements OrderRouter {
+  public static class OrderRouterActor extends Router implements OrderRouter {
 
     public OrderRouterActor(int poolSize, TestUntil testUntil) {
-      super(new RouterSpecification<OrderRouter>(poolSize,
-              Definition.has(OrderRouterWorker.class, Definition.parameters(testUntil)), OrderRouter.class),
-              new SmallestMailboxRoutingStrategy<OrderRouter>());
+      super(
+              new RouterSpecification(
+                      poolSize,
+                      Definition.has(OrderRouterWorker.class, Definition.parameters(testUntil)), OrderRouter.class),
+                      new SmallestMailboxRoutingStrategy()
+              );
     }
 
     /*
      * @see
-     * io.vlingo.actors.SmallestMailboxRouterTest.OrderRouter#routeOrder(io.vlingo.
-     * actors.SmallestMailboxRouterTest.Order)
+     * io.vlingo.actors.RandomRouterTest.OrderRouter#routeOrder(io.vlingo.
+     * actors.RandomRouterTest.Order)
      */
     @Override
     public void routeOrder(Order order) {
-      Routing<OrderRouter> routing = this.computeRouting(order);
+      Routing routing = this.computeRouting(order);
       if (routing.isEmpty()) {
         throw new RuntimeException("routing is empty"); //TODO dead letter?
       } else {
-        routing.routees().forEach(routee -> routee.routeOrder(order));
+        routing
+          .routeesAs(OrderRouter.class)
+          .forEach(orderRoutee -> orderRoutee.routeOrder(order));
       }
     }
   }
