@@ -59,6 +59,12 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
     return queue.poll();
   }
 
+  /* @see io.vlingo.actors.Mailbox#pendingMessages() */
+  @Override
+  public int pendingMessages() {
+    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation");
+  }
+
   protected ManyToOneConcurrentArrayQueueMailbox(final Dispatcher dispatcher, final int mailboxSize, final int totalSendRetries) {
     this.dispatcher = dispatcher;
     this.queue = new ManyToOneConcurrentArrayQueue<>(mailboxSize);
