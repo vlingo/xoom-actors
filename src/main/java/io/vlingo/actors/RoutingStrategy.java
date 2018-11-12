@@ -8,8 +8,15 @@ package io.vlingo.actors;
 
 import java.util.List;
 /**
- * RoutingStrategy
+ * RoutingStrategy is an object that knows how to compute a
+ * {@link Routing} for a message based on a defined strategy
+ * (e.g., round robin, smallest mailbox, etc.). An empty {@link Routing}
+ * is not legal and will result in an {@link IllegalStateException}.
  */
 public interface RoutingStrategy {
-  <T> Routing chooseRouteFor(T routable, List<Routee> routees);
+  <T1> Routing chooseRouteFor(final T1 routable1, final List<Routee> routees);
+  <T1, T2> Routing chooseRouteFor(final T1 routable1, final T2 routable2, final List<Routee> routees);
+  <T1, T2, T3> Routing chooseRouteFor(final T1 routable1, final T2 routable2, final T3 routable3, final List<Routee> routees);
+  <T1, T2, T3, T4> Routing chooseRouteFor(final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4, final List<Routee> routees);
+  <T1, T2, T3, T4, T5> Routing chooseRouteFor(final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4, final T5 routable5, final List<Routee> routees);
 }

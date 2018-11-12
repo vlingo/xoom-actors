@@ -8,14 +8,17 @@ package io.vlingo.actors;
 
 import java.util.List;
 /**
- * BroadcastRoutingStrategy
+ * BroadcastRoutingStrategy is a {@link RoutingStrategy} that
+ * includes all pooled {@link Routee routees} in the {@link Routing}.
  */
-public class BroadcastRoutingStrategy implements RoutingStrategy {
+public class BroadcastRoutingStrategy extends RoutingStrategyAdapter {
 
-  /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
-  @Override
-  public <T> Routing chooseRouteFor(T routable, List<Routee> routees) {
-    return Routing.with(routees);
+  public BroadcastRoutingStrategy() {
+    super();
   }
 
+  @Override
+  public Routing chooseRouteFor(final List<Routee> routees) {
+    return Routing.with(routees);
+  }
 }

@@ -9,9 +9,11 @@ package io.vlingo.actors;
 import java.util.List;
 import java.util.Random;
 /**
- * RandomRoutingStrategy
+ * RandomRoutingStrategy is a {@link RoutingStrategy} that
+ * includes a random one of the pooled {@link Routee routees}
+ * in the {@link Routing}
  */
-public class RandomRoutingStrategy implements RoutingStrategy {
+public class RandomRoutingStrategy extends RoutingStrategyAdapter {
   
   private final Random random;
   
@@ -20,9 +22,8 @@ public class RandomRoutingStrategy implements RoutingStrategy {
     this.random = new Random();
   }
 
-  /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
   @Override
-  public <T> Routing chooseRouteFor(T routable, List<Routee> routees) {
+  public Routing chooseRouteFor(final List<Routee> routees) {
     int index = random.nextInt(routees.size());
     return Routing.with(routees.get(index));
   }

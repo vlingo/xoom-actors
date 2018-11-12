@@ -8,17 +8,21 @@ package io.vlingo.actors;
 
 import java.util.List;
 /**
- * SmallestMailboxRoutingStrategy
+ * SmallestMailboxRoutingStrategy is a {@link RoutingStrategy} that
+ * includes the pooled {@link Routee} with the fewest pending messages
+ * in its {@link Mailbox} in the {@link Routing}. By default, the
+ * first {@link Routee} encountered that has zero pendign messages will
+ * be chosen. Otherwise, the {@link Routee} with the fewest pending
+ * messages will be chosen.
  */
-public class SmallestMailboxRoutingStrategy implements RoutingStrategy {
+public class SmallestMailboxRoutingStrategy extends RoutingStrategyAdapter {
   
-  /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
   @Override
-  public <T> Routing chooseRouteFor(T routable, List<Routee> routees) {
+  public Routing chooseRouteFor(final List<Routee> routees) {
     Routee least = null;
     int leastCount = Integer.MAX_VALUE;
     for (Routee routee : routees) {
-      int count = routee.mailboxSize();
+      int count = routee.pendingMessages();
       if (count == 0) {
         least = routee;
         break;

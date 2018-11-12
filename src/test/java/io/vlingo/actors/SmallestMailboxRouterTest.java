@@ -10,9 +10,10 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import io.vlingo.actors.ContentBasedRoutingStrategyTest.OrderRouter;
 import io.vlingo.actors.testkit.TestUntil;
 /**
- * SmallestMailboxRouterTest
+ * SmallestMailboxRouterTest tests {@link SmallestMailboxRoutingStrategy}.
  */
 public class SmallestMailboxRouterTest {
 
@@ -92,14 +93,9 @@ public class SmallestMailboxRouterTest {
      */
     @Override
     public void routeOrder(Order order) {
-      Routing routing = this.computeRouting(order);
-      if (routing.isEmpty()) {
-        throw new RuntimeException("routing is empty"); //TODO dead letter?
-      } else {
-        routing
-          .routeesAs(OrderRouter.class)
-          .forEach(orderRoutee -> orderRoutee.routeOrder(order));
-      }
+      computeRouting(order)
+        .routeesAs(OrderRouter.class)
+        .forEach(orderRoutee -> orderRoutee.routeOrder(order));
     }
   }
 }

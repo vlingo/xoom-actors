@@ -10,28 +10,28 @@ package io.vlingo.actors;
 import java.util.List;
 import java.util.stream.Collectors;
 /**
- * Routee
+ * Routee represents a potential target for for a routed message.
  */
 public class Routee {
   
   private final Actor actor;
 
-  public static List<Routee> forAll(List<Actor> children) {
+  static List<Routee> forAll(final List<Actor> children) {
     return children.stream()
       .map(Routee::new)
       .collect(Collectors.toList());
   }
 
-  public Routee(Actor actor) {
+  Routee(final Actor actor) {
     super();
     this.actor = actor;
   }
   
-  public int mailboxSize() {
+  public int pendingMessages() {
     return actor.lifeCycle.environment.mailbox.pendingMessages();
   }
   
-  public <T> T as(Class<T> protocol) {
+  public <T> T as(final Class<T> protocol) {
     return actor.selfAs(protocol);
   }
 }

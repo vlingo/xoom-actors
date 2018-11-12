@@ -8,9 +8,14 @@ package io.vlingo.actors;
 
 import java.util.List;
 /**
- * Router
+ * Router is a kind of {@link Actor} that forwards a message
+ * to zero or more other {@link Actor actors} according to a
+ * {@link Routing} that is computed by a {@link RoutingStrategy}.
  */
 public abstract class Router extends Actor {
+  
+  //TODO: remove routees if their Actor is stopped
+  //TODO: allow pool of routees to be dynamic / resizable
   
   private final List<Routee> routees;
   private final RoutingStrategy routingStrategy;
@@ -23,7 +28,33 @@ public abstract class Router extends Actor {
     this.routingStrategy = routingStrategy;
   }
   
-  protected <T> Routing computeRouting(T routable) {
-    return routingStrategy.chooseRouteFor(routable, routees);
+  protected <T1> Routing computeRouting(final T1 routable1) {
+    Routing routing = routingStrategy.chooseRouteFor(routable1, routees);
+    routing.validate();
+    return routing;
+  }
+  
+  protected <T1, T2> Routing computeRouting(final T1 routable1, T2 routable2) {
+    Routing routing = routingStrategy.chooseRouteFor(routable1, routable2, routees);
+    routing.validate();
+    return routing;
+  }
+  
+  protected <T1, T2, T3> Routing computeRouting(final T1 routable1, T2 routable2, T3 routable3) {
+    Routing routing = routingStrategy.chooseRouteFor(routable1, routable2, routable3, routees);
+    routing.validate();
+    return routing;
+  }
+  
+  protected <T1, T2, T3, T4> Routing computeRouting(final T1 routable1, T2 routable2, T3 routable3, T4 routable4) {
+    Routing routing = routingStrategy.chooseRouteFor(routable1, routable2, routable3, routable4, routees);
+    routing.validate();
+    return routing;
+  }
+  
+  protected <T1, T2, T3, T4, T5> Routing computeRouting(final T1 routable1, T2 routable2, T3 routable3, T4 routable4, T5 routable5) {
+    Routing routing = routingStrategy.chooseRouteFor(routable1, routable2, routable3, routable4, routable5, routees);
+    routing.validate();
+    return routing;
   }
 }

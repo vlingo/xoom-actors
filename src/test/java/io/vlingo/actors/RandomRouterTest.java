@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
 /**
- * RandomRouterTest
+ * RandomRouterTest tests {@link RandomRoutingStrategy}.
  */
 public class RandomRouterTest {
 
@@ -20,13 +20,13 @@ public class RandomRouterTest {
   public void testThatItRoutes() throws InterruptedException {
     final World world = World.startWithDefaults("RandomRouterTest");
     final int poolSize = 4;
-    final TestUntil until = TestUntil.happenings(40);
+    final int messagesToSend = 40;
+    final TestUntil until = TestUntil.happenings(messagesToSend);
     final OrderRouter orderRouter = world.actorFor(
             Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
             OrderRouter.class);
     
-    /* is this the right approach? */
-    while (until.remaining() > 0) {
+    for (int i = 0; i < messagesToSend; i++) {
       orderRouter.routeOrder(new Order());
     }
     
@@ -96,14 +96,9 @@ public class RandomRouterTest {
      */
     @Override
     public void routeOrder(Order order) {
-      Routing routing = this.computeRouting(order);
-      if (routing.isEmpty()) {
-        throw new RuntimeException("routing is empty"); //TODO dead letter?
-      } else {
-        routing
-          .routeesAs(OrderRouter.class)
-          .forEach(orderRoutee -> orderRoutee.routeOrder(order));
-      }
+      computeRouting(order)
+        .routeesAs(OrderRouter.class)
+        .forEach(orderRoutee -> orderRoutee.routeOrder(order));
     }
   }
 }
