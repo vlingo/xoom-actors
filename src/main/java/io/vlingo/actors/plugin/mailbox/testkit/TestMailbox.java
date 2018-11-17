@@ -69,7 +69,13 @@ public class TestMailbox implements Mailbox {
   public Message receive() {
     throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
-
+  
+  /* @see io.vlingo.actors.Mailbox#pendingMessages() */
+  @Override
+  public int pendingMessages() {
+    throw new UnsupportedOperationException("TestMailbox does not support this operation");
+  }
+  
   private boolean isLifecycleMessage(final Message message) {
     final String representation = message.representation();
     final int openParenIndex = representation.indexOf("(");

@@ -18,6 +18,7 @@ public interface Mailbox extends Runnable {
   boolean delivering(final boolean flag);
   void send(final Message message);
   Message receive();
+  int pendingMessages();
 
   default boolean isPreallocated()
     { return false; }

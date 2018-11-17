@@ -94,6 +94,12 @@ public class SharedRingBufferMailbox implements Mailbox {
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
 
+  /* @see io.vlingo.actors.Mailbox#pendingMessages() */
+  @Override
+  public int pendingMessages() {
+    throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation");
+  }
+
   protected SharedRingBufferMailbox(final Dispatcher dispatcher, final int mailboxSize) {
     this.dispatcher = dispatcher;
     this.mailboxSize = mailboxSize;
