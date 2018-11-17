@@ -18,7 +18,7 @@ import java.util.List;
 public class SmallestMailboxRoutingStrategy extends RoutingStrategyAdapter {
   
   @Override
-  public Routing chooseRouteFor(final List<Routee> routees) {
+  protected Routing chooseRouteFor(final List<Routee> routees) {
     Routee least = null;
     int leastCount = Integer.MAX_VALUE;
     for (Routee routee : routees) {

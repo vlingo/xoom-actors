@@ -18,7 +18,7 @@ public class BroadcastRoutingStrategy extends RoutingStrategyAdapter {
   }
 
   @Override
-  public Routing chooseRouteFor(final List<Routee> routees) {
+  protected Routing chooseRouteFor(final List<Routee> routees) {
     return Routing.with(routees);
   }
 }

@@ -23,7 +23,7 @@ public class RandomRoutingStrategy extends RoutingStrategyAdapter {
   }
 
   @Override
-  public Routing chooseRouteFor(final List<Routee> routees) {
+  protected Routing chooseRouteFor(final List<Routee> routees) {
     int index = random.nextInt(routees.size());
     return Routing.with(routees.get(index));
   }

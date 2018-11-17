@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import io.vlingo.actors.ContentBasedRoutingStrategyTest.OrderRouter;
 import io.vlingo.actors.testkit.TestUntil;
 /**
  * SmallestMailboxRouterTest tests {@link SmallestMailboxRoutingStrategy}.
@@ -50,14 +49,14 @@ public class SmallestMailboxRouterTest {
   }
 
   public static interface OrderRouter {
-    void routeOrder(Order order);
+    void routeOrder(final Order order);
   }
 
   public static class OrderRouterWorker extends Actor implements OrderRouter {
     
     private final TestUntil testUntil;
 
-    public OrderRouterWorker(TestUntil testUntil) {
+    public OrderRouterWorker(final TestUntil testUntil) {
       super();
       this.testUntil = testUntil;
     }
@@ -68,7 +67,7 @@ public class SmallestMailboxRouterTest {
      * actors.RandomRouterTest.Order)
      */
     @Override
-    public void routeOrder(Order order) {
+    public void routeOrder(final Order order) {
       logger().log(this.toString() + " is routing " + order);
       testUntil.happened();
     }
@@ -77,7 +76,7 @@ public class SmallestMailboxRouterTest {
 
   public static class OrderRouterActor extends Router implements OrderRouter {
 
-    public OrderRouterActor(int poolSize, TestUntil testUntil) {
+    public OrderRouterActor(final int poolSize, final TestUntil testUntil) {
       super(
               new RouterSpecification(
                       poolSize,
@@ -92,7 +91,7 @@ public class SmallestMailboxRouterTest {
      * actors.RandomRouterTest.Order)
      */
     @Override
-    public void routeOrder(Order order) {
+    public void routeOrder(final Order order) {
       computeRouting(order)
         .routeesAs(OrderRouter.class)
         .forEach(orderRoutee -> orderRoutee.routeOrder(order));

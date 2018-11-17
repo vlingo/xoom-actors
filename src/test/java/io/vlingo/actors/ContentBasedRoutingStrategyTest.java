@@ -45,7 +45,7 @@ public class ContentBasedRoutingStrategyTest {
 
     /* @see io.vlingo.actors.RoutingStrategy#chooseRouteFor(java.lang.Object, java.util.List) */
     @Override
-    public <T1> Routing chooseRouteFor(T1 routable1, List<Routee> routees) {
+    public <T1> Routing chooseRouteFor(final T1 routable1, final List<Routee> routees) {
       Order order = (Order) routable1;
       String customerId = order.customerId();
       /* 
@@ -84,14 +84,14 @@ public class ContentBasedRoutingStrategyTest {
   }
 
   public static interface OrderRouter {
-    void routeOrder(Order order);
+    void routeOrder(final Order order);
   }
 
   public static class OrderRouterWorker extends Actor implements OrderRouter {
     
     private final TestUntil testUntil;
 
-    public OrderRouterWorker(TestUntil testUntil) {
+    public OrderRouterWorker(final TestUntil testUntil) {
       super();
       this.testUntil = testUntil;
     }
@@ -102,7 +102,7 @@ public class ContentBasedRoutingStrategyTest {
      * actors.RandomRouterTest.Order)
      */
     @Override
-    public void routeOrder(Order order) {
+    public void routeOrder(final Order order) {
       logger().log(this.toString() + " is routing " + order);
       testUntil.happened();
     }
@@ -111,7 +111,7 @@ public class ContentBasedRoutingStrategyTest {
 
   public static class OrderRouterActor extends Router implements OrderRouter {
 
-    public OrderRouterActor(int poolSize, TestUntil testUntil) {
+    public OrderRouterActor(final int poolSize, final TestUntil testUntil) {
       super(
               new RouterSpecification(
                       poolSize,
@@ -126,7 +126,7 @@ public class ContentBasedRoutingStrategyTest {
      * actors.RandomRouterTest.Order)
      */
     @Override
-    public void routeOrder(Order order) {
+    public void routeOrder(final Order order) {
       computeRouting(order)
         .routeesAs(OrderRouter.class)
         .forEach(orderRoutee -> orderRoutee.routeOrder(order));
