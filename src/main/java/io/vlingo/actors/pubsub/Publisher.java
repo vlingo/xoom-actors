@@ -11,10 +11,10 @@ public interface Publisher {
 
     void publish(final Topic topic, final Message message);
 
-    boolean subscribe(final Topic topic, final Subscriber subscriber);
+    boolean subscribe(final Topic topic, final Subscriber<?> subscriber);
 
-    boolean unsubscribe(final Topic topic, final Subscriber subscriber);
+    boolean unsubscribe(final Topic topic, final Subscriber<?> subscriber);
 
-    void unsubscribeAllTopics(final Subscriber subscriber);
+    void unsubscribeAllTopics(final Subscriber<?> subscriber);
 
 }

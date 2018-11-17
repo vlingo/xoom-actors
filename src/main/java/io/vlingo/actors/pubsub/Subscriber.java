@@ -9,5 +9,5 @@ package io.vlingo.actors.pubsub;
 
 public interface Subscriber<M extends Message> {
 
-    void receive(final M message);
+    void receive(final Message message);
 }
