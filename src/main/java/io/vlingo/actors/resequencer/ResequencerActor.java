@@ -10,7 +10,6 @@ package io.vlingo.actors.resequencer;
 import io.vlingo.actors.Actor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ResequencerActor extends Actor implements Resequencer {
