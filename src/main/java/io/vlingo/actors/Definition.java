@@ -180,7 +180,7 @@ public final class Definition {
     return type;
   }
 
-  protected List<Object> internalParameters() {
+  List<Object> internalParameters() {
     return parameters;
   }
 
