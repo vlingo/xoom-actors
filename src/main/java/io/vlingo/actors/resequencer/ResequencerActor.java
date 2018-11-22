@@ -12,7 +12,6 @@ import io.vlingo.actors.Actor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ResequencerActor extends Actor implements Resequencer {
 
@@ -47,12 +46,7 @@ public class ResequencerActor extends Actor implements Resequencer {
         final ResequencedMessages resequencedMessages = messageHolder.get(correlationId);
         int dispatchableIndex = resequencedMessages.dispatchableIndex();
 
-        final List<SequencedMessage> indexedMessages = resequencedMessages.sequencedMessages()
-                                                                    .stream()
-                                                                    .filter(message -> message.isIndexed())
-                                                                    .collect(Collectors.toList());
-
-        for(final SequencedMessage sequencedMessage : indexedMessages) {
+        for(final SequencedMessage sequencedMessage : resequencedMessages.onlyIndexed()) {
             if(sequencedMessage.index() == dispatchableIndex) {
                 dispatchableIndex++;
                 resequencedMessageConsumer.receive(sequencedMessage);

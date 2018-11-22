@@ -48,6 +48,12 @@ public class ResequencedMessages {
         return Collections.unmodifiableList(sequencedMessages);
     }
 
+    public List<SequencedMessage> onlyIndexed() {
+        return sequencedMessages.stream()
+                                .filter(message -> message.isIndexed())
+                                .collect(Collectors.toList());
+    }
+
     public int dispatchableIndex() {
         return dispatchableIndex;
     }
