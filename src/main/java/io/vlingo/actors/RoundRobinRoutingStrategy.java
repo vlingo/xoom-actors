@@ -7,6 +7,7 @@
 package io.vlingo.actors;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 /**
  * RoundRobinRoutingStrategy is a {@link RoutingStrategy} that
  * treats its pool of {@link Routee routees} as if it were a
@@ -15,16 +16,16 @@ import java.util.List;
  */
 public class RoundRobinRoutingStrategy extends RoutingStrategyAdapter {
   
-  private int lastIndex;
+  private final AtomicInteger lastIndex;
 
   public RoundRobinRoutingStrategy() {
     super();
-    lastIndex = 0;
+    lastIndex = new AtomicInteger(0);
   }
   
   @Override
   protected Routing chooseRouteFor(final List<Routee> routees) {
-    int next = lastIndex == routees.size() ? 0 : lastIndex++;
-    return Routing.with(routees.get(next));
+    final int nextIndex = lastIndex.getAndIncrement() % routees.size();
+    return Routing.with(routees.get(nextIndex));
   }
 }
