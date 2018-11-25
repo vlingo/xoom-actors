@@ -24,7 +24,7 @@ public class RoundRobinRoutingStrategy extends RoutingStrategyAdapter {
   
   @Override
   protected Routing chooseRouteFor(final List<Routee> routees) {
-    int next = lastIndex == routees.size() ? 0 : lastIndex++;
-    return Routing.with(routees.get(next));
+    final int nextIndex = lastIndex++ % routees.size();
+    return Routing.with(routees.get(nextIndex));
   }
 }
