@@ -141,7 +141,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answers the T protocol for the child Actor to be created by this parent Actor.
    * @param definition the Definition of the child Actor to be created by this parent Actor
    * @param protocol the Class&lt;T&gt; protocol of the child Actor
-   * @param T the protocol type
+   * @param <T> the protocol type
    * @return T
    */
   protected <T> T childActorFor(final Definition definition, final Class<T> protocol) {
@@ -159,7 +159,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   /**
    * Answers the Completes&lt;T&gt; instance for this Actor, or null if the behavior of the currently
    * delivered Message does not answer a Completes&lt;T&gt;.
-   * @param T the protocol type
+   * @param <T> the protocol type
    * @return Completes&lt;T&gt;
    */
   @SuppressWarnings("unchecked")
@@ -199,7 +199,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   /**
    * Answers the parent of this Actor as the T protocol.
    * @param protocol the Class&lt;T&gt; of the protocol
-   * @param T the protocol type
+   * @param <T> the protocol type
    * @return T
    */
   protected <T> T parentAs(final Class<T> protocol) {
@@ -220,7 +220,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   /**
    * Answers this Actor as a T protocol. This Actor must implement the Class&lt;T&gt; protocol.
    * @param protocol the Class&lt;T&gt; protocol
-   * @param T the protocol type
+   * @param <T> the protocol type
    * @return T
    */
   protected <T> T selfAs(final Class<T> protocol) {

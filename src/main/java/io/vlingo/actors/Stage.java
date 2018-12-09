@@ -29,6 +29,7 @@ public class Stage implements Stoppable {
    * Answers the T protocol type as the means to message the backing Actor.
    * @param actor the Actor that implements the Class&lt;T&gt; protocol
    * @param protocol the Class&lt;T&gt; protocol
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorAs(final Actor actor, final Class<T> protocol) {
@@ -39,6 +40,7 @@ public class Stage implements Stoppable {
    * Answers the T protocol of the newly created Actor that implements the protocol.
    * @param definition the Definition used to initialize the newly created Actor
    * @param protocol the Class&lt;T&gt; protocol
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -56,6 +58,7 @@ public class Stage implements Stoppable {
    * @param definition the Definition used to initialize the newly created Actor
    * @param protocol the Class&lt;T&gt; protocol
    * @param address the Address to assign to the newly created Actor
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address) {
@@ -80,6 +83,7 @@ public class Stage implements Stoppable {
    * @param definition the Definition used to initialize the newly created Actor
    * @param protocol the Class&lt;T&gt; protocol
    * @param logger the Logger to assign to the newly created Actor
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Logger logger) {
@@ -98,6 +102,7 @@ public class Stage implements Stoppable {
    * @param protocol the Class&lt;T&gt; protocol
    * @param address the Address to assign to the newly created Actor
    * @param logger the Logger to assign to the newly created Actor
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address, final Logger logger) {
@@ -140,6 +145,7 @@ public class Stage implements Stoppable {
    * of the backing Actor of the given address, or null if not found.
    * @param address the Address of the Actor to find
    * @param protocol the Class&lt;T&gt; protocol supported by the backing Actor
+   * @param <T> the protocol type
    * @return Completes&lt;T&gt;
    */
   public <T> Completes<T> actorOf(final Address address, final Class<T> protocol) {
@@ -152,6 +158,7 @@ public class Stage implements Stoppable {
    * Actor instance. Test-based Actor instances are backed by the synchronous TestMailbox.
    * @param definition the Definition used to initialize the newly created Actor
    * @param protocol the Class&lt;T&gt; protocol
+   * @param <T> the protocol type
    * @return T
    */
   public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
@@ -308,6 +315,7 @@ public class Stage implements Stoppable {
    * @param parent the Actor parent of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
+   * @param <T> the protocol type
    * @return T
    */
   <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
@@ -338,6 +346,7 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
+   * @param <T> the protocol type
    * @return ActorProtocolActor
    */
   <T> ActorProtocolActor<T> actorProtocolFor(
@@ -395,6 +404,7 @@ public class Stage implements Stoppable {
    * @param protocol the Class&lt;T&gt; protocol of the Actor
    * @param actor the Actor instance that backs the proxy protocol
    * @param mailbox the Mailbox instance of this Actor
+   * @param <T> the protocol type
    * @return T
    */
   final <T> T actorProxyFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
@@ -507,6 +517,7 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox of the Actor to create
    * @param maybeSupervisor the possible Supervisor of the Actor to create
    * @param logger the Logger of the Actor to create
+   * @param <T> the protocol type
    * @return Actor
    * @throws Exception thrown if there is a problem with Actor creation
    */
@@ -560,6 +571,7 @@ public class Stage implements Stoppable {
   
   /**
    * Internal type used to manage Actor proxy creation. (INTERNAL ONLY)
+   * @param <T> the protocol type
    */
   static class ActorProtocolActor<T> {
     private final Actor actor;
