@@ -97,6 +97,7 @@ public final class World implements Registrar {
    * and supports the protocol defined by protocol.
    * @param definition the Definition providing parameters to the Actor
    * @param protocol the Class&lt;T&gt; protocol that the Actor supports
+   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Definition definition, final Class<T> protocol) {
@@ -331,7 +332,7 @@ public final class World implements Registrar {
 
   /**
    * Registers the dynamic dependencies by name.
-   * @param the String name of the dynamic dependencies
+   * @param name the String name of the dynamic dependencies
    * @param dep the Object to register
    */
   public void registerDynamic(final String name, final Object dep) {
@@ -342,6 +343,7 @@ public final class World implements Registrar {
    * Answers the DEPENDENCY instance of the name named dependency.
    * @param name the String name of the dynamic dependency
    * @param anyDependencyClass the Class&lt;DEPENDENCY&gt;
+   * @param <DEPENDENCY> the dependency type
    * @return the DEPENDENCY instance
    */
   public <DEPENDENCY> DEPENDENCY resolveDynamic(final String name, final Class<DEPENDENCY> anyDependencyClass) {
@@ -359,7 +361,7 @@ public final class World implements Registrar {
   /**
    * Answers the Stage named by name, or the newly created Stage instance named by name
    * if the Stage does not already exist.
-   * @param the String name of the Stage to answer
+   * @param name the String name of the Stage to answer
    * @return Stage
    */
   public synchronized Stage stageNamed(final String name) {
