@@ -16,8 +16,8 @@ import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
 import io.vlingo.common.Completes;
 
 /**
- * The World of the actor runtime through which all Stage and Actor instances are created and run.
- * All plugins and all default facilities are registered through the World.
+ * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
+ * All plugins and all default facilities are registered through the {@code World}.
  */
 public final class World implements Registrar {
   static final long PRIVATE_ROOT_ID = Long.MAX_VALUE;
@@ -47,32 +47,32 @@ public final class World implements Registrar {
   private Stoppable publicRoot;
 
   /**
-   * Answers a new World with the given name and that is configured with
-   * the contents of the vlingo-actors.properties file.
-   * @param name the String name to assign to the new World instance
-   * @return World
+   * Answers a new {@code World} with the given {@code name} and that is configured with
+   * the contents of the {@code vlingo-actors.properties} file.
+   * @param name the {@code String} name to assign to the new {@code World} instance
+   * @return {@code World}
    */
   public static World start(final String name) {
     return start(name, io.vlingo.actors.Properties.properties);
   }
 
   /**
-   * Answers a new World with the given name and that is configured with
+   * Answers a new {@code World} with the given {@code name} and that is configured with
    * the contents of the properties.
-   * @param name the String name to assign to the new World instance
+   * @param name the String name to assign to the new {@code World} instance
    * @param properties the java.util.Properties used for configuration
-   * @return World
+   * @return {@code World}
    */
   public static World start(final String name, final java.util.Properties properties) {
     return start(name, Configuration.defineWith(properties));
   }
 
   /**
-   * Answers a new World with the given name and that is configured with
-   * the contents of the configuration.
-   * @param name the String name to assign to the new World instance
-   * @param configuration the Configuration used for configuration
-   * @return World
+   * Answers a new {@code World} with the given {@code name} and that is configured with
+   * the contents of the {@code configuration}.
+   * @param name the {@code String} name to assign to the new {@code World} instance
+   * @param configuration the {@code Configuration} used for configuration
+   * @return {@code World}
    */
   public static World start(final String name, final Configuration configuration) {
     if (name == null) {
@@ -83,20 +83,20 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers a new World with the given name and that is configured with
-   * the contents of the default Configuration of sensible settings.
-   * @param name the String name to assign to the new World instance
-   * @return World
+   * Answers a new {@code World} with the given {@code name} and that is configured with
+   * the contents of the default {@code Configuration} of sensible settings.
+   * @param name the {@code String} name to assign to the new {@code World} instance
+   * @return {@code World}
    */
   public static World startWithDefaults(final String name) {
     return start(name, Configuration.define());
   }
 
   /**
-   * Answers a new concrete Actor that is defined by the parameters of definition
-   * and supports the protocol defined by protocol.
-   * @param definition the Definition providing parameters to the Actor
-   * @param protocol the Class&lt;T&gt; protocol that the Actor supports
+   * Answers a new concrete {@code Actor} that is defined by the parameters of {@code definition}
+   * and supports the protocol defined by {@code protocol}.
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @param protocol the {@code Class<T>} protocol that the {@code Actor} supports
    * @param <T> the protocol type
    * @return T
    */
@@ -109,11 +109,11 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers a Protocols that provides one or more supported protocols for the
-   * newly created Actor according to definition.
-   * @param definition the Definition providing parameters to the Actor
-   * @param protocols the Class&lt;T&gt;[] array of protocols that the Actor supports
-   * @return Protocols
+   * Answers a {@code Protocols} that provides one or more supported protocols for the
+   * newly created {@code Actor} according to {@code definition}.
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @param protocols the {@code Class<T>[]} array of protocols that the {@code Actor} supports
+   * @return {@code Protocols}
    */
   public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
     if (isTerminated()) {
@@ -124,25 +124,25 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the AddressFactory for this World.
-   * @return AddressFactory
+   * Answers the {@code AddressFactory} for this {@code World}.
+   * @return {@code AddressFactory}
    */
   public AddressFactory addressFactory() {
     return addressFactory;
   }
 
   /**
-   * Answers the Configuration for this World.
-   * @return Configuration
+   * Answers the {@code Configuration} for this {@code World}.
+   * @return {@code Configuration}
    */
   public Configuration configuration() {
     return configuration;
   }
 
   /**
-   * Answers the DeadLetters for this World, which is backed
-   * by an Actor. Interested parties may register for notifications
-   * as a DeadLettersListener via the DeadLetters protocol.
+   * Answers the {@code DeadLetters} for this {@code World}, which is backed
+   * by an {@code Actor}. Interested parties may register for notifications
+   * as a {@code DeadLettersListener} via the {@code DeadLetters} protocol.
    * @return DeadLetters
    */
   public DeadLetters deadLetters() {
@@ -150,9 +150,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers a new CompletesEventually instance that backs the clientCompletes.
-   * This manages the Completes using the CompletesEventually plugin Actor pool.
-   * @param clientCompletes the CompletesEventually allocated for eventual completion of clientCompletes
+   * Answers a new {@code CompletesEventually} instance that backs the {@code clientCompletes}.
+   * This manages the {@code Completes} using the {@code CompletesEventually} plugin {@code Actor} pool.
+   * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
    * @return CompletesEventually
    */
   public CompletesEventually completesFor(final Completes<?> clientCompletes) {
@@ -160,8 +160,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the default Logger that is registered with this World. The
-   * Logger protocol is implemented by an Actor such that all logging is
+   * Answers the default {@code Logger} that is registered with this {@code World}. The
+   * {@code Logger} protocol is implemented by an {@code Actor} such that all logging is
    * asynchronous.
    * @return Logger
    */
@@ -185,9 +185,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the Actor that serves as the default parent for this World.
-   * Unless overridden using Configuration (e.g. Properties or fluent Configuration)
-   * the default parent is the single PublicRootActor.
+   * Answers the {@code Actor} that serves as the default parent for this {@code World}.
+   * Unless overridden using {@code Configuration} (e.g. {@code Properties} or fluent {@code Configuration})
+   * the default parent is the single {@code PublicRootActor}.
    * @return Actor
    */
   public Actor defaultParent() {
@@ -195,9 +195,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the Supervisor protocol for sending messages to the default supervisor.
-   * Unless overridden using Configuration (e.g. Properties or fluent Configuration)
-   * the default supervisor is the single PublicRootActor.
+   * Answers the {@code Supervisor} protocol for sending messages to the default supervisor.
+   * Unless overridden using {@code Configuration} (e.g. {@code Properties} or fluent {@code Configuration})
+   * the default supervisor is the single {@code PublicRootActor}.
    * @return Supervisor
    */
   public Supervisor defaultSupervisor() {
@@ -208,8 +208,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the Logger named with name, or null of it does not exist.
-   * @param name the String name of the Logger
+   * Answers the {@code Logger} named with {@code name}, or {@code null} of it does not exist.
+   * @param name the {@code String} name of the {@code Logger}
    * @return Logger
    */
   public Logger logger(final String name) {
@@ -217,7 +217,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the String name of this World.
+   * Answers the {@code String} name of this {@code World}.
    * @return String
    */
   public String name() {
@@ -225,9 +225,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the CompletesEventuallyProvider plugin by name.
-   * @param name the String name of the CompletesEventuallyProvider to register
-   * @param completesEventuallyProvider the CompletesEventuallyProvider to register
+   * Registers the {@code CompletesEventuallyProvider} plugin by {@code name}.
+   * @param name the {@code String} name of the {@code CompletesEventuallyProvider} to register
+   * @param completesEventuallyProvider the {@code CompletesEventuallyProvider} to register
    */
   @Override
   public void register(final String name, final CompletesEventuallyProvider completesEventuallyProvider) {
@@ -236,9 +236,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the LoggerProvider plugin by name.
-   * @param name the String name of the LoggerProvider to register
-   * @param loggerProvider the LoggerProvider to register
+   * Registers the {@code LoggerProvider} plugin by {@code name}.
+   * @param name the {@code String} name of the {@code LoggerProvider} to register
+   * @param loggerProvider the {@code LoggerProvider} to register
    */
   @Override
   public void register(final String name, final boolean isDefault, final LoggerProvider loggerProvider) {
@@ -248,20 +248,20 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the MailboxProvider plugin by name.
-   * @param name the String name of the MailboxProvider to register
-   * @param mailboxProvider the MailboxProvider to register
+   * Registers the {@code MailboxProvider} plugin by {@code name}.
+   * @param name the {@code String} name of the {@code MailboxProvider} to register
+   * @param mailboxProvider the {@code MailboxProvider} to register
    */
   public void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider) {
     mailboxProviderKeeper.keep(name, isDefault, mailboxProvider);
   }
 
   /**
-   * Registers the supervisorClass plugin by name that will supervise all Actors that implement the supervisedProtocol.
-   * @param stageName the String name of the Stage in which the supervisorClass is to be registered
-   * @param name the String name of the supervisor to register
-   * @param supervisedProtocol the protocol of Class&lt;?&gt; for which the supervisor will supervise
-   * @param supervisorClass the Class&lt;? extends Actor&gt; to register as a supervisor
+   * Registers the {@code supervisorClass} plugin by {@code name} that will supervise all {@code Actors} that implement the {@code supervisedProtocol}.
+   * @param stageName the {@code String} name of the {@code Stage} in which the {@code supervisorClass} is to be registered
+   * @param name the {@code String} name of the supervisor to register
+   * @param supervisedProtocol the protocol of {@code Class<?>} for which the supervisor will supervise
+   * @param supervisorClass the {@code Class<? extends Actor>} to register as a supervisor
    */
   @Override
   public void registerCommonSupervisor(final String stageName, final String name, final Class<?> supervisedProtocol, final Class<? extends Actor> supervisorClass) {
@@ -276,11 +276,11 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the supervisorClass plugin by name that will serve as the default supervise for all Actors
+   * Registers the {@code supervisorClass} plugin by {@code name} that will serve as the default supervise for all {@code Actors}
    * that are not supervised by a specific supervisor.
-   * @param stageName the String name of the Stage in which the supervisorClass is to be registered
-   * @param name the String name of the supervisor to register
-   * @param supervisorClass the Class&lt;? extends Actor&gt; to register as a supervisor
+   * @param stageName the {@code String} name of the {@code Stage} in which the {@code supervisorClass} is to be registered
+   * @param name the {@code String} name of the supervisor to register
+   * @param supervisorClass the {@code Class<? extends Actor>} to register as a supervisor
    */
   @Override
   public void registerDefaultSupervisor(final String stageName, final String name, final Class<? extends Actor> supervisorClass) {
@@ -295,8 +295,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the CompletesEventuallyProviderKeeper plugin.
-   * @param keeper the CompletesEventuallyProviderKeeper to register
+   * Registers the {@code CompletesEventuallyProviderKeeper} plugin.
+   * @param keeper the {@code CompletesEventuallyProviderKeeper} to register
    */
   @Override
   public void registerCompletesEventuallyProviderKeeper(final CompletesEventuallyProviderKeeper keeper) {
@@ -307,8 +307,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the LoggerProviderKeeper plugin.
-   * @param keeper the LoggerProviderKeeper to register
+   * Registers the {@code LoggerProviderKeeper} plugin.
+   * @param keeper the {@code LoggerProviderKeeper} to register
    */
   @Override
   public void registerLoggerProviderKeeper(final LoggerProviderKeeper keeper) {
@@ -319,8 +319,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the MailboxProviderKeeper plugin.
-   * @param keeper the MailboxProviderKeeper to register
+   * Registers the {@code MailboxProviderKeeper} plugin.
+   * @param keeper the {@code MailboxProviderKeeper} to register
    */
   @Override
   public void registerMailboxProviderKeeper(final MailboxProviderKeeper keeper) {
@@ -331,18 +331,18 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the dynamic dependencies by name.
-   * @param name the String name of the dynamic dependencies
-   * @param dep the Object to register
+   * Registers the dynamic dependencies by {@code name}.
+   * @param name the {@code String} name of the dynamic dependencies
+   * @param dep the {@code Object} to register
    */
   public void registerDynamic(final String name, final Object dep) {
     this.dynamicDependencies.put(name, dep);
   }
 
   /**
-   * Answers the DEPENDENCY instance of the name named dependency.
-   * @param name the String name of the dynamic dependency
-   * @param anyDependencyClass the Class&lt;DEPENDENCY&gt;
+   * Answers the {@code DEPENDENCY} instance of the {@code name} named dependency.
+   * @param name the {@code String} name of the dynamic dependency
+   * @param anyDependencyClass the {@code Class<DEPENDENCY>}
    * @param <DEPENDENCY> the dependency type
    * @return the DEPENDENCY instance
    */
@@ -351,7 +351,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the default Stage, which is the Stage created when this World was started.
+   * Answers the default {@code Stage}, which is the {@code Stage} created when this {@code World} was started.
    * @return Stage
    */
   public Stage stage() {
@@ -359,9 +359,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the Stage named by name, or the newly created Stage instance named by name
-   * if the Stage does not already exist.
-   * @param name the String name of the Stage to answer
+   * Answers the {@code Stage} named by {@code name}, or the newly created {@code Stage} instance named by {@code name}
+   * if the {@code Stage} does not already exist.
+   * @param name the {@code String} name of the {@code Stage} to answer
    * @return Stage
    */
   public synchronized Stage stageNamed(final String name) {
@@ -377,7 +377,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers whether or not this World has been terminated or is in the process of termination.
+   * Answers whether or not this {@code World} has been terminated or is in the process of termination.
    * @return boolean
    */
   public boolean isTerminated() {
@@ -385,7 +385,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Initiates the World terminate process if the process has not already been initiated.
+   * Initiates the {@code World} terminate process if the process has not already been initiated.
    */
   public void terminate() {
     if (!isTerminated()) {
@@ -400,8 +400,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers this World instance.
-   * @return World
+   * Answers this {@code World} instance.
+   * @return {@code World}
    */
   @Override
   public World world() {
@@ -409,9 +409,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the Mailbox instance by mailboxName and hashCode. (INTERNAL ONLY)
-   * @param mailboxName the String name of the Mailbox type to use
-   * @param hashCode the int hash code to help determine which Mailbox instance to assign
+   * Answers the {@code Mailbox} instance by {@code mailboxName} and {@code hashCode}. (INTERNAL ONLY)
+   * @param mailboxName the {@code String} name of the {@code Mailbox} type to use
+   * @param hashCode the {@code int} hash code to help determine which {@code Mailbox} instance to assign
    * @return Mailbox
    */
   Mailbox assignMailbox(final String mailboxName, final int hashCode) {
@@ -419,9 +419,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers a name for a Mailbox given a candidateMailboxName, which if non-existing
-   * the name of the default Mailbox is answered. (INTERNAL ONLY)
-   * @param candidateMailboxName the String name of the desired Mailbox
+   * Answers a {@code name} for a {@code Mailbox} given a {@code candidateMailboxName}, which if non-existing
+   * the {@code name} of the default {@code Mailbox} is answered. (INTERNAL ONLY)
+   * @param candidateMailboxName the {@code String} name of the desired {@code Mailbox}
    * @return String
    */
   String mailboxNameFrom(final String candidateMailboxName) {
@@ -435,7 +435,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the name of the default Mailbox. (INTERNAL ONLY)
+   * Answers the {@code name} of the default {@code Mailbox}. (INTERNAL ONLY)
    * @return String
    */
   String findDefaultMailboxName() {
@@ -443,8 +443,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Sets the defaultParent Actor as the default for this World. (INTERNAL ONLY)
-   * @param defaultParent the Actor to use as the default parent
+   * Sets the {@code defaultParent} {@code Actor} as the default for this {@code World}. (INTERNAL ONLY)
+   * @param defaultParent the {@code Actor} to use as the default parent
    */
   synchronized void setDefaultParent(final Actor defaultParent) {
     if (defaultParent != null && this.defaultParent != null) {
@@ -455,8 +455,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Sets the DeadLetters as the default for this World. (INTERNAL ONLY)
-   * @param deadLetters the DeadLetters to register as the default
+   * Sets the {@code DeadLetters} as the default for this {@code World}. (INTERNAL ONLY)
+   * @param deadLetters the {@code DeadLetters} to register as the default
    */
   synchronized void setDeadLetters(final DeadLetters deadLetters) {
     if (deadLetters != null && this.deadLetters != null) {
@@ -468,7 +468,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the PrivateRootActor instance as a Stoppable. (INTERNAL ONLY)
+   * Answers the {@code PrivateRootActor} instance as a {@code Stoppable}. (INTERNAL ONLY)
    * @return Stoppable
    */
   Stoppable privateRoot() {
@@ -476,8 +476,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Sets the PrivateRootActor instances as a Stoppable. (INTERNAL ONLY)
-   * @param privateRoot the Stoppable protocol backed by the PrivateRootActor
+   * Sets the {@code PrivateRootActor} instances as a {@code Stoppable}. (INTERNAL ONLY)
+   * @param privateRoot the {@code Stoppable} protocol backed by the {@code PrivateRootActor}
    */
   synchronized void setPrivateRoot(final Stoppable privateRoot) {
     if (privateRoot != null && this.privateRoot != null) {
@@ -489,7 +489,7 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers the PublicRootActor instance as a Stoppable. (INTERNAL ONLY)
+   * Answers the {@code PublicRootActor} instance as a {@code Stoppable}. (INTERNAL ONLY)
    * @return Stoppable
    */
   Stoppable publicRoot() {
@@ -497,8 +497,8 @@ public final class World implements Registrar {
   }
 
   /**
-   * Sets the PublicRootActor instances as a Stoppable. (INTERNAL ONLY)
-   * @param privateRoot the Stoppable protocol backed by the PrivateRootActor
+   * Sets the {@code PublicRootActor} instances as a {@code Stoppable}. (INTERNAL ONLY)
+   * @param privateRoot the {@code Stoppable} protocol backed by the {@code PrivateRootActor}
    */
   synchronized void setPublicRoot(final Stoppable publicRoot) {
     if (publicRoot != null && this.publicRoot != null) {
@@ -509,9 +509,9 @@ public final class World implements Registrar {
   }
 
   /**
-   * Initializes the new World instance with the given name and configuration.
-   * @param name the String name to assign to the World
-   * @param configuration the Configuration to use to initialize various World facilities
+   * Initializes the new {@code World} instance with the given name and configuration.
+   * @param name the {@code String} name to assign to the {@code World}
+   * @param configuration the {@code Configuration} to use to initialize various {@code World} facilities
    */
   private World(final String name, final Configuration configuration) {
     this.name = name;
@@ -536,10 +536,10 @@ public final class World implements Registrar {
   }
 
   /**
-   * Starts the PrivateRootActor. When the PrivateRootActor starts it will in turn
-   * start the PublicRootActor.
-   * @param stage the Stage in which to start the PrivateRootActor
-   * @param logger the default Logger for this World and Stage
+   * Starts the {@code PrivateRootActor}. When the {@code PrivateRootActor} starts it will in turn
+   * start the {@code PublicRootActor}.
+   * @param stage the {@code Stage} in which to start the {@code PrivateRootActor}
+   * @param logger the default {@code Logger} for this {@code World} and {@code Stage}
    */
   private void startRootFor(final Stage stage, final Logger logger) {
     stage.actorProtocolFor(

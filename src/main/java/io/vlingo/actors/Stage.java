@@ -26,9 +26,9 @@ public class Stage implements Stoppable {
   private final World world;
 
   /**
-   * Answers the T protocol type as the means to message the backing Actor.
-   * @param actor the Actor that implements the Class&lt;T&gt; protocol
-   * @param protocol the Class&lt;T&gt; protocol
+   * Answers the {@code T} protocol type as the means to message the backing {@code Actor}.
+   * @param actor the {@code Actor} that implements the {@code Class<T>} protocol
+   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
    * @return T
    */
@@ -37,9 +37,9 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the T protocol of the newly created Actor that implements the protocol.
-   * @param definition the Definition used to initialize the newly created Actor
-   * @param protocol the Class&lt;T&gt; protocol
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
    * @return T
    */
@@ -53,11 +53,11 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the T protocol of the newly created Actor that implements the protocol and
-   * that will be assigned the specific address.
-   * @param definition the Definition used to initialize the newly created Actor
-   * @param protocol the Class&lt;T&gt; protocol
-   * @param address the Address to assign to the newly created Actor
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
+   * that will be assigned the specific {@code address}.
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param protocol the {@code Class<T>} protocol
+   * @param address the {@code Address} to assign to the newly created {@code Actor}
    * @param <T> the protocol type
    * @return T
    */
@@ -78,11 +78,11 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the T protocol of the newly created Actor that implements the protocol and
-   * that will be assigned the specific logger.
-   * @param definition the Definition used to initialize the newly created Actor
-   * @param protocol the Class&lt;T&gt; protocol
-   * @param logger the Logger to assign to the newly created Actor
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
+   * that will be assigned the specific {@code logger}.
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param protocol the {@code Class<T>} protocol
+   * @param logger the {@code Logger} to assign to the newly created {@code Actor}
    * @param <T> the protocol type
    * @return T
    */
@@ -96,12 +96,12 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the T protocol of the newly created Actor that implements the protocol and
-   * that will be assigned the specific address and logger.
-   * @param definition the Definition used to initialize the newly created Actor
-   * @param protocol the Class&lt;T&gt; protocol
-   * @param address the Address to assign to the newly created Actor
-   * @param logger the Logger to assign to the newly created Actor
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
+   * that will be assigned the specific {@code address} and {@code logger}.
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param protocol the {@code Class<T>} protocol
+   * @param address the {@code Address} to assign to the newly created {@code Actor}
+   * @param logger the {@code Logger} to assign to the newly created {@code Actor}
    * @param <T> the protocol type
    * @return T
    */
@@ -122,10 +122,10 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers a Protocols that provides one or more supported protocols for the
-   * newly created Actor according to definition.
-   * @param definition the Definition providing parameters to the Actor
-   * @param protocols the Class&lt;T&gt;[] array of protocols that the Actor supports
+   * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
+   * newly created {@code Actor} according to {@code definition}.
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @param protocols the {@code Class<T>}[] array of protocols that the {@code Actor} supports
    * @return Protocols
    */
   public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
@@ -141,23 +141,23 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the Completes&lt;T&gt; that will eventually complete with the T protocol
-   * of the backing Actor of the given address, or null if not found.
-   * @param address the Address of the Actor to find
-   * @param protocol the Class&lt;T&gt; protocol supported by the backing Actor
+   * Answers the {@code Completes<T>} that will eventually complete with the {@code T} protocol
+   * of the backing {@code Actor} of the given {@code address}, or {@code null} if not found.
+   * @param address the {@code Address} of the {@code Actor} to find
+   * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
    * @param <T> the protocol type
-   * @return Completes&lt;T&gt;
+   * @return {@code Completes<T>}
    */
   public <T> Completes<T> actorOf(final Address address, final Class<T> protocol) {
     return directoryScanner.actorOf(address, protocol);
   }
 
   /**
-   * Answers the TestActor&lt;T&gt;, T being the protocol, of the new created Actor that implements the protocol.
-   * The TestActor&lt;T&gt; is specifically used for test scenarios and provides runtime access to the internal
-   * Actor instance. Test-based Actor instances are backed by the synchronous TestMailbox.
-   * @param definition the Definition used to initialize the newly created Actor
-   * @param protocol the Class&lt;T&gt; protocol
+   * Answers the {@code TestActor<T>}, {@code T} being the protocol, of the new created {@code Actor} that implements the {@code protocol}.
+   * The {@code TestActor<T>} is specifically used for test scenarios and provides runtime access to the internal
+   * {@code Actor} instance. Test-based {@code Actor} instances are backed by the synchronous {@code TestMailbox}.
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
    * @return T
    */
@@ -188,11 +188,11 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers a Protocols that provides one or more supported protocols for the
-   * newly created Actor according to definition, that can be used for testing.
-   * Test-based Actor instances are backed by the synchronous TestMailbox.
-   * @param definition the Definition providing parameters to the Actor
-   * @param protocols the Class&lt;T&gt;[] array of protocols that the Actor supports
+   * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
+   * newly created {@code Actor} according to {@code definition}, that can be used for testing.
+   * Test-based {@code Actor} instances are backed by the synchronous {@code TestMailbox}.
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @param protocols the {@code Class<T>}[] array of protocols that the {@code Actor} supports
    * @return Protocols
    */
   public final Protocols testActorFor(final Definition definition, final Class<?>[] protocols) {
@@ -217,7 +217,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the int count of the number of Actors contained in this Stage.
+   * Answers the {@code int} count of the number of {@code Actor} instances contained in this {@code Stage}.
    * @return int
    */
   public int count() {
@@ -225,7 +225,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * A debugging tool used to print information about the Actor instances contained in this Stage.
+   * A debugging tool used to print information about the {@code Actor} instances contained in this {@code Stage}.
    */
   public void dump() {
     final Logger logger = this.world.defaultLogger();
@@ -236,7 +236,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the name of this Stage.
+   * Answers the {@code name} of this {@code Stage}.
    * @return String
    */
   public String name() {
@@ -244,16 +244,16 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Registers with this Stage the common supervisor for the given protocol.
-   * @param protocol the Class&lt;T&gt; protocol to be supervised by common
-   * @param common the Supervisor to serve as the supervisor of all Actors implementing protocol
+   * Registers with this {@code Stage} the {@code common} supervisor for the given {@code protocol}.
+   * @param protocol the {@code Class<T>} protocol to be supervised by {@code common}
+   * @param common the {@code Supervisor} to serve as the supervisor of all {@code Actor}s implementing protocol
    */
   public void registerCommonSupervisor(final Class<?> protocol, final Supervisor common) {
     commonSupervisors.put(protocol, common);
   }
 
   /**
-   * Answers the Scheduler of this Stage.
+   * Answers the {@code Scheduler} of this {@code Stage}.
    * @return Scheduler
    */
   public Scheduler scheduler() {
@@ -261,7 +261,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers whether or not this Stage has been stopped or is in the process of stopping.
+   * Answers whether or not this {@code Stage} has been stopped or is in the process of stopping.
    * @return boolean
    */
   @Override
@@ -270,7 +270,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Initiates the process of stopping this Stage.
+   * Initiates the process of stopping this {@code Stage}.
    */
   @Override
   public void stop() {
@@ -287,7 +287,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the World instance of this Stage.
+   * Answers the {@code World} instance of this {@code Stage}.
    * @return World
    */
   public World world() {
@@ -295,9 +295,9 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Initializes the new Stage of the world and with name. (INTERNAL ONLY)
-   * @param world the World parent of this Stage
-   * @param name the String name of this Stage
+   * Initializes the new {@code Stage} of the world and with name. (INTERNAL ONLY)
+   * @param world the {@code World} parent of this {@code Stage}
+   * @param name the {@code String} name of this {@code Stage}
    */
   Stage(final World world, final String name) {
     this.world = world;
@@ -311,7 +311,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the T protocol for the newly created Actor instance. (INTERNAL ONLY)
    * @param definition the Definition of the Actor
-   * @param protocol the Class&lt;T&gt; protocol of the Actor
+   * @param protocol the {@code Class<T>} protocol of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
@@ -327,7 +327,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the ActorProtocolActor[] for the newly created Actor instance. (INTERNAL ONLY)
    * @param definition the Definition of the Actor
-   * @param protocols the Class&lt;T&gt;[] protocols of the Actor
+   * @param protocols the {@code Class<T>}[] protocols of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
@@ -340,7 +340,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the ActorProtocolActor for the newly created Actor instance. (INTERNAL ONLY)
    * @param definition the Definition of the Actor
-   * @param protocol the Class&lt;T&gt; protocol of the Actor
+   * @param protocol the {@code Class<T>} protocol of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeAddress the possible Address of this Actor
    * @param maybeMailbox the possible Mailbox of this Actor
@@ -372,7 +372,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the ActorProtocolActor[] for the newly created Actor instance. (INTERNAL ONLY)
    * @param definition the Definition of the Actor
-   * @param protocols the Class&lt;T&gt;[] protocols of the Actor
+   * @param protocols the {@code Class<T>}[] protocols of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeAddress the possible Address of this Actor
    * @param maybeMailbox the possible Mailbox of this Actor
@@ -401,7 +401,7 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the T protocol proxy for this newly created Actor. (INTERNAL ONLY)
-   * @param protocol the Class&lt;T&gt; protocol of the Actor
+   * @param protocol the {@code Class<T>} protocol of the Actor
    * @param actor the Actor instance that backs the proxy protocol
    * @param mailbox the Mailbox instance of this Actor
    * @param <T> the protocol type
@@ -413,7 +413,7 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the Object[] protocol proxies for this newly created Actor. (INTERNAL ONLY)
-   * @param protocols the Class&lt;T&gt;[] protocols of the Actor
+   * @param protocols the {@code Class<T>}[] protocols of the Actor
    * @param actor the Actor instance that backs the proxy protocol
    * @param mailbox the Mailbox instance of this Actor
    * @return Object[]
@@ -431,7 +431,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the common Supervisor for the given protocol or the defaultSupervisor if there is
    * no registered common Supervisor. (INTERNAL ONLY)
-   * @param protocol the Class&lt;T&gt; protocol to supervise
+   * @param protocol the {@code Class<T>} protocol to supervise
    * @param defaultSupervisor the Supervisor default to be used if there is no registered common Supervisor
    * @return Supervisor
    */

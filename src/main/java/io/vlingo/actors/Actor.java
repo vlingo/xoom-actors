@@ -15,15 +15,15 @@ import io.vlingo.common.ResultCompletes;
 import io.vlingo.common.Scheduler;
 
 /**
- * The abstract base class of all concrete instance. This base provides common
- * facilities and life cycle processing for all Actors.
+ * The abstract base class of all concrete {@code Actor} types. This base provides common
+ * facilities and life cycle processing for all {@code Actor} types.
  */
 public abstract class Actor implements Startable, Stoppable, TestStateView {
   final ResultCompletes completes;
   final LifeCycle lifeCycle;
 
   /**
-   * Answers the address of this Actor.
+   * Answers the {@code address} of this {@code Actor}.
    * @return Address
    */
   public Address address() {
@@ -31,7 +31,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the DeadLetters for this Actor.
+   * Answers the {@code DeadLetters} for this {@code Actor}.
    * @return DeadLetters
    */
   public DeadLetters deadLetters() {
@@ -39,7 +39,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Scheduler for this Actor.
+   * Answers the {@code Scheduler} for this {@code Actor}.
    * @return Scheduler
    */
   public Scheduler scheduler() {
@@ -47,14 +47,14 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * The default implementation of start(), which is a no-op. Override if needed.
+   * The default implementation of {@code start()}, which is a no-op. Override if needed.
    */
   @Override
   public void start() {
   }
 
   /**
-   * Answers whether or not this Actor has been stopped or is in the process or stopping.
+   * Answers whether or not this {@code Actor} has been stopped or is in the process or stopping.
    * @return boolean
    */
   @Override
@@ -63,7 +63,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Initiates the process or stopping this Actor all all of its children.
+   * Initiates the process or stopping this {@code Actor} and all of its children.
    */
   @Override
   public void stop() {
@@ -76,7 +76,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the TestState for this Actor. Override to provide a snapshot of the current Actor state.
+   * Answers the {@code TestState} for this {@code Actor}. Override to provide a snapshot of the current {@code Actor} state.
    * @return TestState
    */
   public TestState viewTestState() {
@@ -85,8 +85,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers whether or not this Actor is equal to other.
-   * @param other the Object to which this Actor is compared
+   * Answers whether or not this {@code Actor} is equal to {@code other}.
+   * @param other the {@code Object} to which this {@code Actor} is compared
    * @return boolean
    */
   @Override
@@ -99,7 +99,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the int hash code of this Actor.
+   * Answers the {@code int} hash code of this {@code Actor}.
    * @return int
    */
   @Override
@@ -108,7 +108,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the String representation of this Actor.
+   * Answers the {@code String} representation of this {@code Actor}.
    * @return String
    */
   @Override
@@ -117,7 +117,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the parent Actor of this Actor. (INTERNAL ONLY)
+   * Answers the parent {@code Actor} of this {@code Actor}. (INTERNAL ONLY)
    * @return Actor
    */
   Actor parent() {
@@ -128,7 +128,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Initializes the newly created Actor.
+   * Initializes the newly created {@code Actor}.
    */
   protected Actor() {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
@@ -138,9 +138,9 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the T protocol for the child Actor to be created by this parent Actor.
-   * @param definition the Definition of the child Actor to be created by this parent Actor
-   * @param protocol the Class&lt;T&gt; protocol of the child Actor
+   * Answers the {@code T} protocol for the child {@code Actor} to be created by this parent {@code  Actor}.
+   * @param definition the {@code Definition} of the child {@code Actor} to be created by this parent {@code Actor}
+   * @param protocol the {@code Class<T>} protocol of the child {@code Actor}
    * @param <T> the protocol type
    * @return T
    */
@@ -157,10 +157,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Completes&lt;T&gt; instance for this Actor, or null if the behavior of the currently
-   * delivered Message does not answer a Completes&lt;T&gt;.
+   * Answers the {@code Completes<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * delivered {@code Message} does not answer a {@code Completes<T>}.
    * @param <T> the protocol type
-   * @return Completes&lt;T&gt;
+   * @return {@code Completes<T>}
    */
   @SuppressWarnings("unchecked")
   protected <T> Completes<T> completes() {
@@ -171,9 +171,9 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers a CompletesEventually if the behavior of the currently
-   * delivered Message does answers a Completes&lt;T&gt;. Otherwise the outcome
-   * is unpredictable.
+   * Answers a {@code CompletesEventually} if the behavior of the currently
+   * delivered {@code Message} does answers a {@code Completes<T>}. Otherwise the outcome
+   * is undefined.
    * @return CompletesEventually
    */
   protected CompletesEventually completesEventually() {
@@ -181,7 +181,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Definition of this Actor.
+   * Answers the {@code Definition} of this {@code Actor}.
    * @return Definition
    */
   protected Definition definition() {
@@ -189,7 +189,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Logger of this Actor.
+   * Answers the {@code Logger} of this {@code Actor}.
    * @return Logger
    */
   protected Logger logger() {
@@ -197,8 +197,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the parent of this Actor as the T protocol.
-   * @param protocol the Class&lt;T&gt; of the protocol
+   * Answers the parent of this {@code Actor} as the {@code T} protocol.
+   * @param protocol the {@code Class<T>} of the protocol
    * @param <T> the protocol type
    * @return T
    */
@@ -211,15 +211,15 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Secures this Actor. (INTERNAL ONLY)
+   * Secures this {@code Actor}. (INTERNAL ONLY)
    */
   protected void secure() {
     lifeCycle.secure();
   }
 
   /**
-   * Answers this Actor as a T protocol. This Actor must implement the Class&lt;T&gt; protocol.
-   * @param protocol the Class&lt;T&gt; protocol
+   * Answers this {@code Actor} as a {@code T} protocol. This {@code Actor} must implement the {@code Class<T>} protocol.
+   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
    * @return T
    */
@@ -228,7 +228,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Stage of this Actor.
+   * Answers the {@code Stage} of this {@code Actor}.
    * @return Stage
    */
   protected final Stage stage() {
@@ -239,8 +239,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the Stage of the given name.
-   * @param name the String name of the Stage to find
+   * Answers the {@code Stage} of the given name.
+   * @param name the {@code String} name of the {@code Stage} to find
    * @return Stage
    */
   protected Stage stageNamed(final String name) {
@@ -252,7 +252,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   //=======================================
 
   /**
-   * Answers whether this Actor is currently dispersing previously stowed messages.
+   * Answers whether this {@code Actor} is currently dispersing previously stowed messages.
    * @return boolean
    */
   protected boolean isDispersing() {
@@ -260,14 +260,14 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Starts the process of dispersing any messages stowed for this Actor.
+   * Starts the process of dispersing any messages stowed for this {@code Actor}.
    */
   protected void disperseStowedMessages() {
     lifeCycle.disperseStowedMessages();
   }
 
   /**
-   * Answers whether this Actor is currently stowing messages.
+   * Answers whether this {@code Actor} is currently stowing messages.
    * @return boolean
    */
   protected boolean isStowing() {
@@ -275,9 +275,9 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Starts the process of stowing messages for this Actor, and registers stowageOverrides as
+   * Starts the process of stowing messages for this {@code Actor}, and registers {@code stowageOverrides} as
    * the protocol that will trigger dispersal.
-   * @param stowageOverrides the Class&lt;T&gt; protocol that will trigger dispersal
+   * @param stowageOverrides the {@code Class<T>} protocol that will trigger dispersal
    */
   protected void stowMessages(final Class<?>... stowageOverrides) {
     lifeCycle.stowMessages();
@@ -289,23 +289,23 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   //=======================================
 
   /**
-   * The message delivered before the Actor has fully started. Override to implement.
+   * The message delivered before the {@code Actor} has fully started. Override to implement.
    */
   protected void beforeStart() {
     // override
   }
 
   /**
-   * The message delivered after the Actor has fully stopped. Override to implement.
+   * The message delivered after the {@code Actor} has fully stopped. Override to implement.
    */
   protected void afterStop() {
     // override
   }
 
   /**
-   * The message delivered before the Actor has been restarted by its supervisor due to an exception.
+   * The message delivered before the {@code Actor} has been restarted by its supervisor due to an exception.
    * Override to implement.
-   * @param reason the Throwable cause of the supervision restart
+   * @param reason the {@code Throwable} cause of the supervision restart
    */
   protected void beforeRestart(final Throwable reason) {
     // override
@@ -313,9 +313,9 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * The message delivered after the Actor has been restarted by its supervisor due to an exception.
+   * The message delivered after the {@code Actor} has been restarted by its supervisor due to an exception.
    * Override to implement.
-   * @param reason the Throwable cause of the supervision restart
+   * @param reason the {@code Throwable} cause of the supervision restart
    */
   protected void afterRestart(final Throwable reason) {
     // override
@@ -323,9 +323,9 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * The message delivered before the Actor has been resumed by its supervisor due to an exception.
+   * The message delivered before the {@code Actor} has been resumed by its supervisor due to an exception.
    * Override to implement.
-   * @param reason the Throwable cause of the supervision resume
+   * @param reason the {@code Throwable} cause of the supervision resume
    */
   protected void beforeResume(final Throwable reason) {
     // override
