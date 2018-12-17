@@ -11,7 +11,6 @@ import io.vlingo.actors.testkit.TestEnvironment;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 import io.vlingo.common.Completes;
-import io.vlingo.common.ResultCompletes;
 import io.vlingo.common.Scheduler;
 
 /**

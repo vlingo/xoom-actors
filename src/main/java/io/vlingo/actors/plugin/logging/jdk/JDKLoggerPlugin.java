@@ -207,7 +207,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
     public void build(final Configuration configuration) {
       configuration.with(
               defaultLogger()
-             .name("vlingo/actors(test)")
+             .name("vlingo/actors")
              .handlerClass(DefaultHandler.class)
              .handlerName("vlingo")
              .handlerLevel("ALL"));

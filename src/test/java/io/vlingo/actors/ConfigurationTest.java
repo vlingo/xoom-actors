@@ -154,7 +154,7 @@ public class ConfigurationTest {
 
     assertNotNull(configuration.jdkLoggerPluginConfiguration());
     assertTrue(configuration.jdkLoggerPluginConfiguration().isDefaultLogger());
-    assertEquals("vlingo/actors(test)", configuration.jdkLoggerPluginConfiguration().name());
+    assertEquals("vlingo/actors", configuration.jdkLoggerPluginConfiguration().name());
     assertEquals(DefaultHandler.class, configuration.jdkLoggerPluginConfiguration().handlerClass());
     assertEquals("vlingo", configuration.jdkLoggerPluginConfiguration().handlerName());
     assertEquals("ALL", configuration.jdkLoggerPluginConfiguration().handlerLevel());

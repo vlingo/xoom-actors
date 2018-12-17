@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
+
 /**
  * SmallestMailboxRouterTest tests {@link SmallestMailboxRoutingStrategy}.
  */
