@@ -40,7 +40,7 @@ public class RoundRobinRouterTest {
       Integer[] actual = orderRouter.viewTestState().valueOf(TEST_STATE_ROUTEE_INDICES_KEY);
       assertSame("routees size", 1, actual.length);
       
-      /* for round robin, the routing should have been to routee at index `round % poolSize` in the router's list of routees */
+      /* for round robin, routingIndices should contain only the index `round % poolSize` */
       Integer[] expected = {round % poolSize};
       assertArrayEquals("routees", expected, actual);
     }
