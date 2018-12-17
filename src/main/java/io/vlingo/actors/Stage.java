@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +35,18 @@ public class Stage implements Stoppable {
    */
   public <T> T actorAs(final Actor actor, final Class<T> protocol) {
     return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
+  }
+
+  /**
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param protocol the {@code Class<T>} protocol
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param parameters the {@code Object[]} of constructor parameters
+   * @param <T> the protocol type
+   * @return T
+   */
+  public <T> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
+    return actorFor(Definition.has(type, Arrays.asList(parameters)), protocol);
   }
 
   /**
