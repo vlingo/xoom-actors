@@ -6,28 +6,43 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertSame;
+
 import org.junit.Test;
 
+import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.TestWorld;
 
 /**
  * RoundRobinRouterTest
  */
 public class RoundRobinRouterTest {
 
+  private static final String TEST_STATE_ROUTEE_INDICES_KEY = "routeeIndices";
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
-    final World world = World.startWithDefaults("RoundRobinRouterTest");
+    final TestWorld world = TestWorld.startWithDefaults("RoundRobinRouterTest");
     final int poolSize = 4;
     final int messagesToSend = 8;
     final TestUntil until = TestUntil.happenings(messagesToSend);
-    final OrderRouter orderRouter = world.actorFor(
+    final TestActor<OrderRouter> orderRouter = world.actorFor(
             Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
             OrderRouter.class);
     
-    for (int i = 0; i < messagesToSend; i++) {
-      orderRouter.routeOrder(new Order(i));
+    for (int round = 0; round < messagesToSend; round++) {
+      orderRouter.actor().routeOrder(new Order(round));
+      
+      /* for round robin, the routing should have been to just one routee */
+      Integer[] actual = orderRouter.viewTestState().valueOf(TEST_STATE_ROUTEE_INDICES_KEY);
+      assertSame("routees size", 1, actual.length);
+      
+      /* for round robin, the routing should have been to routee at index `round % poolSize` in the router's list of routees */
+      Integer[] expected = {round % poolSize};
+      assertArrayEquals("routees", expected, actual);
     }
     
     until.completes();
@@ -79,6 +94,8 @@ public class RoundRobinRouterTest {
 
   public static class OrderRouterActor extends Router implements OrderRouter {
 
+    private TestState testState;
+    
     public OrderRouterActor(final int poolSize, final TestUntil testUntil) {
       super(
               new RouterSpecification(
@@ -99,6 +116,30 @@ public class RoundRobinRouterTest {
       computeRouting(order)
         .routeesAs(OrderRouter.class)
         .forEach(orderRoutee -> orderRoutee.routeOrder(order));
+    }
+
+
+    /* @see io.vlingo.actors.Router#computeRouting(java.lang.Object) */
+    @Override
+    protected <T1> Routing computeRouting(T1 routable1) {
+      Routing routing = super.computeRouting(routable1);
+      
+      /* store the indices of the chosen routees for verification by test cases */
+      Integer[] itemRoutings = routing.routees().stream()
+              .map(routee -> routees().indexOf(routee))
+              .toArray(Integer[]::new);
+      viewTestState().putValue(TEST_STATE_ROUTEE_INDICES_KEY, itemRoutings);
+      
+      return routing;
+    }
+    
+    /* @see io.vlingo.actors.Actor#viewTestState() */
+    @Override
+    public TestState viewTestState() {
+      if (testState == null) {
+        testState = super.viewTestState();
+      }
+      return testState;
     }
   }
 }
