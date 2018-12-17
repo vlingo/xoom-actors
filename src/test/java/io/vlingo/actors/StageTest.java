@@ -10,11 +10,15 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.WorldTest.Simple;
+import io.vlingo.actors.WorldTest.SimpleActor;
+import io.vlingo.actors.WorldTest.TestResults;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
@@ -35,6 +39,23 @@ public class StageTest {
     assertEquals(world.defaultParent(), TestInterfaceActor.instance.get().lifeCycle.environment.parent);
   }
   
+  @Test
+  public void testActorForNoDefinitionAndProtocol() throws Exception {
+    final TestResults testResults = new TestResults();
+    final Simple simple = world.stage().actorFor(Simple.class, SimpleActor.class, testResults);
+    testResults.untilSimple = TestUntil.happenings(1);
+    simple.simpleSay();
+    testResults.untilSimple.completes();
+    assertTrue(testResults.invoked.get());
+    
+    // another
+    
+    final NoProtocol test = world.stage().actorFor(NoProtocol.class, TestInterfaceActor.class);
+    assertNotNull(test);
+    assertNotNull(TestInterfaceActor.instance.get());
+    assertEquals(world.defaultParent(), TestInterfaceActor.instance.get().lifeCycle.environment.parent);
+  }
+
   @Test
   public void testActorForAll() throws Exception {
     System.out.println("testActorForAll()");
