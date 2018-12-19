@@ -6,6 +6,7 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
+import java.util.Collections;
 import java.util.List;
 /**
  * Router is a kind of {@link Actor} that forwards a message
@@ -56,5 +57,9 @@ public abstract class Router extends Actor {
     Routing routing = routingStrategy.chooseRouteFor(routable1, routable2, routable3, routable4, routable5, routees);
     routing.validate();
     return routing;
+  }
+  
+  protected List<Routee> routees() {
+    return Collections.unmodifiableList(routees);
   }
 }

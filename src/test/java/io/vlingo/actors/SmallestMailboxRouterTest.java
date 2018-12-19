@@ -69,7 +69,6 @@ public class SmallestMailboxRouterTest {
      */
     @Override
     public void routeOrder(final Order order) {
-      logger().log(this.toString() + " is routing " + order);
       testUntil.happened();
     }
 

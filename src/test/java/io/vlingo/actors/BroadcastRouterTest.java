@@ -6,8 +6,12 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -15,17 +19,16 @@ import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
-
 /**
- * RoundRobinRouterTest
+ * BroadcastRouterTest
  */
-public class RoundRobinRouterTest {
+public class BroadcastRouterTest {
 
   private static final String TEST_STATE_ROUTEE_INDICES_KEY = "routeeIndices";
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
-    final TestWorld world = TestWorld.startWithDefaults("RoundRobinRouterTest");
+    final TestWorld world = TestWorld.startWithDefaults("BroadcastRouterTest");
     final int poolSize = 4;
     final int messagesToSend = 8;
     final TestUntil until = TestUntil.happenings(messagesToSend);
@@ -33,19 +36,26 @@ public class RoundRobinRouterTest {
             Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
             OrderRouter.class);
     
+    /* expect that every message will be sent to every routee */
+    Set<Integer> expected = new HashSet<>();
+    for (int i = 0; i < poolSize; i++) {
+      expected.add(i);
+    }
+    
     for (int round = 0; round < messagesToSend; round++) {
       orderRouter.actor().routeOrder(new Order(round));
       
-      /* for round robin, the routing should have been to just one routee */
-      Integer[] actual = orderRouter.viewTestState().valueOf(TEST_STATE_ROUTEE_INDICES_KEY);
-      assertSame("routees size", 1, actual.length);
+      /* for broadcast, the routing should have been to as many routees as are in the pool */
+      Integer[] routeeIndices = orderRouter.viewTestState().valueOf(TEST_STATE_ROUTEE_INDICES_KEY);
+      Set<Integer> actual = new HashSet<>(Arrays.asList(routeeIndices));
+      assertSame("routees size", poolSize, actual.size());
       
-      /* for round robin, routingIndices should contain only the index `round % poolSize` */
-      Integer[] expected = {round % poolSize};
-      assertArrayEquals("routees", expected, actual);
+      /* for broadcast, routingIndices should include the zero-based index of every routee in the pool */
+      assertEquals("routees", expected, actual);
     }
     
     until.completes();
+    world.terminate();
   }
 
   public static class Order {
@@ -101,7 +111,7 @@ public class RoundRobinRouterTest {
                       poolSize,
                       Definition.has(OrderRouterWorker.class, Definition.parameters(testUntil)),
                       OrderRouter.class),
-              new RoundRobinRoutingStrategy()
+              new BroadcastRoutingStrategy()
       );
     }
 
