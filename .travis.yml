@@ -2,10 +2,10 @@ language: java
 before_install:
 - cd ${TRAVIS_BUILD_DIR}/..
 - git clone --depth=50 --branch=master https://github.com/vlingo/vlingo-common.git
-- cd vlingo-common && mvn install -DskipTests=true
+- cd vlingo-common && mvn -B install -DskipTests=true
 - cd ${TRAVIS_BUILD_DIR}
 script:
-- mvn install
+- mvn -B install
 deploy:
   provider: bintray
   file: bintray.json
