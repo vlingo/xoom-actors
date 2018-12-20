@@ -117,7 +117,7 @@
     </repository> -->
     <snapshotRepository>
         <id>nexus-snapshots</id>
-        <url>oss.sonatype.org/content/repositories/snapshots/</url>
+        <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
