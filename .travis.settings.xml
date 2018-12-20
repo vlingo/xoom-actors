@@ -1,0 +1,38 @@
+<settings>
+    <servers>
+        <server>
+            <!--  not sure -->
+            <id>oss-snapshots</id>
+            <username>${env.SONATYPE_USERNAME}</username>
+            <password>${env.SONATYPE_PASSWORD}</password>
+        </server>
+    </servers>
+    <profiles>
+        <profile>
+            <id>build</id>
+            <repositories>
+                <repository>
+                    <id>releases-repo</id>
+                    <name>bintray</name>
+                    <url>http://jcenter.bintray.com</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>snapshots-repo</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>build</activeProfile>
+    </activeProfiles>
+</settings>
