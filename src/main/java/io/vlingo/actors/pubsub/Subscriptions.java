@@ -15,9 +15,9 @@ import java.util.Set;
 
 public class Subscriptions {
 
-    private Map<Topic, Set<Subscriber>> index = new HashMap<>();
+    private Map<Topic, Set<Subscriber<?>>> index = new HashMap<>();
 
-    public AffectedSubscriptions create(final Topic topic, final Subscriber subscriber) {
+    public AffectedSubscriptions create(final Topic topic, final Subscriber<?> subscriber) {
 
         if(!index.containsKey(topic)) {
             index.put(topic, new HashSet<>());
@@ -26,17 +26,17 @@ public class Subscriptions {
         return performOperation(topic, subscriber, defaultCondition(), insertOperation());
     }
 
-    public AffectedSubscriptions cancel(final Topic topic, final Subscriber subscriber) {
+    public AffectedSubscriptions cancel(final Topic topic, final Subscriber<?> subscriber) {
         return performOperation(topic, subscriber, defaultCondition(), removalOperation());
     }
 
-    public AffectedSubscriptions cancelAll(final Subscriber subscriber) {
+    public AffectedSubscriptions cancelAll(final Subscriber<?> subscriber) {
         return performOperation(null, subscriber, noCondition(), removalOperation());
     }
 
-    public Set<Subscriber> forTopic(final Topic topic) {
+    public Set<Subscriber<?>> forTopic(final Topic topic) {
 
-        final Set<Subscriber> subscribers = new HashSet<>();
+        final Set<Subscriber<?>> subscribers = new HashSet<>();
 
         index.entrySet().forEach(subscription -> {
 
@@ -66,7 +66,7 @@ public class Subscriptions {
         return (subscription, topic, subscriber) -> true;
     }
 
-    private AffectedSubscriptions performOperation(final Topic topic, final Subscriber subscriber, final Condition condition, final Operation operation) {
+    private AffectedSubscriptions performOperation(final Topic topic, final Subscriber<?> subscriber, final Condition condition, final Operation operation) {
 
         final AffectedSubscriptions affectedSubscriptions = new AffectedSubscriptions();
 
@@ -82,11 +82,11 @@ public class Subscriptions {
 
     @FunctionalInterface
     private interface Operation {
-        boolean perform(final Set<Subscriber> existingSubscriber, final Subscriber givenSubscriber);
+        boolean perform(final Set<Subscriber<?>> existingSubscriber, final Subscriber<?> givenSubscriber);
     }
 
     @FunctionalInterface
     private interface Condition {
-        boolean should(final Entry<Topic, Set<Subscriber>> subscription, final Topic topic, final Subscriber subscriber);
+        boolean should(final Entry<Topic, Set<Subscriber<?>>> subscription, final Topic topic, final Subscriber<?> subscriber);
     }
 }

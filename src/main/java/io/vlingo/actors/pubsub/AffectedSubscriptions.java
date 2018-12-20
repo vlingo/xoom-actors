@@ -12,9 +12,9 @@ import java.util.Map;
 
 public class AffectedSubscriptions {
 
-    private final Map<Topic, Subscriber> registry = new HashMap<>();
+    private final Map<Topic, Subscriber<?>> registry = new HashMap<>();
 
-    public void add(final Topic topic, final Subscriber subscriber) {
+    public void add(final Topic topic, final Subscriber<?> subscriber) {
         registry.put(topic, subscriber);
     }
 

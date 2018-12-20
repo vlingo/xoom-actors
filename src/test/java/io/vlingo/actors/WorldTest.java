@@ -52,6 +52,21 @@ public class WorldTest extends ActorsTest {
     
     assertTrue(testResults.invoked.get());
   }
+  
+  @Test
+  public void testWorldNoDefintionActorFor() throws Exception {
+    final TestResults testResults = new TestResults();
+    
+    final Simple simple = world.actorFor(Simple.class, SimpleActor.class, testResults);
+    
+    testResults.untilSimple = TestUntil.happenings(1);
+    
+    simple.simpleSay();
+    
+    testResults.untilSimple.completes();
+    
+    assertTrue(testResults.invoked.get());
+  }
 
   @Test
   public void testThatARegisteredDependencyCanBeResolved() throws Exception {

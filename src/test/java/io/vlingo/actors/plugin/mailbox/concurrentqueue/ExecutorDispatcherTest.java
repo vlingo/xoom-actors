@@ -157,6 +157,12 @@ if (testResults.log.get()) System.out.println("TestMailbox: run: adding: " + tes
     public Message receive() {
       return queue.poll();
     }
+
+    /* @see io.vlingo.actors.Mailbox#pendingMessages() */
+    @Override
+    public int pendingMessages() {
+      throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
+    }
   }
   
   public static interface CountTaker {
