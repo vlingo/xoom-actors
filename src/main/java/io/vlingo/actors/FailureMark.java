@@ -15,7 +15,7 @@ public class FailureMark {
     reset();
   }
   
-  protected boolean failedWithExcessiveFailures(final long period, final int intensity) {
+  boolean failedWithExcessiveFailures(final long period, final int intensity) {
     if (intensity == SupervisionStrategy.ForeverIntensity) {
       return false;
     } else if (intensity == 1) {
@@ -42,8 +42,8 @@ public class FailureMark {
     
     return false;
   }
-  
-  protected void reset() {
+
+  void reset() {
     startOfPeriod = 0;
     timedIntensity = 0;
   }

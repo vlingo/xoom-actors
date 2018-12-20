@@ -5,9 +5,13 @@
 // was not distributed with this file, You can obtain
 // one at https://mozilla.org/MPL/2.0/.
 
-package io.vlingo.actors.reflect;
+package io.vlingo.actors;
 
-import org.junit.Test;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.*;
+import static java.util.stream.Collectors.toSet;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -20,11 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.vlingo.actors.reflect.GenericParser.*;
-import static java.util.stream.Collectors.toSet;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
 
 public class GenericParserTest {
     @Test
@@ -63,7 +63,7 @@ public class GenericParserTest {
                 "java.util.Set",
                 "java.lang.Object",
                 "java.lang.RuntimeException",
-                "io.vlingo.actors.reflect.LargeNumber"
+                "io.vlingo.actors.LargeNumber"
         ));
     }
 
@@ -95,7 +95,7 @@ public class GenericParserTest {
     @Test
     public void testThatGeneratesTheCorrectParameterList() {
         final String result = parametersTemplateOf(methodOf(Either.class, "flatMap"));
-        assertEquals("(java.util.function.Function<B, io.vlingo.actors.reflect.Either<NA, NB>> arg0)", result);
+        assertEquals("(java.util.function.Function<B, io.vlingo.actors.Either<NA, NB>> arg0)", result);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class GenericParserTest {
     @Test
     public void testThatGeneratesAValidClassName() {
         final String result = implementsInterfaceTemplateOf("MyNewClass", MyGenericInterfaceWithMethods.class);
-        assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> implements io.vlingo.actors.reflect.MyGenericInterfaceWithMethods<T>", result);
+        assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> implements io.vlingo.actors.MyGenericInterfaceWithMethods<T>", result);
     }
 
     @Test

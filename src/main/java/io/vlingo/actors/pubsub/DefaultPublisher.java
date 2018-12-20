@@ -17,19 +17,19 @@ public class DefaultPublisher implements Publisher {
     }
 
     @Override
-    public boolean subscribe(final Topic topic, final Subscriber subscriber) {
+    public boolean subscribe(final Topic topic, final Subscriber<?> subscriber) {
         final AffectedSubscriptions affectedSubscriptions = subscriptions.create(topic, subscriber);
         return affectedSubscriptions.hasAny();
     }
 
     @Override
-    public boolean unsubscribe(final Topic topic, final Subscriber subscriber) {
+    public boolean unsubscribe(final Topic topic, final Subscriber<?> subscriber) {
         final AffectedSubscriptions affectedSubscriptions = subscriptions.cancel(topic, subscriber);
         return affectedSubscriptions.hasAny();
     }
 
     @Override
-    public void unsubscribeAllTopics(final Subscriber subscriber) {
+    public void unsubscribeAllTopics(final Subscriber<?> subscriber) {
         subscriptions.cancelAll(subscriber);
     }
 }
