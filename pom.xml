@@ -107,13 +107,17 @@
       <name>vlingo-vlingo-platform-java</name>
       <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
     </repository> -->
-    <repository>
+    <!-- <repository>
       <id>oss-snapshots</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
       <layout>default</layout>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
-    </repository>
+    </repository> -->
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <url>oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
   </distributionManagement>
 </project>
