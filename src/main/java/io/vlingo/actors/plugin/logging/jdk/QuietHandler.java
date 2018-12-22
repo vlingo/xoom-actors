@@ -10,28 +10,20 @@ package io.vlingo.actors.plugin.logging.jdk;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-public class DefaultHandler extends Handler {
-  public DefaultHandler() { }
+public class QuietHandler extends Handler {
+  public QuietHandler() { }
 
   @Override
-  public void publish(final LogRecord record) {
-    final String message = record.getMessage();
-    
-    System.out.println(record.getLoggerName() + ": " + message);
-  }
+  public void publish(final LogRecord record) { }
 
   @Override
-  public void flush() {
-    
-  }
+  public void flush() { }
 
   @Override
-  public void close() throws SecurityException {
-    
-  }
+  public void close() throws SecurityException { }
 
   @Override
   public String toString() {
-    return "DefaultHandler";
+    return "QuietHandler";
   }
 }

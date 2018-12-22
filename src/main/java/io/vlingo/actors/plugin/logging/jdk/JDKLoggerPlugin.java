@@ -77,8 +77,25 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
   }
 
   @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new JDKLoggerPlugin(overrideConfiguration);
+  }
+
+  @Override
   public Logger logger() {
     return logger;
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " HANDLER: " + jdkLoggerPluginConfiguration.handlerClass.getSimpleName();
+  }
+
+  private JDKLoggerPlugin(final PluginConfiguration configuration) {
+    this.jdkLoggerPluginConfiguration = (JDKLoggerPluginConfiguration) configuration;
   }
 
   public static class JDKLoggerPluginConfiguration implements PluginConfiguration {
@@ -205,6 +222,8 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
 
     @Override
     public void build(final Configuration configuration) {
+//      System.out.println("################################### WHATTTTTTTTT");
+//      (new Exception()).printStackTrace();
       configuration.with(
               defaultLogger()
              .name("vlingo/actors")
@@ -233,6 +252,11 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
     @Override
     public String name() {
       return name;
+    }
+
+    @Override
+    public String toString() {
+      return getClass().getSimpleName() + " HANDLER: " + handlerClass.getSimpleName();
     }
 
     @SuppressWarnings("unchecked")

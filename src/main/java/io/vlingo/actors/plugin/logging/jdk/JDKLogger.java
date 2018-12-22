@@ -79,6 +79,11 @@ public class JDKLogger implements Logger {
     return name;
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " TYPE: " + handler;
+  }
+
   private Handler determineHandler(final JDKLoggerPluginConfiguration confirguration) {
     final String classname = confirguration.handlerClass().getName();
     try {

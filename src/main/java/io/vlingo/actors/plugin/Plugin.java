@@ -15,4 +15,5 @@ public interface Plugin {
   String name();
   int pass();
   void start(final Registrar registrar);
+  Plugin with(final PluginConfiguration overrideConfiguration);
 }

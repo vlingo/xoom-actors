@@ -9,7 +9,6 @@ package io.vlingo.actors.testkit;
 
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.Environment;
-import io.vlingo.actors.plugin.logging.jdk.JDKLogger;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 
 public class TestEnvironment extends Environment {
@@ -21,6 +20,6 @@ public class TestEnvironment extends Environment {
             TestWorld.Instance.get().world().defaultParent(),
             new TestMailbox(),
             TestWorld.Instance.get().world().defaultSupervisor(),
-            JDKLogger.testInstance());
+            TestWorld.Instance.get().world().defaultLogger());
   }
 }

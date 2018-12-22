@@ -44,6 +44,11 @@ public class TestMailboxPlugin extends AbstractPlugin implements Plugin, Mailbox
   }
 
   @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    return null;
+  }
+
+  @Override
   public Mailbox provideMailboxFor(final int hashCode) {
     return new TestMailbox();
   }

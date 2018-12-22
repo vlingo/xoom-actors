@@ -54,6 +54,19 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new ManyToOneConcurrentArrayQueuePlugin(overrideConfiguration);
+  }
+
+  private ManyToOneConcurrentArrayQueuePlugin(final PluginConfiguration configuration) {
+    this.configuration = (ManyToOneConcurrentArrayQueuePluginConfiguration) configuration;
+    this.dispatchers = new ConcurrentHashMap<>(1);
+  }
+
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }

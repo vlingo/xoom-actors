@@ -54,6 +54,19 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
     registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new SharedRingBufferMailboxPlugin(overrideConfiguration);
+  }
+
+  private SharedRingBufferMailboxPlugin(final PluginConfiguration configuration) {
+    this.configuration = (SharedRingBufferMailboxPluginConfiguration) configuration;
+    this.dispatchers = new ConcurrentHashMap<>(1);
+  }
+
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }

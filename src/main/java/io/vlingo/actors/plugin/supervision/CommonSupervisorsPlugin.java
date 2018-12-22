@@ -51,6 +51,18 @@ public class CommonSupervisorsPlugin extends AbstractPlugin implements Plugin {
     }
   }
 
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new CommonSupervisorsPlugin(overrideConfiguration);
+  }
+
+  private CommonSupervisorsPlugin(final PluginConfiguration configuration) {
+    this.configuration = (CommonSupervisorsPluginConfiguration) configuration;
+  }
+
   public static class CommonSupervisorsPluginConfiguration implements PluginConfiguration {
     private final List<ConfiguredSupervisor> supervisors;
 

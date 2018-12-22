@@ -51,6 +51,18 @@ public class DefaultSupervisorOverridePlugin extends AbstractPlugin implements P
     }
   }
 
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new DefaultSupervisorOverridePlugin(overrideConfiguration);
+  }
+
+  private DefaultSupervisorOverridePlugin(final PluginConfiguration configuration) {
+    this.configuration = (DefaultSupervisorOverridePluginConfiguration) configuration;
+  }
+
   public static class DefaultSupervisorOverridePluginConfiguration implements PluginConfiguration {
     private final List<ConfiguredSupervisor> supervisors;
 

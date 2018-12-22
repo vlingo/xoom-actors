@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginLoader;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
@@ -41,7 +44,10 @@ public class Configuration {
   private String testProxyGeneratedClassesPath;
   private String testProxyGeneratedSourcesPath;
 
+  private final Map<String,PluginConfiguration> configurationOverrides;
+  private final boolean mergeProperties;
   private final List<Plugin> plugins;
+  private final Properties properties;
 
   public static Configuration define() {
     return new Configuration();
@@ -61,6 +67,7 @@ public class Configuration {
 
   public Configuration with(final CommonSupervisorsPluginConfiguration configuration) {
     this.commonSupervisorsPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -70,6 +77,7 @@ public class Configuration {
 
   public Configuration with(final ConcurrentQueueMailboxPluginConfiguration configuration) {
     concurrentQueueMailboxPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -79,6 +87,7 @@ public class Configuration {
 
   public Configuration with(final DefaultSupervisorOverridePluginConfiguration configuration) {
     this.defaultSupervisorOverridePluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -87,7 +96,11 @@ public class Configuration {
   }
 
   public Configuration with(final JDKLoggerPluginConfiguration configuration) {
+    if (this.jdkLoggerPluginConfiguration != null) {
+      
+    }
     this.jdkLoggerPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -97,6 +110,7 @@ public class Configuration {
 
   public Configuration with(final ManyToOneConcurrentArrayQueuePluginConfiguration configuration) {
     this.manyToOneConcurrentArrayQueuePluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -106,6 +120,7 @@ public class Configuration {
 
   public Configuration with(final PooledCompletesPluginConfiguration configuration) {
     pooledCompletesPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -115,6 +130,7 @@ public class Configuration {
 
   public Configuration with(final SharedRingBufferMailboxPluginConfiguration configuration) {
     this.sharedRingBufferMailboxPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
 
@@ -159,30 +175,53 @@ public class Configuration {
   }
 
   public void startPlugins(final World world, final int pass) {
+    load(pass);
+
     for (final Plugin plugin : plugins) {
+//      if (plugin.toString().contains("JDKLoggerPlugin")) {
+//        System.out.println("PASS: " + pass + " LOOKS LIKE: " + plugin.toString());
+//      }
       if (plugin.pass() == pass) {
         plugin.start(world);
       }
     }
   }
 
+  public void load(final int pass) {
+    if (pass == 0) {
+      if (properties != null) {
+        if (mergeProperties) {
+          final List<Plugin> plugins = loadPlugins(false);
+          plugins.addAll(loadPropertiesPlugins(properties, plugins));
+        } else {
+          plugins.addAll(loadPropertiesPlugins(properties, new ArrayList<>()));
+        }
+      } else {
+//        System.out.println("################################### LOADING FOR PASS " + pass);
+        plugins.addAll(loadPlugins(true));
+      }
+    }
+  }
+
+  private PluginConfiguration overrideConfiguration(final Plugin plugin) {
+    return configurationOverrides.get(plugin.configuration().getClass().getSimpleName());
+  }
+
   private Configuration() {
-    this.plugins = loadPlugins(true);
+    this(null, false);
+  }
+
+  private Configuration(final Properties properties, final boolean includeBaseLoad) {
+    this.configurationOverrides = new HashMap<>();
+    this.plugins = new ArrayList<>();
+    this.properties = null;
+    this.mergeProperties = false;
 
     this
       .usingMainProxyGeneratedClassesPath("target/classes/")
       .usingMainProxyGeneratedSourcesPath("target/generated-sources/")
       .usingTestProxyGeneratedClassesPath("target/test-classes/")
       .usingTestProxyGeneratedSourcesPath("target/generated-test-sources/");
-  }
-
-  private Configuration(final Properties properties, final boolean includeBaseLoad) {
-    if (includeBaseLoad) {
-      final List<Plugin> plugins = loadPlugins(false);
-      this.plugins = loadPropertiesPlugins(properties, plugins);
-    } else {
-      this.plugins = loadPropertiesPlugins(properties, new ArrayList<>());
-    }
   }
 
   private List<Plugin> loadPropertiesPlugins(final Properties properties, final List<Plugin> plugins) {
@@ -209,9 +248,25 @@ public class Configuration {
       final String classname = pluginClass.getName();
       try {
         final Plugin plugin = (Plugin) pluginClass.newInstance();
-        if (build) { plugin.configuration().build(this); }
-        plugins.add(plugin);
+        final PluginConfiguration pc = overrideConfiguration(plugin);
+        final boolean reallyBuild = pc == null ? build : false;
+        final Plugin configuredPlugin = plugin.with(pc);
+        if (reallyBuild) {
+          configuredPlugin.configuration().build(this);
+//          if (configuredPlugin.toString().contains("JDKLoggerPlugin")) {
+//            System.out.println("BUILDING THE JDKLOGGERPLUGIN FOR: " + configuredPlugin);
+//          }
+//          if (configuredPlugin.toString().contains("DefaultHandler")) {
+//            System.out.println("WRONG PLUGIN: " + configuredPlugin + " STACK TRACE: ");
+//            (new Exception()).printStackTrace();
+//          }
+        }
+//        if (configuredPlugin.toString().contains("JDKLoggerPlugin")) {
+//          System.out.println("JDKLOGGERPLUGIN OVERRIDE IS: " + pc);
+//        }
+        plugins.add(configuredPlugin);
       } catch (Exception e) {
+        e.printStackTrace();
         throw new IllegalStateException("Cannot load plugin class: " + classname);
       }
     }

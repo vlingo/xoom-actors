@@ -49,6 +49,18 @@ public class PooledCompletesPlugin extends AbstractPlugin implements Plugin {
     registrar.register(pooledCompletesPluginConfiguration.name(), completesEventuallyProvider);
   }
 
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new PooledCompletesPlugin(overrideConfiguration);
+  }
+
+  private PooledCompletesPlugin(final PluginConfiguration configuration) {
+    this.pooledCompletesPluginConfiguration = (PooledCompletesPluginConfiguration) configuration;
+  }
+
   public static class PooledCompletesPluginConfiguration implements PluginConfiguration {
     private String mailbox;
     private String name = "pooledCompletes";

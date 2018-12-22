@@ -60,6 +60,18 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
   }
 
   @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new ConcurrentQueueMailboxPlugin(overrideConfiguration);
+  }
+
+  private ConcurrentQueueMailboxPlugin(final PluginConfiguration configuration) {
+    this.configuration = (ConcurrentQueueMailboxPluginConfiguration) configuration;
+  }
+
+  @Override
   public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
     if (dispatcher == null) {
       throw new IllegalArgumentException("Dispatcher must not be null.");

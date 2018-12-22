@@ -48,4 +48,17 @@ public class DefaultMailboxProviderKeeperPlugin implements Plugin {
   public void start(final Registrar registrar) {
     registrar.registerMailboxProviderKeeper(keeper);
   }
+
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    if (overrideConfiguration == null) {
+      return this;
+    }
+    return new DefaultMailboxProviderKeeperPlugin(overrideConfiguration, this);
+  }
+
+  private DefaultMailboxProviderKeeperPlugin(final PluginConfiguration configuration, final DefaultMailboxProviderKeeperPlugin plugin) {
+    this.keeper = plugin.keeper;
+    this.configuration = (DefaultMailboxProviderKeeperPluginConfiguration) configuration;
+  }
 }
