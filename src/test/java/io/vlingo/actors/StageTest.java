@@ -12,6 +12,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 import io.vlingo.actors.WorldTest.Simple;
@@ -21,7 +23,7 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class StageTest extends ActorsTest {
-  private int scanFound = 0;
+  private AtomicInteger scanFound = new AtomicInteger(0);
   
   @Test
   public void testActorForDefinitionAndProtocol() throws Exception {
@@ -92,27 +94,27 @@ public class StageTest extends ActorsTest {
 
     world.stage().actorOf(address5, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
-      ++scanFound;
+      scanFound.incrementAndGet();
       until.happened();
     });
     world.stage().actorOf(address4, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
-      ++scanFound;
+      scanFound.incrementAndGet();
       until.happened();
     });
     world.stage().actorOf(address3, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
-      ++scanFound;
+      scanFound.incrementAndGet();
       until.happened();
     });
     world.stage().actorOf(address2, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
-      ++scanFound;
+      scanFound.incrementAndGet();
       until.happened();
     });
     world.stage().actorOf(address1, NoProtocol.class).andThenConsume(actor -> {
       assertNotNull(actor);
-      ++scanFound;
+      scanFound.incrementAndGet();
       until.happened();
     });
 
@@ -140,7 +142,7 @@ public class StageTest extends ActorsTest {
 
     until.completes();
 
-    assertEquals(5, scanFound);
+    assertEquals(5, scanFound.get());
   }
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
