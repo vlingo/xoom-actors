@@ -13,8 +13,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-public class AddressTest {
-  private final World world = World.start("test");
+public class AddressTest extends ActorsTest {
 
   @Test
   public void testNameGiven() throws Exception {

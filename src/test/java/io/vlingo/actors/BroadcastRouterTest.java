@@ -18,21 +18,19 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestUntil;
-import io.vlingo.actors.testkit.TestWorld;
 /**
  * BroadcastRouterTest
  */
-public class BroadcastRouterTest {
+public class BroadcastRouterTest extends ActorsTest {
 
   private static final String TEST_STATE_ROUTEE_INDICES_KEY = "routeeIndices";
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
-    final TestWorld world = TestWorld.startWithDefaults("BroadcastRouterTest");
     final int poolSize = 4;
     final int messagesToSend = 8;
     final TestUntil until = TestUntil.happenings(messagesToSend);
-    final TestActor<OrderRouter> orderRouter = world.actorFor(
+    final TestActor<OrderRouter> orderRouter = testWorld.actorFor(
             Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
             OrderRouter.class);
     

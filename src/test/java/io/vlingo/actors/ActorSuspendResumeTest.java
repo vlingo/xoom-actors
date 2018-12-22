@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import io.vlingo.actors.supervision.FailureControl;
 import io.vlingo.actors.supervision.FailureControlActor;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.supervision.FailureControlSender;
 import io.vlingo.actors.supervision.SuspendedSenderSupervisorActor;
-import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorSuspendResumeTest extends ActorsTest {

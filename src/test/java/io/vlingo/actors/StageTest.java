@@ -12,8 +12,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.WorldTest.Simple;
@@ -21,15 +19,13 @@ import io.vlingo.actors.WorldTest.SimpleActor;
 import io.vlingo.actors.WorldTest.TestResults;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestUntil;
-import io.vlingo.actors.testkit.TestWorld;
 
-public class StageTest {
+public class StageTest extends ActorsTest {
   private int scanFound = 0;
-  private World world;
   
   @Test
   public void testActorForDefinitionAndProtocol() throws Exception {
-    System.out.println("testActorForDefinitionAndProtocol()");
+    world.defaultLogger().log("testActorForDefinitionAndProtocol()");
     final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters);
 
     final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
@@ -58,7 +54,7 @@ public class StageTest {
 
   @Test
   public void testActorForAll() throws Exception {
-    System.out.println("testActorForAll()");
+    world.defaultLogger().log("testActorForAll()");
     world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), NoProtocol.class);
     
     final Definition definition =
@@ -145,17 +141,6 @@ public class StageTest {
     until.completes();
 
     assertEquals(5, scanFound);
-  }
-
-  @Before
-  public void setUp() {
-    final TestWorld testWorld = TestWorld.start("test");
-    world = testWorld.world();
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    world.terminate();
   }
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {

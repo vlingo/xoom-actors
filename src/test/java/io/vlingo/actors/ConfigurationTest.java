@@ -129,6 +129,7 @@ public class ConfigurationTest {
   @Test
   public void testThatConfigurationDefaults() {
     final Configuration configuration = Configuration.define();
+    configuration.load(0);
 
     assertNotNull(configuration);
     assertNotNull(configuration.pooledCompletesPluginConfiguration());

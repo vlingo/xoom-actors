@@ -71,6 +71,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   }
 
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
     

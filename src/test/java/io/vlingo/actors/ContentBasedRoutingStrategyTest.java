@@ -18,11 +18,10 @@ import io.vlingo.actors.testkit.TestUntil;
  * a {@link RoutingStrategy} that considers the state of the routable
  * in its decision making.
  */
-public class ContentBasedRoutingStrategyTest {
+public class ContentBasedRoutingStrategyTest extends ActorsTest {
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
-    final World world = World.startWithDefaults("RandomRouterTest");
     final int poolSize = 4;
     final int messagesToSend = 40;
     final TestUntil until = TestUntil.happenings(messagesToSend);

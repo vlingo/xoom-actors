@@ -15,11 +15,10 @@ import io.vlingo.actors.testkit.TestUntil;
 /**
  * SmallestMailboxRouterTest tests {@link SmallestMailboxRoutingStrategy}.
  */
-public class SmallestMailboxRouterTest {
+public class SmallestMailboxRouterTest extends ActorsTest {
 
   @Test
   public void testThatItRoutes() {
-    final World world = World.startWithDefaults("SmallestMailboxRouterTest");
     final int poolSize = 4;
     final TestUntil until = TestUntil.happenings(20);
     final OrderRouter orderRouter = world.actorFor(

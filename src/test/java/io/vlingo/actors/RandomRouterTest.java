@@ -14,11 +14,10 @@ import io.vlingo.actors.testkit.TestUntil;
 /**
  * RandomRouterTest tests {@link RandomRoutingStrategy}.
  */
-public class RandomRouterTest {
+public class RandomRouterTest extends ActorsTest {
 
   @Test
   public void testThatItRoutes() throws InterruptedException {
-    final World world = World.startWithDefaults("RandomRouterTest");
     final int poolSize = 4;
     final int messagesToSend = 40;
     final TestUntil until = TestUntil.happenings(messagesToSend);

@@ -12,7 +12,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
@@ -90,11 +89,6 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
     actor.until.completes();
     
     assertEquals(mailboxSize, actor.highest.get());
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
   }
   
   public static interface CountTaker {

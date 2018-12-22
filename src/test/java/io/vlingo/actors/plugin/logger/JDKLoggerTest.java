@@ -16,19 +16,18 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Test;
 
+import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.LoggerProvider;
 import io.vlingo.actors.Registrar;
-import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.MockRegistrar;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 
-public class JDKLoggerTest {
+public class JDKLoggerTest extends ActorsTest {
   private Logger logger;
   private boolean registered;
-  private World world;
   
   final Registrar registrar = new MockRegistrar() {
     @Override
@@ -116,8 +115,6 @@ public class JDKLoggerTest {
   
   @Test
   public void testStandardLogger() {
-    world = World.start("test-standard-logger");
-    
     logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
     
     assertNotNull(logger);
@@ -129,11 +126,9 @@ public class JDKLoggerTest {
   }
   
   @After
-  public void tearDown() {
+  @Override
+  public void tearDown() throws Exception {
     logger.close();
-    
-    if (world != null) {
-      world.terminate();
-    }
+    super.tearDown();
   }
 }

@@ -11,7 +11,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
@@ -34,7 +33,6 @@ public class BasicSupervisionTest extends ActorsTest {
     // supervisor, the suspending and subsequent stowed
     // will never be delivered unless time is given to
     // empty to stowed messages
-    
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final FailureControl failure =
@@ -50,6 +48,8 @@ public class BasicSupervisionTest extends ActorsTest {
 
     // actor may or may not be resumed by now
     
+    failureControlTestResults.untilAfterRestart.completes();
+
     failureControlTestResults.untilAfterFail = until(1);
     assertEquals(0, failureControlTestResults.afterFailureCount.get());
     failure.afterFailure();
@@ -65,7 +65,7 @@ public class BasicSupervisionTest extends ActorsTest {
                     Supervisor.class);
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
-    
+
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
@@ -118,19 +118,13 @@ public class BasicSupervisionTest extends ActorsTest {
     
     assertEquals(0, failureControlTestResults.stoppedCount.get());
   }
-  
-  @Before
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-  
+
   public static class StoppingSupervisorActor extends Actor implements Supervisor {
     public StoppingSupervisorActor() { }
 
     @Override
     public void inform(final Throwable throwable, final Supervised supervised) {
-      logger().log("StoppingSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
+      //logger().log("StoppingSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
       supervised.stop(supervisionStrategy().scope());
     }
 
@@ -183,7 +177,7 @@ public class BasicSupervisionTest extends ActorsTest {
     
     @Override
     public void inform(final Throwable throwable, final Supervised supervised) {
-      logger().log("RestartSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
+      //logger().log("RestartSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
       supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
       testResults.informedCount.incrementAndGet();
     }

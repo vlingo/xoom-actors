@@ -12,24 +12,20 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
-import io.vlingo.actors.testkit.TestWorld;
 
-public class DeadLettersTest {
+public class DeadLettersTest extends ActorsTest {
   private TestActor<DeadLettersListener> listener;
   private TestActor<Nothing> nothing;
-  private TestWorld world;
   
   @Test
   public void testStoppedActorToDeadLetters() throws Exception {
     final TestResult result = new TestResult(3);
-    nothing = world.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
-    listener = world.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.parameters(result), "deadletters-listener"), DeadLettersListener.class);
+    nothing = testWorld.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
+    listener = testWorld.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.parameters(result), "deadletters-listener"), DeadLettersListener.class);
     world.world().deadLetters().registerListener(listener.actor());
 
     nothing.actor().stop();
@@ -44,16 +40,6 @@ public class DeadLettersTest {
     for (final DeadLetter deadLetter : result.deadLetters) {
       assertEquals("doNothing(int)", deadLetter.representation);
     }
-  }
-
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test-dead-letters");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
   
   public static interface Nothing extends Stoppable {

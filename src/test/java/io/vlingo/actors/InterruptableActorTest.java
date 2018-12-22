@@ -9,21 +9,18 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestWorld;
 
-public class InterruptableActorTest {
-  private TestWorld world;
+public class InterruptableActorTest extends ActorsTest {
   
   @Test
   public void testInterruptionWithStop() throws Exception {
     final TestActor<Interruptable> interruptable =
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(InterruptableActor.class, Definition.NoParameters, "testStoppable"),
                     Interruptable.class);
     
@@ -38,16 +35,6 @@ public class InterruptableActorTest {
     assertEquals(6, TestWorld.Instance.get().allMessagesFor(interruptable.address()).size()); // includes stop()
     
     assertEquals(5, (int) interruptable.viewTestState().valueOf("totalReceived"));
-  }
-  
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 
   public static interface Interruptable extends Stoppable {

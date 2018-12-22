@@ -12,16 +12,19 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Test;
+
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorStopTest extends ActorsTest {
 
+  @Test
   public void testStopActors() throws Exception {
     final TestResults testResults = new TestResults();
     
     testResults.untilStart = TestUntil.happenings(12);
     
-    System.out.println("Test: testStopActors: starting actors");
+    world.defaultLogger().log("Test: testStopActors: starting actors");
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world, testResults);
     
@@ -31,7 +34,7 @@ public class ActorStopTest extends ActorsTest {
 
     testResults.untilStart.completesWithin(2000);
 
-    System.out.println("Test: testStopActors: stopping actors");
+    world.defaultLogger().log("Test: testStopActors: stopping actors");
 
     testResults.untilStop = TestUntil.happenings(12);
 
@@ -41,11 +44,11 @@ public class ActorStopTest extends ActorsTest {
     
     testResults.untilStop.completesWithin(2000);
     
-    System.out.println("Test: testStopActors: stopped actors");
+    world.defaultLogger().log("Test: testStopActors: stopped actors");
 
     assertEquals(12, testResults.stopCount.get());
 
-    System.out.println("Test: testStopActors: terminating world");
+    world.defaultLogger().log("Test: testStopActors: terminating world");
 
     testResults.untilTerminatingStop = TestUntil.happenings(0);
     
@@ -57,6 +60,7 @@ public class ActorStopTest extends ActorsTest {
     assertEquals(0, testResults.terminatingStopCount.get());
   }
 
+  @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
     final TestResults testSpecs = new TestResults();
     
@@ -117,11 +121,11 @@ public class ActorStopTest extends ActorsTest {
     protected synchronized void afterStop() {
       if (testResults.terminating.get()) {
         final int count = testResults.terminatingStopCount.incrementAndGet();
-        System.out.print("TERMINATING AND STOPPED: " + count + " ");
+        logger().log("TERMINATING AND STOPPED: " + count + " ");
         testResults.untilTerminatingStop.happened();
       } else {
         final int count = testResults.stopCount.incrementAndGet();
-        System.out.print("STOPPED: " + count + " ");
+        logger().log("STOPPED: " + count + " ");
         testResults.untilStop.happened();
       }
     }

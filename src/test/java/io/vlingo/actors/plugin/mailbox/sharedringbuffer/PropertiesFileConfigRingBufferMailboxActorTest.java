@@ -12,15 +12,13 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
+import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
-import io.vlingo.actors.World;
 import io.vlingo.actors.testkit.TestUntil;
 
-public class PropertiesFileConfigRingBufferMailboxActorTest {
+public class PropertiesFileConfigRingBufferMailboxActorTest extends ActorsTest {
   @Test
   public void testThatRingBufferIsUsed() {
-    final World world = World.start("ring-mailbox-test");
-
     final TestResults results = new TestResults();
 
     final OneBehavior one =

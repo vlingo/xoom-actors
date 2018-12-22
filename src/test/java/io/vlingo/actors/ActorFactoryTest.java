@@ -10,14 +10,11 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 
-public class ActorFactoryTest {
-  private World world;
+public class ActorFactoryTest extends ActorsTest {
 
   @Test
   public void testActorForWithNoParametersAndDefaults() throws Exception {
@@ -115,16 +112,6 @@ public class ActorFactoryTest {
             mailbox,
             null,
             world.defaultLogger());
-  }
-
-  @Before
-  public void setUp() {
-    world = World.start("test-world");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 
   public interface ParentInterface { }

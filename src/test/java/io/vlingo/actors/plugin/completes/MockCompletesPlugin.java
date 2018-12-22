@@ -44,4 +44,9 @@ public class MockCompletesPlugin implements Plugin {
     completesEventuallyProvider = new MockCompletesEventuallyProvider(completesResults);
     registrar.register("mock-completes-eventually", completesEventuallyProvider);
   }
+
+  @Override
+  public Plugin with(final PluginConfiguration overrideConfiguration) {
+    return null;
+  }
 }

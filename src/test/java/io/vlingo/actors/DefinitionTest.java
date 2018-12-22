@@ -11,14 +11,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestWorld;
-
-public class DefinitionTest {
-  private World world;
+public class DefinitionTest extends ActorsTest {
   
   @Test
   public void testDefinitionHasTypeNoParameters() throws Exception {
@@ -105,17 +100,6 @@ public class DefinitionTest {
     assertEquals(parentHolder.parent, definition.parent());
     assertNotNull(definition.parentOr(new TestInterfaceActor()));
     assertEquals(TestInterfaceActor.class, definition.type());
-  }
-
-  @Before
-  public void setUp() {
-    world = World.start("test-world");
-    TestWorld.startWith(world);
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 
   public static interface ParentInterface { }

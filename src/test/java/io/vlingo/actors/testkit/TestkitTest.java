@@ -11,20 +11,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
+import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 
-public class TestkitTest {
-  private TestWorld world;
+public class TestkitTest extends ActorsTest {
   
   @Test
   public void testTesterWorldPing() throws Exception {
     final TestActor<PingCounter> pingCounter =
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(PingCounterActor.class, Definition.NoParameters),
                     PingCounter.class);
     
@@ -40,12 +38,12 @@ public class TestkitTest {
   @Test
   public void testTesterPingPong() throws Exception {
     final TestActor<PongCounter> pongCounter =
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(PongCounterActor.class, Definition.NoParameters),
                     PongCounter.class);
     
     final TestActor<PingCounter> pingCounter =
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(PingPongCounterActor.class, Definition.parameters(pongCounter.actor())),
                     PingCounter.class);
     
@@ -83,16 +81,6 @@ public class TestkitTest {
     }.start();
 
     assertTrue(until.completesWithin(500));
-  }
-
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test-world");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 
   public static interface PingCounter {

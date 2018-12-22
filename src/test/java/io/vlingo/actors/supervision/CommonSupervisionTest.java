@@ -11,13 +11,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-
+import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
+import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
+import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
 import io.vlingo.actors.supervision.PingActor.PingTestResults;
 import io.vlingo.actors.supervision.PongActor.PongTestResults;
 import io.vlingo.actors.testkit.TestActor;
@@ -38,9 +40,9 @@ public class CommonSupervisionTest extends ActorsTest {
     testResults.untilPinged = TestUntil.happenings(5);
     
     for (int idx = 1; idx <= 5; ++idx) {
-      System.out.println("PingSupervisorActor instance: " + PingSupervisorActor.instance.get());
-      System.out.println("PingSupervisorActor testResults: " + PingSupervisorActor.instance.get().testResults);
-      System.out.println("PingSupervisorActor testResults untilInform: " + PingSupervisorActor.instance.get().testResults.untilInform);
+      world.defaultLogger().log("PingSupervisorActor instance: " + PingSupervisorActor.instance.get());
+      world.defaultLogger().log("PingSupervisorActor testResults: " + PingSupervisorActor.instance.get().testResults);
+      world.defaultLogger().log("PingSupervisorActor testResults untilInform: " + PingSupervisorActor.instance.get().testResults.untilInform);
       PingSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(1);
       ping.actor().ping();
       PingSupervisorActor.instance.get().testResults.untilInform.completes();
@@ -110,16 +112,25 @@ public class CommonSupervisionTest extends ActorsTest {
     assertEquals(11, PongSupervisorActor.instance.get().testResults.informedCount.get());
   }
 
+  @Before
   @Override
   public void setUp() throws Exception {
-    final Properties properties = new Properties();
-    properties.setProperty("plugin.name.common_supervisors", "true");
-    properties.setProperty("plugin.common_supervisors.classname", "io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin");
-    properties.setProperty("plugin.common_supervisors.types",
-              "[stage=default name=pingSupervisor protocol=io.vlingo.actors.supervision.Ping supervisor=io.vlingo.actors.supervision.PingSupervisorActor] " +
-              "[stage=default name=pongSupervisor protocol=io.vlingo.actors.supervision.Pong supervisor=io.vlingo.actors.supervision.PongSupervisorActor]");
+    Configuration configuration =
+            Configuration
+              .define()
+              .with(JDKLoggerPluginConfiguration
+                      .define()
+                      .defaultLogger()
+                      .name("vlingo/actors")
+                      .handlerClass(QuietHandler.class)
+                      .handlerName("vlingo-supervisors-test")
+                      .handlerLevel("ALL"))
+              .with(CommonSupervisorsPluginConfiguration
+                      .define()
+                      .supervisor("default", "pingSupervisor", Ping.class, PingSupervisorActor.class)
+                      .supervisor("default", "pongSupervisor", Pong.class, PongSupervisorActor.class));
 
-    testWorld = TestWorld.start("test", Configuration.defineAlongWith(properties));
+    testWorld = TestWorld.start("test", configuration);
     world = testWorld.world();
   }
 }

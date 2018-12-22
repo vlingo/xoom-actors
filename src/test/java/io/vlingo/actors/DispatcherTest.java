@@ -9,23 +9,19 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestWorld;
 
-public class DispatcherTest {
+public class DispatcherTest extends ActorsTest {
   private static int total100Thousand = 100_000;
   
-  private TestWorld world;
-
   @Test
   public void test100MillionTells() {
     final TestActor<TellSomething> test = 
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(TellSomethingActor.class, Definition.NoParameters, "test"),
                     TellSomething.class);
 
@@ -41,7 +37,7 @@ public class DispatcherTest {
   @Test
   public void test100MillionTellWhatITellYou() {
     TestActor<TellAll> test =
-            world.actorFor(
+            testWorld.actorFor(
                     Definition.has(TellAllActor.class, Definition.NoParameters, "test"),
                     TellAll.class);
 
@@ -52,16 +48,6 @@ public class DispatcherTest {
     assertEquals(total100Thousand, TestWorld.Instance.get().allMessagesFor(test.address()).size());
     
     assertEquals(total100Thousand - 1, (int) test.viewTestState().valueOf("lastValue"));
-  }
-  
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
   
   public interface TellAll {

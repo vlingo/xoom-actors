@@ -11,14 +11,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
 
-public class CharactersTest {
-  private World world;
+public class CharactersTest extends ActorsTest {
 
   @Test
   public void testBecomeWithThreeCharacters() {
@@ -42,16 +39,6 @@ public class CharactersTest {
     assertEquals(10, results.one);
     assertEquals(20, results.two);
     assertEquals(30, results.three);
-  }
-
-  @Before
-  public void setUp() {
-    world = World.startWithDefaults("become-test");
-  }
-
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 
   public static interface ThreeBehaviors {

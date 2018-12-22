@@ -10,13 +10,20 @@ package io.vlingo.actors.supervision;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
+import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
+import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
+import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverride;
+import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
 import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.TestWorld;
 
 public class DefaultSupervisorOverrideTest extends ActorsTest {
 
@@ -58,5 +65,26 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
     assertFalse(failure.actorInside().isStopped());
     assertEquals(40, testResults.failNowCount.get());
     assertEquals(40, testResults.afterFailureCount.get());
+  }
+
+  @Before
+  @Override
+  public void setUp() throws Exception {
+    Configuration configuration =
+            Configuration
+              .define()
+              .with(JDKLoggerPluginConfiguration
+                      .define()
+                      .defaultLogger()
+                      .name("vlingo/actors")
+                      .handlerClass(QuietHandler.class)
+                      .handlerName("vlingo-supervisors-test")
+                      .handlerLevel("ALL"))
+              .with(DefaultSupervisorOverridePluginConfiguration
+                      .define()
+                      .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class));
+
+    testWorld = TestWorld.start("test", configuration);
+    world = testWorld.world();
   }
 }

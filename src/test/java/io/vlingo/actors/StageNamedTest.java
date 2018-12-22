@@ -13,17 +13,13 @@ import static org.junit.Assert.assertSame;
 
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestWorld;
 
-public class StageNamedTest {
-  private World world;
-  private TestWorld testWorld;
+public class StageNamedTest extends ActorsTest {
   
   @Test
   public void testWorldStageNamedOnce() throws Exception {
@@ -63,18 +59,6 @@ public class StageNamedTest {
     
     assertNotSame(defaultStage, stageHolder);
     assertSame(stageHolder, testWorld.stageNamed(uniqueName));
-  }
-  
-  @Before
-  public void setUp() {
-    world = World.start("test");
-    testWorld = TestWorld.start("test-world");
-  }
-  
-  @After
-  public void tearDown() {
-    testWorld.terminate();
-    world.terminate();
   }
 
   public static interface StageNameQueryResult {

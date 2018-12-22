@@ -26,6 +26,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
+import io.vlingo.actors.Logger;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 import io.vlingo.actors.testkit.TestUntil;
@@ -41,9 +42,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
     testResults.log.set(true);
 
-    final TestMailbox mailbox = new TestMailbox(testResults);
+    final TestMailbox mailbox = new TestMailbox(testResults, world.defaultLogger());
 
-    final CountTakerActor actor = new CountTakerActor(testResults);
+    final CountTakerActor actor = new CountTakerActor(testResults, world.defaultLogger());
     
     testResults.until = until(3);
     
@@ -77,9 +78,9 @@ public class ExecutorDispatcherTest extends ActorsTest {
   public void testExecute() throws Exception {
     final TestResults testResults = new TestResults();
     
-    final TestMailbox mailbox = new TestMailbox(testResults);
+    final TestMailbox mailbox = new TestMailbox(testResults, world.defaultLogger());
 
-    final CountTakerActor actor = new CountTakerActor(testResults);
+    final CountTakerActor actor = new CountTakerActor(testResults, world.defaultLogger());
     
     testResults.until = until(Total);
     
@@ -104,27 +105,34 @@ public class ExecutorDispatcherTest extends ActorsTest {
   }
   
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
-    
+
     dispatcher = new ExecutorDispatcher(1, 1.0f);
   }
 
   public static class TestMailbox implements Mailbox {
+    private final Logger logger;
     private final Queue<Message> queue = new ConcurrentLinkedQueue<>();
     private final TestResults testResults;
 
-    public TestMailbox(final TestResults testResults) {
+    public TestMailbox(final TestResults testResults, final Logger logger) {
       this.testResults = testResults;
+      this.logger = logger;
     }
 
     @Override
     public void run() {
       final Message message = receive();
-if (testResults.log.get()) System.out.println("TestMailbox: run: received: " + message);
+      if (testResults.log.get()) {
+        logger.log("TestMailbox: run: received: " + message);
+      }
       if (message != null) {
         message.deliver();
-if (testResults.log.get()) System.out.println("TestMailbox: run: adding: " + testResults.highest.get());
+        if (testResults.log.get()) {
+          logger.log("TestMailbox: run: adding: " + testResults.highest.get());
+        }
       }
     }
 
@@ -170,17 +178,23 @@ if (testResults.log.get()) System.out.println("TestMailbox: run: adding: " + tes
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
+    private final Logger logger;
     private final TestResults testResults;
 
-    public CountTakerActor(final TestResults testResults) {
+    public CountTakerActor(final TestResults testResults, final Logger logger) {
       this.testResults = testResults;
+      this.logger = logger;
     }
     
     @Override
     public void take(final int count) {
-if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count);
+      if (testResults.log.get()) {
+        logger.log("CountTakerActor: take: " + count);
+      }
       if (count > testResults.highest.get()) {
-if (testResults.log.get()) System.out.println("CountTakerActor: take: " + count + " > " + testResults.highest.get());
+        if (testResults.log.get()) {
+          logger.log("CountTakerActor: take: " + count + " > " + testResults.highest.get());
+        }
         testResults.highest.set(count);
       }
       testResults.counts.add(testResults.highest.get());

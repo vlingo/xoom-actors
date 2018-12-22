@@ -7,26 +7,28 @@
 
 package io.vlingo.actors;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestWorld;
 
 
-public class ActorEnvironmentTest {
-  private TestWorld world;
+public class ActorEnvironmentTest extends ActorsTest {
 
   @Test
   public void testExpectedEnvironment() throws Exception {
     final Definition definition = Definition.has(EnvironmentProviderActor.class, Definition.NoParameters, "test-env");
     
-    final TestActor<EnvironmentProvider> env = world.actorFor(definition, EnvironmentProvider.class);
+    final TestActor<EnvironmentProvider> env = testWorld.actorFor(definition, EnvironmentProvider.class);
 
     TestState state = env.viewTestState();
     
@@ -34,22 +36,22 @@ public class ActorEnvironmentTest {
     
     assertEquals(0, TestWorld.Instance.get().allMessagesFor(env.address()).size());
     
-    assertEquals(world.world().addressFactory().testNextIdValue() - 1, ((Address) state.valueOf("address")).id());
+    assertEquals(testWorld.world().addressFactory().testNextIdValue() - 1, ((Address) state.valueOf("address")).id());
     
     assertEquals(definition.actorName(), actorDefinition.actorName());
     
     assertArrayEquals(definition.parameters().toArray(), actorDefinition.parameters().toArray());
     
-    assertEquals(world.world().defaultParent(), state.valueOf("parent"));
+    assertEquals(testWorld.world().defaultParent(), state.valueOf("parent"));
     
-    assertSame(world.stage(), state.valueOf("stage"));
+    assertSame(testWorld.stage(), state.valueOf("stage"));
   }
   
   @Test
   public void testSecuredEnvironment() throws Exception {
     final Definition definition = Definition.has(CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
     
-    final TestActor<EnvironmentProvider> env = world.actorFor(definition, EnvironmentProvider.class);
+    final TestActor<EnvironmentProvider> env = testWorld.actorFor(definition, EnvironmentProvider.class);
 
     TestState state = env.viewTestState();
     
@@ -65,7 +67,7 @@ public class ActorEnvironmentTest {
   public void testStop() {
     final Definition definition = Definition.has(StopTesterActor.class, Definition.parameters(0), "test-stop");
 
-    final TestActor<StopTester> stoptest = world.actorFor(definition, StopTester.class);
+    final TestActor<StopTester> stoptest = testWorld.actorFor(definition, StopTester.class);
     
     final Environment env = stoptest.viewTestState().valueOf("env");
     
@@ -78,16 +80,6 @@ public class ActorEnvironmentTest {
     assertEquals(0, env.children.size());
     assertTrue(env.isStopped());
     assertTrue(env.mailbox.isClosed());
-  }
-  
-  @Before
-  public void setUp() {
-    world = TestWorld.start("test-world");
-  }
-  
-  @After
-  public void tearDown() {
-    world.terminate();
   }
   
   public static interface EnvironmentProvider { }

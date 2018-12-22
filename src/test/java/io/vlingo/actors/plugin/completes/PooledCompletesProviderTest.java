@@ -11,18 +11,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.MockCompletes;
-import io.vlingo.actors.World;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.testkit.TestUntil;
 
-public class PooledCompletesProviderTest {
-  private World world;
+public class PooledCompletesProviderTest extends ActorsTest {
   
   @Test
   public void testActuallyCompletes() {
@@ -47,15 +44,5 @@ public class PooledCompletesProviderTest {
     clientCompletes.untilWith.completes();
     assertEquals(1, ((MockCompletes<Object>) clientCompletes).withCount);
     assertEquals(5, ((MockCompletes<Object>) clientCompletes).outcome);
-  }
-
-  @Before
-  public void setUp() {
-    world = World.start("test-completes");
-  }
-
-  @After
-  public void tearDown() {
-    world.terminate();
   }
 }

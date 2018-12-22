@@ -29,6 +29,7 @@ public class DefaultMailboxProviderKeeperPluginTest extends ActorsTest {
   private MailboxProviderKeeper keeper;
 
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
 
