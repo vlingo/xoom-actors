@@ -1,6 +1,6 @@
 # vlingo-actors
 
-[![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion)
+[![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors)[![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion)
 
 The vlingo-actors toolkit is nearly full featured, so don't be fooled by the seemingly low version number.
 
