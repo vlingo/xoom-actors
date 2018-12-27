@@ -12,8 +12,8 @@ import java.util.Queue;
 
 public class Stowage {
   private Queue<Message> stowedMessages;
-  private boolean dispersing;
-  private boolean stowing;
+  private volatile boolean dispersing;
+  private volatile boolean stowing;
 
   public Stowage() {
     this.dispersing = false;
