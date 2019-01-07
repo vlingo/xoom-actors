@@ -27,10 +27,7 @@ public class StageTest extends ActorsTest {
   
   @Test
   public void testActorForDefinitionAndProtocol() throws Exception {
-    world.defaultLogger().log("testActorForDefinitionAndProtocol()");
-    final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters);
-
-    final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
+    final NoProtocol test = world.stage().actorFor(NoProtocol.class, TestInterfaceActor.class);
     
     assertNotNull(test);
     assertNotNull(TestInterfaceActor.instance.get());
@@ -56,8 +53,7 @@ public class StageTest extends ActorsTest {
 
   @Test
   public void testActorForAll() throws Exception {
-    world.defaultLogger().log("testActorForAll()");
-    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), NoProtocol.class);
+    world.actorFor(NoProtocol.class, ParentInterfaceActor.class);
     
     final Definition definition =
             Definition.has(
@@ -67,7 +63,7 @@ public class StageTest extends ActorsTest {
                     TestMailbox.Name,
                     "test-actor");
 
-    final NoProtocol test = world.stage().actorFor(definition, NoProtocol.class);
+    final NoProtocol test = world.stage().actorFor(NoProtocol.class, definition);
     
     assertNotNull(test);
     assertNotNull(TestInterfaceActor.instance.get());
@@ -92,33 +88,33 @@ public class StageTest extends ActorsTest {
     
     final TestUntil until = TestUntil.happenings(7);
 
-    world.stage().actorOf(address5, NoProtocol.class).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address5).andThenConsume(actor -> {
       assertNotNull(actor);
       scanFound.incrementAndGet();
       until.happened();
     });
-    world.stage().actorOf(address4, NoProtocol.class).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address4).andThenConsume(actor -> {
       assertNotNull(actor);
       scanFound.incrementAndGet();
       until.happened();
     });
-    world.stage().actorOf(address3, NoProtocol.class).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address3).andThenConsume(actor -> {
       assertNotNull(actor);
       scanFound.incrementAndGet();
       until.happened();
     });
-    world.stage().actorOf(address2, NoProtocol.class).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address2).andThenConsume(actor -> {
       assertNotNull(actor);
       scanFound.incrementAndGet();
       until.happened();
     });
-    world.stage().actorOf(address1, NoProtocol.class).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address1).andThenConsume(actor -> {
       assertNotNull(actor);
       scanFound.incrementAndGet();
       until.happened();
     });
 
-    world.stage().actorOf(address6, NoProtocol.class)
+    world.stage().actorOf(NoProtocol.class, address6)
       .andThenConsume(actor -> {
         assertNull(actor);
         until.happened();
@@ -128,7 +124,7 @@ public class StageTest extends ActorsTest {
         until.happened();
         return null;
       });
-    world.stage().actorOf(address7, NoProtocol.class)
+    world.stage().actorOf(NoProtocol.class, address7)
       .andThen(actor -> {
         assertNull(actor);
         until.happened();
@@ -143,6 +139,26 @@ public class StageTest extends ActorsTest {
     until.completes();
 
     assertEquals(5, scanFound.get());
+  }
+
+  @Test
+  public void testThatProtocolIsInterface() {
+    world.stage().actorFor(NoProtocol.class, ParentInterfaceActor.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testThatProtocolIsNotInterface() {
+    world.stage().actorFor(ParentInterfaceActor.class, ParentInterfaceActor.class);
+  }
+
+  @Test
+  public void testThatProtocolsAreInterfaces() {
+    world.stage().actorFor(new Class[] { NoProtocol.class, NoProtocol.class }, ParentInterfaceActor.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testThatProtocolsAreNotInterfaces() {
+    world.stage().actorFor(new Class[] { NoProtocol.class, ParentInterfaceActor.class }, ParentInterfaceActor.class);
   }
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
