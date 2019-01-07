@@ -69,6 +69,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     if (!isStopped()) {
       if (lifeCycle.address().id() != World.DEADLETTERS_ID) {
         // TODO: remove this actor as a child on parent
+        lifeCycle.suspend();
         lifeCycle.stop(this);
       }
     }
