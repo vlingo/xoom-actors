@@ -22,6 +22,11 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   }
 
   @Override
+  public Address address() {
+    return actor.address();
+  }
+
+  @Override
   public boolean isStopped() {
     return actor.isStopped();
   }

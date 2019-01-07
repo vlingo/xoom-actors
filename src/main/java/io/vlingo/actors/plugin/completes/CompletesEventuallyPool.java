@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.completes;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.vlingo.actors.Address;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyActor;
 import io.vlingo.actors.CompletesEventuallyProvider;
@@ -50,12 +51,12 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
     for (int idx = 0; idx < poolSize; ++idx) {
       pool[idx] =
               stage.actorFor(
+                      CompletesEventually.class,
                       Definition.has(
                               CompletesEventuallyActor.class,
                               Definition.NoParameters,
                               mailboxName,
-                              "completes-eventually-" + (idx + 1)),
-                      CompletesEventually.class);
+                              "completes-eventually-" + (idx + 1)));
     }
   }
 
@@ -65,5 +66,22 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
             completesEventuallyId.getAndIncrement(),
             clientCompletes,
             completesEventually());
+  }
+
+  @Override
+  public CompletesEventually provideCompletesFor(final Address address, final Completes<?> clientCompletes) {
+    return new PooledCompletes(
+            completesEventuallyId.getAndIncrement(),
+            clientCompletes,
+            completesEventuallyOf(address));
+  }
+
+  private CompletesEventually completesEventuallyOf(final Address address) {
+    for (final CompletesEventually completesEventually : pool) {
+      if (completesEventually.address().equals(address)) {
+        return completesEventually;
+      }
+    }
+    return completesEventually();
   }
 }

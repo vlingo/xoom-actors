@@ -14,4 +14,5 @@ public interface CompletesEventuallyProvider {
   CompletesEventually completesEventually();
   void initializeUsing(final Stage stage);
   CompletesEventually provideCompletesFor(final Completes<?> clientCompletes);
+  CompletesEventually provideCompletesFor(final Address address, final Completes<?> clientCompletes);
 }

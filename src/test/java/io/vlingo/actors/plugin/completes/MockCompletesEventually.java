@@ -10,6 +10,7 @@ package io.vlingo.actors.plugin.completes;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.vlingo.actors.Address;
 import io.vlingo.actors.CompletesEventually;
 
 public class MockCompletesEventually implements CompletesEventually {
@@ -17,6 +18,11 @@ public class MockCompletesEventually implements CompletesEventually {
 
   public MockCompletesEventually(final CompletesResults completesResults) {
     this.completesResults = completesResults;
+  }
+
+  @Override
+  public Address address() {
+    return null;
   }
 
   @Override

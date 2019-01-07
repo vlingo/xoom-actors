@@ -7,6 +7,7 @@
 
 package io.vlingo.actors.plugin.completes;
 
+import io.vlingo.actors.Address;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.MockCompletes;
@@ -43,6 +44,12 @@ public class MockCompletesEventuallyProvider implements CompletesEventuallyProvi
 
   @Override
   public CompletesEventually provideCompletesFor(final Completes<?> clientCompletes) {
+    ++provideCompletesForCount;
+    return completesEventually;
+  }
+
+  @Override
+  public CompletesEventually provideCompletesFor(final Address address, final Completes<?> clientCompletes) {
     ++provideCompletesForCount;
     return completesEventually;
   }

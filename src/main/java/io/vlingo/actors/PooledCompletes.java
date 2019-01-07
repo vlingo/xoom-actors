@@ -25,6 +25,11 @@ public class PooledCompletes implements CompletesEventually {
     this.completesEventually = completesEventually;
   }
 
+  @Override
+  public Address address() {
+    return completesEventually.address();
+  }
+
   public Object outcome() {
     return outcome;
   }
@@ -42,4 +47,22 @@ public class PooledCompletes implements CompletesEventually {
 
   @Override
   public void stop() { }
+
+  @Override
+  public int hashCode() {
+    return 31 * address().hashCode();
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    if (other == null || other.getClass() != getClass()) {
+      return false;
+    }
+    return address().equals(((PooledCompletes)other).address());
+  }
+
+  @Override
+  public String toString() {
+    return "PooledCompletes[id=" + id + " address=" + address() + "]";
+  }
 }

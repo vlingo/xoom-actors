@@ -8,6 +8,7 @@
 package io.vlingo.actors;
 
 public interface CompletesEventually extends Stoppable {
+  Address address();
   void with(final Object outcome);
   default boolean isStopped() { return false; }
   default void stop() { }
