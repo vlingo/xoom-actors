@@ -39,27 +39,27 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol
    * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
    * @param parameters the {@code Object[]} of constructor parameters
-   * @param <T> the protocol type
    * @return T
    */
   public <T> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
-    return actorFor(Definition.has(type, Arrays.asList(parameters)), protocol);
+    return actorFor(protocol, Definition.has(type, Arrays.asList(parameters)));
   }
 
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
-   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
-   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
    * @return T
    */
-  public <T> T actorFor(final Definition definition, final Class<T> protocol) {
+  public <T> T actorFor(final Class<T> protocol, final Definition definition) {
     return actorFor(
-            definition,
             protocol,
+            definition,
             definition.parentOr(world.defaultParent()),
             definition.supervisor(),
             definition.loggerOr(world.defaultLogger()));
@@ -68,19 +68,19 @@ public class Stage implements Stoppable {
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code address}.
-   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
-   * @param protocol the {@code Class<T>} protocol
-   * @param address the {@code Address} to assign to the newly created {@code Actor}
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param address the {@code Address} to assign to the newly created {@code Actor}
    * @return T
    */
-  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address) {
+  public <T> T actorFor(final Class<T> protocol, final Definition definition, final Address address) {
     final Address actorAddress = this.allocateAddress(definition, address);
     final Mailbox actorMailbox = this.allocateMailbox(definition, actorAddress, null);
     final ActorProtocolActor<T> actor =
             actorProtocolFor(
-              definition,
               protocol,
+              definition,
               definition.parentOr(world.defaultParent()),
               actorAddress,
               actorMailbox,
@@ -93,16 +93,16 @@ public class Stage implements Stoppable {
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code logger}.
-   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
-   * @param protocol the {@code Class<T>} protocol
-   * @param logger the {@code Logger} to assign to the newly created {@code Actor}
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param logger the {@code Logger} to assign to the newly created {@code Actor}
    * @return T
    */
-  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Logger logger) {
+  public <T> T actorFor(final Class<T> protocol, final Definition definition, final Logger logger) {
     return actorFor(
-            definition,
             protocol,
+            definition,
             definition.parentOr(world.defaultParent()),
             definition.supervisor(),
             logger);
@@ -111,20 +111,20 @@ public class Stage implements Stoppable {
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code address} and {@code logger}.
-   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
+   * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
    * @param address the {@code Address} to assign to the newly created {@code Actor}
    * @param logger the {@code Logger} to assign to the newly created {@code Actor}
-   * @param <T> the protocol type
    * @return T
    */
-  public <T> T actorFor(final Definition definition, final Class<T> protocol, final Address address, final Logger logger) {
+  public <T> T actorFor(final Class<T> protocol, final Definition definition, final Address address, final Logger logger) {
     final Address actorAddress = this.allocateAddress(definition, address);
     final Mailbox actorMailbox = this.allocateMailbox(definition, actorAddress, null);
     final ActorProtocolActor<T> actor =
             actorProtocolFor(
-              definition,
               protocol,
+              definition,
               definition.parentOr(world.defaultParent()),
               actorAddress,
               actorMailbox,
@@ -137,15 +137,15 @@ public class Stage implements Stoppable {
   /**
    * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
    * newly created {@code Actor} according to {@code definition}.
+   * @param protocols the {@code Class<?>}[] array of protocols that the {@code Actor} supports
    * @param definition the {@code Definition} providing parameters to the {@code Actor}
-   * @param protocols the {@code Class<T>}[] array of protocols that the {@code Actor} supports
    * @return Protocols
    */
-  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
+  public Protocols actorFor(final Class<?>[] protocols, final Definition definition) {
     final ActorProtocolActor<Object>[] all =
             actorProtocolFor(
-                    definition,
                     protocols,
+                    definition,
                     definition.parentOr(world.defaultParent()),
                     definition.supervisor(),
                     definition.loggerOr(world.defaultLogger()));
@@ -154,27 +154,43 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
+   * newly created {@code Actor} according to {@code definition}.
+   * @param protocols the {@code Class<?>}[] array of protocols that the {@code Actor} supports
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param parameters the {@code Object[]} of constructor parameters
+   * @return Protocols
+   */
+  public Protocols actorFor(final Class<?>[] protocols, final Class<? extends Actor> type, final Object...parameters) {
+    return actorFor(protocols, Definition.has(type, Arrays.asList(parameters)));
+  }
+
+  /**
    * Answers the {@code Completes<T>} that will eventually complete with the {@code T} protocol
    * of the backing {@code Actor} of the given {@code address}, or {@code null} if not found.
-   * @param address the {@code Address} of the {@code Actor} to find
-   * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
+   * @param address the {@code Address} of the {@code Actor} to find
    * @return {@code Completes<T>}
    */
-  public <T> Completes<T> actorOf(final Address address, final Class<T> protocol) {
-    return directoryScanner.actorOf(address, protocol);
+  public <T> Completes<T> actorOf(final Class<T> protocol, final Address address) {
+    return directoryScanner.actorOf(protocol, address);
+  }
+
+  public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
+    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name));
   }
 
   /**
    * Answers the {@code TestActor<T>}, {@code T} being the protocol, of the new created {@code Actor} that implements the {@code protocol}.
    * The {@code TestActor<T>} is specifically used for test scenarios and provides runtime access to the internal
    * {@code Actor} instance. Test-based {@code Actor} instances are backed by the synchronous {@code TestMailbox}.
-   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
-   * @param protocol the {@code Class<T>} protocol
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol
+   * @param definition the {@code Definition} used to initialize the newly created {@code Actor}
    * @return T
    */
-  public final <T> TestActor<T> testActorFor(final Definition definition, final Class<T> protocol) {
+  public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Definition definition) {
     final Definition redefinition =
             Definition.has(
                     definition.type(),
@@ -184,8 +200,8 @@ public class Stage implements Stoppable {
     
     try {
       return actorProtocolFor(
-              redefinition,
               protocol,
+              redefinition,
               definition.parentOr(world.defaultParent()),
               null,
               null,
@@ -204,11 +220,11 @@ public class Stage implements Stoppable {
    * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
    * newly created {@code Actor} according to {@code definition}, that can be used for testing.
    * Test-based {@code Actor} instances are backed by the synchronous {@code TestMailbox}.
-   * @param definition the {@code Definition} providing parameters to the {@code Actor}
    * @param protocols the {@code Class<T>}[] array of protocols that the {@code Actor} supports
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
    * @return Protocols
    */
-  public final Protocols testActorFor(final Definition definition, final Class<?>[] protocols) {
+  public final Protocols testActorFor(final Class<?>[] protocols, final Definition definition) {
     final Definition redefinition =
             Definition.has(
                     definition.type(),
@@ -218,8 +234,8 @@ public class Stage implements Stoppable {
     
     final ActorProtocolActor<Object>[] all =
             actorProtocolFor(
-                    redefinition,
                     protocols,
+                    redefinition,
                     definition.parentOr(world.defaultParent()),
                     null,
                     null,
@@ -323,53 +339,56 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the T protocol for the newly created Actor instance. (INTERNAL ONLY)
-   * @param definition the Definition of the Actor
+   * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol of the Actor
+   * @param definition the Definition of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
-   * @param <T> the protocol type
    * @return T
    */
-  <T> T actorFor(final Definition definition, final Class<T> protocol, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
-    ActorProtocolActor<T> actor = actorProtocolFor(definition, protocol, parent, null, null, maybeSupervisor, logger);
+  <T> T actorFor(final Class<T> protocol, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    ActorProtocolActor<T> actor = actorProtocolFor(protocol, definition, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
   }
 
 
   /**
    * Answers the ActorProtocolActor[] for the newly created Actor instance. (INTERNAL ONLY)
+   * @param protocols the {@code Class<?>}[] protocols of the Actor
    * @param definition the Definition of the Actor
-   * @param protocols the {@code Class<T>}[] protocols of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
    * @return ActorProtocolActor[]
    */
-  ActorProtocolActor<Object>[] actorProtocolFor(final Definition definition, final Class<?>[] protocols, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
-    return actorProtocolFor(definition, protocols, parent, null, null, maybeSupervisor, logger);
+  ActorProtocolActor<Object>[] actorProtocolFor(final Class<?>[] protocols, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    assertProtocolCompliance(protocols);
+    return actorProtocolFor(protocols, definition, parent, null, null, maybeSupervisor, logger);
   }
 
   /**
    * Answers the ActorProtocolActor for the newly created Actor instance. (INTERNAL ONLY)
-   * @param definition the Definition of the Actor
+   * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol of the Actor
+   * @param definition the Definition of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeAddress the possible Address of this Actor
    * @param maybeMailbox the possible Mailbox of this Actor
    * @param maybeSupervisor the possible Supervisor of this Actor
    * @param logger the Logger of this Actor
-   * @param <T> the protocol type
    * @return ActorProtocolActor
    */
   <T> ActorProtocolActor<T> actorProtocolFor(
-          final Definition definition,
           final Class<T> protocol,
+          final Definition definition,
           final Actor parent,
           final Address maybeAddress,
           final Mailbox maybeMailbox,
           final Supervisor maybeSupervisor,
           final Logger logger) {
+
+    assertProtocolCompliance(protocol);
 
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
@@ -384,8 +403,8 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the ActorProtocolActor[] for the newly created Actor instance. (INTERNAL ONLY)
+   * @param protocols the {@code Class<?>}[] protocols of the Actor
    * @param definition the Definition of the Actor
-   * @param protocols the {@code Class<T>}[] protocols of the Actor
    * @param parent the Actor parent of this Actor
    * @param maybeAddress the possible Address of this Actor
    * @param maybeMailbox the possible Mailbox of this Actor
@@ -394,8 +413,8 @@ public class Stage implements Stoppable {
    * @return ActorProtocolActor[]
    */
   ActorProtocolActor<Object>[] actorProtocolFor(
-          final Definition definition,
           final Class<?>[] protocols,
+          final Definition definition,
           final Actor parent,
           final Address maybeAddress,
           final Mailbox maybeMailbox,
@@ -405,7 +424,7 @@ public class Stage implements Stoppable {
     try {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
       final Object[] protocolActors = actorProxyFor(protocols, actor, actor.lifeCycle.environment.mailbox);
-      return ActorProtocolActor.allOf(actor, protocolActors);
+      return ActorProtocolActor.allOf(protocolActors, actor);
     } catch (Exception e) {
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
@@ -414,10 +433,10 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the T protocol proxy for this newly created Actor. (INTERNAL ONLY)
+   * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol of the Actor
    * @param actor the Actor instance that backs the proxy protocol
    * @param mailbox the Mailbox instance of this Actor
-   * @param <T> the protocol type
    * @return T
    */
   final <T> T actorProxyFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
@@ -426,7 +445,7 @@ public class Stage implements Stoppable {
 
   /**
    * Answers the Object[] protocol proxies for this newly created Actor. (INTERNAL ONLY)
-   * @param protocols the {@code Class<T>}[] protocols of the Actor
+   * @param protocols the {@code Class<?>}[] protocols of the Actor
    * @param actor the Actor instance that backs the proxy protocol
    * @param mailbox the Mailbox instance of this Actor
    * @return Object[]
@@ -444,7 +463,7 @@ public class Stage implements Stoppable {
   /**
    * Answers the common Supervisor for the given protocol or the defaultSupervisor if there is
    * no registered common Supervisor. (INTERNAL ONLY)
-   * @param protocol the {@code Class<T>} protocol to supervise
+   * @param protocol the {@code Class<?>} protocol to supervise
    * @param defaultSupervisor the Supervisor default to be used if there is no registered common Supervisor
    * @return Supervisor
    */
@@ -479,7 +498,7 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(Definition.has(DirectoryScannerActor.class, Definition.parameters(directory)), DirectoryScanner.class);
+    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, Definition.parameters(directory)));
   }
 
   /**
@@ -520,6 +539,26 @@ public class Stage implements Stoppable {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
     return mailbox;
+  }
+
+  /**
+   * Assert whether or not {@code protocol} is an interface.
+   * @param protocol the {@code Class<?>} that must be an interface
+   */
+  private void assertProtocolCompliance(final Class<?> protocol) {
+    if (!protocol.isInterface()) {
+      throw new IllegalArgumentException("Actor protocol must be an interface not a class: " + protocol.getName());
+    }
+  }
+
+  /**
+   * Assert whether or not all of the {@code protocols} are interfaces.
+   * @param protocols the {@code Class<?>[]} that must all be interfaces
+   */
+  private void assertProtocolCompliance(final Class<?>[] protocols) {
+    for (final Class<?> protocol : protocols) {
+      assertProtocolCompliance(protocol);
+    }
   }
 
   /**
@@ -591,7 +630,7 @@ public class Stage implements Stoppable {
     private final T protocolActor;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    static ActorProtocolActor<Object>[] allOf(final Actor actor, Object[] protocolActors) {
+    static ActorProtocolActor<Object>[] allOf(Object[] protocolActors, final Actor actor) {
       final ActorProtocolActor<Object>[] all = new ActorProtocolActor[protocolActors.length];
       for (int idx = 0; idx < protocolActors.length; ++idx) {
         all[idx] = new ActorProtocolActor(actor, protocolActors[idx]);
