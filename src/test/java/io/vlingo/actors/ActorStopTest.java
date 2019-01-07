@@ -34,6 +34,8 @@ public class ActorStopTest extends ActorsTest {
 
     testResults.untilStart.completesWithin(2000);
 
+    assertEquals(12, testResults.beforeStartCount.get());
+
     world.defaultLogger().log("Test: testStopActors: stopping actors");
 
     testResults.untilStop = TestUntil.happenings(12);
@@ -97,7 +99,7 @@ public class ActorStopTest extends ActorsTest {
   }
   
   public static class ChildCreatingStoppableActor extends Actor implements ChildCreatingStoppable {
-    private final TestResults testResults;
+    private volatile TestResults testResults;
     
     public ChildCreatingStoppableActor(final TestResults testSpecs) {
       this.testResults = testSpecs;
@@ -114,7 +116,8 @@ public class ActorStopTest extends ActorsTest {
     @Override
     protected void beforeStart() {
       super.beforeStart();
-      if (testResults.untilStart != null) testResults.untilStart.happened();
+      testResults.beforeStartCount.incrementAndGet();
+      testResults.untilStart.happened();
     }
 
     @Override
@@ -132,6 +135,7 @@ public class ActorStopTest extends ActorsTest {
   }
 
   private static class TestResults {
+    public AtomicInteger beforeStartCount = new AtomicInteger(0);
     public AtomicInteger stopCount = new AtomicInteger(0);
     public AtomicBoolean terminating = new AtomicBoolean(false);
     public AtomicInteger terminatingStopCount = new AtomicInteger(0);
