@@ -138,19 +138,19 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   /**
    * Answers the {@code T} protocol for the child {@code Actor} to be created by this parent {@code  Actor}.
-   * @param definition the {@code Definition} of the child {@code Actor} to be created by this parent {@code Actor}
-   * @param protocol the {@code Class<T>} protocol of the child {@code Actor}
    * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol of the child {@code Actor}
+   * @param definition the {@code Definition} of the child {@code Actor} to be created by this parent {@code Actor}
    * @return T
    */
-  protected <T> T childActorFor(final Definition definition, final Class<T> protocol) {
+  protected <T> T childActorFor(final Class<T> protocol, final Definition definition) {
     if (definition.supervisor() != null) {
-      return lifeCycle.environment.stage.actorFor(definition, protocol, this, definition.supervisor(), logger());
+      return lifeCycle.environment.stage.actorFor(protocol, definition, this, definition.supervisor(), logger());
     } else {
       if (this instanceof Supervisor) {
-        return lifeCycle.environment.stage.actorFor(definition, protocol, this, lifeCycle.lookUpProxy(Supervisor.class), logger());
+        return lifeCycle.environment.stage.actorFor(protocol, definition, this, lifeCycle.lookUpProxy(Supervisor.class), logger());
       } else {
-        return lifeCycle.environment.stage.actorFor(definition, protocol, this, null, logger());
+        return lifeCycle.environment.stage.actorFor(protocol, definition, this, null, logger());
       }
     }
   }
@@ -176,7 +176,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @return CompletesEventually
    */
   protected CompletesEventually completesEventually() {
-    return lifeCycle.environment.stage.world().completesFor(completes.clientCompletes());
+    return lifeCycle.environment.completesEventually(completes);
   }
 
   /**

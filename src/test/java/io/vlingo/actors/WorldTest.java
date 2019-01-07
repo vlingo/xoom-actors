@@ -39,10 +39,25 @@ public class WorldTest extends ActorsTest {
   }
   
   @Test
-  public void testWorldActorFor() throws Exception {
+  public void testWorldActorForDefintion() throws Exception {
     final TestResults testResults = new TestResults();
     
-    final Simple simple = world.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults)), Simple.class);
+    final Simple simple = world.actorFor(Simple.class, Definition.has(SimpleActor.class, Definition.parameters(testResults)));
+    
+    testResults.untilSimple = TestUntil.happenings(1);
+    
+    simple.simpleSay();
+    
+    testResults.untilSimple.completes();
+    
+    assertTrue(testResults.invoked.get());
+  }
+  
+  @Test
+  public void testWorldActorForFlat() throws Exception {
+    final TestResults testResults = new TestResults();
+    
+    final Simple simple = world.actorFor(Simple.class, SimpleActor.class, testResults);
     
     testResults.untilSimple = TestUntil.happenings(1);
     

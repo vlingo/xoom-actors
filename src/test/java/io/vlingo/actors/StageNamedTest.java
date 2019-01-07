@@ -39,13 +39,13 @@ public class StageNamedTest extends ActorsTest {
     
     final TestActor<StageNameQuery> query =
             testWorld.actorFor(
-                    Definition.has(StageNamedTest.StageNamedWithResultActor.class, Definition.NoParameters),
-                    StageNameQuery.class);
+                    StageNameQuery.class,
+                    Definition.has(StageNamedTest.StageNamedWithResultActor.class, Definition.NoParameters));
     
     final TestActor<StageNameQueryResult> result =
             testWorld.actorFor(
-                    Definition.has(StageNamedTest.StageNamedWithResultActor.class, Definition.NoParameters),
-                    StageNameQueryResult.class);
+                    StageNameQueryResult.class,
+                    Definition.has(StageNamedTest.StageNamedWithResultActor.class, Definition.NoParameters));
     
     final String uniqueName = UUID.randomUUID().toString();
     

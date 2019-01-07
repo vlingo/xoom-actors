@@ -19,8 +19,8 @@ public class ProtocolsTest extends ActorsTest {
   public void testTwoProtocols() {
     final Protocols protocols =
             testWorld.actorFor(
-                    Definition.has(TwoProtocolsActor.class, Definition.NoParameters),
-                    new Class<?>[] { P1.class, P2.class });
+                    new Class<?>[] { P1.class, P2.class },
+                    Definition.has(TwoProtocolsActor.class, Definition.NoParameters));
     
     final Protocols.Two<TestActor<P1>, TestActor<P2>> two = Protocols.two(protocols);
     
@@ -36,8 +36,8 @@ public class ProtocolsTest extends ActorsTest {
   public void testThreeProtocols() {
     final Protocols protocols =
             testWorld.actorFor(
-                    Definition.has(ThreeProtocolsActor.class, Definition.NoParameters),
-                    new Class<?>[] { P1.class, P2.class, P3.class });
+                    new Class<?>[] { P1.class, P2.class, P3.class },
+                    Definition.has(ThreeProtocolsActor.class, Definition.NoParameters));
     
     final Protocols.Three<TestActor<P1>, TestActor<P2>, TestActor<P3>> three = Protocols.three(protocols);
     
@@ -58,8 +58,8 @@ public class ProtocolsTest extends ActorsTest {
   public void testFourProtocols() {
     final Protocols protocols =
             testWorld.actorFor(
-                    Definition.has(FourProtocolsActor.class, Definition.NoParameters),
-                    new Class<?>[] { P1.class, P2.class, P3.class, P4.class });
+                    new Class<?>[] { P1.class, P2.class, P3.class, P4.class },
+                    Definition.has(FourProtocolsActor.class, Definition.NoParameters));
     
     final Protocols.Four<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>> four = Protocols.four(protocols);
     
@@ -86,8 +86,8 @@ public class ProtocolsTest extends ActorsTest {
   public void testFiveProtocols() {
     final Protocols protocols =
             testWorld.actorFor(
-                    Definition.has(FiveProtocolsActor.class, Definition.NoParameters),
-                    new Class<?>[] { P1.class, P2.class, P3.class, P4.class, P5.class });
+                    new Class<?>[] { P1.class, P2.class, P3.class, P4.class, P5.class },
+                    Definition.has(FiveProtocolsActor.class, Definition.NoParameters));
     
     final Protocols.Five<TestActor<P1>, TestActor<P2>, TestActor<P3>, TestActor<P4>, TestActor<P5>> five = Protocols.five(protocols);
     

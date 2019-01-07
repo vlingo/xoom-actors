@@ -31,8 +31,8 @@ public class BroadcastRouterTest extends ActorsTest {
     final int messagesToSend = 8;
     final TestUntil until = TestUntil.happenings(messagesToSend);
     final TestActor<OrderRouter> orderRouter = testWorld.actorFor(
-            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
-            OrderRouter.class);
+            OrderRouter.class,
+            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)));
     
     /* expect that every message will be sent to every routee */
     Set<Integer> expected = new HashSet<>();

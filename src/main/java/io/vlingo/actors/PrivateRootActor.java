@@ -30,8 +30,8 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
     stage().world().setPrivateRoot(selfAs(Stoppable.class));
     
     stage().actorProtocolFor(
-              Definition.has(PublicRootActor.class, Definition.NoParameters, World.PUBLIC_ROOT_NAME),
               NoProtocol.class,
+              Definition.has(PublicRootActor.class, Definition.NoParameters, World.PUBLIC_ROOT_NAME),
               this,
               stage().world().addressFactory().from(World.PUBLIC_ROOT_ID, World.PUBLIC_ROOT_NAME),
               null,
@@ -39,8 +39,8 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
               logger());
 
     stage().actorProtocolFor(
-              Definition.has(DeadLettersActor.class, Definition.NoParameters, World.DEADLETTERS_NAME),
               DeadLetters.class,
+              Definition.has(DeadLettersActor.class, Definition.NoParameters, World.DEADLETTERS_NAME),
               this,
               stage().world().addressFactory().from(World.DEADLETTERS_ID, World.DEADLETTERS_NAME),
               null,

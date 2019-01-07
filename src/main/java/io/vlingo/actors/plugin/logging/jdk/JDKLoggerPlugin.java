@@ -71,7 +71,7 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
       registrar.register(jdkLoggerPluginConfiguration.name(), jdkLoggerPluginConfiguration.isDefaultLogger(), this);
       pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
-      logger = registrar.world().actorFor(Definition.has(JDKLoggerActor.class, Definition.parameters(logger), logger), Logger.class);
+      logger = registrar.world().actorFor(Logger.class, Definition.has(JDKLoggerActor.class, Definition.parameters(logger), logger));
       registrar.register(jdkLoggerPluginConfiguration.name(), jdkLoggerPluginConfiguration.isDefaultLogger(), this);
     }
   }
@@ -222,8 +222,6 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
 
     @Override
     public void build(final Configuration configuration) {
-//      System.out.println("################################### WHATTTTTTTTT");
-//      (new Exception()).printStackTrace();
       configuration.with(
               defaultLogger()
              .name("vlingo/actors")

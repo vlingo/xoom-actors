@@ -25,15 +25,15 @@ public class ActorSuspendResumeTest extends ActorsTest {
   public void testSuspendResume() throws Exception {
     final FailureControlSender supervisor =
             world.actorFor(
-                    Definition.has(SuspendedSenderSupervisorActor.class, Definition.NoParameters, "suspended-sender-supervisor"),
-                    FailureControlSender.class);
+                    FailureControlSender.class,
+                    Definition.has(SuspendedSenderSupervisorActor.class, Definition.NoParameters, "suspended-sender-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final FailureControl failure =
             world.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), SuspendedSenderSupervisorActor.instance, "queueArray", "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), SuspendedSenderSupervisorActor.instance, "queueArray", "failure"));
     
     final int times = 25;
     

@@ -21,8 +21,8 @@ public class InterruptableActorTest extends ActorsTest {
   public void testInterruptionWithStop() throws Exception {
     final TestActor<Interruptable> interruptable =
             testWorld.actorFor(
-                    Definition.has(InterruptableActor.class, Definition.NoParameters, "testStoppable"),
-                    Interruptable.class);
+                    Interruptable.class,
+                    Definition.has(InterruptableActor.class, Definition.NoParameters, "testStoppable"));
     
     for (int idx = 0; idx < 10; ++idx) {
       if (idx == 5) {

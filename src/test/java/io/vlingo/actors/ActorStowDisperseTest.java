@@ -23,8 +23,8 @@ public class ActorStowDisperseTest extends ActorsTest {
     final Two<StowThese,OverrideStowage> protocols =
             Protocols.two(
                     world.actorFor(
-                            Definition.has(StowTestActor.class, Definition.parameters(results), "stow-override"),
-                            new Class<?>[] { StowThese.class, OverrideStowage.class }));
+                            new Class<?>[] { StowThese.class, OverrideStowage.class },
+                            Definition.has(StowTestActor.class, Definition.parameters(results), "stow-override")));
 
     for (int idx = 0; idx < 10; ++idx) {
       protocols._1.stow();
@@ -45,8 +45,8 @@ public class ActorStowDisperseTest extends ActorsTest {
     final Two<StowThese,OverrideStowage> protocols =
             Protocols.two(
                     world.actorFor(
-                            Definition.has(StowTestActor.class, Definition.parameters(results), "stow-override"),
-                            new Class<?>[] { StowThese.class, OverrideStowage.class }));
+                            new Class<?>[] { StowThese.class, OverrideStowage.class },
+                            Definition.has(StowTestActor.class, Definition.parameters(results), "stow-override")));
 
     for (int idx = 0; idx < 10; ++idx) {
       protocols._1.stow();

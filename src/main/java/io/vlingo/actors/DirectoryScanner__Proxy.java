@@ -25,7 +25,7 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
   }
 
   @Override
-  public <T> Completes<T> actorOf(final io.vlingo.actors.Address arg0, final java.lang.Class<T> arg1) {
+  public <T> Completes<T> actorOf(final java.lang.Class<T> arg0, final io.vlingo.actors.Address arg1) {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.actorOf(arg0, arg1);
       final Completes<T> completes = new BasicCompletes<>(actor.scheduler());

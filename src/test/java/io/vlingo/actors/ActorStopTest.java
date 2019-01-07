@@ -86,9 +86,9 @@ public class ActorStopTest extends ActorsTest {
   
   private ChildCreatingStoppable[] setUpActors(final World world, final TestResults testResults) {
     final ChildCreatingStoppable[] stoppables = new ChildCreatingStoppable[3];
-    stoppables[0] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p1"), ChildCreatingStoppable.class);
-    stoppables[1] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p2"), ChildCreatingStoppable.class);
-    stoppables[2] = world.actorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p3"), ChildCreatingStoppable.class);
+    stoppables[0] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p1"));
+    stoppables[1] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p2"));
+    stoppables[2] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p3"));
     return stoppables;
   }
   
@@ -106,9 +106,9 @@ public class ActorStopTest extends ActorsTest {
     @Override
     public void createChildren() {
       final String pre = address().name();
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".1"), ChildCreatingStoppable.class);
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".2"), ChildCreatingStoppable.class);
-      childActorFor(Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".3"), ChildCreatingStoppable.class);
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".1"));
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".2"));
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".3"));
     }
 
     @Override

@@ -111,32 +111,48 @@ public final class World implements Registrar {
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that is defined by
    * the parameters of {@code definition} that implements the {@code protocol}.
-   * @param definition the {@code Definition} providing parameters to the {@code Actor}
    * @param protocol the {@code Class<T>} protocol that the {@code Actor} supports
    * @param <T> the protocol type
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
    * @return T
    */
-  public <T> T actorFor(final Definition definition, final Class<T> protocol) {
+  public <T> T actorFor(final Class<T> protocol, final Definition definition) {
     if (isTerminated()) {
       throw new IllegalStateException("vlingo/actors: Stopped.");
     }
 
-    return stage().actorFor(definition, protocol);
+    return stage().actorFor(protocol, definition);
   }
 
   /**
    * Answers a {@code Protocols} that provides one or more supported protocols for the
    * newly created {@code Actor} according to {@code definition}.
-   * @param definition the {@code Definition} providing parameters to the {@code Actor}
-   * @param protocols the {@code Class<T>[]} array of protocols that the {@code Actor} supports
+   * @param protocols the {@code Class<?>[]} array of protocols that the {@code Actor} supports
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param parameters the {@code Object[]} of constructor parameters
    * @return {@code Protocols}
    */
-  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
+  public Protocols actorFor(final Class<?>[] protocols, final Class<? extends Actor> type, final Object...parameters) {
     if (isTerminated()) {
       throw new IllegalStateException("vlingo/actors: Stopped.");
     }
 
-    return stage().actorFor(definition, protocols);
+    return stage().actorFor(protocols, type, parameters);
+  }
+
+  /**
+   * Answers a {@code Protocols} that provides one or more supported protocols for the
+   * newly created {@code Actor} according to {@code definition}.
+   * @param protocols the {@code Class<?>[]} array of protocols that the {@code Actor} supports
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @return {@code Protocols}
+   */
+  public Protocols actorFor(final Class<?>[] protocols, final Definition definition) {
+    if (isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: Stopped.");
+    }
+
+    return stage().actorFor(protocols, definition);
   }
 
   /**
@@ -173,6 +189,17 @@ public final class World implements Registrar {
    */
   public CompletesEventually completesFor(final Completes<?> clientCompletes) {
     return completesProviderKeeper.findDefault().provideCompletesFor(clientCompletes);
+  }
+
+  /**
+   * Answers a {@code CompletesEventually} instance identified by {@code address} that backs the {@code clientCompletes}.
+   * This manages the {@code Completes} using the {@code CompletesEventually} plugin {@code Actor} pool.
+   * @param address the {@code Address} of the CompletesEventually actor to reuse
+   * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
+   * @return CompletesEventually
+   */
+  public CompletesEventually completesFor(final Address address, final Completes<?> clientCompletes) {
+    return completesProviderKeeper.findDefault().provideCompletesFor(address, clientCompletes);
   }
 
   /**
@@ -284,7 +311,7 @@ public final class World implements Registrar {
     try {
       final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
       final Stage stage = stageNamed(actualStageName);
-      final Supervisor common = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
+      final Supervisor common = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
       stage.registerCommonSupervisor(supervisedProtocol, common);
     } catch (Exception e) {
       defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
@@ -303,7 +330,7 @@ public final class World implements Registrar {
     try {
       final String actualStageName = stageName.equals("default") ? DEFAULT_STAGE : stageName;
       final Stage stage = stageNamed(actualStageName);
-      defaultSupervisor = stage.actorFor(Definition.has(supervisorClass, Definition.NoParameters, name), Supervisor.class);
+      defaultSupervisor = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
     } catch (Exception e) {
       defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + supervisorClass.getName(), e);
       e.printStackTrace();
@@ -559,8 +586,8 @@ public final class World implements Registrar {
    */
   private void startRootFor(final Stage stage, final Logger logger) {
     stage.actorProtocolFor(
-        Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
         Stoppable.class,
+        Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
         null,
         addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
         null,

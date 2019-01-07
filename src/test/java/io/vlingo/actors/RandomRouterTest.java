@@ -22,8 +22,8 @@ public class RandomRouterTest extends ActorsTest {
     final int messagesToSend = 40;
     final TestUntil until = TestUntil.happenings(messagesToSend);
     final OrderRouter orderRouter = world.actorFor(
-            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
-            OrderRouter.class);
+            OrderRouter.class,
+            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)));
     
     for (int i = 0; i < messagesToSend; i++) {
       orderRouter.routeOrder(new Order());

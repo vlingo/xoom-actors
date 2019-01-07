@@ -17,7 +17,7 @@ public class DirectoryScannerActor extends Actor implements DirectoryScanner {
   }
 
   @Override
-  public <T> Completes<T> actorOf(final Address address, final Class<T> protocol) {
+  public <T> Completes<T> actorOf(final Class<T> protocol, final Address address) {
     final Actor actor = directory.actorOf(address);
 
     if (actor != null) {

@@ -86,7 +86,7 @@ public class DefinitionTest extends ActorsTest {
     
     final ParentHolder parentHolder = new ParentHolder();
     
-    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.parameters(parentHolder)), ParentInterface.class);
+    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.parameters(parentHolder)));
     
     final Definition definition = Definition.has(TestInterfaceActor.class, Definition.NoParameters, parentHolder.parent, actorName);
     

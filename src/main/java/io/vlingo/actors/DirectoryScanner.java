@@ -10,5 +10,5 @@ package io.vlingo.actors;
 import io.vlingo.common.Completes;
 
 public interface DirectoryScanner {
-  public <T> Completes<T> actorOf(final Address address, final Class<T> protocol);
+  public <T> Completes<T> actorOf(final Class<T> protocol, final Address address);
 }

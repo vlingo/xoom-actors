@@ -34,15 +34,15 @@ public class SupervisionStrategyTest extends ActorsTest {
     
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(ResumeForeverSupervisorActor.class, Definition.parameters(resumeForeverSupervisorTestResults), "resume-forever-supervisor"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(ResumeForeverSupervisorActor.class, Definition.parameters(resumeForeverSupervisorTestResults), "resume-forever-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
     failureControlTestResults.untilFailNow = TestUntil.happenings(20);
     failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
@@ -81,15 +81,15 @@ public class SupervisionStrategyTest extends ActorsTest {
     
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartForeverSupervisorActor.class, Definition.parameters(restartForeverSupervisorTestResults), "restart-forever-supervisor"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(RestartForeverSupervisorActor.class, Definition.parameters(restartForeverSupervisorTestResults), "restart-forever-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
     failureControlTestResults.untilFailNow = TestUntil.happenings(20);
     failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
@@ -128,15 +128,15 @@ public class SupervisionStrategyTest extends ActorsTest {
     
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartFiveInOneSupervisorActor.class, Definition.parameters(restartFiveInOneSupervisorTestResults), "resuming-5-1-supervisor"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(RestartFiveInOneSupervisorActor.class, Definition.parameters(restartFiveInOneSupervisorTestResults), "resuming-5-1-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
     failureControlTestResults.untilFailNow = TestUntil.happenings(5);
     failureControlTestResults.untilAfterFail = TestUntil.happenings(5);
@@ -177,15 +177,15 @@ public class SupervisionStrategyTest extends ActorsTest {
     
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(EscalateSupervisorActor.class, Definition.parameters(escalateSupervisorTestResults), "escalate"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(EscalateSupervisorActor.class, Definition.parameters(escalateSupervisorTestResults), "escalate"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure"));
     
     failureControlTestResults.untilFailNow = TestUntil.happenings(1);
     failureControlTestResults.untilStopped = TestUntil.happenings(1);
@@ -204,20 +204,20 @@ public class SupervisionStrategyTest extends ActorsTest {
   @Test
   public void testStopAll() {
     world.actorFor(
-            Definition.has(StopAllSupervisorActor.class, Definition.NoParameters, "stop-all"),
-            Supervisor.class);
+            Supervisor.class,
+            Definition.has(StopAllSupervisorActor.class, Definition.NoParameters, "stop-all"));
     
     final PingTestResults pingTestResults = new PingTestResults();
     
     final Ping ping = world.actorFor(
-            Definition.has(PingActor.class, Definition.parameters(pingTestResults), StopAllSupervisorActor.instance, "ping"),
-            Ping.class);
+            Ping.class,
+            Definition.has(PingActor.class, Definition.parameters(pingTestResults), StopAllSupervisorActor.instance, "ping"));
 
     final PongTestResults pongTestResults = new PongTestResults();
     
     world.actorFor(
-            Definition.has(PongActor.class, Definition.parameters(pongTestResults), StopAllSupervisorActor.instance, "pong"),
-            Pong.class);
+            Pong.class,
+            Definition.has(PongActor.class, Definition.parameters(pongTestResults), StopAllSupervisorActor.instance, "pong"));
 
     pingTestResults.untilStopped = TestUntil.happenings(1);
     pongTestResults.untilStopped = TestUntil.happenings(1);

@@ -27,7 +27,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
   @Test
   public void testReturnsCompletesForSideEffects() {
-    final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class);
 
     uc.getHello().andThenConsume((hello) -> setHello(hello.greeting));
     untilHello.completes();
@@ -39,7 +39,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
   @Test
   public void testAfterAndThenCompletesForSideEffects() {
-    final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesActor.class, Definition.NoParameters), UsesCompletes.class);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class);
     final Completes<Hello> helloCompletes = uc.getHello();
     helloCompletes.andThen((hello) -> new Hello(Prefix + helloCompletes.outcome().greeting))
          .andThenConsume((hello) -> setHello(hello.greeting));
@@ -60,7 +60,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
   @Test
   public void testThatTimeOutOccursForSideEffects() {
-    final UsesCompletes uc = world.actorFor(Definition.has(UsesCompletesCausesTimeoutActor.class, Definition.NoParameters), UsesCompletes.class);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesCausesTimeoutActor.class);
 
     final Completes<Hello> helloCompletes =
             uc.getHello()

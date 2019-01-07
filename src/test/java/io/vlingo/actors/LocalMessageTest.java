@@ -21,7 +21,7 @@ public class LocalMessageTest extends ActorsTest {
   public void testDeliverHappy() throws Exception {
     final SimpleTestResults testResults = new SimpleTestResults();
     
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test1-actor"), Simple.class);
+    testWorld.actorFor(Simple.class, Definition.has(SimpleActor.class, Definition.parameters(testResults), "test1-actor"));
     
     final Consumer<Simple> consumer = (actor) -> actor.simple();
     final LocalMessage<Simple> message = new LocalMessage<Simple>(SimpleActor.instance.get(), Simple.class, consumer, "simple()");
@@ -39,7 +39,7 @@ public class LocalMessageTest extends ActorsTest {
   public void testDeliverStopped() throws Exception {
     final SimpleTestResults testResults = new SimpleTestResults();
     
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test2-actor"), Simple.class);
+    testWorld.actorFor(Simple.class, Definition.has(SimpleActor.class, Definition.parameters(testResults), "test2-actor"));
     
     testResults.untilSimple = TestUntil.happenings(1);
     
@@ -59,7 +59,7 @@ public class LocalMessageTest extends ActorsTest {
   public void testDeliverWithParameters() throws Exception {
     final SimpleTestResults testResults = new SimpleTestResults();
     
-    testWorld.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults), "test3-actor"), Simple.class);
+    testWorld.actorFor(Simple.class, Definition.has(SimpleActor.class, Definition.parameters(testResults), "test3-actor"));
     
     testResults.untilSimple = TestUntil.happenings(1);
     

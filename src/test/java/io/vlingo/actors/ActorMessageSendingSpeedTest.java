@@ -38,12 +38,12 @@ public class ActorMessageSendingSpeedTest {
     
     final SingleOperation actor =
             world.actorFor(
+                    SingleOperation.class,
                     Definition.has(
                             SingleOperationActor.class,
                             Definition.NoParameters,
                             mailboxType,
-                            "single-op"),
-                    SingleOperation.class);
+                            "single-op"));
     
     System.out.println("======================================");
     System.out.println("WARM UP: STARTING FOR MAILBOX TYPE: " + mailboxType);

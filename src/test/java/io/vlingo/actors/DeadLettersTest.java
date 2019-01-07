@@ -24,8 +24,8 @@ public class DeadLettersTest extends ActorsTest {
   @Test
   public void testStoppedActorToDeadLetters() throws Exception {
     final TestResult result = new TestResult(3);
-    nothing = testWorld.actorFor(Definition.has(NothingActor.class, Definition.NoParameters, "nothing"), Nothing.class);
-    listener = testWorld.actorFor(Definition.has(DeadLettersListenerActor.class, Definition.parameters(result), "deadletters-listener"), DeadLettersListener.class);
+    nothing = testWorld.actorFor(Nothing.class, Definition.has(NothingActor.class, Definition.NoParameters, "nothing"));
+    listener = testWorld.actorFor(DeadLettersListener.class, Definition.has(DeadLettersListenerActor.class, Definition.parameters(result), "deadletters-listener"));
     world.world().deadLetters().registerListener(listener.actor());
 
     nothing.actor().stop();

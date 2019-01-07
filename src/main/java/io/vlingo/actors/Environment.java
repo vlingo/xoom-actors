@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Environment {
   final Address address;
   final List<Actor> children;
+  Address completesEventuallyAddress;
   final Definition definition;
   final FailureMark failureMark;
   final Logger logger;
@@ -65,6 +66,15 @@ public class Environment {
 
   void addChild(final Actor child) {
     children.add(child);
+  }
+
+  CompletesEventually completesEventually(final ResultCompletes completes) {
+    if (completesEventuallyAddress == null) {
+      final CompletesEventually completesEventually = stage.world().completesFor(completes.clientCompletes());
+      completesEventuallyAddress = completesEventually.address();
+      return completesEventually;
+    }
+    return stage.world().completesFor(completesEventuallyAddress, completes.clientCompletes());
   }
 
   <T> void cacheProxy(final T proxy) {

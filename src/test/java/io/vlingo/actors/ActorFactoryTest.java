@@ -50,7 +50,7 @@ public class ActorFactoryTest extends ActorsTest {
 
   @Test
   public void testActorForWithParameters() throws Exception {
-    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), ParentInterface.class);
+    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
     
     final String actorName = "test-child";
     
@@ -91,7 +91,7 @@ public class ActorFactoryTest extends ActorsTest {
 
   @Test(expected = InstantiationException.class)
   public void testConstructorFailure() throws Exception {
-    world.actorFor(Definition.has(ParentInterfaceActor.class, Definition.NoParameters), ParentInterface.class);
+    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
 
     final Address address = world.addressFactory().uniqueWith("test-actor-ctor-failure");
 

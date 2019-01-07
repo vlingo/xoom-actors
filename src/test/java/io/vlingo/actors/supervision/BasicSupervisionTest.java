@@ -37,8 +37,8 @@ public class BasicSupervisionTest extends ActorsTest {
     
     final FailureControl failure =
             world.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"));
 
     failureControlTestResults.untilFailNow = until(1);
     assertEquals(0, failureControlTestResults.failNowCount.get());
@@ -61,15 +61,15 @@ public class BasicSupervisionTest extends ActorsTest {
   public void testStoppingSupervisor() {
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(StoppingSupervisorActor.class, Definition.NoParameters, "stopping-supervisor"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(StoppingSupervisorActor.class, Definition.NoParameters, "stopping-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
 
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
     assertEquals(0, failureControlTestResults.failNowCount.get());
     failure.actor().failNow();
@@ -88,15 +88,15 @@ public class BasicSupervisionTest extends ActorsTest {
     
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
-                    Definition.has(RestartSupervisorActor.class, Definition.parameters(restartSupervisorTestResults), "restart-supervisor"),
-                    Supervisor.class);
+                    Supervisor.class,
+                    Definition.has(RestartSupervisorActor.class, Definition.parameters(restartSupervisorTestResults), "restart-supervisor"));
     
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-restart"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-restart"));
     
     assertEquals(0, failureControlTestResults.failNowCount.get());
     assertEquals(0, restartSupervisorTestResults.informedCount.get());

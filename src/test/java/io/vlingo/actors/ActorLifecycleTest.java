@@ -21,7 +21,7 @@ public class ActorLifecycleTest extends ActorsTest {
   public void testBeforeStart() throws Exception {
     final TestResults testResults = new TestResults();
     testResults.until = until(1);
-    world.actorFor(Definition.has(LifecycleActor.class, Definition.parameters(testResults)), Stoppable.class);
+    world.actorFor(Stoppable.class, LifecycleActor.class, testResults);
     testResults.until.completes();
     assertTrue(testResults.receivedBeforeStart.get());
     assertFalse(testResults.receivedAfterStop.get());
@@ -31,7 +31,7 @@ public class ActorLifecycleTest extends ActorsTest {
   public void testAfterStop() throws Exception {
     final TestResults testResults = new TestResults();
     testResults.until = until(2);
-    final Stoppable actor = world.actorFor(Definition.has(LifecycleActor.class, Definition.parameters(testResults)), Stoppable.class);
+    final Stoppable actor = world.actorFor(Stoppable.class, LifecycleActor.class, testResults);
     actor.stop();
     testResults.until.completes();
     assertTrue(testResults.receivedBeforeStart.get());

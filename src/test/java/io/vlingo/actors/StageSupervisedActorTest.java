@@ -33,8 +33,8 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure"));
 
     final Throwable throwable = new IllegalStateException("Failed");
     final StageSupervisedActor supervised = new StageSupervisedActor(FailureControl.class, failure.actorInside(), throwable);
@@ -50,8 +50,8 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"));
 
     final Throwable throwable = new IllegalStateException("Failed");
     final StageSupervisedActor supervised = new StageSupervisedActor(FailureControl.class, failure.actorInside(), throwable);
@@ -67,8 +67,8 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"));
 
     final Throwable throwable = new IllegalStateException("Failed");
     final StageSupervisedActor supervised = new StageSupervisedActor(FailureControl.class, failure.actorInside(), throwable);
@@ -86,8 +86,8 @@ public class StageSupervisedActorTest extends ActorsTest {
     
     final FailureControl failure =
             world.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"));
 
     failureControlTestResults.untilAfterFail = TestUntil.happenings(1);
     
@@ -109,8 +109,8 @@ public class StageSupervisedActorTest extends ActorsTest {
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
     
     world.actorFor(
-            Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"),
-            FailureControl.class);
+            FailureControl.class,
+            Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"));
 
     final StageSupervisedActor supervised =
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance.get(), new IllegalStateException("Failed"));
@@ -129,14 +129,14 @@ public class StageSupervisedActorTest extends ActorsTest {
     final PingTestResults pingTestResults = new PingTestResults();
     
     world.actorFor(
-            Definition.has(PingActor.class, Definition.parameters(pingTestResults), "ping"),
-            Ping.class);
+            Ping.class,
+            Definition.has(PingActor.class, Definition.parameters(pingTestResults), "ping"));
 
     final PongTestResults pongTestResults = new PongTestResults();
     
     world.actorFor(
-            Definition.has(PongActor.class, Definition.parameters(pongTestResults), "pong"),
-            Pong.class);
+            Pong.class,
+            Definition.has(PongActor.class, Definition.parameters(pongTestResults), "pong"));
 
     pingTestResults.untilStopped = TestUntil.happenings(1);
     pongTestResults.untilStopped = TestUntil.happenings(1);

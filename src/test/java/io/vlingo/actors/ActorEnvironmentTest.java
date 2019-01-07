@@ -28,7 +28,7 @@ public class ActorEnvironmentTest extends ActorsTest {
   public void testExpectedEnvironment() throws Exception {
     final Definition definition = Definition.has(EnvironmentProviderActor.class, Definition.NoParameters, "test-env");
     
-    final TestActor<EnvironmentProvider> env = testWorld.actorFor(definition, EnvironmentProvider.class);
+    final TestActor<EnvironmentProvider> env = testWorld.actorFor(EnvironmentProvider.class, definition);
 
     TestState state = env.viewTestState();
     
@@ -51,7 +51,7 @@ public class ActorEnvironmentTest extends ActorsTest {
   public void testSecuredEnvironment() throws Exception {
     final Definition definition = Definition.has(CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
     
-    final TestActor<EnvironmentProvider> env = testWorld.actorFor(definition, EnvironmentProvider.class);
+    final TestActor<EnvironmentProvider> env = testWorld.actorFor(EnvironmentProvider.class, definition);
 
     TestState state = env.viewTestState();
     
@@ -67,7 +67,7 @@ public class ActorEnvironmentTest extends ActorsTest {
   public void testStop() {
     final Definition definition = Definition.has(StopTesterActor.class, Definition.parameters(0), "test-stop");
 
-    final TestActor<StopTester> stoptest = testWorld.actorFor(definition, StopTester.class);
+    final TestActor<StopTester> stoptest = testWorld.actorFor(StopTester.class, definition);
     
     final Environment env = stoptest.viewTestState().valueOf("env");
     
@@ -140,7 +140,7 @@ public class ActorEnvironmentTest extends ActorsTest {
     
     public StopTesterActor(final int count) {
       if (count == 0) {
-        childActorFor(Definition.has(StopTesterActor.class, Definition.parameters(1), "test-stop-1"), StopTester.class);
+        childActorFor(StopTester.class, Definition.has(StopTesterActor.class, Definition.parameters(1), "test-stop-1"));
       }
     }
     

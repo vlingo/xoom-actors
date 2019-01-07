@@ -33,8 +33,8 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
     
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
-                    Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure-for-stop"),
-                    FailureControl.class);
+                    FailureControl.class,
+                    Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure-for-stop"));
     
     testResults.untilFailNow = TestUntil.happenings(20);
     testResults.untilAfterFail = TestUntil.happenings(20);

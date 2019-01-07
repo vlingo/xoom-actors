@@ -23,8 +23,8 @@ public class PropertiesFileConfigRingBufferMailboxActorTest extends ActorsTest {
 
     final OneBehavior one =
             world.actorFor(
-                    Definition.has(OneBehaviorActor.class, Definition.parameters(results), "ringMailbox", "one-behavior"),
-                    OneBehavior.class);
+                    OneBehavior.class,
+                    Definition.has(OneBehaviorActor.class, Definition.parameters(results), "ringMailbox", "one-behavior"));
 
     one.doSomething();
 

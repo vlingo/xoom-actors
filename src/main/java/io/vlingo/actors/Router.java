@@ -23,7 +23,7 @@ public abstract class Router extends Actor {
   
   protected Router(final RouterSpecification specification, final RoutingStrategy routingStrategy) {
     for (int i = 0; i < specification.poolSize(); i++) {
-      childActorFor(specification.routerDefinition(), specification.routerProtocol());
+      childActorFor(specification.routerProtocol(), specification.routerDefinition());
     }
     this.routees = Routee.forAll(lifeCycle.environment.children);
     this.routingStrategy = routingStrategy;

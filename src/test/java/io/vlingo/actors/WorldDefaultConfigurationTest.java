@@ -23,7 +23,7 @@ public class WorldDefaultConfigurationTest {
     
     final TestResults testResults = new TestResults();
     
-    final Simple simple = worldDefaultConfig.actorFor(Definition.has(SimpleActor.class, Definition.parameters(testResults)), Simple.class);
+    final Simple simple = worldDefaultConfig.actorFor(Simple.class, SimpleActor.class, testResults);
     
     testResults.untilSimple = TestUntil.happenings(1);
     

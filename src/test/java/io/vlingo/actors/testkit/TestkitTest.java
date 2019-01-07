@@ -23,8 +23,8 @@ public class TestkitTest extends ActorsTest {
   public void testTesterWorldPing() throws Exception {
     final TestActor<PingCounter> pingCounter =
             testWorld.actorFor(
-                    Definition.has(PingCounterActor.class, Definition.NoParameters),
-                    PingCounter.class);
+                    PingCounter.class,
+                    Definition.has(PingCounterActor.class, Definition.NoParameters));
     
     pingCounter.actor().ping();
     pingCounter.actor().ping();
@@ -39,13 +39,13 @@ public class TestkitTest extends ActorsTest {
   public void testTesterPingPong() throws Exception {
     final TestActor<PongCounter> pongCounter =
             testWorld.actorFor(
-                    Definition.has(PongCounterActor.class, Definition.NoParameters),
-                    PongCounter.class);
+                    PongCounter.class,
+                    Definition.has(PongCounterActor.class, Definition.NoParameters));
     
     final TestActor<PingCounter> pingCounter =
             testWorld.actorFor(
-                    Definition.has(PingPongCounterActor.class, Definition.parameters(pongCounter.actor())),
-                    PingCounter.class);
+                    PingCounter.class,
+                    Definition.has(PingPongCounterActor.class, Definition.parameters(pongCounter.actor())));
     
     pingCounter.actor().ping();
     pingCounter.actor().ping();

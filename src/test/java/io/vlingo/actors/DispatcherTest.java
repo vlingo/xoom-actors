@@ -22,8 +22,8 @@ public class DispatcherTest extends ActorsTest {
   public void test100MillionTells() {
     final TestActor<TellSomething> test = 
             testWorld.actorFor(
-                    Definition.has(TellSomethingActor.class, Definition.NoParameters, "test"),
-                    TellSomething.class);
+                    TellSomething.class,
+                    Definition.has(TellSomethingActor.class, Definition.NoParameters, "test"));
 
     for (int i = 0; i < total100Thousand; ++i) {
       test.actor().tellMeSomething("Hello!", i);
@@ -38,8 +38,8 @@ public class DispatcherTest extends ActorsTest {
   public void test100MillionTellWhatITellYou() {
     TestActor<TellAll> test =
             testWorld.actorFor(
-                    Definition.has(TellAllActor.class, Definition.NoParameters, "test"),
-                    TellAll.class);
+                    TellAll.class,
+                    Definition.has(TellAllActor.class, Definition.NoParameters, "test"));
 
     for (int i = 0; i < total100Thousand; ++i) {
       test.actor().tellWhatITellYou(i);

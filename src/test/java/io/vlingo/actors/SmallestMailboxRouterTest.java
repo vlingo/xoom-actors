@@ -22,8 +22,8 @@ public class SmallestMailboxRouterTest extends ActorsTest {
     final int poolSize = 4;
     final TestUntil until = TestUntil.happenings(20);
     final OrderRouter orderRouter = world.actorFor(
-            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)),
-            OrderRouter.class);
+            OrderRouter.class,
+            Definition.has(OrderRouterActor.class, Definition.parameters(poolSize, until)));
     
     /* loop? */
     orderRouter.routeOrder(new Order());

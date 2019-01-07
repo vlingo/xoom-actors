@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vlingo.actors.Actor;
 import io.vlingo.actors.Address;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
@@ -58,20 +59,28 @@ public class TestWorld implements AutoCloseable {
     return new TestWorld(World.start(name, Configuration.define()), name);
   }
 
-  public <T> TestActor<T> actorFor(final Definition definition, final Class<T> protocol) {
-    if (world.isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
+  public <T> TestActor<T> actorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
+    if (isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: Stopped.");
     }
 
-    return world.stage().testActorFor(definition, protocol);
+    return world.stage().testActorFor(protocol, type, parameters);
   }
 
-  public Protocols actorFor(final Definition definition, final Class<?>[] protocols) {
+  public <T> TestActor<T> actorFor(final Class<T> protocol, final Definition definition) {
     if (world.isTerminated()) {
       throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
     }
 
-    return world.stage().testActorFor(definition, protocols);
+    return world.stage().testActorFor(protocol, definition);
+  }
+
+  public Protocols actorFor(final Class<?>[] protocols, final Definition definition) {
+    if (world.isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
+    }
+
+    return world.stage().testActorFor(protocols, definition);
   }
 
   public List<Message> allMessagesFor(final Address address) {

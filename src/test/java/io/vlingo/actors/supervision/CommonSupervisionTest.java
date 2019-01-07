@@ -34,8 +34,8 @@ public class CommonSupervisionTest extends ActorsTest {
     
     final TestActor<Ping> ping =
             testWorld.actorFor(
-                    Definition.has(PingActor.class, Definition.parameters(testResults), "ping"),
-                    Ping.class);
+                    Ping.class,
+                    Definition.has(PingActor.class, Definition.parameters(testResults), "ping"));
     
     testResults.untilPinged = TestUntil.happenings(5);
     
@@ -76,8 +76,8 @@ public class CommonSupervisionTest extends ActorsTest {
     
     final TestActor<Pong> pong =
             testWorld.actorFor(
-                    Definition.has(PongActor.class, Definition.parameters(testResults), "pong"),
-                    Pong.class);
+                    Pong.class,
+                    Definition.has(PongActor.class, Definition.parameters(testResults), "pong"));
 
     testResults.untilPonged = TestUntil.happenings(10);
     PongSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(10);

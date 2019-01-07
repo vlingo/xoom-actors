@@ -22,11 +22,7 @@ public class CharactersTest extends ActorsTest {
     final ThreeBehaviors.Results results = new ThreeBehaviors.Results(30);
 
     final ThreeBehaviors threeBehaviors =
-            world.actorFor(
-                    Definition.has(
-                            ThreeBehaviorsActor.class,
-                            Definition.parameters(results)),
-                    ThreeBehaviors.class);
+            world.actorFor(ThreeBehaviors.class, ThreeBehaviorsActor.class, results);
 
     for (int count = 0; count < 10; ++count) {
       threeBehaviors.one();
