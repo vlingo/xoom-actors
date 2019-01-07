@@ -118,7 +118,7 @@ public class ActorStopTest extends ActorsTest {
     }
 
     @Override
-    protected synchronized void afterStop() {
+    protected void afterStop() {
       if (testResults.terminating.get()) {
         final int count = testResults.terminatingStopCount.incrementAndGet();
         logger().log("TERMINATING AND STOPPED: " + count + " ");
