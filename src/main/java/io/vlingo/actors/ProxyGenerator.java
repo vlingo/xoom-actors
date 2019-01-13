@@ -53,20 +53,21 @@ public class ProxyGenerator implements AutoCloseable {
     }
   }
 
+  private final Logger logger;
   private final boolean persist;
   private final String rootOfGenerated;
   private final File targetClassesPath;
   private final DynaType type;
   private final URLClassLoader urlClassLoader;
 
-  public static ProxyGenerator forMain(final boolean persist) throws Exception {
+  public static ProxyGenerator forMain(final boolean persist, final Logger logger) throws Exception {
     final String root = Properties.properties.getProperty("proxy.generated.classes.main", RootOfMainClasses);
-    return new ProxyGenerator(root, DynaType.Main, persist);
+    return new ProxyGenerator(root, DynaType.Main, persist, logger);
   }
 
-  public static ProxyGenerator forTest(final boolean persist) throws Exception {
+  public static ProxyGenerator forTest(final boolean persist, final Logger logger) throws Exception {
     final String root = Properties.properties.getProperty("proxy.generated.classes.test", RootOfTestClasses);
-    return new ProxyGenerator(root, DynaType.Test, persist);
+    return new ProxyGenerator(root, DynaType.Test, persist, logger);
   }
 
   @Override
@@ -75,7 +76,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   public Result generateFor(final String actorProtocol) {
-    System.out.println("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
+    logger.log("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
 
     try {
       final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
@@ -97,10 +98,11 @@ public class ProxyGenerator implements AutoCloseable {
     return urlClassLoader;
   }
 
-  private ProxyGenerator(final String rootOfClasses, final DynaType type, final boolean persist) throws Exception {
+  private ProxyGenerator(final String rootOfClasses, final DynaType type, final boolean persist, final Logger logger) throws Exception {
     this.rootOfGenerated = rootOfGeneratedSources(type);
     this.type = type;
     this.persist = persist;
+    this.logger = logger;
     this.targetClassesPath = new File(rootOfClasses);
     this.urlClassLoader = initializeClassLoader(targetClassesPath);
   }

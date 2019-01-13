@@ -63,10 +63,10 @@ public final class ActorProxy {
           final Actor actor,
           final Mailbox mailbox,
           final String targetClassname) {
-    try (final ProxyGenerator generator = ProxyGenerator.forMain(true)) {
+    try (final ProxyGenerator generator = ProxyGenerator.forMain(true, actor.logger())) {
       return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
     } catch (Exception emain) {
-      try (final ProxyGenerator generator = ProxyGenerator.forTest(true)) {
+      try (final ProxyGenerator generator = ProxyGenerator.forTest(true, actor.logger())) {
         return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
       } catch (Exception etest) {
         throw new IllegalArgumentException("Actor proxy " + protocol.getName() + " not created for main or test: " + etest.getMessage(), etest);
