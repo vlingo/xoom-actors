@@ -123,13 +123,13 @@ public class ActorStopTest extends ActorsTest {
     protected void afterStop() {
       if (testResults.terminating.get()) {
         final int count = testResults.terminatingStopCount.incrementAndGet();
-        System.out.println("STOPPED: " + testResults.stopCount.get() + " TERMINATING AND STOPPED: " + count);
-        logger().log("TERMINATING AND STOPPED: " + count);
+        System.out.println("T: STOPPED: " + testResults.stopCount.get() + " TERMINATING AND STOPPED: " + count);
+        logger().log("T: TERMINATING AND STOPPED: " + count);
         testResults.untilTerminatingStop.happened();
       } else {
         final int count = testResults.stopCount.incrementAndGet();
-        System.out.println("STOPPED: " + count + " TERMINATING AND STOPPED: " + testResults.terminatingStopCount.get());
-        logger().log("STOPPED: " + count);
+        System.out.println("R: STOPPED: " + count + " TERMINATING AND STOPPED: " + testResults.terminatingStopCount.get());
+        logger().log("R: STOPPED: " + count);
         testResults.untilStop.happened();
       }
     }
