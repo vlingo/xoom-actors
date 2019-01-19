@@ -108,7 +108,14 @@ public class LocalMessage<T> implements Message {
         actor.completes.reset(completes);
         consumer.accept((T) actor);
         if (actor.completes.__internal__outcomeSet) {
-          actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.__internal__outcome);
+          // USE THE FOLLOWING. this forces the same ce actor to be used for
+          // all completes outcomes such that completes outcomes cannot be
+          // delivered to the client out of order from the original ordered causes.
+          actor.lifeCycle.environment.completesEventually(actor.completes).with(actor.completes.__internal__outcome);
+          // DON'T USE THE FOLLOWING. it selects ce actors in round-robin order which
+          // can easily cause clients to see outcomes of messages delivered later to
+          // an actor before outcomes of messages delivered earlier to the same actor.
+          //actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.__internal__outcome);
         }
       } catch (Throwable t) {
         actor.logger().log("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
