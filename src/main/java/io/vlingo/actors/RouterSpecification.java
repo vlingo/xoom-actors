@@ -10,29 +10,29 @@ package io.vlingo.actors;
  * the {@link Actor actors} to which a {@link Router} will route,
  * as well as other details such as pool size.
  */
-public class RouterSpecification {
+public class RouterSpecification<P> {
   
-  private final int poolSize; //TODO: refactor towards resizable pool
+  private final int initialPoolSize;
   private final Definition routerDefinition;
-  private final Class<?> routerProtocol;
+  private final Class<P> routerProtocol;
   
-  public RouterSpecification(final int poolSize, final Definition routerDefinition, final Class<?> routerProtocol) {
+  public RouterSpecification(final int poolSize, final Definition routerDefinition, final Class<P> routerProtocol) {
     if (poolSize <= 0)
       throw new IllegalArgumentException("poolSize must be 1 or greater");
-    this.poolSize = poolSize;
+    this.initialPoolSize = poolSize;
     this.routerDefinition = routerDefinition;
     this.routerProtocol = routerProtocol;
   }
 
-  public int poolSize() {
-    return poolSize;
+  public int initialPoolSize() {
+    return initialPoolSize;
   }
   
   public Definition routerDefinition() {
     return routerDefinition;
   }
   
-  public Class<?> routerProtocol() {
+  public Class<P> routerProtocol() {
     return routerProtocol;
   }
 }

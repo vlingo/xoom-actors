@@ -7,31 +7,126 @@
 
 package io.vlingo.actors;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+
+import io.vlingo.common.Completes;
+import io.vlingo.common.PentaConsumer;
+import io.vlingo.common.PentaFunction;
+import io.vlingo.common.QuadConsumer;
+import io.vlingo.common.QuadFunction;
+import io.vlingo.common.TriConsumer;
+import io.vlingo.common.TriFunction;
 /**
  * Routee represents a potential target for for a routed message.
  */
-public class Routee {
+public class Routee<P> {
   
-  private final Actor actor;
+  private P delegate;
+  private long messageCount;
 
-  static List<Routee> forAll(final List<Actor> children) {
-    return children.stream()
-      .map(Routee::new)
-      .collect(Collectors.toList());
+  static <T> Routee<T> of(final T actor) {
+    return new Routee<T>(actor);
   }
 
-  Routee(final Actor actor) {
+  Routee(final P actor) {
     super();
-    this.actor = actor;
+    this.delegate = actor;
+    this.messageCount = 0;
+  }
+  
+  public P delegate() {
+    return delegate;
+  }
+  
+  public Actor delegateActor() {
+    return (Actor) delegate;
+  }
+  
+  public Address address() {
+    return delegateActor().address();
   }
   
   public int pendingMessages() {
-    return actor.lifeCycle.environment.mailbox.pendingMessages();
+    return delegateActor().lifeCycle.environment.mailbox.pendingMessages();
   }
   
-  public <T> T as(final Class<T> protocol) {
-    return actor.selfAs(protocol);
+  public long messageCount() {
+    return messageCount;
+  }
+  
+  protected <T1> void receiveCommand(final BiConsumer<P, T1> consumer, final T1 routable1) {
+    messageCount++;
+    consumer.accept(delegate, routable1);
+  }
+  
+  protected <T1, T2> void receiveCommand(final TriConsumer<P, T1, T2> consumer, final T1 routable1, final T2 routable2) {
+    messageCount++;
+    consumer.accept(delegate, routable1, routable2);
+  }
+
+  protected <T1, T2, T3> void receiveCommand(final QuadConsumer<P, T1, T2, T3> consumer, final T1 routable1, final T2 routable2, final T3 routable3) {
+    messageCount++;
+    consumer.accept(delegate, routable1, routable2, routable3);
+  }
+
+  protected <T1, T2, T3, T4> void receiveCommand(final PentaConsumer<P, T1, T2, T3, T4> consumer, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
+    messageCount++;
+    consumer.accept(delegate, routable1, routable2, routable3, routable4);
+  }
+  
+  public <T1, R extends Completes<?>> R receiveQuery(final BiFunction<P, T1, R> query, final T1 routable1) {
+    messageCount++;
+    return query.apply(delegate, routable1);
+  }
+  
+  public <T1, T2, R extends Completes<?>> R receiveQuery(final TriFunction<P, T1, T2, R> query, final T1 routable1, final T2 routable2) {
+    messageCount++;
+    return query.apply(delegate, routable1, routable2);
+  }
+  
+  public <T1, T2, T3, R extends Completes<?>> R receiveQuery(final QuadFunction<P, T1, T2, T3, R> query, final T1 routable1, final T2 routable2, final T3 routable3) {
+    messageCount++;
+    return query.apply(delegate, routable1, routable2, routable3);
+  }
+  
+  public <T1, T2, T3, T4, R extends Completes<?>> R receiveQuery(final PentaFunction<P, T1, T2, T3, T4, R> query, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
+    messageCount++;
+    return query.apply(delegate, routable1, routable2, routable3, routable4);
+  }
+  
+  /* @see java.lang.Object#hashCode() */
+  @Override
+  public int hashCode() {
+    return (delegate == null) ? 0 : delegate.hashCode();
+  }
+
+  /* @see java.lang.Object#equals(java.lang.Object) */
+  @SuppressWarnings("rawtypes")
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Routee other = (Routee) obj;
+    if (delegate == null) {
+      if (other.delegate != null)
+        return false;
+    } else if (!delegate.equals(other.delegate))
+      return false;
+    return true;
+  }
+
+  /* @see java.lang.Object#toString() */
+  @Override
+  public String toString() {
+    return new StringBuilder()
+      .append("Routee(")
+      .append("actor=").append(delegate)
+      .append(")")
+      .toString();
   }
 }

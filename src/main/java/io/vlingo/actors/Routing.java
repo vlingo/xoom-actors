@@ -10,53 +10,54 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 /**
  * Routing is an ordered sequence of {@link Routee routees} that
- * was computed by a {@link RoutingStrategy} and whose elements
+ * was computed by way of some routing strategy and whose elements
  * will be the target of a message forwarded by a {@link Router}.
  */
-public class Routing {
+public class Routing<P> {
   
-  public static Routing empty() {
-    return new Routing();
-  }
-
-  public static Routing with(final Routee routee) {
-    return new Routing(Arrays.asList(routee));
+  public static <T> Routing<T> with(final Routee<T> routee) {
+    if (routee == null)
+      throw new IllegalArgumentException("routee may not be null");
+    return new Routing<T>(Arrays.asList(routee));
   }
   
-  public static Routing with(final Optional<Routee> routeeOrNull) {
-    return routeeOrNull.isPresent()
-            ? Routing.with(routeeOrNull.get())
-            : Routing.empty();
+  public static <T> Routing<T> with(final List<Routee<T>> routees) {
+    if (routees == null || routees.isEmpty())
+      throw new IllegalArgumentException("routees may not be null or empty");
+    return new Routing<T>(routees);
   }
   
-  public static Routing with(final List<Routee> routees) {
-    return new Routing(routees);
+  public static <T> Routing<T> with(final Set<Routee<T>> routees) {
+    if (routees == null || routees.isEmpty())
+      throw new IllegalArgumentException("routees may not be null or empty");
+    return new Routing<T>(routees);
   }
   
-  private final List<Routee> routees;
+  private final List<Routee<P>> routees;
   
   Routing() {
     super();
     this.routees = new ArrayList<>();
   }
   
-  Routing(final List<Routee> routees) {
+  Routing(final List<Routee<P>> routees) {
     super();
     this.routees = routees;
   }
-    
-  public List<Routee> routees() {
-    return Collections.unmodifiableList(routees);
+  
+  Routing(final Set<Routee<P>> routees) {
+    this(new ArrayList<>(routees));
   }
   
-  public <T> List<T> routeesAs(final Class<T> protocol) {
-    return routees.stream()
-            .map(routee -> routee.as(protocol))
-            .collect(Collectors.toList());
+  public Routee<P> first() {
+    return routees.get(0);
+  }
+    
+  public List<Routee<P>> routees() {
+    return Collections.unmodifiableList(routees);
   }
 
   public boolean isEmpty() {
@@ -65,7 +66,7 @@ public class Routing {
 
   @Override
   public String toString() {
-    return "Routing[routees=" + routees + "]";
+    return "Routing[routees=" + Arrays.toString(routees.toArray()) + "]";
   }
 
   public void validate() {
