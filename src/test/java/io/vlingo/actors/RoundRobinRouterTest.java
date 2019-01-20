@@ -40,9 +40,9 @@ public class RoundRobinRouterTest extends ActorsTest {
     }
 
     /* test fails if some expression requiring work= is not before or after the until.completes()... */
-    //Thread.sleep(1);
+    Thread.sleep(1);
     //UUID.randomUUID();
-    System.out.println("hello");
+    //System.out.println("hello");
     
     until.completes();
     

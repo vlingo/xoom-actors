@@ -26,7 +26,7 @@ public class RandomRouter<P> extends Router<P> {
   }
   
   protected Routee<P> nextRoutee() {
-    int index = random.nextInt(pool.size());
-    return pool.routeeAt(index);
+    int index = random.nextInt(routees.size());
+    return routeeAt(index);
   }
 }

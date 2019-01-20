@@ -6,6 +6,8 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -24,22 +26,43 @@ import io.vlingo.common.TriFunction;
  */
 public abstract class Router<P> extends Actor {
   
-  protected final RouteePool<P> pool;
+  protected final List<Routee<P>> routees;
   
   public Router(final RouterSpecification<P> specification) {
-    this.pool = RouteePool.empty();
-    initRouterPool(specification);
+    this.routees = new ArrayList<Routee<P>>();
+    initRoutees(specification);
   }
-
-  protected void initRouterPool(final RouterSpecification<P> specification) {
+  
+  protected void initRoutees(final RouterSpecification<P> specification) {
     for (int i = 0; i < specification.initialPoolSize(); i++) {
       P child = childActorFor(specification.routerProtocol(), specification.routerDefinition());
-      pool.subscribe(Routee.of(child));
+      subscribe(Routee.of(child));
     }
   }
   
   protected List<Routee<P>> routees() {
-    return pool.routees();
+    return Collections.unmodifiableList(routees);
+  }
+  
+  public Routee<P> routeeAt(int index) {
+    return (index < 0 || index >= routees.size()) ? null : routees.get(index);
+  }
+  
+  public void subscribe(Routee<P> routee) {
+    if (!routees.contains(routee))
+      routees.add(routee);
+  }
+  
+  public void subscribe(List<Routee<P>> toSubscribe) {
+    toSubscribe.forEach(routee -> subscribe(routee));
+  }
+  
+  public void unsubscribe(Routee<P> routee) {
+    routees.remove(routee);
+  }
+  
+  public void unsubscribe(List<Routee<P>> toUnsubscribe) {
+    toUnsubscribe.forEach(routee -> unsubscribe(routee));
   }
   
   protected abstract Routing<P> computeRouting();
