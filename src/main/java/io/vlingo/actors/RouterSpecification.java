@@ -17,8 +17,8 @@ public class RouterSpecification<P> {
   private final Class<P> routerProtocol;
   
   public RouterSpecification(final int poolSize, final Definition routerDefinition, final Class<P> routerProtocol) {
-    if (poolSize <= 0)
-      throw new IllegalArgumentException("poolSize must be 1 or greater");
+    if (poolSize < 0)
+      throw new IllegalArgumentException("poolSize must be 0 or greater");
     this.initialPoolSize = poolSize;
     this.routerDefinition = routerDefinition;
     this.routerProtocol = routerProtocol;
