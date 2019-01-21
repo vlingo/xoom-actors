@@ -17,10 +17,9 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorStopTest extends ActorsTest {
-  volatile TestResults testResults = new TestResults();
-
   @Test
   public void testStopActors() throws Exception {
+    final TestResults testResults = new TestResults();
     testResults.untilStart = TestUntil.happenings(12);
     
     world.defaultLogger().log("Test: testStopActors: starting actors");
