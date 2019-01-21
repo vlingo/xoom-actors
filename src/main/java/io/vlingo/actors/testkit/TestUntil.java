@@ -8,6 +8,7 @@
 package io.vlingo.actors.testkit;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public final class TestUntil {
   private CountDownLatch latch;
@@ -41,25 +42,11 @@ public final class TestUntil {
   }
 
   public boolean completesWithin(final long timeout) {
-    long countDown = timeout;
-    while (true) {
-      if (latch.getCount() == 0) {
-        return true;
-      }
-      try {
-        Thread.sleep((countDown >= 0 && countDown < 100) ? countDown : 100);
-      } catch (Exception e) {
-        // ignore
-      }
-      if (latch.getCount() == 0) {
-        return true;
-      }
-      if (timeout >= 0) {
-        countDown -= 100;
-        if (countDown <= 0) {
-          return false;
-        }
-      }
+    try {
+      latch.await(timeout,TimeUnit.MILLISECONDS);
+      return latch.getCount() == 0;
+    } catch (Exception e) {
+      return false;
     }
   }
 
