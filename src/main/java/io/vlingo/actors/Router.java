@@ -48,20 +48,20 @@ public abstract class Router<P> extends Actor {
     return (index < 0 || index >= routees.size()) ? null : routees.get(index);
   }
   
-  public void subscribe(Routee<P> routee) {
+  protected void subscribe(Routee<P> routee) {
     if (!routees.contains(routee))
       routees.add(routee);
   }
   
-  public void subscribe(List<Routee<P>> toSubscribe) {
+  protected void subscribe(List<Routee<P>> toSubscribe) {
     toSubscribe.forEach(routee -> subscribe(routee));
   }
   
-  public void unsubscribe(Routee<P> routee) {
+  protected void unsubscribe(Routee<P> routee) {
     routees.remove(routee);
   }
   
-  public void unsubscribe(List<Routee<P>> toUnsubscribe) {
+  protected void unsubscribe(List<Routee<P>> toUnsubscribe) {
     toUnsubscribe.forEach(routee -> unsubscribe(routee));
   }
   
