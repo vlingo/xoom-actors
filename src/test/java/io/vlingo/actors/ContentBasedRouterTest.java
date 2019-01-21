@@ -19,9 +19,9 @@ import org.junit.Test;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestUntil;
 /**
- * ContentBasedRoutingStrategyTest tests {@link ContentBasedRouter}.
+ * ContentBasedRouterTest tests {@link ContentBasedRouter}.
  */
-public class ContentBasedRoutingStrategyTest extends ActorsTest {
+public class ContentBasedRouterTest extends ActorsTest {
   
   @Test
   public void testThatItRoutes() throws Exception {
