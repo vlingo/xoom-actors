@@ -48,6 +48,8 @@ public abstract class Router<P> extends Actor {
     return (index < 0 || index >= routees.size()) ? null : routees.get(index);
   }
   
+  //SUBSCRIPTION
+  
   protected void subscribe(Routee<P> routee) {
     if (!routees.contains(routee))
       routees.add(routee);
@@ -64,6 +66,8 @@ public abstract class Router<P> extends Actor {
   protected void unsubscribe(List<Routee<P>> toUnsubscribe) {
     toUnsubscribe.forEach(routee -> unsubscribe(routee));
   }
+  
+  //ROUTE COMPUTATION
   
   protected abstract Routing<P> computeRouting();
   
@@ -87,32 +91,36 @@ public abstract class Router<P> extends Actor {
     return computeRouting();
   }
   
-  protected <T1> void routeCommand(final BiConsumer<P, T1> action, final T1 routable1) {
+  //DISPATCHING - COMMANDS
+  
+  protected <T1> void dispatchCommand(final BiConsumer<P, T1> action, final T1 routable1) {
     routingFor(routable1)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1));
   }
   
-  protected <T1, T2> void routeCommand(final TriConsumer<P, T1, T2> action, final T1 routable1, final T2 routable2) {
+  protected <T1, T2> void dispatchCommand(final TriConsumer<P, T1, T2> action, final T1 routable1, final T2 routable2) {
     routingFor(routable1, routable2)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2));
   }
   
-  protected <T1, T2, T3> void routeCommand(final QuadConsumer<P, T1, T2, T3> action, final T1 routable1, final T2 routable2, final T3 routable3) {
+  protected <T1, T2, T3> void dispatchCommand(final QuadConsumer<P, T1, T2, T3> action, final T1 routable1, final T2 routable2, final T3 routable3) {
     routingFor(routable1, routable2, routable3)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2, routable3));
   }
   
-  protected <T1, T2, T3, T4> void routeCommand(final PentaConsumer<P, T1, T2, T3, T4> action, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
+  protected <T1, T2, T3, T4> void dispatchCommand(final PentaConsumer<P, T1, T2, T3, T4> action, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
     routingFor(routable1, routable2, routable3, routable4)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2, routable3, routable4));
   }
+  
+  //DISPATCHING - QUERIES
 
   @SuppressWarnings("unchecked")
-  protected <T1, R extends Completes<?>> R routeQuery(final BiFunction<P, T1, R> query, final T1 routable1) {
+  protected <T1, R extends Completes<?>> R dispatchQuery(final BiFunction<P, T1, R> query, final T1 routable1) {
     final CompletesEventually completesEventually = completesEventually();
     routingFor(routable1)
       .first() //by default, for protocols with a return value, route only to first routee
@@ -122,7 +130,7 @@ public abstract class Router<P> extends Actor {
   }
   
   @SuppressWarnings("unchecked")
-  protected <T1, T2, R extends Completes<?>> R routeQuery(final TriFunction<P, T1, T2, R> query, final T1 routable1, final T2 routable2) {
+  protected <T1, T2, R extends Completes<?>> R dispatchQuery(final TriFunction<P, T1, T2, R> query, final T1 routable1, final T2 routable2) {
     final CompletesEventually completesEventually = completesEventually();
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee
@@ -132,7 +140,7 @@ public abstract class Router<P> extends Actor {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T1, T2, T3, R extends Completes<?>> R routeQuery(final QuadFunction<P, T1, T2, T3, R> query, final T1 routable1, final T2 routable2, final T3 routable3) {
+  protected <T1, T2, T3, R extends Completes<?>> R dispatchQuery(final QuadFunction<P, T1, T2, T3, R> query, final T1 routable1, final T2 routable2, final T3 routable3) {
     final CompletesEventually completesEventually = completesEventually();
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee
@@ -142,7 +150,7 @@ public abstract class Router<P> extends Actor {
   }
   
   @SuppressWarnings("unchecked")
-  protected <T1, T2, T3, T4, R extends Completes<?>> R routeQuery(final PentaFunction<P, T1, T2, T3, T4, R> query, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
+  protected <T1, T2, T3, T4, R extends Completes<?>> R dispatchQuery(final PentaFunction<P, T1, T2, T3, T4, R> query, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
     final CompletesEventually completesEventually = completesEventually();
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee

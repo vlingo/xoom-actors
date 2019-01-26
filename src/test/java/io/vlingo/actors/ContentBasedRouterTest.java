@@ -125,7 +125,7 @@ public class ContentBasedRouterTest extends ActorsTest {
     /* @see io.vlingo.actors.ContentBasedRoutingStrategyTest.InvoiceSubmitter#submitInvoice(io.vlingo.actors.ContentBasedRoutingStrategyTest.Invoice) */
     @Override
     public void submitInvoice(final Invoice invoice) {
-      routeCommand(InvoiceSubmitter::submitInvoice, invoice);
+      dispatchCommand(InvoiceSubmitter::submitInvoice, invoice);
     }
   }
   

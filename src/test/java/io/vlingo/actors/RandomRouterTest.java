@@ -8,8 +8,6 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
@@ -40,15 +38,8 @@ public class RandomRouterTest extends ActorsTest {
         .andThenConsume(answer -> answers[round] = answer);
     }
 
-    /* test fails if some expression requiring work= is not before or after the until.completes()... */
-    Thread.sleep(1);
-    //UUID.randomUUID();
-    //System.out.println("hello");
-    
     until.completes();
-    
-    System.out.println("answers=" + Arrays.toString(answers));
-    
+        
     for (int round = 0; round < messagesToSend; round++) {
       int expected = round * round * round;
       int actual = answers[round];
@@ -74,7 +65,7 @@ public class RandomRouterTest extends ActorsTest {
     
     @Override
     public Completes<Integer> cubeOf(int arg1) {
-      return routeQuery(OneArgSupplierProtocol::cubeOf, arg1);
+      return dispatchQuery(OneArgSupplierProtocol::cubeOf, arg1);
     }
   }
   
@@ -110,13 +101,6 @@ public class RandomRouterTest extends ActorsTest {
     }
     
     until.completes();
-    
-//    TestConsumerActor router = (TestConsumerActor) testRouter.actorInside();
-//    for (Routee<OneArgConsumerProtocol> routee : router.routees()) {
-//      Actor worker = routee.delegateActor();
-//      List<Integer> remembered = worker.viewTestState().valueOf("remembered");
-//      System.out.println("worker=" + worker.address() + ", rememberd=" + remembered);
-//    }
   }
   
   public static interface OneArgConsumerProtocol {
@@ -138,7 +122,7 @@ public class RandomRouterTest extends ActorsTest {
     /* @see io.vlingo.actors.RandomRouterTest.OneArgConsumerProtocol#remember(int) */
     @Override
     public void remember(int number) {
-      routeCommand(OneArgConsumerProtocol::remember, number);
+      dispatchCommand(OneArgConsumerProtocol::remember, number);
     }
   }
   

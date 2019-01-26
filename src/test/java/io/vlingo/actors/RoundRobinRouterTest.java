@@ -39,10 +39,6 @@ public class RoundRobinRouterTest extends ActorsTest {
         .andThenConsume(answer -> answers[round] = answer);
     }
 
-    /* test fails if some expression requiring work= is not before or after the until.completes()... */
-    Thread.sleep(1);
-    //UUID.randomUUID();
-    //System.out.println("hello");
     
     until.completes();
     
@@ -73,7 +69,7 @@ public class RoundRobinRouterTest extends ActorsTest {
     
     @Override
     public Completes<Integer> productOf(int arg1, int arg2) {
-      return routeQuery(TwoArgSupplierProtocol::productOf, arg1, arg2);
+      return dispatchQuery(TwoArgSupplierProtocol::productOf, arg1, arg2);
     }
   }
   

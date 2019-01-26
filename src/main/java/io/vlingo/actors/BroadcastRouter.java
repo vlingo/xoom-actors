@@ -30,26 +30,26 @@ public abstract class BroadcastRouter<P> extends Router<P> {
 
   /* @see io.vlingo.actors.Router#routeQuery(java.util.function.BiFunction, java.lang.Object) */
   @Override
-  protected <T1, R extends Completes<?>> R routeQuery(BiFunction<P, T1, R> query, T1 routable1) {
+  protected <T1, R extends Completes<?>> R dispatchQuery(BiFunction<P, T1, R> query, T1 routable1) {
     throw new UnsupportedOperationException("query protocols are not supported by this router by default");
   }
 
   /* @see io.vlingo.actors.Router#routeQuery(io.vlingo.common.TriFunction, java.lang.Object, java.lang.Object) */
   @Override
-  protected <T1, T2, R extends Completes<?>> R routeQuery(TriFunction<P, T1, T2, R> query, T1 routable1, T2 routable2) {
+  protected <T1, T2, R extends Completes<?>> R dispatchQuery(TriFunction<P, T1, T2, R> query, T1 routable1, T2 routable2) {
     throw new UnsupportedOperationException("query protocols are not supported by this router by default");
   }
 
   /* @see io.vlingo.actors.Router#routeQuery(io.vlingo.common.QuadFunction, java.lang.Object, java.lang.Object, java.lang.Object) */
   @Override
-  protected <T1, T2, T3, R extends Completes<?>> R routeQuery(QuadFunction<P, T1, T2, T3, R> query, T1 routable1,
+  protected <T1, T2, T3, R extends Completes<?>> R dispatchQuery(QuadFunction<P, T1, T2, T3, R> query, T1 routable1,
           T2 routable2, T3 routable3) {
     throw new UnsupportedOperationException("query protocols are not supported by this router by default");
   }
 
   /* @see io.vlingo.actors.Router#routeQuery(io.vlingo.common.PentaFunction, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object) */
   @Override
-  protected <T1, T2, T3, T4, R extends Completes<?>> R routeQuery(PentaFunction<P, T1, T2, T3, T4, R> query,
+  protected <T1, T2, T3, T4, R extends Completes<?>> R dispatchQuery(PentaFunction<P, T1, T2, T3, T4, R> query,
           T1 routable1, T2 routable2, T3 routable3, T4 routable4) {
     throw new UnsupportedOperationException("query protocols are not supported by this router by default");
   }
