@@ -16,7 +16,6 @@ import io.vlingo.common.compiler.DynaCompiler;
 import io.vlingo.common.compiler.DynaCompiler.Input;
 
 public final class ActorProxy {
-  private static final DynaClassLoader classLoader = new DynaClassLoader(ActorProxy.class.getClassLoader());
   private static final DynaCompiler proxyCompiler = new DynaCompiler();
   
   public static synchronized <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
@@ -41,6 +40,15 @@ public final class ActorProxy {
     return newProxy;
   }
 
+  private static DynaClassLoader classLoaderFor(final Actor actor) {
+    DynaClassLoader classLoader = actor.lifeCycle.environment.stage.world().classLoader();
+    if (classLoader == null) {
+      classLoader = new DynaClassLoader(ActorProxy.class.getClassLoader());
+      actor.stage().world().classLoader(classLoader);
+    }
+    return classLoader;
+  }
+
   @SuppressWarnings("unchecked")
   private static <T> T tryCreate(
           final Class<T> protocol,
@@ -48,7 +56,7 @@ public final class ActorProxy {
           final Mailbox mailbox,
           final String targetClassname)
   throws Exception {
-    final Class<?> proxyClass = Class.forName(targetClassname, true, classLoader);
+    final Class<?> proxyClass = Class.forName(targetClassname, true, classLoaderFor(actor));
     return (T) tryCreateWithProxyClass(proxyClass, actor, mailbox);
   }
   
@@ -82,7 +90,7 @@ public final class ActorProxy {
           final String targetClassname) {
     try {
       final Result result = generator.generateFor(protocol.getName());
-      final Input input = new Input(protocol, targetClassname, result.source, result.sourceFile, classLoader, generator.type(), true);
+      final Input input = new Input(protocol, targetClassname, result.source, result.sourceFile, classLoaderFor(actor), generator.type(), true);
       final Class<T> proxyClass = proxyCompiler.compile(input);
       return tryCreateWithProxyClass(proxyClass, actor, mailbox);
     } catch (Exception e) {
