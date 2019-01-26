@@ -6,25 +6,27 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
-import java.util.List;
 import java.util.Random;
 /**
- * RandomRoutingStrategy is a {@link RoutingStrategy} that
- * includes a random one of the pooled {@link Routee routees}
- * in the {@link Routing}
+ * RandomRouter
  */
-public class RandomRoutingStrategy extends RoutingStrategyAdapter {
+public class RandomRouter<P> extends Router<P> {
   
   private final Random random;
   
-  public RandomRoutingStrategy() {
-    super();
-    this.random = new Random();
+  public RandomRouter(final RouterSpecification<P> specification) {
+    super(specification);
+    this.random = new Random(System.currentTimeMillis());
   }
-
+  
+  /* @see io.vlingo.actors.Router#computeRouting() */
   @Override
-  protected Routing chooseRouteFor(final List<Routee> routees) {
+  protected Routing<P> computeRouting() {
+    return Routing.with(nextRoutee());
+  }
+  
+  protected Routee<P> nextRoutee() {
     int index = random.nextInt(routees.size());
-    return Routing.with(routees.get(index));
+    return routeeAt(index);
   }
 }
