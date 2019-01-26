@@ -36,6 +36,7 @@ public final class World implements Registrar {
   private final Map<String, Stage> stages;
   private final Map<String, Object> dynamicDependencies;
 
+  private ClassLoader classLoader;
   private CompletesEventuallyProviderKeeper completesProviderKeeper;
   private DeadLetters deadLetters;
   private Logger defaultLogger;
@@ -459,6 +460,24 @@ public final class World implements Registrar {
    */
   Mailbox assignMailbox(final String mailboxName, final int hashCode) {
     return mailboxProviderKeeper.assignMailbox(mailboxName, hashCode);
+  }
+
+  /**
+   * Answer my {@code classLoader}.
+   * @return {@code <L extends ClassLoader>}
+   */
+  @SuppressWarnings("unchecked")
+  <L extends ClassLoader> L classLoader() {
+    return (L) classLoader;
+  }
+
+  /**
+   * Set my {@code classLoader}.
+   * @param classLoader the {@code <L extends ClassLoader>} to set as my classLoader
+   * @param <L> the extended ClassLoader
+   */
+  <L extends ClassLoader> void classLoader(final L classLoader) {
+    this.classLoader = classLoader;
   }
 
   /**
