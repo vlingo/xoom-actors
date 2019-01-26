@@ -178,7 +178,7 @@ public class Stage implements Stoppable {
   }
 
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
-    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name));
+    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, world.addressFactory().unique().name()));
   }
 
   /**
