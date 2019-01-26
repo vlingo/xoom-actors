@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class TestUntil {
   private CountDownLatch latch;
-  private final boolean zero;
   
   public static TestUntil happenings(final int times) {
     final TestUntil waiter = new TestUntil(times);
@@ -26,18 +25,10 @@ public final class TestUntil {
   }
 
   public void completes() {
-    if (zero) {
-      try {
-        Thread.sleep(10);
-      } catch (Exception e) {
-        // ignore
-      }
-    } else {
-      try {
-        latch.await();
-      } catch (Exception e) {
-        // ignore
-      }
+    try {
+      latch.await();
+    } catch (Exception e) {
+      // ignore
     }
   }
 
@@ -65,11 +56,10 @@ public final class TestUntil {
 
   @Override
   public String toString() {
-    return "TestUntil[count=" + latch.getCount() + ", zero=" + zero + "]";
+    return "TestUntil[count=" + latch.getCount() + "]";
   }
 
   private TestUntil(final int count) {
     this.latch = new CountDownLatch(count);
-    this.zero = count == 0;
   }
 }
