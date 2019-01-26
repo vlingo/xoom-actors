@@ -59,6 +59,7 @@ public class TestMailbox implements Mailbox {
         }
       }
 
+      message.actor().viewTestStateInitialization(null);
       message.deliver();
     } catch (Throwable t) {
       throw new RuntimeException(t.getMessage(), t);
