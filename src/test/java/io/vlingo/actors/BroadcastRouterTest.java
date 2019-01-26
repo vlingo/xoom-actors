@@ -58,7 +58,7 @@ public class BroadcastRouterTest extends ActorsTest {
     /* @see io.vlingo.actors.BroadcastRouter2Test.TriConsumerProtocol#doSomething(int, int, int) */
     @Override
     public void doSomeMath(int arg1, int arg2, int arg3) {
-      routeCommand(ThreeArgConsumerProtocol::doSomeMath, arg1, arg2, arg3);
+      dispatchCommand(ThreeArgConsumerProtocol::doSomeMath, arg1, arg2, arg3);
     }
   }
   
