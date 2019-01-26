@@ -72,6 +72,7 @@ public class BroadcastRouterTest extends ActorsTest {
     }
 
     @Override
+    @SuppressWarnings("unused")
     public void doSomeMath(int arg1, int arg2, int arg3) {
       int sum = arg1 + arg2 + arg3;
       int product = arg1 * arg2 * arg3;
