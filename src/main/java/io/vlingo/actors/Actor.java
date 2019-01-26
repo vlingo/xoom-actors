@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.testkit.TestContext;
 import io.vlingo.actors.testkit.TestEnvironment;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
@@ -73,6 +74,18 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
         lifeCycle.stop(this);
       }
     }
+  }
+
+  /**
+   * Received from the surrounding {@code testkit.TestActor} to indicate
+   * that it is in use, enabling any special test initialization as
+   * needed. This is received (1) with a {@code TestContext} when the
+   * {@code TestActor} is first constructed, and (2) with {@code null}
+   * before each {@code TestMailbox} delivery.
+   * @param context the TestContext
+   */
+  public void viewTestStateInitialization(final TestContext context) {
+    // override for concrete actor test signaling
   }
 
   /**
