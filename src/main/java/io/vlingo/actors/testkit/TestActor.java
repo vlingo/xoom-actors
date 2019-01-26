@@ -14,11 +14,15 @@ public class TestActor<T> implements TestStateView {
   private final Actor actor;
   private final Address address;
   private final T protocolActor;
+  private final TestContext context;
 
   public TestActor(final Actor actor, final T protocol, final Address address) {
     this.actor = actor;
     this.protocolActor = protocol;
     this.address = address;
+    this.context = new TestContext();
+
+    this.actor.viewTestStateInitialization(context);
   }
 
   public T actor() {
@@ -36,6 +40,10 @@ public class TestActor<T> implements TestStateView {
 
   public Actor actorInside() {
     return actor;
+  }
+
+  public TestContext context() {
+    return context;
   }
 
   @Override
