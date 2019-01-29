@@ -72,24 +72,10 @@ public class ActorFactory {
     } else {
       for (final Constructor<?> ctor : definition.type().getConstructors()) {
         if (ctor.getParameterCount() == definition.internalParameters().size()) {
-          try {
-            actor = (Actor) ctor.newInstance(definition.internalParameters().toArray());
-            actor.lifeCycle.sendStart(actor);
-          } catch (Throwable t) {
-            final Throwable cause = (t.getCause() == null ? t : t.getCause());
-            logger.log("ActorFactory: failed actor creation. "
-                    + "This is sometimes cause be the constructor parameter types not matching "
-                    + "the types in the Definition.parameters(). Often it is caused by a "
-                    + "failure in the actor constructor. We have attempted to uncover "
-                    + "the root cause here, but that may not be available in some cases.\n"
-                    + "The root cause may be: " + cause + "\n"
-                    + "See stacktrace for more information. We strongly recommend reviewing your "
-                    + "constructor for possible failures in dependencies that it creates.",
-                    cause);
-
-            throw new InstantiationException("ActorFactory failed actor creation for: " + address);
+          actor = start(ctor, definition, address, logger);
+          if (actor != null) {
+            break;
           }
-          break;
         }
       }
     }
@@ -110,5 +96,62 @@ public class ActorFactory {
     final Mailbox mailbox = stage.world().assignMailbox(mailboxName, address.hashCode());
     
     return mailbox;
+  }
+
+  private static Actor start(
+          final Constructor<?> ctor,
+          final Definition definition,
+          final Address address,
+          final Logger logger) throws Exception {
+
+    Actor actor = null;
+    Object[] args = null;
+    Throwable cause = null;
+
+    for (int times = 1; times <= 2; ++times) {
+      try {
+        if (times == 1) {
+          args = definition.internalParameters().toArray();
+        }
+        actor = (Actor) ctor.newInstance(args);
+        actor.lifeCycle.sendStart(actor);
+        cause = null;
+        return actor;
+      } catch (Throwable t) {
+        cause = (t.getCause() == null ? t : t.getCause());
+        if (times == 1) {
+          args = unfold(args);
+        }
+      }
+    }
+
+    if (cause != null) {
+      logger.log("ActorFactory: failed actor creation. "
+              + "This is sometimes cause be the constructor parameter types not matching "
+              + "the types in the Definition.parameters(). Often it is caused by a "
+              + "failure in the actor constructor. We have attempted to uncover "
+              + "the root cause here, but that may not be available in some cases.\n"
+              + "The root cause may be: " + cause + "\n"
+              + "See stacktrace for more information. We strongly recommend reviewing your "
+              + "constructor for possible failures in dependencies that it creates.",
+              cause);
+
+      throw new InstantiationException("ActorFactory failed actor creation for: " + address);
+    }
+
+    return actor;
+  }
+
+  private static Object[] unfold(final Object[] args) {
+    final Object[] unfolded = new Object[args.length];
+    for (int idx = 0; idx < args.length; ++idx) {
+      Object currentArg = args[idx];
+      if (currentArg.getClass().isArray()) {
+        unfolded[idx] = ((Object[]) currentArg)[0];
+      } else {
+        unfolded[idx] = args[idx];
+      }
+    }
+    return unfolded;
   }
 }
