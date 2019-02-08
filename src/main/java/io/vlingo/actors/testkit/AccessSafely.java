@@ -127,6 +127,24 @@ public class AccessSafely {
   }
 
   /**
+   * Answer the value associated with {@code name} immediately.
+   * @param name the String name of the value to answer
+   * @param <T> the type of the value associated with name
+   * @return T
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T readFromNow(final String name) {
+    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
+    if (supplier == null) {
+      throw new IllegalArgumentException("Unknown supplier: " + name);
+    }
+
+    synchronized (lock) {
+      return supplier.get();
+    }
+  }
+
+  /**
    * Set the value associated with {@code name} to the parameter {@code value}.
    * @param name the String name of the value to answer
    * @param value the T typed value to write
