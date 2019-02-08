@@ -63,7 +63,7 @@ public class AccessSafely {
   /**
    * Answer me with {@code supplier} registered for reading.
    * @param name the String name of the {@code Supplier<T>} to register
-   * @param consumer the {@code Supplier<T>} to register
+   * @param supplier the {@code Supplier<T>} to register
    * @param <T> the type of the Supplier to register
    * @return TestAccessSafely
    */
@@ -107,6 +107,7 @@ public class AccessSafely {
   /**
    * Answer the value associated with {@code name}.
    * @param name the String name of the value to answer
+   * @param parameter the T typed function parameter
    * @param <T> the type of the parameter to the {@code Function<T,R>}
    * @param <R> the type of the return value associated with name
    * @return R
@@ -128,8 +129,8 @@ public class AccessSafely {
   /**
    * Set the value associated with {@code name} to the parameter {@code value}.
    * @param name the String name of the value to answer
-   * @param <T> the type of the value associated with name
-   * @return T
+   * @param value the T typed value to write
+   * @param <T> the type of the value associated with name that is to be written
    */
   @SuppressWarnings("unchecked")
   public <T> void writeUsing(final String name, final T value) {
