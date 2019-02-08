@@ -14,129 +14,168 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class ActorStopTest extends ActorsTest {
   @Test
   public void testStopActors() throws Exception {
-    final TestResults testResults = new TestResults();
-    testResults.untilStart = TestUntil.happenings(12);
+    final TestResults results = new TestResults();
+
+    final AccessSafely beforeStartCountAccess = results.beforeStartCountAccessCompletes(12);
     
     world.defaultLogger().log("Test: testStopActors: starting actors");
 
-    final ChildCreatingStoppable[] stoppables = setUpActors(world, testResults);
-    
+    final ChildCreatingStoppable[] stoppables = setUpActors(world, results);
+
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].createChildren();
     }
 
-    testResults.untilStart.completesWithin(2000);
-
-    assertEquals(12, testResults.beforeStartCount.get());
+    final int beforeStartCount = beforeStartCountAccess.readFrom("value");
+    assertEquals(12, beforeStartCount);
 
     world.defaultLogger().log("Test: testStopActors: stopping actors");
 
-    testResults.untilStop = TestUntil.happenings(12);
+    final AccessSafely terminatingAccess = results.terminatingAccessCompletes(1);
+    terminatingAccess.writeUsing("value", false);
+    final AccessSafely stopCountAccess = results.stopCountAccessCompletes(12);
 
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].stop();
     }
-    
-    testResults.untilStop.completesWithin(2000);
-    
+
+    final int stopCount = stopCountAccess.readFrom("value");
+    assertEquals(12, stopCount);
+
     world.defaultLogger().log("Test: testStopActors: stopped actors");
-
-    assertEquals(12, testResults.stopCount.get());
-
     world.defaultLogger().log("Test: testStopActors: terminating world");
 
-    testResults.untilTerminatingStop = TestUntil.happenings(0);
-    
-    testResults.terminating.set(true);
+    results.terminatingStopCountAccessCompletes(0);
+
+    results.terminatingAccessCompletes(0).writeUsing("value", true);
     world.terminate();
-    
-    testResults.untilTerminatingStop.completesWithin(2000);
-    
-    assertEquals(0, testResults.terminatingStopCount.get());
+
+    final int terminatingStopCount = results.terminatingStopCountAccess.readFrom("value");
+    assertEquals(0, terminatingStopCount);
   }
 
   @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
-    final TestResults testSpecs = new TestResults();
-    
-    testSpecs.untilStart = TestUntil.happenings(12);
+    final TestResults results = new TestResults();
 
-    final ChildCreatingStoppable[] stoppables = setUpActors(world, testSpecs);
-    
+    final AccessSafely beforeStartCountAccess = results.beforeStartCountAccessCompletes(12);
+
+    final ChildCreatingStoppable[] stoppables = setUpActors(world, results);
+
     for (int idx = 0; idx < stoppables.length; ++idx) {
       stoppables[idx].createChildren();
     }
 
-    testSpecs.untilStart.completesWithin(2000);
-    
-    testSpecs.untilTerminatingStop = TestUntil.happenings(12);
+    beforeStartCountAccess.readFrom("value");
 
-    testSpecs.terminating.set(true);
+    final AccessSafely terminatingStopAccess = results.terminatingStopCountAccessCompletes(12);
+
+    results.terminatingAccessCompletes(1).writeUsing("value", true);
     world.terminate();
-    
-    testSpecs.untilTerminatingStop.completesWithin(2000);
-    
-    assertEquals(12, testSpecs.terminatingStopCount.get());
+
+    final int terminatingStopCount = terminatingStopAccess.readFrom("value");
+    assertEquals(12, terminatingStopCount);
   }
-  
-  private ChildCreatingStoppable[] setUpActors(final World world, final TestResults testResults) {
+
+  private ChildCreatingStoppable[] setUpActors(final World world, final TestResults results) {
     final ChildCreatingStoppable[] stoppables = new ChildCreatingStoppable[3];
-    stoppables[0] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p1"));
-    stoppables[1] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p2"));
-    stoppables[2] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), "p3"));
+    stoppables[0] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), "p1"));
+    stoppables[1] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), "p2"));
+    stoppables[2] = world.actorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), "p3"));
     return stoppables;
   }
-  
+
   public static interface ChildCreatingStoppable extends Stoppable {
     void createChildren();
   }
   
   public static class ChildCreatingStoppableActor extends Actor implements ChildCreatingStoppable {
-    private volatile TestResults testResults;
+    private final TestResults results;
     
-    public ChildCreatingStoppableActor(final TestResults testSpecs) {
-      this.testResults = testSpecs;
+    public ChildCreatingStoppableActor(final TestResults results) {
+      this.results = results;
     }
 
     @Override
     public void createChildren() {
       final String pre = address().name();
-      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".1"));
-      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".2"));
-      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(testResults), pre+".3"));
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), pre+".1"));
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), pre+".2"));
+      childActorFor(ChildCreatingStoppable.class, Definition.has(ChildCreatingStoppableActor.class, Definition.parameters(results), pre+".3"));
     }
 
     @Override
     protected void beforeStart() {
       super.beforeStart();
-      testResults.beforeStartCount.incrementAndGet();
-      testResults.untilStart.happened();
+      results.beforeStartCountAccess.writeUsing("value", 1);
     }
 
     @Override
     protected void afterStop() {
-      if (testResults.terminating.get()) {
-        testResults.terminatingStopCount.incrementAndGet();
-        testResults.untilTerminatingStop.happened();
+      if ((boolean) results.terminatingAccess.readFromNow("value")) {
+        results.terminatingStopCountAccess.writeUsing("value", 1);
       } else {
-        testResults.stopCount.incrementAndGet();
-        testResults.untilStop.happened();
+        results.stopCountAccess.writeUsing("value", 1);
       }
     }
   }
 
   private static class TestResults {
-    public AtomicInteger beforeStartCount = new AtomicInteger(0);
-    public AtomicInteger stopCount = new AtomicInteger(0);
-    public AtomicBoolean terminating = new AtomicBoolean(false);
-    public AtomicInteger terminatingStopCount = new AtomicInteger(0);
-    public TestUntil untilStart = TestUntil.happenings(0);
-    public TestUntil untilStop = TestUntil.happenings(0);
-    public TestUntil untilTerminatingStop = TestUntil.happenings(0);
+    private AccessSafely beforeStartCountAccess = AccessSafely.afterCompleting(1);
+    private AtomicInteger beforeStartCount = new AtomicInteger(0);
+
+    private AccessSafely stopCountAccess = AccessSafely.afterCompleting(1);
+    private AtomicInteger stopCount = new AtomicInteger(0);
+
+    private AccessSafely terminatingAccess = AccessSafely.afterCompleting(1);
+    private AtomicBoolean terminating = new AtomicBoolean(false);
+
+    private AccessSafely terminatingStopCountAccess = AccessSafely.afterCompleting(1);
+    private AtomicInteger terminatingStopCount = new AtomicInteger(0);
+
+    public AccessSafely beforeStartCountAccessCompletes(final int times) {
+      beforeStartCountAccess =
+              AccessSafely
+                .afterCompleting(times)
+                .writingWith("value", (value) -> beforeStartCount.set(beforeStartCount.get() + (int) value))
+                .readingWith("value", () -> beforeStartCount.get());
+
+      return beforeStartCountAccess;
+    }
+
+    public AccessSafely stopCountAccessCompletes(final int times) {
+      stopCountAccess =
+              AccessSafely
+                .afterCompleting(times)
+                .writingWith("value", (value) -> stopCount.set(stopCount.get() + (int) value))
+                .readingWith("value", () -> stopCount.get());
+
+      return stopCountAccess;
+    }
+
+    public AccessSafely terminatingAccessCompletes(final int times) {
+      terminatingAccess =
+              AccessSafely
+                .afterCompleting(times)
+                .writingWith("value", (flag) -> terminating.set((boolean) flag))
+                .readingWith("value", () -> terminating.get());
+
+      return terminatingAccess;
+    }
+
+    public AccessSafely terminatingStopCountAccessCompletes(final int times) {
+      terminatingStopCountAccess =
+              AccessSafely
+                .afterCompleting(times)
+                .writingWith("value", (value) -> terminatingStopCount.set(terminatingStopCount.get() + (int) value))
+                .readingWith("value", () -> terminatingStopCount.get());
+
+      return terminatingStopCountAccess;
+    }
   }
 }
