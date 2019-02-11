@@ -36,8 +36,8 @@ public class ActorStopTest extends ActorsTest {
 
     world.defaultLogger().log("Test: testStopActors: stopping actors");
 
-    final AccessSafely terminatingAccess = results.terminatingAccessCompletes(1);
-    terminatingAccess.writeUsing("value", false);
+    results.terminatingAccessCompletes(0).writeUsing("value", false);
+
     final AccessSafely stopCountAccess = results.stopCountAccessCompletes(12);
 
     for (int idx = 0; idx < stoppables.length; ++idx) {
@@ -56,6 +56,7 @@ public class ActorStopTest extends ActorsTest {
     world.terminate();
 
     final int terminatingStopCount = results.terminatingStopCountAccess.readFrom("value");
+
     assertEquals(0, terminatingStopCount);
   }
 
@@ -75,10 +76,11 @@ public class ActorStopTest extends ActorsTest {
 
     final AccessSafely terminatingStopAccess = results.terminatingStopCountAccessCompletes(12);
 
-    results.terminatingAccessCompletes(1).writeUsing("value", true);
+    results.terminatingAccessCompletes(0).writeUsing("value", true);
     world.terminate();
 
     final int terminatingStopCount = terminatingStopAccess.readFrom("value");
+
     assertEquals(12, terminatingStopCount);
   }
 
@@ -142,7 +144,7 @@ public class ActorStopTest extends ActorsTest {
       beforeStartCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (value) -> beforeStartCount.set(beforeStartCount.get() + (int) value))
+                .writingWith("value", (Integer value) -> beforeStartCount.set(beforeStartCount.get() + value))
                 .readingWith("value", () -> beforeStartCount.get());
 
       return beforeStartCountAccess;
@@ -152,7 +154,7 @@ public class ActorStopTest extends ActorsTest {
       stopCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (value) -> stopCount.set(stopCount.get() + (int) value))
+                .writingWith("value", (Integer value) -> stopCount.set(stopCount.get() + value))
                 .readingWith("value", () -> stopCount.get());
 
       return stopCountAccess;
@@ -172,7 +174,7 @@ public class ActorStopTest extends ActorsTest {
       terminatingStopCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (value) -> terminatingStopCount.set(terminatingStopCount.get() + (int) value))
+                .writingWith("value", (Integer value) -> terminatingStopCount.set(terminatingStopCount.get() + value))
                 .readingWith("value", () -> terminatingStopCount.get());
 
       return terminatingStopCountAccess;
