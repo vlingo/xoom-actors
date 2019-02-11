@@ -126,6 +126,49 @@ public class AccessSafely {
     }
   }
 
+
+  /**
+   * Answer the value associated with {@code name} but not until
+   * it reaches the {@code expected} value.
+   * @param name the String name of the value to answer
+   * @param expected the T typed expected value
+   * @param <T> the type of the value associated with name
+   * @return T
+   */
+  public <T> T readFromExpecting(final String name, final T expected) {
+    return readFromExpecting(name, expected, Long.MAX_VALUE);
+  }
+
+  /**
+   * Answer the value associated with {@code name} but not until
+   * it reaches the {@code expected} value or the total number
+   * of {@code retries} is reached.
+   * @param name the String name of the value to answer
+   * @param expected the T typed expected value
+   * @param retries the long number of retries
+   * @param <T> the type of the value associated with name
+   * @return T
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T readFromExpecting(final String name, final T expected, final long retries) {
+    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
+    if (supplier == null) {
+      throw new IllegalArgumentException("Unknown supplier: " + name);
+    }
+
+    until.completes();
+
+    for (int count = 0; count < retries; ++count) {
+      synchronized (lock) {
+        final T value = supplier.get();
+        if (expected == value || expected.equals(value)) {
+          return value;
+        }
+      }
+    }
+    throw new IllegalStateException("Did not reach expected value: " + expected);
+  }
+
   /**
    * Answer the value associated with {@code name} immediately.
    * @param name the String name of the value to answer
