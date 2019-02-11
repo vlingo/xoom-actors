@@ -15,6 +15,10 @@ public interface Logger {
     return new NoOpLogger();
   }
 
+  public static Logger basicLogger() {
+    return JDKLogger.basicInstance();
+  }
+
   public static Logger testLogger() {
     return JDKLogger.testInstance();
   }
