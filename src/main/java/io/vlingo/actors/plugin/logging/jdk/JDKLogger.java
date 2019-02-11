@@ -24,11 +24,15 @@ public class JDKLogger implements Logger {
   private final java.util.logging.Logger logger;
   private final String name;
 
-  public static Logger testInstance() {
+  public static Logger basicInstance() {
     final Configuration configuration = Configuration.define();
     final JDKLoggerPluginConfiguration loggerConfiguration = JDKLoggerPluginConfiguration.define();
     loggerConfiguration.build(configuration);
     return new JDKLogger(loggerConfiguration.name(), loggerConfiguration);
+  }
+
+  public static Logger testInstance() {
+    return basicInstance();
   }
 
   protected JDKLogger(final String name, final JDKLoggerPluginConfiguration confirguration) {
