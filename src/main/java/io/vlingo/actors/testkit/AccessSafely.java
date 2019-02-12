@@ -158,13 +158,14 @@ public class AccessSafely {
 
     until.completes();
 
-    for (int count = 0; count < retries; ++count) {
+    for (long count = 0; count < retries; ++count) {
       synchronized (lock) {
         final T value = supplier.get();
         if (expected == value || expected.equals(value)) {
           return value;
         }
       }
+      try { Thread.sleep(1L); } catch (Exception e) { }
     }
     throw new IllegalStateException("Did not reach expected value: " + expected);
   }
