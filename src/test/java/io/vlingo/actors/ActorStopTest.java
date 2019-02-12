@@ -44,7 +44,7 @@ public class ActorStopTest extends ActorsTest {
       stoppables[idx].stop();
     }
 
-    final int stopCount = stopCountAccess.readFrom("value");
+    final int stopCount = stopCountAccess.readFromExpecting("value", 12);
     assertEquals(12, stopCount);
 
     world.defaultLogger().log("Test: testStopActors: stopped actors");
