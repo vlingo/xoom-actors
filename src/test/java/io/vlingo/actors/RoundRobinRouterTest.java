@@ -7,13 +7,15 @@
 package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.common.Completes;
 /**
  * RoundRobinRouterTest
@@ -25,30 +27,37 @@ public class RoundRobinRouterTest extends ActorsTest {
     final int poolSize = 4;
     final int rounds = 2;
     final int messagesToSend = poolSize * rounds;
-    final TestUntil until = TestUntil.happenings(messagesToSend);
-    final TestActor<TwoArgSupplierProtocol> testRouter = testWorld.actorFor(
+
+    final Results results = new Results(messagesToSend);
+
+    final TwoArgSupplierProtocol router = world.actorFor(
             TwoArgSupplierProtocol.class,
-            Definition.has(TestRouterActor.class, Definition.parameters(poolSize, until)));
-    
-    final int[] answers = new int[messagesToSend];
+            Definition.has(TestRouterActor.class, Definition.parameters(poolSize)));
     
     for (int i = 0; i < messagesToSend; i++) {
       final int round = i;
-      testRouter.actor()
+      router
         .productOf(round, round)
-        .andThenConsume(answer -> answers[round] = answer);
+        .andThenConsume(answer -> results.access.writeUsing("answers", answer));
     }
+    
+    final List<Integer> allExpected = new ArrayList<>();
 
-    
-    until.completes();
-    
-    System.out.println("answers=" + Arrays.toString(answers));
-    
     for (int round = 0; round < messagesToSend; round++) {
       int expected = round * round;
-      int actual = answers[round];
-      assertEquals("Completes.outcoume for round " + round, expected, actual);
+      allExpected.add(expected);
     }
+    for (int round = 0; round < messagesToSend; round++) {
+      int actual = results.access.readFrom("answers", round);
+      assertTrue(allExpected.remove(new Integer(actual)));
+    }
+    assertEquals(0, allExpected.size());
+    
+//    for (int round = 0; round < messagesToSend; round++) {
+//      int expected = round * round;
+//      int actual = answers[round];
+//      assertEquals("Completes.outcoume for round " + round, expected, actual);
+//    }
   }
   
   public static interface TwoArgSupplierProtocol {
@@ -57,11 +66,11 @@ public class RoundRobinRouterTest extends ActorsTest {
   
   public static class TestRouterActor extends RoundRobinRouter<TwoArgSupplierProtocol> implements TwoArgSupplierProtocol {
     
-    public TestRouterActor(final int poolSize, final TestUntil testUntil) {
+    public TestRouterActor(final int poolSize) {
       super(
         new RouterSpecification<TwoArgSupplierProtocol>(
           poolSize,
-          Definition.has(TestRouteeActor.class, Definition.parameters(testUntil)),
+          Definition.has(TestRouteeActor.class, Definition.NoParameters),
           TwoArgSupplierProtocol.class
         )
       );
@@ -75,18 +84,32 @@ public class RoundRobinRouterTest extends ActorsTest {
   
   public static class TestRouteeActor extends Actor implements TwoArgSupplierProtocol {
     
-    private final TestUntil testUntil;
-    
-    public TestRouteeActor(TestUntil testUntil) {
-      super();
-      this.testUntil = testUntil;
-    }
+    public TestRouteeActor() { }
 
     /* @see io.vlingo.actors.RoundRobinRouterTest.TwoArgSupplierProtocol#productOf(int, int) */
     @Override
     public Completes<Integer> productOf(int arg1, int arg2) {
-      testUntil.happened();
       return completes().with(arg1 * arg2);
+    }
+  }
+
+  public static class Results {
+    public AccessSafely access;
+    private final int[] answers;
+    private int index;
+
+    public Results(final int totalAnswers) {
+      this.answers = new int[totalAnswers];
+      this.index = 0;
+      this.access = afterCompleting(totalAnswers);
+    }
+
+    private AccessSafely afterCompleting(final int steps) {
+      access = AccessSafely
+              .afterCompleting(steps)
+              .writingWith("answers", (Integer answer) -> { answers[index++] = answer; System.out.println("Writing: at=" + (index-1) + " answer=" + answer); })
+              .readingWith("answers", (Integer index) -> answers[index]);
+      return access;
     }
   }
 }
