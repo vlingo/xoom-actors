@@ -7,44 +7,50 @@
 package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.common.Completes;
 /**
  * RandomRouterTest tests {@link RandomRouter}.
  */
 public class RandomRouterTest extends ActorsTest {
-  
+
   @Test
   public void testSupplierProtocol() throws Exception {
-    
     final int poolSize = 4;
     final int rounds = 2;
     final int messagesToSend = poolSize * rounds;
-    final TestUntil until = TestUntil.happenings(messagesToSend);
-    final TestActor<OneArgSupplierProtocol> testRouter = testWorld.actorFor(
+
+    final Results results = new Results(messagesToSend);
+
+    final OneArgSupplierProtocol router = world.actorFor(
             OneArgSupplierProtocol.class,
-            Definition.has(TestSupplierActor.class, Definition.parameters(poolSize, until)));
-    
-    final int[] answers = new int[messagesToSend];
-    
+            Definition.has(TestSupplierActor.class, Definition.parameters(poolSize)));
+
     for (int i = 0; i < messagesToSend; i++) {
       final int round = i;
-      testRouter.actor()
+      router
         .cubeOf(round)
-        .andThenConsume(answer -> answers[round] = answer);
+        .andThenConsume(answer -> results.access.writeUsing("answers", answer));
     }
 
-    until.completes();
-        
+    final List<Integer> allExpected = new ArrayList<>();
+
     for (int round = 0; round < messagesToSend; round++) {
       int expected = round * round * round;
-      int actual = answers[round];
-      assertEquals("Completes.outcoume for round " + round, expected, actual);
+      allExpected.add(expected);
     }
+    for (int round = 0; round < messagesToSend; round++) {
+      int actual = results.access.readFrom("answers", round);
+      assertTrue(allExpected.remove(new Integer(actual)));
+    }
+    assertEquals(0, allExpected.size());
   }
   
   public static interface OneArgSupplierProtocol {
@@ -52,17 +58,16 @@ public class RandomRouterTest extends ActorsTest {
   }
   
   public static class TestSupplierActor extends RoundRobinRouter<OneArgSupplierProtocol> implements OneArgSupplierProtocol {
-    
-    public TestSupplierActor(final int poolSize, final TestUntil testUntil) {
+    public TestSupplierActor(final int poolSize) {
       super(
         new RouterSpecification<OneArgSupplierProtocol>(
           poolSize,
-          Definition.has(TestSupplierWorker.class, Definition.parameters(testUntil)),
+          Definition.has(TestSupplierWorker.class, Definition.NoParameters),
           OneArgSupplierProtocol.class
         )
       );
     }
-    
+
     @Override
     public Completes<Integer> cubeOf(int arg1) {
       return dispatchQuery(OneArgSupplierProtocol::cubeOf, arg1);
@@ -70,18 +75,11 @@ public class RandomRouterTest extends ActorsTest {
   }
   
   public static class TestSupplierWorker extends Actor implements OneArgSupplierProtocol {
-    
-    private final TestUntil testUntil;
-    
-    public TestSupplierWorker(TestUntil testUntil) {
-      super();
-      this.testUntil = testUntil;
-    }
+    public TestSupplierWorker() { }
 
     /* @see io.vlingo.actors.RoundRobinRouterTest.TwoArgSupplierProtocol#productOf(int, int) */
     @Override
     public Completes<Integer> cubeOf(int arg1) {
-      testUntil.happened();
       return completes().with(arg1 * arg1 * arg1);
     }
   }
@@ -91,16 +89,26 @@ public class RandomRouterTest extends ActorsTest {
     final int poolSize = 4;
     final int rounds = 2;
     final int messagesToSend = poolSize * rounds;
-    final TestUntil until = TestUntil.happenings(messagesToSend);
-    final TestActor<OneArgConsumerProtocol> testRouter = testWorld.actorFor(
+
+    final Results results = new Results(messagesToSend);
+
+    final OneArgConsumerProtocol router = world.actorFor(
             OneArgConsumerProtocol.class,
-            Definition.has(TestConsumerActor.class, Definition.parameters(poolSize, until)));
-    
+            Definition.has(TestConsumerActor.class, Definition.parameters(results, poolSize)));
+
     for (int i = 0; i < messagesToSend; i++) {
-      testRouter.actor().remember(i);
+      router.remember(i);
     }
-    
-    until.completes();
+
+    final List<Integer> allExpected = new ArrayList<>();
+
+    for (int round = 0; round < messagesToSend; round++) {
+      allExpected.add(round);
+    }
+    for (int round = 0; round < messagesToSend; round++) {
+      assertTrue(allExpected.remove(new Integer(round)));
+    }
+    assertEquals(0, allExpected.size());
   }
   
   public static interface OneArgConsumerProtocol {
@@ -109,11 +117,11 @@ public class RandomRouterTest extends ActorsTest {
   
   public static class TestConsumerActor extends RoundRobinRouter<OneArgConsumerProtocol> implements OneArgConsumerProtocol {
     
-    public TestConsumerActor(final int poolSize, final TestUntil testUntil) {
+    public TestConsumerActor(final Results results, final int poolSize) {
       super(
         new RouterSpecification<OneArgConsumerProtocol>(
           poolSize,
-          Definition.has(TestConsumerWorker.class, Definition.parameters(testUntil)),
+          Definition.has(TestConsumerWorker.class, Definition.parameters(results)),
           OneArgConsumerProtocol.class
         )
       );
@@ -127,18 +135,36 @@ public class RandomRouterTest extends ActorsTest {
   }
   
   public static class TestConsumerWorker extends Actor implements OneArgConsumerProtocol {
-    
-    private final TestUntil testUntil;
-    
-    public TestConsumerWorker(TestUntil testUntil) {
-      super();
-      this.testUntil = testUntil;
+    private final Results results;
+
+    public TestConsumerWorker(final Results results) {
+      this.results = results;
     }
-    
+
     /* @see io.vlingo.actors.RandomRouterTest.OneArgConsumerProtocol#remember(int) */
     @Override
     public void remember(int number) {
-      testUntil.happened();
+      results.access.writeUsing("answers", number);
+    }
+  }
+
+  public static class Results {
+    public AccessSafely access;
+    private final int[] answers;
+    private int index;
+
+    public Results(final int totalAnswers) {
+      this.answers = new int[totalAnswers];
+      this.index = 0;
+      this.access = afterCompleting(totalAnswers);
+    }
+
+    private AccessSafely afterCompleting(final int steps) {
+      access = AccessSafely
+              .afterCompleting(steps)
+              .writingWith("answers", (Integer answer) -> { answers[index++] = answer; System.out.println("Writing: at=" + (index-1) + " answer=" + answer); })
+              .readingWith("answers", (Integer index) -> answers[index]);
+      return access;
     }
   }
 }
