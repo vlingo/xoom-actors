@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -107,7 +106,7 @@ public class RoundRobinRouterTest extends ActorsTest {
     private AccessSafely afterCompleting(final int steps) {
       access = AccessSafely
               .afterCompleting(steps)
-              .writingWith("answers", (Integer answer) -> { answers[index++] = answer; System.out.println("Writing: at=" + (index-1) + " answer=" + answer); })
+              .writingWith("answers", (Integer answer) -> answers[index++] = answer)
               .readingWith("answers", (Integer index) -> answers[index]);
       return access;
     }
