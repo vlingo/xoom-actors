@@ -162,7 +162,7 @@ public class RandomRouterTest extends ActorsTest {
     private AccessSafely afterCompleting(final int steps) {
       access = AccessSafely
               .afterCompleting(steps)
-              .writingWith("answers", (Integer answer) -> { answers[index++] = answer; System.out.println("Writing: at=" + (index-1) + " answer=" + answer); })
+              .writingWith("answers", (Integer answer) -> answers[index++] = answer)
               .readingWith("answers", (Integer index) -> answers[index]);
       return access;
     }
