@@ -152,11 +152,6 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     @Override
-    public boolean delivering(final boolean flag) {
-      return flag;
-    }
-
-    @Override
     public void send(final Message message) {
       queue.add(message);
     }
