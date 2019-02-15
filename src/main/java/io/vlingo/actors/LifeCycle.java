@@ -127,8 +127,9 @@ final class LifeCycle {
   }
 
   void disperseStowedMessages() {
-    environment.stowage.dispersingMode();
-    sendFirstIn(environment.stowage);
+    if (sendFirstIn(environment.stowage)) {
+      environment.stowage.dispersingMode();
+    }
   }
 
   void nextDispersing() {
