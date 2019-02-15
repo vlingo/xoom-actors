@@ -15,7 +15,6 @@ public interface Mailbox extends Runnable {
   void close();
   boolean isClosed();
   boolean isDelivering();
-  boolean delivering(final boolean flag);
   void send(final Message message);
   Message receive();
   int pendingMessages();
