@@ -46,11 +46,6 @@ public class TestMailbox implements Mailbox {
   }
 
   @Override
-  public boolean delivering(final boolean flag) {
-    throw new UnsupportedOperationException("TestMailbox does not support this operation.");
-  }
-
-  @Override
   public void send(final Message message) {
     try {
       if (!message.actor().isStopped()) {
