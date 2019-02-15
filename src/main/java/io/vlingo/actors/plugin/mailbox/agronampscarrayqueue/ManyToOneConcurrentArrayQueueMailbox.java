@@ -35,11 +35,6 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   }
 
   @Override
-  public boolean delivering(final boolean flag) {
-    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
-  }
-
-  @Override
   public void run() {
     throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
   }
