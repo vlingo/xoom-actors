@@ -39,11 +39,8 @@ public class SharedRingBufferMailbox implements Mailbox {
     return closed.get();
   }
 
+  @Override
   public boolean isDelivering() {
-    throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
-  }
-
-  public boolean delivering(final boolean flag) {
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
 
@@ -52,6 +49,7 @@ public class SharedRingBufferMailbox implements Mailbox {
     return true;
   }
 
+  @Override
   public void send(final Message message) {
     throw new UnsupportedOperationException("Use preallocated mailbox send(Actor, ...).");
   }
@@ -78,6 +76,7 @@ public class SharedRingBufferMailbox implements Mailbox {
       ;
   }
 
+  @Override
   public Message receive() {
     final long messageIndex = receiveIndex.get();
 
@@ -90,6 +89,7 @@ public class SharedRingBufferMailbox implements Mailbox {
     return null;
   }
 
+  @Override
   public void run() {
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
