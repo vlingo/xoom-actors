@@ -37,9 +37,7 @@ public class ExecutorDispatcher implements Dispatcher {
 
   public void execute(final Mailbox mailbox) {
     if (!closed.get()) {
-      if (mailbox.delivering(true)) {
-        executor.execute(mailbox);
-      }
+      executor.execute(mailbox);
     }
   }
 
