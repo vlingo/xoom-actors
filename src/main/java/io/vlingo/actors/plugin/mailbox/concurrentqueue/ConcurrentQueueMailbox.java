@@ -51,24 +51,21 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   }
 
   @Override
-  public boolean delivering(final boolean flag) {
-    return delivering.compareAndSet(!flag, flag);
-  }
-
-  @Override
   public void run() {
-    final int total = (int) throttlingCount;
-    for (int count = 0; count < total; ++count) {
-      final Message message = receive();
-      if (message != null) {
-        message.deliver();
-      } else {
-        break;
+    if (delivering.compareAndSet(false, true)) {
+      final int total = (int) throttlingCount;
+      for (int count = 0; count < total; ++count) {
+        final Message message = receive();
+        if (message != null) {
+          message.deliver();
+        } else {
+          break;
+        }
       }
-    }
-    delivering(false);
-    if (!queue.isEmpty()) {
-      dispatcher.execute(this);
+      delivering.set(false);
+      if (!queue.isEmpty()) {
+        dispatcher.execute(this);
+      }
     }
   }
   
