@@ -9,6 +9,7 @@ package io.vlingo.actors.testkit;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -19,7 +20,9 @@ import java.util.function.Supplier;
  * {@code writeUsing()} behavior is employed before the {@code readUsing()} can complete.
  */
 public class AccessSafely {
+  //public int totalWrites = 0;
   private final Object lock;
+  private final Map<String,BiConsumer<?,?>> biConsumers;
   private final Map<String,Consumer<?>> consumers;
   private final Map<String,Function<?,?>> functions;
   private final Map<String,Supplier<?>> suppliers;
@@ -81,6 +84,19 @@ public class AccessSafely {
    */
   public <T> AccessSafely writingWith(final String name, final Consumer<T> consumer) {
     consumers.put(name, consumer);
+    return this;
+  }
+
+  /**
+   * Answer me with {@code consumer} registered for writing.
+   * @param name the String name of the {@code Consumer<T>} to register
+   * @param consumer the {@code Consumer<T>} to register
+   * @param <T1> the type of the first BiConsumer parameter to register
+   * @param <T2> the type of the second BiConsumer parameter to register
+   * @return TestAccessSafely
+   */
+  public <T1,T2> AccessSafely writingWith(final String name, final BiConsumer<T1,T2> consumer) {
+    biConsumers.put(name, consumer);
     return this;
   }
 
@@ -202,7 +218,30 @@ public class AccessSafely {
     }
 
     synchronized (lock) {
+      //++totalWrites;
       consumer.accept(value);
+      until.happened();
+    }
+  }
+
+  /**
+   * Set the values associated with {@code name} using the parameters {@code value1} and {@code value2}.
+   * @param name the String name of the value to answer
+   * @param value1 the T1 typed value to write
+   * @param value2 the T2 typed value to write
+   * @param <T1> the type of the first value associated with name that is to be written
+   * @param <T2> the type of the second value associated with name that is to be written
+   */
+  @SuppressWarnings("unchecked")
+  public <T1,T2> void writeUsing(final String name, final T1 value1, final T2 value2) {
+    final BiConsumer<T1,T2> biConsumer = (BiConsumer<T1,T2>) biConsumers.get(name);
+    if (biConsumer == null) {
+      throw new IllegalArgumentException("Unknown function: " + name);
+    }
+
+    synchronized (lock) {
+      //++totalWrites;
+      biConsumer.accept(value1, value2);
       until.happened();
     }
   }
@@ -213,6 +252,7 @@ public class AccessSafely {
    */
   private AccessSafely(final int happenings) {
     this.until = TestUntil.happenings(happenings);
+    this.biConsumers = new HashMap<>();
     this.consumers = new HashMap<>();
     this.functions = new HashMap<>();
     this.suppliers = new HashMap<>();
