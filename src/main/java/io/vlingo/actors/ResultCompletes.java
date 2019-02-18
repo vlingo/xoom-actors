@@ -17,25 +17,6 @@ class ResultCompletes implements Completes<Object> {
   public Object __internal__outcome = null;
   public boolean __internal__outcomeSet = false;
 
-  @Override
-  public Completes<Object> andThen(final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> andThen(final long timeout, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> andThen(final Object failedOutcomeValue, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Completes<Object> andThen(final long timeout, final Object failedOutcomeValue, final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
-  }
 
   @Override
   public <F,O> O andThenTo(final long timeout, final F failedOutcomeValue, final Function<Object,O> function) {
@@ -69,6 +50,26 @@ class ResultCompletes implements Completes<Object> {
 
   @Override
   public Completes<Object> andThenConsume(final Object failedOutcomeValue, final Consumer<Object> consumer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <O> Completes<O> andThen(long timeout, O failedOutcomeValue, Function<Object, O> function) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <O> Completes<O> andThen(O failedOutcomeValue, Function<Object, O> function) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <O> Completes<O> andThen(long timeout, Function<Object, O> function) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <O> Completes<O> andThen(Function<Object, O> function) {
     throw new UnsupportedOperationException();
   }
 
