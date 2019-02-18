@@ -7,31 +7,28 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
-
 import io.vlingo.common.Scheduled;
 
-@SuppressWarnings("rawtypes")
-public class Scheduled__Proxy implements Scheduled {
-  private static final String representationIntervalSignal1 = "intervalSignal(Scheduled, Object)";
+public class Scheduled__Proxy<T> implements io.vlingo.common.Scheduled<T> {
+
+  private static final String intervalSignalRepresentation1 = "intervalSignal(io.vlingo.common.Scheduled<T>, T)";
 
   private final Actor actor;
   private final Mailbox mailbox;
 
-  public Scheduled__Proxy(final Actor actor, final Mailbox mailbox) {
+  public Scheduled__Proxy(final Actor actor, final Mailbox mailbox){
     this.actor = actor;
     this.mailbox = mailbox;
   }
 
-  @Override
-  public void intervalSignal(final Scheduled scheduled, final Object data) {
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public void intervalSignal(io.vlingo.common.Scheduled<T> arg0, T arg1) {
     if (!actor.isStopped()) {
-      @SuppressWarnings("unchecked")
-      final Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(scheduled, data);
-      if (mailbox.isPreallocated()) { mailbox.send(actor, Scheduled.class, consumer, null, representationIntervalSignal1); }
-      else { mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, representationIntervalSignal1)); }
+      final java.util.function.Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(arg0, arg1);
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Scheduled.class, consumer, null, intervalSignalRepresentation1); }
+      else { mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, intervalSignalRepresentation1)); }
     } else {
-      actor.deadLetters().failedDelivery(new DeadLetter(actor, representationIntervalSignal1));
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, intervalSignalRepresentation1));
     }
   }
 }
