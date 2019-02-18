@@ -20,7 +20,7 @@ import io.vlingo.common.Scheduled;
 import io.vlingo.common.Scheduler;
 
 public class SchedulerTest extends ActorsTest {
-  private Scheduled scheduled;
+  private Scheduled<CounterHolder> scheduled;
   private Scheduler scheduler;
   
   @Test
@@ -53,9 +53,9 @@ public class SchedulerTest extends ActorsTest {
   
   @Before
   public void setUp() {
-    scheduled = new Scheduled() {
+    scheduled = new Scheduled<CounterHolder>() {
       @Override
-      public void intervalSignal(final Scheduled scheduled, final Object data) {
+      public void intervalSignal(final Scheduled<CounterHolder> scheduled, final CounterHolder data) {
         ((CounterHolder) data).increment();
       }
     };
