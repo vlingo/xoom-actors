@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import io.vlingo.common.Scheduled;
 
+@SuppressWarnings("rawtypes")
 public class Scheduled__Proxy implements Scheduled {
   private static final String representationIntervalSignal1 = "intervalSignal(Scheduled, Object)";
 
@@ -25,6 +26,7 @@ public class Scheduled__Proxy implements Scheduled {
   @Override
   public void intervalSignal(final Scheduled scheduled, final Object data) {
     if (!actor.isStopped()) {
+      @SuppressWarnings("unchecked")
       final Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(scheduled, data);
       if (mailbox.isPreallocated()) { mailbox.send(actor, Scheduled.class, consumer, null, representationIntervalSignal1); }
       else { mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, representationIntervalSignal1)); }
