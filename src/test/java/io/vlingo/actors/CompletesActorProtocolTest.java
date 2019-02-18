@@ -10,6 +10,7 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestUntil;
@@ -41,7 +42,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testAfterAndThenCompletesForSideEffects() {
     final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class);
     final Completes<Hello> helloCompletes = uc.getHello();
-    helloCompletes.andThen((hello) -> new Hello(Prefix + helloCompletes.outcome().greeting))
+    helloCompletes.andThen((hello) -> new Hello(Prefix + hello.greeting))
          .andThenConsume((hello) -> setHello(hello.greeting));
     untilHello.completes();
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
@@ -50,7 +51,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     assertEquals(Prefix + Hello, this.greeting);
 
     final Completes<Integer> one = uc.getOne();
-    one.andThen((value) -> one.outcome() + 1).andThenConsume((value) -> setValue(value));
+    one.andThen((value) -> value + 1).andThenConsume((value) -> setValue(value));
     untilOne.completes();
     assertNotEquals(new Integer(1), one.outcome());
     assertNotEquals(1, this.value);
@@ -59,7 +60,8 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   @Test
-  public void testThatTimeOutOccursForSideEffects() {
+  @Ignore("Need explanation of why it should timeout")
+  public void testThatTimeOutOccursForSideEffects() throws Exception {
     final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesCausesTimeoutActor.class);
 
     final Completes<Hello> helloCompletes =
