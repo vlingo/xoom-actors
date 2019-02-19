@@ -59,8 +59,8 @@ public final class ActorProxy {
   }
 
   private static Class<?> loadProxyClassFor(
-          final Actor actor,
-          final String targetClassname)
+          final String targetClassname,
+          final Actor actor)
   throws ClassNotFoundException {
     final Class<?> proxyClass = Class.forName(targetClassname, true, classLoaderFor(actor));
     return proxyClass;
@@ -73,14 +73,14 @@ public final class ActorProxy {
           final Mailbox mailbox,
           final String targetClassname)
   throws Exception {
-    final Class<?> proxyClass = loadProxyClassFor(actor, targetClassname);
+    final Class<?> proxyClass = loadProxyClassFor(targetClassname, actor);
     return (T) tryCreateWithProxyClass(proxyClass, actor, mailbox);
   }
 
   @SuppressWarnings("unchecked")
   private static <T> T tryProxyFor(final String targetClassname, final Actor actor, final Mailbox mailbox) {
     try {
-      final Class<T> maybeProxyClass = (Class<T>) Class.forName(targetClassname);
+      final Class<T> maybeProxyClass = (Class<T>) loadProxyClassFor(targetClassname, actor);
       if (maybeProxyClass != null) {
         return tryCreateWithProxyClass(maybeProxyClass, actor, mailbox);
       }
