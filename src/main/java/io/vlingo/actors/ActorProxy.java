@@ -18,26 +18,28 @@ import io.vlingo.common.compiler.DynaCompiler.Input;
 public final class ActorProxy {
   private static final DynaCompiler proxyCompiler = new DynaCompiler();
   
-  public static synchronized <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
-    final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
-    
+  public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final T maybeProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
-    
+
     if (maybeProxy != null) {
       return maybeProxy;
     }
-    
-    T newProxy;
-    
-    try {
-      newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
-    } catch (Exception e) {
-      newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
+
+    synchronized (protocol) {
+      final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
+      
+      T newProxy;
+      
+      try {
+        newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
+      } catch (Exception e) {
+        newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
+      }
+      
+      actor.lifeCycle.environment.cacheProxy(newProxy);
+      
+      return newProxy;
     }
-    
-    actor.lifeCycle.environment.cacheProxy(newProxy);
-    
-    return newProxy;
   }
 
   private static DynaClassLoader classLoaderFor(final Actor actor) {
