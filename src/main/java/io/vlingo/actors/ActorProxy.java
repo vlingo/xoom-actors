@@ -19,15 +19,22 @@ public final class ActorProxy {
   private static final DynaCompiler proxyCompiler = new DynaCompiler();
   
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
-    final T maybeProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
+    final T maybeCachedProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
+
+    if (maybeCachedProxy != null) {
+      return maybeCachedProxy;
+    }
+
+    final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
+
+    final T maybeProxy = tryProxyFor(proxyClassname, actor, mailbox);
 
     if (maybeProxy != null) {
+      actor.lifeCycle.environment.cacheProxy(maybeProxy);
       return maybeProxy;
     }
 
     synchronized (protocol) {
-      final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
-      
       T newProxy;
       
       try {
@@ -51,6 +58,14 @@ public final class ActorProxy {
     return classLoader;
   }
 
+  private static Class<?> loadProxyClassFor(
+          final Actor actor,
+          final String targetClassname)
+  throws ClassNotFoundException {
+    final Class<?> proxyClass = Class.forName(targetClassname, true, classLoaderFor(actor));
+    return proxyClass;
+  }
+
   @SuppressWarnings("unchecked")
   private static <T> T tryCreate(
           final Class<T> protocol,
@@ -58,10 +73,23 @@ public final class ActorProxy {
           final Mailbox mailbox,
           final String targetClassname)
   throws Exception {
-    final Class<?> proxyClass = Class.forName(targetClassname, true, classLoaderFor(actor));
+    final Class<?> proxyClass = loadProxyClassFor(actor, targetClassname);
     return (T) tryCreateWithProxyClass(proxyClass, actor, mailbox);
   }
-  
+
+  @SuppressWarnings("unchecked")
+  private static <T> T tryProxyFor(final String targetClassname, final Actor actor, final Mailbox mailbox) {
+    try {
+      final Class<T> maybeProxyClass = (Class<T>) Class.forName(targetClassname);
+      if (maybeProxyClass != null) {
+        return tryCreateWithProxyClass(maybeProxyClass, actor, mailbox);
+      }
+    } catch (Exception e) {
+      // fall through
+    }
+    return null;
+  }
+
   @SuppressWarnings("unchecked")
   private static <T> T tryCreateWithProxyClass(final Class<T> proxyClass, final Actor actor, final Mailbox mailbox) throws Exception {
     Constructor<?> ctor = proxyClass.getConstructor(new Class<?>[] {Actor.class, Mailbox.class});
