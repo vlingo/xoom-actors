@@ -16,8 +16,6 @@ import io.vlingo.common.compiler.DynaCompiler;
 import io.vlingo.common.compiler.DynaCompiler.Input;
 
 public final class ActorProxy {
-  private static final DynaCompiler proxyCompiler = new DynaCompiler();
-  
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final T maybeCachedProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
 
@@ -27,26 +25,19 @@ public final class ActorProxy {
 
     final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
 
-    final T maybeProxy = tryProxyFor(proxyClassname, actor, mailbox);
-
-    if (maybeProxy != null) {
-      actor.lifeCycle.environment.cacheProxy(maybeProxy);
-      return maybeProxy;
-    }
-
-    synchronized (protocol) {
-      T newProxy;
-      
-      try {
-        newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
-      } catch (Exception e) {
+    T newProxy;
+    
+    try {
+      newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
+    } catch (Exception e) {
+      synchronized (protocol) {
         newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
       }
-      
-      actor.lifeCycle.environment.cacheProxy(newProxy);
-      
-      return newProxy;
     }
+    
+    actor.lifeCycle.environment.cacheProxy(newProxy);
+    
+    return newProxy;
   }
 
   private static DynaClassLoader classLoaderFor(final Actor actor) {
@@ -75,19 +66,6 @@ public final class ActorProxy {
   throws Exception {
     final Class<?> proxyClass = loadProxyClassFor(targetClassname, actor);
     return (T) tryCreateWithProxyClass(proxyClass, actor, mailbox);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T tryProxyFor(final String targetClassname, final Actor actor, final Mailbox mailbox) {
-    try {
-      final Class<T> maybeProxyClass = (Class<T>) loadProxyClassFor(targetClassname, actor);
-      if (maybeProxyClass != null) {
-        return tryCreateWithProxyClass(maybeProxyClass, actor, mailbox);
-      }
-    } catch (Exception e) {
-      // fall through
-    }
-    return null;
   }
 
   @SuppressWarnings("unchecked")
@@ -121,6 +99,7 @@ public final class ActorProxy {
     try {
       final Result result = generator.generateFor(protocol.getName());
       final Input input = new Input(protocol, targetClassname, result.source, result.sourceFile, classLoaderFor(actor), generator.type(), true);
+      final DynaCompiler proxyCompiler = new DynaCompiler();
       final Class<T> proxyClass = proxyCompiler.compile(input);
       return tryCreateWithProxyClass(proxyClass, actor, mailbox);
     } catch (Exception e) {
