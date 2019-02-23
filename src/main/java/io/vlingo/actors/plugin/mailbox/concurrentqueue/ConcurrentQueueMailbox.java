@@ -121,6 +121,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private static class SuspendedDeliveryOverrides {
     private final AtomicBoolean accessible;
     private final List<Overrides> overrides;
+int retries = 0;
 
     SuspendedDeliveryOverrides() {
       this.accessible = new AtomicBoolean(false);
@@ -141,6 +142,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     }
 
     Overrides peek() {
+      retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           if (!isEmpty()) {
@@ -148,13 +150,18 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
             accessible.set(false);
             return temp;
           }
+        } else {
+          if (++retries > 100_000_000) {
+            (new Exception()).printStackTrace();
+            return null;
+          }
         }
       }
     }
 
     boolean pop(final String name) {
       boolean popped = false;
-
+      retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           int elements = overrides.size();
@@ -179,17 +186,29 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
             }
           }
           break;
+        } else {
+          if (++retries > 100_000_000) {
+            (new Exception()).printStackTrace();
+            return false;
+          }
         }
+
       }
       return popped;
     }
 
     void push(final Overrides overrides) {
+      retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           this.overrides.add(overrides);
           accessible.set(false);
           break;
+        } else {
+          if (++retries > 100_000_000) {
+            (new Exception()).printStackTrace();
+            return;
+          }
         }
       }
     }
