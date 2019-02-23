@@ -119,71 +119,19 @@ final class LifeCycle {
   }
 
   //=======================================
-  // stowing/dispersing
-  //=======================================
-
-  boolean isDispersing() {
-    return environment.stowage.isDispersing();
-  }
-
-  void disperseStowedMessages() {
-    if (sendFirstIn(environment.stowage)) {
-      environment.stowage.dispersingMode();
-    }
-  }
-
-  void nextDispersing() {
-    if (isDispersing()) {
-      if (!sendFirstIn(environment.stowage)) {
-        environment.stowage.reset();
-      }
-    }
-  }
-
-  boolean sendFirstIn(final Stowage stowage) {
-    final Message maybeMessage = stowage.head();
-    if (maybeMessage != null) {
-      //stowage.dump(environment.logger);
-      environment.mailbox.send(maybeMessage);
-      return true;
-    }
-    return false;
-  }
-
-  boolean isStowing() {
-    return environment.stowage.isStowing();
-  }
-
-  void stowMessages() {
-    environment.stowage.stowingMode();  
-  }
-
-  //=======================================
   // supervisor/suspending/resuming
   //=======================================
 
-  boolean isResuming() {
-    return environment.suspended.isDispersing();
-  }
-
-  void nextResuming() {
-    if (isResuming()) {
-      sendFirstIn(environment.suspended);
-    }
-  }
-
   void resume() {
-    environment.suspended.dispersingMode();
-    sendFirstIn(environment.suspended);
+    environment.mailbox.resume();
   }
 
   boolean isSuspended() {
-    return environment.suspended.isStowing();
+    return environment.mailbox.isSuspended();
   }
 
   void suspend() {
-    environment.suspended.stowingMode();
-    environment.stowage.restow(environment.suspended);
+    environment.mailbox.suspendExceptFor(Stoppable.class);
   }
 
   Supervisor supervisor(final Class<?> protocol) {
