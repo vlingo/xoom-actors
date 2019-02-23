@@ -46,19 +46,26 @@ public class LocalMessage<T> implements Message {
 
   @Override
   public void deliver() {
-    if (actor.lifeCycle.isResuming()) {
-      if (isStowed()) {
-        internalDeliver(this);
-      } else {
-        internalDeliver(actor.lifeCycle.environment.suspended.swapWith(this));
-      }
-      actor.lifeCycle.nextResuming();
-    } else if (actor.isDispersing()) {
-      internalDeliver(this);
-      actor.lifeCycle.nextDispersing();
-    } else {
-      internalDeliver(this);
-    }
+    internalDeliver(this);
+
+//    if (actor.lifeCycle.isResuming()) {
+//      if (isStowed()) {
+//        internalDeliver(this);
+//      } else {
+//        internalDeliver(actor.lifeCycle.environment.suspended.swapWith(this));
+//      }
+//      actor.lifeCycle.nextResuming();
+//    } else if (actor.isDispersing()) {
+//      internalDeliver(this);
+//      actor.lifeCycle.nextDispersing();
+//    } else {
+//      internalDeliver(this);
+//    }
+  }
+
+  @Override
+  public Class<?> protocol() {
+    return protocol;
   }
 
   @Override
@@ -99,10 +106,10 @@ public class LocalMessage<T> implements Message {
   private void internalDeliver(final Message message) {
     if (actor.isStopped()) {
       deadLetter();
-    } else if (actor.lifeCycle.isSuspended()) {
-      actor.lifeCycle.environment.suspended.stow(message);
-    } else if (actor.isStowing() && !actor.lifeCycle.environment.isStowageOverride(protocol)) {
-      actor.lifeCycle.environment.stowage.stow(message);
+//    } else if (actor.lifeCycle.isSuspended()) {
+//      actor.lifeCycle.environment.suspended.stow(message);
+//    } else if (actor.isStowing() && !actor.lifeCycle.environment.isStowageOverride(protocol)) {
+//      actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
         actor.completes.reset(completes);
