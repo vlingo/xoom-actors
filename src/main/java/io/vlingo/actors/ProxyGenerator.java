@@ -27,16 +27,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.vlingo.common.Tuple2;
 import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 
@@ -94,6 +89,8 @@ public class ProxyGenerator implements AutoCloseable {
       final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
       final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
       return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
+    } catch (InvalidProtocolException e) {
+        throw e;
     } catch (Exception e) {
       throw new IllegalArgumentException("Cannot generate proxy class for: " + actorProtocol, e);
     }
@@ -169,7 +166,7 @@ public class ProxyGenerator implements AutoCloseable {
     return builder.toString();
   }
 
-  private String methodDefinition(final Class<?> protocolInterface, final Method method, final int count) {
+  private Tuple2<InvalidProtocolException.Failure, String> methodDefinition(final Class<?> protocolInterface, final Method method, final int count) {
     final StringBuilder builder = new StringBuilder();
 
     final String genericTemplate = GenericParser.genericTemplateOf(method);
@@ -190,6 +187,14 @@ public class ProxyGenerator implements AutoCloseable {
     final String returnValue = returnValue(method.getReturnType());
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);
 
+    if (!isACompletes && !returnValue.isEmpty() && !genericTemplate.contains(signatureReturnType) && !genericTemplate.contains(parameterTemplate)) {
+        return Tuple2.from(
+                new InvalidProtocolException.Failure(
+                        methodSignature,
+                        "method return type should be either `void` or `Completes<T>`. The found return type is `" + signatureReturnType + "`. Consider wrapping it in `Completes<T>`, like `Completes<" + validForCompletes(signatureReturnType) + ">`."
+                ), null
+        );
+    }
     builder
       .append(methodSignature).append(throwsExceptions).append(" {\n")
       .append(ifNotStopped).append("\n")
@@ -204,21 +209,31 @@ public class ProxyGenerator implements AutoCloseable {
       .append(returnStatement)
       .append("  }\n");
 
-    return builder.toString();
+    return Tuple2.from(null, builder.toString());
   }
 
-  private String methodDefinitions(final Class<?> protocolInterface, final Method[] methods) {
+  private Tuple2<List<InvalidProtocolException.Failure>, String> methodDefinitions(final Class<?> protocolInterface, final Method[] methods) {
     final StringBuilder builder = new StringBuilder();
+    final List<InvalidProtocolException.Failure> failures = new ArrayList<>();
 
     int count = 0;
 
     for (final Method method : methods) {
       if (!Modifier.isStatic(method.getModifiers())) {
-        builder.append(methodDefinition(protocolInterface, method, ++count));
+          final Tuple2<InvalidProtocolException.Failure, String> result = methodDefinition(protocolInterface, method, ++count);
+          if (result._1 == null) {
+              builder.append(result._2);
+          } else {
+              failures.add(result._1);
+          }
       }
     }
 
-    return builder.toString();
+    if (failures.isEmpty()) {
+        return Tuple2.from(null, builder.toString());
+    } else {
+        return Tuple2.from(failures, null);
+    }
   }
 
   private String packageStatement(final Class<?> protocolInterface) {
@@ -260,14 +275,19 @@ public class ProxyGenerator implements AutoCloseable {
 
     final StringBuilder builder = new StringBuilder();
 
-    builder
+      final Tuple2<List<InvalidProtocolException.Failure>, String> methodDefs = methodDefinitions(protocolInterface, methods);
+      if (methodDefs._1 != null) {
+          throw new InvalidProtocolException(protocolInterface.getCanonicalName(), methodDefs._1);
+      }
+
+      builder
       .append(packageStatement(protocolInterface)).append("\n\n")
       .append(importStatements(protocolInterface)).append("\n")
       .append(classStatement(protocolInterface)).append("\n")
       .append(representationStatements(methods)).append("\n")
       .append(instanceVariables(protocolInterface)).append("\n")
       .append(constructor(protocolInterface)).append("\n")
-      .append(methodDefinitions(protocolInterface, methods))
+      .append(methodDefs._2)
       .append("}").append("\n");
 
     return builder.toString();
@@ -318,6 +338,21 @@ public class ProxyGenerator implements AutoCloseable {
       }
     }
     return "null";
+  }
+
+  private String validForCompletes(String returnType) {
+      switch (returnType) {
+          case "boolean": return "Boolean";
+          case "int": return "Integer";
+          case "long": return "Long";
+          case "byte": return "Byte";
+          case "double": return "Double";
+          case "float": return "Float";
+          case "short": return "Short";
+          case "char": return "Character";
+      }
+
+      return returnType;
   }
 
   private String throwsExceptions(final Method method) {
