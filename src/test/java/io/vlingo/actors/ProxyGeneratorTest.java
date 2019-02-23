@@ -73,6 +73,16 @@ public class ProxyGeneratorTest {
     public void testThatProtocolsWithAMethodThatDoesntReturnVoidOrCompletesFail() {
         proxyGenerator.generateFor(ProtocolWithPrimitive.class.getCanonicalName());
     }
+
+    @Test
+    public void testThatStoppableDoesCompile() {
+        proxyGenerator.generateFor(Stoppable.class.getCanonicalName());
+    }
+
+    @Test
+    public void testThatProtocolsInheritanceWithStoppableDoesCompile() {
+        proxyGenerator.generateFor(ProtocolExtendsStoppable.class.getCanonicalName());
+    }
 }
 
 interface ProtocolWithGenericMethods {
@@ -89,3 +99,5 @@ interface ProtocolWithPrimitive {
     boolean shouldNotCompile();
     List<Boolean> shouldNotCompileEither();
 }
+
+interface ProtocolExtendsStoppable extends Stoppable {}

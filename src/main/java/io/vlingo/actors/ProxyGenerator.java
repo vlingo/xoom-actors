@@ -187,7 +187,11 @@ public class ProxyGenerator implements AutoCloseable {
     final String returnValue = returnValue(method.getReturnType());
     final String returnStatement = returnValue.isEmpty() ? "" : MessageFormat.format("    return {0};\n", returnValue);
 
-    if (!isACompletes && !returnValue.isEmpty() && !genericTemplate.contains(signatureReturnType) && !genericTemplate.contains(parameterTemplate)) {
+    if (!isACompletes
+            && !returnValue.isEmpty()
+            && !genericTemplate.contains(signatureReturnType)
+            && !genericTemplate.contains(parameterTemplate)
+            && !isSafeGenerable(protocolInterface)) {
         return Tuple2.from(
                 new InvalidProtocolException.Failure(
                         methodSignature,
@@ -373,6 +377,15 @@ public class ProxyGenerator implements AutoCloseable {
     }
 
     return builder.toString();
+  }
+
+  private boolean isSafeGenerable(Class<?> protocolClass) {
+      if (protocolClass.isAnnotationPresent(SafeProxyGenerable.class)) {
+          return true;
+      }
+
+      return Stream.of(protocolClass.getInterfaces())
+              .map(this::isSafeGenerable).reduce(false, (a, b) -> a || b);
   }
 
   private static File rootOfGeneratedSources(final DynaType type) {
