@@ -7,9 +7,13 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
@@ -18,6 +22,7 @@ import io.vlingo.actors.Message;
 public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
   private final Dispatcher dispatcher;
+  private AtomicReference<Stack<List<Class<?>>>> suspendedOverrides;
   private final Queue<Message> queue;
   private final byte throttlingCount;
 
@@ -33,11 +38,41 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   }
 
   @Override
+  public void resume() {
+    suspendedOverrides.get().pop();
+    dispatcher.execute(this);
+  }
+
+  @Override
   public void send(final Message message) {
-    queue.add(message);
-    if (!isDelivering()) {
-      dispatcher.execute(this);
+    if (isSuspended()) {
+      final Class<?> messageType = message.protocol();
+      for (final Class<?> type : suspendedOverrides.get().peek()) {
+        if (messageType == type) {
+          message.deliver();
+          if (!queue.isEmpty()) {
+            dispatcher.execute(this);
+          }
+          return;
+        }
+      }
+      queue.add(message);
+    } else {
+      queue.add(message);
+      if (!isDelivering()) {
+        dispatcher.execute(this);
+      }
     }
+  }
+
+  @Override
+  public void suspendExceptFor(final Class<?>... overrides) {
+    suspendedOverrides.get().push(Arrays.asList(overrides));
+  }
+
+  @Override
+  public boolean isSuspended() {
+    return !suspendedOverrides.get().empty();
   }
 
   @Override
@@ -55,6 +90,9 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     if (delivering.compareAndSet(false, true)) {
       final int total = (int) throttlingCount;
       for (int count = 0; count < total; ++count) {
+        if (isSuspended()) {
+          break;
+        }
         final Message message = receive();
         if (message != null) {
           message.deliver();
@@ -78,6 +116,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
     this.dispatcher = dispatcher;
     this.delivering = new AtomicBoolean(false);
+    this.suspendedOverrides = new AtomicReference<>(new Stack<>());
     this.queue = new ConcurrentLinkedQueue<Message>();
     this.throttlingCount = (byte) throttlingCount;
   }
