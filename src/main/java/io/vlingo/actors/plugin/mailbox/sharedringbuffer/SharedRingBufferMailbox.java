@@ -50,7 +50,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
-  public void resume() {
+  public void resume(final String name) {
     // TODO: Consider supporting Stowage here
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
@@ -61,7 +61,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
-  public void suspendExceptFor(final Class<?>... overrides) {
+  public void suspendExceptFor(final String name, final Class<?>... overrides) {
     // TODO: Consider supporting Stowage here
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
   }
