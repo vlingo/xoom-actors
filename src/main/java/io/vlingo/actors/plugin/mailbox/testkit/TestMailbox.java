@@ -54,7 +54,7 @@ public class TestMailbox implements Mailbox {
   }
 
   @Override
-  public void resume() {
+  public void resume(final String name) {
     if (!suspendedOverrides.get().empty()) {
       suspendedOverrides.get().pop();
     }
@@ -85,7 +85,7 @@ public class TestMailbox implements Mailbox {
   }
 
   @Override
-  public void suspendExceptFor(final Class<?>... overrides) {
+  public void suspendExceptFor(final String name, final Class<?>... overrides) {
     suspendedOverrides.get().push(Arrays.asList(overrides));
   }
 
