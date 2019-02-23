@@ -19,6 +19,8 @@ import io.vlingo.common.Scheduler;
  * facilities and life cycle processing for all {@code Actor} types.
  */
 public abstract class Actor implements Startable, Stoppable, TestStateView {
+  private final static String Paused = "#paused";
+
   final ResultCompletes completes;
   final LifeCycle lifeCycle;
 
@@ -268,7 +270,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Starts the process of dispersing any messages stowed for this {@code Actor}.
    */
   protected void disperseStowedMessages() {
-    lifeCycle.environment.mailbox.resume();
+    lifeCycle.environment.mailbox.resume(Paused);
   }
 
   /**
@@ -277,7 +279,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param stowageOverrides the {@code Class<T>} protocol that will trigger dispersal
    */
   protected void stowMessages(final Class<?>... stowageOverrides) {
-    lifeCycle.environment.mailbox.suspendExceptFor(stowageOverrides);
+    lifeCycle.environment.mailbox.suspendExceptFor(Paused, stowageOverrides);
   }
 
   //=======================================
