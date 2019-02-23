@@ -152,7 +152,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     @Override
-    public void resume() {
+    public void resume(final String name) {
       throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
     }
 
@@ -162,7 +162,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     @Override
-    public void suspendExceptFor(final Class<?>... overrides) {
+    public void suspendExceptFor(final String name, final Class<?>... overrides) {
       throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
     }
 
