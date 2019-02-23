@@ -50,8 +50,25 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
+  public void resume() {
+    // TODO: Consider supporting Stowage here
+    throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
+  }
+
+  @Override
   public void send(final Message message) {
     throw new UnsupportedOperationException("Use preallocated mailbox send(Actor, ...).");
+  }
+
+  @Override
+  public void suspendExceptFor(final Class<?>... overrides) {
+    // TODO: Consider supporting Stowage here
+    throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
+  }
+
+  @Override
+  public boolean isSuspended() {
+    return false;
   }
 
   @Override
