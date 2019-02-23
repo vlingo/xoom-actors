@@ -40,6 +40,12 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   }
 
   @Override
+  public void resume() {
+    // TODO: Consider supporting Stowage here
+    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
+  }
+
+  @Override
   public void send(final Message message) {
     for (int tries = 0; tries < totalSendRetries; ++tries) {
       if (queue.offer(message)) {
@@ -47,6 +53,17 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
       }
     }
     throw new IllegalStateException("Count not enqueue message due to busy mailbox.");
+  }
+
+  @Override
+  public void suspendExceptFor(final Class<?>... overrides) {
+    // TODO: Consider supporting Stowage here
+    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
+  }
+
+  @Override
+  public boolean isSuspended() {
+    return false;
   }
 
   @Override
