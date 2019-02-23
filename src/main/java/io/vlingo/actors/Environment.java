@@ -25,8 +25,8 @@ public class Environment {
   final Actor parent;
   final Map<String,Object> proxyCache;
   final Stage stage;
-  final Stowage stowage;
-  final Stowage suspended;
+//  final Stowage stowage;
+//  final Stowage suspended;
 
   private final AtomicBoolean secured;
   private final AtomicBoolean stopped;
@@ -56,9 +56,9 @@ public class Environment {
     this.logger = logger;
     this.children = new ArrayList<Actor>(0);
     this.proxyCache = new HashMap<>();
-    this.stowage = new Stowage();
+//    this.stowage = new Stowage();
     this.stowageOverrides = null;
-    this.suspended = new Stowage();
+//    this.suspended = new Stowage();
     
     this.secured = new AtomicBoolean(false);
     this.stopped = new AtomicBoolean(false);
@@ -102,9 +102,9 @@ public class Environment {
     if (stopped.compareAndSet(false, true)) {
       stopChildren();
 
-      suspended.reset();
+//      suspended.reset();
 
-      stowage.reset();
+//      stowage.reset();
 
       mailbox.close();
     }
