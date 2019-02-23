@@ -14,6 +14,7 @@ import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.vlingo.actors.Actor;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 import io.vlingo.actors.testkit.TestWorld;
@@ -108,8 +109,13 @@ public class TestMailbox implements Mailbox {
   private void resumeAll() {
     while (!queue.isEmpty()) {
       final Message queued = queue.poll();
-      queued.actor().viewTestStateInitialization(null);
-      queued.deliver();
+      if (queued != null) {
+        final Actor actor = queued.actor();
+        if (actor != null) {
+          actor.viewTestStateInitialization(null);
+          queued.deliver();
+        }
+      }
     }
   }
 
