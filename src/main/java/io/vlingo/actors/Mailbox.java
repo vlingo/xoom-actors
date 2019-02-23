@@ -36,8 +36,11 @@ public interface Mailbox extends Runnable {
    * Recovers the previous operational mode, either active or suspended,
    * and if active resumes delivery. If the restored operational mode
    * is still suspended, then at least one more {@code resume()} is required.
+   * If the {@code name} is not the current suspended mode, its corresponding
+   * overrides may be marked for removal after any later overrides are removed.
+   * @param name the String name of the overrides for which to resume
    */
-  void resume();
+  void resume(final String name);
 
   /**
    * Arrange for {@code Message} to be sent, which will generally
@@ -56,10 +59,12 @@ public interface Mailbox extends Runnable {
    * NOTE: If {@code suspendExceptFor(overrides)} is used multiple times before
    * the implementing {@code Mailbox} is resumed, the outcome is implementation
    * dependent. The implementor may accumulate or replace its internal
-   * overrides with the {@code overrides} parameter.
+   * overrides with the {@code overrides} parameter. The {@code name} may be helpful
+   * in maintaining accumulated {@code overrides}.
+   * @param name String the name of the specific override
    * @param overrides the varargs {@code Class<?>} that are allowed to be delivered although others are suspended
    */
-  void suspendExceptFor(final Class<?>... overrides);
+  void suspendExceptFor(final String name, final Class<?>... overrides);
 
   /**
    * Answer whether or not I am currently suspended.
