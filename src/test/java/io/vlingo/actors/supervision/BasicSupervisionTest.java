@@ -20,6 +20,7 @@ import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
 
 public class BasicSupervisionTest extends ActorsTest {
@@ -40,21 +41,18 @@ public class BasicSupervisionTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"));
 
-    failureControlTestResults.untilFailNow = until(1);
-    assertEquals(0, failureControlTestResults.failNowCount.get());
+    AccessSafely access = failureControlTestResults.afterCompleting(2);
+
     failure.failNow();
-    failureControlTestResults.untilFailNow.completes();
-    assertEquals(1, failureControlTestResults.failNowCount.get());
+    assertEquals(1, (int) access.readFrom("failNowCount"));
 
     // actor may or may not be resumed by now
+    assertEquals(1, (int) access.readFrom("afterRestartCount"));
     
-    failureControlTestResults.untilAfterRestart.completes();
-
-    failureControlTestResults.untilAfterFail = until(1);
-    assertEquals(0, failureControlTestResults.afterFailureCount.get());
+    access = failureControlTestResults.afterCompleting(1);
+    
     failure.afterFailure();
-    failureControlTestResults.untilAfterFail.completes();
-    assertEquals(1, failureControlTestResults.afterFailureCount.get());
+    assertEquals(1, (int) access.readFrom("afterFailureCount"));
   }
   
   @Test
@@ -70,16 +68,15 @@ public class BasicSupervisionTest extends ActorsTest {
             testWorld.actorFor(
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
-    
-    assertEquals(0, failureControlTestResults.failNowCount.get());
+
+    AccessSafely access = failureControlTestResults.afterCompleting(2);
+
     failure.actor().failNow();
-    assertEquals(1, failureControlTestResults.failNowCount.get());
+    assertEquals(1, (int) access.readFrom("failNowCount"));
     
-    assertEquals(0, failureControlTestResults.afterFailureCount.get());
     failure.actor().afterFailure();
-    assertEquals(0, failureControlTestResults.afterFailureCount.get());
-    
-    assertEquals(1, failureControlTestResults.stoppedCount.get());
+    assertEquals(1, (int) access.readFrom("stoppedCount"));
+    assertEquals(0, (int) access.readFrom("afterFailureCount"));
   }
   
   @Test
@@ -98,25 +95,23 @@ public class BasicSupervisionTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-restart"));
     
-    assertEquals(0, failureControlTestResults.failNowCount.get());
-    assertEquals(0, restartSupervisorTestResults.informedCount.get());
-    assertEquals(0, failureControlTestResults.afterRestartCount.get());
-    assertEquals(0, failureControlTestResults.afterStopCount.get());
-    assertEquals(0, failureControlTestResults.beforeRestartCount.get());
-    assertEquals(1, failureControlTestResults.beforeStartCount.get());
-    failure.actor().failNow();
-    assertEquals(1, failureControlTestResults.failNowCount.get());
-    assertEquals(1, restartSupervisorTestResults.informedCount.get());
-    assertEquals(1, failureControlTestResults.afterRestartCount.get());
-    assertEquals(1, failureControlTestResults.afterStopCount.get());
-    assertEquals(1, failureControlTestResults.beforeRestartCount.get());
-    assertEquals(2, failureControlTestResults.beforeStartCount.get());
+    AccessSafely failureAccess = failureControlTestResults.afterCompleting(6);
+    AccessSafely restartAccess = restartSupervisorTestResults.afterCompleting(1);
 
-    assertEquals(0, failureControlTestResults.afterFailureCount.get());
+    failure.actor().failNow();
+    assertEquals(1, (int) restartAccess.readFrom("informedCount"));
+    assertEquals(2, (int) failureAccess.readFrom("beforeStartCount"));
+    assertEquals(1, (int) failureAccess.readFrom("failNowCount"));
+    assertEquals(1, (int) failureAccess.readFrom("afterRestartCount"));
+    assertEquals(1, (int) failureAccess.readFrom("afterStopCount"));
+    assertEquals(1, (int) failureAccess.readFrom("beforeRestartCount"));
+
+    AccessSafely afterFailureAccess = failureControlTestResults.afterCompleting(1);
+
     failure.actor().afterFailure();
-    assertEquals(1, failureControlTestResults.afterFailureCount.get());
+    assertEquals(1, (int) afterFailureAccess.readFrom("afterFailureCount"));
     
-    assertEquals(0, failureControlTestResults.stoppedCount.get());
+    assertEquals(0, (int) afterFailureAccess.readFrom("stoppedCount"));
   }
 
   public static class StoppingSupervisorActor extends Actor implements Supervisor {
@@ -179,7 +174,8 @@ public class BasicSupervisionTest extends ActorsTest {
     public void inform(final Throwable throwable, final Supervised supervised) {
       //logger().log("RestartSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
       supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-      testResults.informedCount.incrementAndGet();
+      System.out.println("SUPERVISOR RESTART");
+      testResults.access.writeUsing("informedCount", 1);
     }
 
     @Override
@@ -189,6 +185,17 @@ public class BasicSupervisionTest extends ActorsTest {
   }
   
   private static class RestartSupervisorTestResults {
+    public AccessSafely access = afterCompleting(0);
+
     public AtomicInteger informedCount = new AtomicInteger(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .readingWith("informedCount", () -> informedCount.get());
+
+      return access;
+    }
   }
 }

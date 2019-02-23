@@ -9,10 +9,12 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 import io.vlingo.actors.Protocols.Two;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class ActorStowDisperseTest extends ActorsTest {
 
@@ -29,13 +31,11 @@ public class ActorStowDisperseTest extends ActorsTest {
     for (int idx = 0; idx < 10; ++idx) {
       protocols._1.stow();
     }
+
     protocols._2.override();
 
-    results.overrideReceived.completes();
-    results.stowReceived.completes();
-
-    assertEquals(1, results.overrideReceivedCount);
-    assertEquals(10, results.stowReceivedCount);
+    assertEquals(1, (int) results.overrideAccess.readFrom("overrideReceivedCount"));
+    assertEquals(10, (int) results.stowedAccess.readFrom("stowReceivedCount"));
   }
 
   @Test
@@ -51,24 +51,32 @@ public class ActorStowDisperseTest extends ActorsTest {
     for (int idx = 0; idx < 10; ++idx) {
       protocols._1.stow();
     }
+
     protocols._2.crash();
 
-    results.overrideReceived.completes();
-    results.stowReceived.completes();
-
-    assertEquals(1, results.overrideReceivedCount);
-    assertEquals(10, results.stowReceivedCount);
+    assertEquals(1, (int) results.overrideAccess.readFrom("overrideReceivedCount"));
+    assertEquals(10, (int) results.stowedAccess.readFrom("stowReceivedCount"));
   }
 
   public static class Results {
-    public final TestUntil overrideReceived;
-    public int overrideReceivedCount;
-    public final TestUntil stowReceived;
-    public int stowReceivedCount;
+    public final AccessSafely overrideAccess;
+    public final AccessSafely stowedAccess;
+    public AtomicInteger overrideReceivedCount;
+    public AtomicInteger stowReceivedCount;
 
     Results(final int overrideReceived, final int stowReceived) {
-      this.overrideReceived = TestUntil.happenings(overrideReceived);
-      this.stowReceived = TestUntil.happenings(stowReceived);
+      this.overrideReceivedCount = new AtomicInteger(0);
+      this.stowReceivedCount = new AtomicInteger(0);
+
+      this.stowedAccess = AccessSafely.afterCompleting(stowReceived);
+      this.stowedAccess
+        .writingWith("stowReceivedCount", (Integer increment) -> stowReceivedCount.set(stowReceivedCount.get() + increment))
+        .readingWith("stowReceivedCount", () -> stowReceivedCount.get());
+
+      this.overrideAccess = AccessSafely.afterCompleting(overrideReceived);
+      this.overrideAccess
+        .writingWith("overrideReceivedCount", (Integer increment) -> overrideReceivedCount.set(overrideReceivedCount.get() + increment))
+        .readingWith("overrideReceivedCount", () -> overrideReceivedCount.get());
     }
   }
 
@@ -90,23 +98,37 @@ public class ActorStowDisperseTest extends ActorsTest {
     }
 
     @Override
+    public void start() {
+      super.start();
+    }
+
+    @Override
+    protected void beforeResume(final Throwable reason) {
+      disperseStowedMessages();
+      super.beforeResume(reason);
+    }
+
+    @Override
+    protected void afterRestart(final Throwable reason) {
+      disperseStowedMessages();
+      super.afterRestart(reason);
+    }
+
+    @Override
     public void crash() {
-      ++results.overrideReceivedCount;
-      results.overrideReceived.happened();
+      results.overrideAccess.writeUsing("overrideReceivedCount", 1);
       throw new IllegalStateException("Intended failure");
     }
 
     @Override
     public void override() {
-      ++results.overrideReceivedCount;
+      results.overrideAccess.writeUsing("overrideReceivedCount", 1);
       disperseStowedMessages();
-      results.overrideReceived.happened();
     }
 
     @Override
     public void stow() {
-      ++results.stowReceivedCount;
-      results.stowReceived.happened();
+      results.stowedAccess.writeUsing("stowReceivedCount", 1);
     }
   }
 }

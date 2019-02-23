@@ -10,7 +10,7 @@ package io.vlingo.actors.supervision;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class FailureControlActor extends Actor implements FailureControl {
   public static final ThreadLocal<FailureControlActor> instance = new ThreadLocal<>();
@@ -20,70 +20,64 @@ public class FailureControlActor extends Actor implements FailureControl {
   public FailureControlActor(final FailureControlTestResults testResults) {
     this.testResults = testResults;
     instance.set(this);
+    this.testResults.access = this.testResults.afterCompleting(0);
   }
   
   @Override
   public void failNow() {
-    testResults.failNowCount.incrementAndGet();
-    testResults.untilFailNow.happened();
+    testResults.access.writeUsing("failNowCount", 1);
     throw new IllegalStateException("Intended failure.");
   }
 
   @Override
   public void afterFailure() {
-    testResults.afterFailureCount.incrementAndGet();
-    testResults.untilAfterFail.happened();
+    testResults.access.writeUsing("afterFailureCount", 1);
   }
 
   @Override
   public void afterFailureCount(int count) {
-    testResults.afterFailureCountCount.incrementAndGet();
-    testResults.untilFailureCount.happened();
+    testResults.access.writeUsing("afterFailureCountCount", 1);
   }
 
   @Override
   protected void beforeStart() {
-    testResults.beforeStartCount.incrementAndGet();
-    testResults.untilFailNow.happened();
+    testResults.access.writeUsing("beforeStartCount", 1);
     super.beforeStart();
   }
 
   @Override
   protected void afterStop() {
-    testResults.afterStopCount.incrementAndGet();
-    testResults.untilFailNow.happened();
+    testResults.access.writeUsing("afterStopCount", 1);
     super.afterStop();
   }
 
   @Override
   protected void beforeRestart(Throwable reason) {
-    testResults.beforeRestartCount.incrementAndGet();
-    testResults.untilFailNow.happened();
+    testResults.access.writeUsing("beforeRestartCount", 1);
     super.beforeRestart(reason);
   }
 
   @Override
   protected void afterRestart(Throwable reason) {
     super.afterRestart(reason);
-    testResults.afterRestartCount.incrementAndGet();
-    testResults.untilAfterRestart.happened();
+    testResults.access.writeUsing("afterRestartCount", 1);
   }
 
   @Override
   protected void beforeResume(Throwable reason) {
-    testResults.beforeResume.incrementAndGet();
-    testResults.untilBeforeResume.happened();
+    testResults.access.writeUsing("beforeResume", 1);
     super.beforeResume(reason);
   }
 
   @Override
   public void stop() {
-    testResults.stoppedCount.incrementAndGet();
-    testResults.untilStopped.happened();
+    testResults.access.writeUsing("stoppedCount", 1);
     super.stop();
   }
   
   public static class FailureControlTestResults {
+    public AccessSafely access = afterCompleting(0);
+
     public AtomicInteger afterFailureCount = new AtomicInteger(0);
     public AtomicInteger afterFailureCountCount = new AtomicInteger(0);
     public AtomicInteger afterRestartCount = new AtomicInteger(0);
@@ -93,12 +87,38 @@ public class FailureControlActor extends Actor implements FailureControl {
     public AtomicInteger beforeStartCount = new AtomicInteger(0);
     public AtomicInteger failNowCount = new AtomicInteger(0);
     public AtomicInteger stoppedCount = new AtomicInteger(0);
-    
-    public TestUntil untilAfterFail = TestUntil.happenings(0);
-    public TestUntil untilAfterRestart = TestUntil.happenings(0);
-    public TestUntil untilBeforeResume = TestUntil.happenings(0);
-    public TestUntil untilFailNow = TestUntil.happenings(0);
-    public TestUntil untilFailureCount = TestUntil.happenings(0);
-    public TestUntil untilStopped = TestUntil.happenings(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("afterFailureCount", (Integer increment) -> afterFailureCount.set(afterFailureCount.get() + increment))
+        .readingWith("afterFailureCount", () -> afterFailureCount.get())
+
+        .writingWith("afterFailureCountCount", (Integer increment) -> afterFailureCountCount.set(afterFailureCountCount.get() + increment))
+        .readingWith("afterFailureCountCount", () -> afterFailureCountCount.get())
+
+        .writingWith("afterRestartCount", (Integer increment) -> afterRestartCount.set(afterRestartCount.get() + increment))
+        .readingWith("afterRestartCount", () -> afterRestartCount.get())
+
+        .writingWith("afterStopCount", (Integer increment) -> afterStopCount.set(afterStopCount.get() + increment))
+        .readingWith("afterStopCount", () -> afterStopCount.get())
+
+        .writingWith("beforeRestartCount", (Integer increment) -> beforeRestartCount.set(beforeRestartCount.get() + increment))
+        .readingWith("beforeRestartCount", () -> beforeRestartCount.get())
+
+        .writingWith("beforeResume", (Integer increment) -> beforeResume.set(beforeResume.get() + increment))
+        .readingWith("beforeResume", () -> beforeResume.get())
+
+        .writingWith("beforeStartCount", (Integer increment) -> beforeStartCount.set(beforeStartCount.get() + increment))
+        .readingWith("beforeStartCount", () -> beforeStartCount.get())
+
+        .writingWith("failNowCount", (Integer increment) -> failNowCount.set(failNowCount.get() + increment))
+        .readingWith("failNowCount", () -> failNowCount.get())
+
+        .writingWith("stoppedCount", (Integer increment) -> stoppedCount.set(stoppedCount.get() + increment))
+        .readingWith("stoppedCount", () -> stoppedCount.get());
+
+      return access;
+    }
   }
 }

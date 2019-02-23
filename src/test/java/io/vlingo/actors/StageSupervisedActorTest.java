@@ -15,15 +15,15 @@ import org.junit.Test;
 import io.vlingo.actors.SupervisionStrategy.Scope;
 import io.vlingo.actors.supervision.FailureControl;
 import io.vlingo.actors.supervision.FailureControlActor;
+import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
 import io.vlingo.actors.supervision.Ping;
 import io.vlingo.actors.supervision.PingActor;
+import io.vlingo.actors.supervision.PingActor.PingTestResults;
 import io.vlingo.actors.supervision.Pong;
 import io.vlingo.actors.supervision.PongActor;
-import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
-import io.vlingo.actors.supervision.PingActor.PingTestResults;
 import io.vlingo.actors.supervision.PongActor.PongTestResults;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
 
 public class StageSupervisedActorTest extends ActorsTest {
 
@@ -56,9 +56,11 @@ public class StageSupervisedActorTest extends ActorsTest {
     final Throwable throwable = new IllegalStateException("Failed");
     final StageSupervisedActor supervised = new StageSupervisedActor(FailureControl.class, failure.actorInside(), throwable);
     
+    AccessSafely access = failureControlTestResults.afterCompleting(1);
+
     supervised.escalate(); // to the private root, which always stops the actor
     
-    assertEquals(1, failureControlTestResults.stoppedCount.get());
+    assertEquals(1, (int) access.readFrom("stoppedCount"));
   }
   
   @Test
@@ -73,11 +75,13 @@ public class StageSupervisedActorTest extends ActorsTest {
     final Throwable throwable = new IllegalStateException("Failed");
     final StageSupervisedActor supervised = new StageSupervisedActor(FailureControl.class, failure.actorInside(), throwable);
     
+    AccessSafely access = failureControlTestResults.afterCompleting(4);
+
     supervised.restartWithin(1000, 5, Scope.One);
     
-    assertEquals(2, failureControlTestResults.beforeStartCount.get());
-    assertEquals(1, failureControlTestResults.beforeRestartCount.get());
-    assertEquals(1, failureControlTestResults.afterRestartCount.get());
+    assertEquals(2, (int) access.readFrom("beforeStartCount"));
+    assertEquals(1, (int) access.readFrom("beforeRestartCount"));
+    assertEquals(1, (int) access.readFrom("afterRestartCount"));
   }
 
   @Test
@@ -89,19 +93,18 @@ public class StageSupervisedActorTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), "failure"));
 
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(1);
-    
     final StageSupervisedActor supervised =
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance.get(), new IllegalStateException("Failed"));
+    
+    AccessSafely access = failureControlTestResults.afterCompleting(1);
     
     supervised.suspend();
     assertTrue(isSuspended(FailureControlActor.instance.get()));
     
     failure.afterFailure();                         // into suspended stowage
     supervised.resume();                            // sent
-    failureControlTestResults.untilAfterFail.completes(); // delivered
     
-    assertEquals(1, failureControlTestResults.afterFailureCount.get());
+    assertEquals(1, (int) access.readFromExpecting("afterFailureCount", 1));
   }
 
   @Test
@@ -115,13 +118,11 @@ public class StageSupervisedActorTest extends ActorsTest {
     final StageSupervisedActor supervised =
             new StageSupervisedActor(FailureControl.class, FailureControlActor.instance.get(), new IllegalStateException("Failed"));
     
-    failureControlTestResults.untilStopped = TestUntil.happenings(1);
+    AccessSafely access = failureControlTestResults.afterCompleting(1);
     
     supervised.stop(Scope.One);
     
-    failureControlTestResults.untilStopped.completes();
-    
-    assertTrue(FailureControlActor.instance.get().isStopped());
+    assertEquals(1, (int) access.readFromExpecting("stoppedCount", 1));
   }
   
   @Test
@@ -138,18 +139,15 @@ public class StageSupervisedActorTest extends ActorsTest {
             Pong.class,
             Definition.has(PongActor.class, Definition.parameters(pongTestResults), "pong"));
 
-    pingTestResults.untilStopped = TestUntil.happenings(1);
-    pongTestResults.untilStopped = TestUntil.happenings(1);
+    AccessSafely pingAccess = pingTestResults.afterCompleting(1);
+    AccessSafely pongAccess = pongTestResults.afterCompleting(1);
     
     final StageSupervisedActor supervised =
             new StageSupervisedActor(Ping.class, PingActor.instance.get(), new IllegalStateException("Failed"));
     
     supervised.stop(Scope.All);
     
-    pingTestResults.untilStopped.completes();
-    pongTestResults.untilStopped.completes();
-    
-    assertTrue(PingActor.instance.get().isStopped());
-    assertTrue(PongActor.instance.get().isStopped());
+    assertEquals(1, (int) pingAccess.readFromExpecting("stopCount", 1));
+    assertEquals(1, (int) pongAccess.readFromExpecting("stopCount", 1));
   }
 }

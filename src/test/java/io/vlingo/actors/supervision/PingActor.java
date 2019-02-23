@@ -10,7 +10,7 @@ package io.vlingo.actors.supervision;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class PingActor extends Actor implements Ping {
   public static final ThreadLocal<PingActor> instance = new ThreadLocal<>();
@@ -25,19 +25,31 @@ public class PingActor extends Actor implements Ping {
   @Override
   public void stop() {
     super.stop();
-    testResults.untilStopped.happened();
+    testResults.access.writeUsing("stopCount", 1);
   }
 
   @Override
   public void ping() {
-    testResults.pingCount.incrementAndGet();
-    testResults.untilPinged.happened();
+    testResults.access.writeUsing("pingCount", 1);
     throw new IllegalStateException("Intended Ping failure.");
   }
 
   public static class PingTestResults {
+    public AccessSafely access = AccessSafely.afterCompleting(0);
+
     public final AtomicInteger pingCount = new AtomicInteger(0);
-    public TestUntil untilPinged = TestUntil.happenings(0);
-    public TestUntil untilStopped = TestUntil.happenings(0);
+    public final AtomicInteger stopCount = new AtomicInteger(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("pingCount", (Integer increment) -> pingCount.set(pingCount.get() + increment))
+        .readingWith("pingCount", () -> pingCount.get())
+
+        .writingWith("stopCount", (Integer increment) -> stopCount.set(stopCount.get() + increment))
+        .readingWith("stopCount", () -> stopCount.get());
+
+      return access;
+    }
   }
 }

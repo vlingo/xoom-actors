@@ -21,9 +21,11 @@ import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfig
 import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
 import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
 import io.vlingo.actors.supervision.PingActor.PingTestResults;
+import io.vlingo.actors.supervision.PingSupervisorActor.PingSupervisorTestResults;
 import io.vlingo.actors.supervision.PongActor.PongTestResults;
+import io.vlingo.actors.supervision.PongSupervisorActor.PongSupervisorTestResults;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
 
 public class CommonSupervisionTest extends ActorsTest {
@@ -36,38 +38,27 @@ public class CommonSupervisionTest extends ActorsTest {
             testWorld.actorFor(
                     Ping.class,
                     Definition.has(PingActor.class, Definition.parameters(testResults), "ping"));
+
+    PingSupervisorTestResults supervisorResults = PingSupervisorActor.instance.get().testResults;
     
-    testResults.untilPinged = TestUntil.happenings(5);
-    
+    AccessSafely pingAccess = testResults.afterCompleting(5);
+    AccessSafely supervisorAccess = supervisorResults.afterCompleting(5);
+
     for (int idx = 1; idx <= 5; ++idx) {
-      world.defaultLogger().log("PingSupervisorActor instance: " + PingSupervisorActor.instance.get());
-      world.defaultLogger().log("PingSupervisorActor testResults: " + PingSupervisorActor.instance.get().testResults);
-      world.defaultLogger().log("PingSupervisorActor testResults untilInform: " + PingSupervisorActor.instance.get().testResults.untilInform);
-      PingSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(1);
       ping.actor().ping();
-      PingSupervisorActor.instance.get().testResults.untilInform.completes();
     }
 
-    testResults.untilPinged.completes();
-    PingSupervisorActor.instance.get().testResults.untilInform.completes();
-    
     assertFalse(ping.actorInside().isStopped());
-    assertEquals(5, testResults.pingCount.get());
-    assertEquals(5, PingSupervisorActor.instance.get().testResults.informedCount.get());
-    
-    testResults.untilPinged = TestUntil.happenings(1);
-    testResults.untilStopped = TestUntil.happenings(1);
-    PingSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(1);
+    assertEquals(5, (int) pingAccess.readFrom("pingCount"));
+    assertEquals(5, (int) supervisorAccess.readFrom("informedCount"));
+
+    pingAccess = testResults.afterCompleting(2);
 
     ping.actor().ping();
 
-    PingSupervisorActor.instance.get().testResults.untilInform.completes();
-    testResults.untilPinged.completes();
-    testResults.untilStopped.completes();
-    
+    assertEquals(6, (int) pingAccess.readFrom("pingCount"));
+    assertEquals(6, (int) supervisorAccess.readFrom("informedCount"));
     assertTrue(ping.actorInside().isStopped());
-    assertEquals(6, testResults.pingCount.get());
-    assertEquals(6, PingSupervisorActor.instance.get().testResults.informedCount.get());
   }
 
   @Test
@@ -79,37 +70,28 @@ public class CommonSupervisionTest extends ActorsTest {
                     Pong.class,
                     Definition.has(PongActor.class, Definition.parameters(testResults), "pong"));
 
-    testResults.untilPonged = TestUntil.happenings(10);
-    PongSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(10);
+    PongSupervisorTestResults supervisorResults = PongSupervisorActor.instance.get().testResults;
+
+    AccessSafely pongAccess = testResults.afterCompleting(10);
+    AccessSafely supervisorAccess = supervisorResults.afterCompleting(10);
     
     for (int idx = 1; idx <= 10; ++idx) {
-      PongSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(1);
       pong.actor().pong();
-      PongSupervisorActor.instance.get().testResults.untilInform.completes();
     }
 
-    testResults.untilPonged.completes();
-    PongSupervisorActor.instance.get().testResults.untilInform.completes();
+    assertEquals(10, (int) pongAccess.readFrom("pongCount"));
+    assertEquals(10, (int) supervisorAccess.readFrom("informedCount"));
+    assertFalse(pong.actorInside().isStopped());
 
     assertFalse(pong.actorInside().isStopped());
-    assertEquals(10, testResults.pongCount.get());
-    assertEquals(10, PongSupervisorActor.instance.get().testResults.informedCount.get());
 
-    testResults.untilPonged = TestUntil.happenings(1);
-    testResults.untilStopped = TestUntil.happenings(1);
-    PongSupervisorActor.instance.get().testResults.untilInform = TestUntil.happenings(1);
-    
-    assertFalse(pong.actorInside().isStopped());
+    pongAccess = testResults.afterCompleting(2);
 
     pong.actor().pong();
 
-    PongSupervisorActor.instance.get().testResults.untilInform.completes();
-    testResults.untilPonged.completes();
-    testResults.untilStopped.completes();
-
+    assertEquals(11, (int) pongAccess.readFrom("pongCount"));
+    assertEquals(11, (int) supervisorAccess.readFrom("informedCount"));
     assertTrue(pong.actorInside().isStopped());
-    assertEquals(11, testResults.pongCount.get());
-    assertEquals(11, PongSupervisorActor.instance.get().testResults.informedCount.get());
   }
 
   @Before

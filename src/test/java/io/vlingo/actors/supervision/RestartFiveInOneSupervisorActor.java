@@ -13,7 +13,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class RestartFiveInOneSupervisorActor extends Actor implements Supervisor {
   private final RestartFiveInOneSupervisorTestResults testResults;
@@ -42,9 +42,8 @@ public class RestartFiveInOneSupervisorActor extends Actor implements Supervisor
   
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    testResults.informedCount.incrementAndGet();
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-    testResults.untilInform.happened();
+    testResults.access.writeUsing("informedCount", 1);
   }
 
   @Override
@@ -53,7 +52,15 @@ public class RestartFiveInOneSupervisorActor extends Actor implements Supervisor
   }
 
   public static class RestartFiveInOneSupervisorTestResults {
+    public AccessSafely access = AccessSafely.afterCompleting(0);
     public final AtomicInteger informedCount = new AtomicInteger(0);
-    public TestUntil untilInform = TestUntil.happenings(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .readingWith("informedCount", () -> informedCount.get());
+      return access;
+    }
   }
 }

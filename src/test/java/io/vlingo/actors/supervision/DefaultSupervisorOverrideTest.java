@@ -21,8 +21,8 @@ import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
 import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverride;
 import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
 import io.vlingo.actors.supervision.FailureControlActor.FailureControlTestResults;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
 
 public class DefaultSupervisorOverrideTest extends ActorsTest {
@@ -36,35 +36,29 @@ public class DefaultSupervisorOverrideTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(testResults), "failure-for-stop"));
     
-    testResults.untilFailNow = TestUntil.happenings(20);
-    testResults.untilAfterFail = TestUntil.happenings(20);
-    
+    AccessSafely access = testResults.afterCompleting(40);
+
     for (int idx = 1; idx <= 20; ++idx) {
-      testResults.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      testResults.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
 
-    testResults.untilFailNow.completes();
-    testResults.untilAfterFail.completes();
-    
-    testResults.untilFailNow = TestUntil.happenings(20);
-    testResults.untilAfterFail = TestUntil.happenings(20);
+    access.readFromExpecting("beforeResume", 20);
+    assertEquals(20, (int) access.readFrom("beforeResume"));
+    assertEquals(20, (int) access.readFrom("failNowCount"));
+    assertEquals(20, (int) access.readFrom("afterFailureCount"));
+
+    access = testResults.afterCompleting(40);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      testResults.untilBeforeResume = TestUntil.happenings(1);
       failure.actor().failNow();
-      testResults.untilBeforeResume.completes();
       failure.actor().afterFailure();
     }
-
-    testResults.untilFailNow.completes();
-    testResults.untilAfterFail.completes();
     
+    access.readFromExpecting("beforeResume", 40);
+    assertEquals(40, (int) access.readFrom("failNowCount"));
+    assertEquals(40, (int) access.readFrom("afterFailureCount"));
     assertFalse(failure.actorInside().isStopped());
-    assertEquals(40, testResults.failNowCount.get());
-    assertEquals(40, testResults.afterFailureCount.get());
   }
 
   @Before

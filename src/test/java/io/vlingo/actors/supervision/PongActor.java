@@ -10,7 +10,7 @@ package io.vlingo.actors.supervision;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class PongActor extends Actor implements Pong {
   public static final ThreadLocal<PongActor> instance = new ThreadLocal<>();
@@ -24,20 +24,32 @@ public class PongActor extends Actor implements Pong {
   
   @Override
   public void pong() {
-    testResults.pongCount.incrementAndGet();
-    testResults.untilPonged.happened();
+    testResults.access.writeUsing("pongCount", 1);
     throw new IllegalStateException("Intended Pong failure.");
   }
 
   @Override
   public void stop() {
     super.stop();
-    testResults.untilStopped.happened();
+    testResults.access.writeUsing("stopCount", 1);
   }
 
   public static class PongTestResults {
-    public AtomicInteger pongCount = new AtomicInteger(0);
-    public TestUntil untilPonged = TestUntil.happenings(0);
-    public TestUntil untilStopped = TestUntil.happenings(0);
+    public AccessSafely access = AccessSafely.afterCompleting(0);
+
+    public final AtomicInteger pongCount = new AtomicInteger(0);
+    public final AtomicInteger stopCount = new AtomicInteger(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("pongCount", (Integer increment) -> pongCount.set(pongCount.get() + increment))
+        .readingWith("pongCount", () -> pongCount.get())
+
+        .writingWith("stopCount", (Integer increment) -> stopCount.set(stopCount.get() + increment))
+        .readingWith("stopCount", () -> stopCount.get());
+
+      return access;
+    }
   }
 }

@@ -13,6 +13,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
 import io.vlingo.actors.SupervisionStrategy;
 import io.vlingo.actors.Supervisor;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class EscalateSupervisorActor extends Actor implements Supervisor {
   private final EscalateSupervisorTestResults testResults;
@@ -41,9 +42,8 @@ public class EscalateSupervisorActor extends Actor implements Supervisor {
   
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    testResults.informedCount.incrementAndGet();
-    
     supervised.escalate();
+    testResults.access.writeUsing("informedCount", 1);
   }
 
   @Override
@@ -52,6 +52,15 @@ public class EscalateSupervisorActor extends Actor implements Supervisor {
   }
 
   public static class EscalateSupervisorTestResults {
+    public AccessSafely access = AccessSafely.afterCompleting(0);
     public AtomicInteger informedCount = new AtomicInteger(0);
+
+    public AccessSafely afterCompleting(final int times) {
+      access =
+        AccessSafely.afterCompleting(times)
+        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .readingWith("informedCount", () -> informedCount.get());
+      return access;
+    }
   }
 }

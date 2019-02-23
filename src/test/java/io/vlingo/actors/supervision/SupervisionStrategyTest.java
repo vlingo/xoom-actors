@@ -8,7 +8,6 @@
 package io.vlingo.actors.supervision;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -23,15 +22,16 @@ import io.vlingo.actors.supervision.PongActor.PongTestResults;
 import io.vlingo.actors.supervision.RestartFiveInOneSupervisorActor.RestartFiveInOneSupervisorTestResults;
 import io.vlingo.actors.supervision.RestartForeverSupervisorActor.RestartForeverSupervisorTestResults;
 import io.vlingo.actors.supervision.ResumeForeverSupervisorActor.ResumeForeverSupervisorTestResults;
+import io.vlingo.actors.supervision.StopAllSupervisorActor.StopAllSupervisorResult;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
 
 public class SupervisionStrategyTest extends ActorsTest {
 
   @Test
   public void testResumeForeverStrategy() {
     final ResumeForeverSupervisorTestResults resumeForeverSupervisorTestResults = new ResumeForeverSupervisorTestResults();
-    
+
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
                     Supervisor.class,
@@ -43,36 +43,30 @@ public class SupervisionStrategyTest extends ActorsTest {
             testWorld.actorFor(
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
-    
-    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
-    
+
+    AccessSafely failureAccess = failureControlTestResults.afterCompleting(0);
+    AccessSafely resumeAccess = resumeForeverSupervisorTestResults.afterCompleting(1);
+
     for (int idx = 1; idx <= 20; ++idx) {
-      resumeForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
+      failureAccess = failureControlTestResults.afterCompleting(1);
       failure.actor().failNow();
-      resumeForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilAfterFail.completes();
-    
-    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
-    
+    assertEquals(20, (int) failureAccess.readFrom("failNowCount"));
+    assertEquals(20, (int) failureAccess.readFrom("afterFailureCount"));
+    assertEquals(20, (int) resumeAccess.readFrom("informedCount"));
+
+    failureAccess = failureControlTestResults.afterCompleting(20);
+
     for (int idx = 1; idx <= 20; ++idx) {
-      resumeForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      resumeForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilAfterFail.completes();
-    
-    assertEquals(40, failureControlTestResults.failNowCount.get());
-    assertEquals(40, failureControlTestResults.afterFailureCount.get());
-    assertTrue(40 <= resumeForeverSupervisorTestResults.informedCount.get());
+    assertEquals(40, (int) failureAccess.readFrom("failNowCount"));
+    assertEquals(40, (int) failureAccess.readFrom("afterFailureCount"));
+    assertTrue(40 <= (int) resumeAccess.readFrom("informedCount"));
   }
 
   @Test
@@ -91,35 +85,27 @@ public class SupervisionStrategyTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
-    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
+    AccessSafely failedAccess = failureControlTestResults.afterCompleting(40);
+    AccessSafely restartAccess = restartForeverSupervisorTestResults.afterCompleting(40);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      restartForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      restartForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilAfterFail.completes();
+    assertEquals(20, (int) failedAccess.readFrom("failNowCount"));
+    assertEquals(20, (int) failedAccess.readFrom("afterFailureCount"));
     
-    failureControlTestResults.untilFailNow = TestUntil.happenings(20);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(20);
+    failedAccess = failureControlTestResults.afterCompleting(40);
     
     for (int idx = 1; idx <= 20; ++idx) {
-      restartForeverSupervisorTestResults.untilInform = TestUntil.happenings(1);
       failure.actor().failNow();
-      restartForeverSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilAfterFail.completes();
-    
-    assertEquals(40, failureControlTestResults.failNowCount.get());
-    assertEquals(40, failureControlTestResults.afterFailureCount.get());
-    assertEquals(40, restartForeverSupervisorTestResults.informedCount.get());
+    assertEquals(40, (int) failedAccess.readFrom("failNowCount"));
+    assertEquals(40, (int) failedAccess.readFrom("afterFailureCount"));
+    assertTrue(40 <= (int) restartAccess.readFrom("informedCount"));
   }
 
   @Test
@@ -138,37 +124,29 @@ public class SupervisionStrategyTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-stop"));
     
-    failureControlTestResults.untilFailNow = TestUntil.happenings(5);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(5);
-    
+    AccessSafely failureAccess = failureControlTestResults.afterCompleting(0);
+    AccessSafely restartAccess = restartFiveInOneSupervisorTestResults.afterCompleting(5);
+
     for (int idx = 1; idx <= 5; ++idx) {
-      restartFiveInOneSupervisorTestResults.untilInform = TestUntil.happenings(1);
+      failureAccess = failureControlTestResults.afterCompleting(1);
       failure.actor().failNow();
-      restartFiveInOneSupervisorTestResults.untilInform.completes();
       failure.actor().afterFailure();
     }
 
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilAfterFail.completes();
+    assertEquals(5, (int) failureAccess.readFrom("failNowCount"));
+    assertEquals(5, (int) failureAccess.readFrom("afterFailureCount"));
     
-    assertEquals(5, failureControlTestResults.failNowCount.get());
-    assertEquals(5, failureControlTestResults.afterFailureCount.get());
+    failureAccess = failureControlTestResults.afterCompleting(1);
     
-    failureControlTestResults.untilFailNow = TestUntil.happenings(1);
-    failureControlTestResults.untilAfterFail = TestUntil.happenings(0);
-    restartFiveInOneSupervisorTestResults.untilInform = TestUntil.happenings(1);
+    restartAccess = restartFiveInOneSupervisorTestResults.afterCompleting(1);
 
     failure.actor().failNow();  // should stop
     failure.actor().afterFailure();
-
-    failureControlTestResults.untilFailNow.completes();
-    restartFiveInOneSupervisorTestResults.untilInform.completes();
-    failureControlTestResults.untilAfterFail.completes();
     
     assertTrue(failure.actorInside().isStopped());
-    assertEquals(6, failureControlTestResults.failNowCount.get());
-    assertEquals(6, restartFiveInOneSupervisorTestResults.informedCount.get());
-    assertEquals(5, failureControlTestResults.afterFailureCount.get());
+    assertEquals(6, (int) failureAccess.readFrom("failNowCount"));
+    assertEquals(5, (int) failureAccess.readFrom("afterFailureCount"));
+    assertEquals(6, (int) restartAccess.readFrom("informedCount"));
   }
 
   @Test
@@ -187,25 +165,22 @@ public class SupervisionStrategyTest extends ActorsTest {
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure"));
     
-    failureControlTestResults.untilFailNow = TestUntil.happenings(1);
-    failureControlTestResults.untilStopped = TestUntil.happenings(1);
+    AccessSafely escalateAccess = escalateSupervisorTestResults.afterCompleting(1);
+    AccessSafely failureAccess = failureControlTestResults.afterCompleting(1);
     
-    assertEquals(0, escalateSupervisorTestResults.informedCount.get());
-    assertEquals(0, failureControlTestResults.stoppedCount.get());
     failure.actor().failNow();
     
-    failureControlTestResults.untilFailNow.completes();
-    failureControlTestResults.untilStopped.completes();
-    
-    assertEquals(1, escalateSupervisorTestResults.informedCount.get());
-    assertEquals(1, failureControlTestResults.stoppedCount.get());
+    assertEquals(1, (int) escalateAccess.readFrom("informedCount"));
+    assertEquals(1, (int) failureAccess.readFrom("stoppedCount"));
   }
 
   @Test
   public void testStopAll() {
+    StopAllSupervisorResult stopResults = new StopAllSupervisorResult();
+
     world.actorFor(
             Supervisor.class,
-            Definition.has(StopAllSupervisorActor.class, Definition.NoParameters, "stop-all"));
+            Definition.has(StopAllSupervisorActor.class, Definition.parameters(stopResults), "stop-all"));
     
     final PingTestResults pingTestResults = new PingTestResults();
     
@@ -219,15 +194,14 @@ public class SupervisionStrategyTest extends ActorsTest {
             Pong.class,
             Definition.has(PongActor.class, Definition.parameters(pongTestResults), StopAllSupervisorActor.instance, "pong"));
 
-    pingTestResults.untilStopped = TestUntil.happenings(1);
-    pongTestResults.untilStopped = TestUntil.happenings(1);
-    
-    assertFalse(PingActor.instance.get().isStopped());
-    assertFalse(PongActor.instance.get().isStopped());
+    AccessSafely pingAccess = pingTestResults.afterCompleting(1);
+    AccessSafely pongAccess = pongTestResults.afterCompleting(1);
+    AccessSafely stopAccess = stopResults.afterCompleting(1);
+
     ping.ping();
-    pingTestResults.untilStopped.completes();
-    pongTestResults.untilStopped.completes();
-    assertTrue(PingActor.instance.get().isStopped());
-    assertTrue(PongActor.instance.get().isStopped());
+
+    assertEquals(1, (int) stopAccess.readFrom("informedCount"));
+    assertEquals(1, (int) pingAccess.readFrom("stopCount"));
+    assertEquals(1, (int) pongAccess.readFrom("stopCount"));
   }
 }

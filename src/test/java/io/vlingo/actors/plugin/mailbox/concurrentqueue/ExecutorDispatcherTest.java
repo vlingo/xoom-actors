@@ -152,8 +152,23 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     @Override
+    public void resume() {
+      throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
+    }
+
+    @Override
     public void send(final Message message) {
       queue.add(message);
+    }
+
+    @Override
+    public void suspendExceptFor(final Class<?>... overrides) {
+      throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
+    }
+
+    @Override
+    public boolean isSuspended() {
+      return false;
     }
 
     @Override
