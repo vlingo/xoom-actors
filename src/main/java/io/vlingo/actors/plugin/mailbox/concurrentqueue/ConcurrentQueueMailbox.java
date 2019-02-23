@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
+import io.vlingo.actors.ResumingMailbox;
 
 public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
@@ -47,7 +48,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   public void send(final Message message) {
     if (isSuspended()) {
       if (suspendedDeliveryOverrides.get().matchesTop(message.protocol())) {
-        message.deliver();
+        dispatcher.execute(new ResumingMailbox(message));
         if (!queue.isEmpty()) {
           dispatcher.execute(this);
         }
