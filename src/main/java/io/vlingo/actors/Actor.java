@@ -265,26 +265,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   //=======================================
 
   /**
-   * Answers whether this {@code Actor} is currently dispersing previously stowed messages.
-   * @return boolean
-   */
-  protected boolean isDispersing() {
-    return lifeCycle.isDispersing();
-  }
-
-  /**
    * Starts the process of dispersing any messages stowed for this {@code Actor}.
    */
   protected void disperseStowedMessages() {
-    lifeCycle.disperseStowedMessages();
-  }
-
-  /**
-   * Answers whether this {@code Actor} is currently stowing messages.
-   * @return boolean
-   */
-  protected boolean isStowing() {
-    return lifeCycle.isStowing();
+    lifeCycle.environment.mailbox.resume();
   }
 
   /**
@@ -293,8 +277,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param stowageOverrides the {@code Class<T>} protocol that will trigger dispersal
    */
   protected void stowMessages(final Class<?>... stowageOverrides) {
-    lifeCycle.stowMessages();
-    lifeCycle.environment.stowageOverrides(stowageOverrides);
+    lifeCycle.environment.mailbox.suspendExceptFor(stowageOverrides);
   }
 
   //=======================================
