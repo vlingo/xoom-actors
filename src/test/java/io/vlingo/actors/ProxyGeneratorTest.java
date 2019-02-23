@@ -68,6 +68,11 @@ public class ProxyGeneratorTest {
         assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
         assertTrue("IOException is not imported", result.source.contains("import java.io.IOException;"));
     }
+
+    @Test(expected = InvalidProtocolException.class)
+    public void testThatProtocolsWithAMethodThatDoesntReturnVoidOrCompletesFail() {
+        proxyGenerator.generateFor(ProtocolWithPrimitive.class.getCanonicalName());
+    }
 }
 
 interface ProtocolWithGenericMethods {
@@ -78,4 +83,9 @@ interface ProtocolWithGenericMethods {
 interface ProtocolWithGenerics<A extends RuntimeException, B extends Queue<IOException>> {
     Completes<Queue<List<A>>> someMethod();
     Completes<Queue<List<B>>> otherMethod();
+}
+
+interface ProtocolWithPrimitive {
+    boolean shouldNotCompile();
+    List<Boolean> shouldNotCompileEither();
 }
