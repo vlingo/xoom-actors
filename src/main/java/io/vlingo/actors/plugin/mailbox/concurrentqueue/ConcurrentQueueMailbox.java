@@ -133,9 +133,12 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     }
 
     boolean matchesTop(final Class<?> messageType) {
-      for (final Class<?> type : peek().types) {
-        if (messageType == type) {
-          return true;
+      final Overrides overrides = peek();
+      if (overrides != null) {
+        for (final Class<?> type : overrides.types) {
+          if (messageType == type) {
+            return true;
+          }
         }
       }
       return false;
@@ -145,11 +148,12 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
       int retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
+          Overrides temp = null;
           if (!isEmpty()) {
-            Overrides temp = overrides.get(0);
-            accessible.set(false);
-            return temp;
+            temp = overrides.get(0);
           }
+          accessible.set(false);
+          return temp;
         } else {
           if (++retries > 100_000_000) {
             (new Exception()).printStackTrace();
