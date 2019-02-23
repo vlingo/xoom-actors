@@ -121,7 +121,6 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private static class SuspendedDeliveryOverrides {
     private final AtomicBoolean accessible;
     private final List<Overrides> overrides;
-int retries = 0;
 
     SuspendedDeliveryOverrides() {
       this.accessible = new AtomicBoolean(false);
@@ -142,7 +141,7 @@ int retries = 0;
     }
 
     Overrides peek() {
-      retries = 0;
+      int retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           if (!isEmpty()) {
@@ -161,7 +160,7 @@ int retries = 0;
 
     boolean pop(final String name) {
       boolean popped = false;
-      retries = 0;
+      int retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           int elements = overrides.size();
@@ -198,7 +197,7 @@ int retries = 0;
     }
 
     void push(final Overrides overrides) {
-      retries = 0;
+      int retries = 0;
       while (true) {
         if (accessible.compareAndSet(false, true)) {
           this.overrides.add(overrides);
