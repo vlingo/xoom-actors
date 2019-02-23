@@ -14,6 +14,7 @@ import io.vlingo.common.Completes;
 public interface Message {
   Actor actor();
   void deliver();
+  Class<?> protocol();
   String representation();
   boolean isStowed();
   void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation);
