@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class InvalidProtocolException extends IllegalStateException {
+    private static final long serialVersionUID = 1L;
+
     private final String protocolName;
     private final List<Failure> failures;
 
@@ -20,6 +22,11 @@ public class InvalidProtocolException extends IllegalStateException {
 
         this.protocolName = protocolName;
         this.failures = failures;
+    }
+
+    @Override
+    public String toString() {
+      return "Protocol '" + protocolName + "' " + " with failures " + failures;
     }
 
     public static class Failure {
