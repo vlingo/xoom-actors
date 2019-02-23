@@ -9,6 +9,10 @@ package io.vlingo.actors.plugin.mailbox.testkit;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
@@ -19,10 +23,14 @@ public class TestMailbox implements Mailbox {
 
   private final List<String> lifecycleMessages = Arrays.asList("start", "afterStop", "beforeRestart", "afterRestart");
   private boolean closed;
+  private final Queue<Message> queue;
+  private AtomicReference<Stack<List<Class<?>>>> suspendedOverrides;
   private final TestWorld world;
 
   public TestMailbox() {
     this.world = TestWorld.Instance.get();
+    this.queue = new ConcurrentLinkedQueue<>();
+    this.suspendedOverrides = new AtomicReference<>(new Stack<>());
   }
 
   @Override
@@ -46,6 +54,14 @@ public class TestMailbox implements Mailbox {
   }
 
   @Override
+  public void resume() {
+    if (!suspendedOverrides.get().empty()) {
+      suspendedOverrides.get().pop();
+    }
+    resumeAll();
+  }
+
+  @Override
   public void send(final Message message) {
     try {
       if (!message.actor().isStopped()) {
@@ -54,11 +70,28 @@ public class TestMailbox implements Mailbox {
         }
       }
 
+      if (isSuspended()) {
+        queue.add(message);
+        return;
+      } else {
+        resumeAll();
+      }
+
       message.actor().viewTestStateInitialization(null);
       message.deliver();
     } catch (Throwable t) {
       throw new RuntimeException(t.getMessage(), t);
     }
+  }
+
+  @Override
+  public void suspendExceptFor(final Class<?>... overrides) {
+    suspendedOverrides.get().push(Arrays.asList(overrides));
+  }
+
+  @Override
+  public boolean isSuspended() {
+    return !suspendedOverrides.get().empty();
   }
 
   @Override
@@ -71,7 +104,15 @@ public class TestMailbox implements Mailbox {
   public int pendingMessages() {
     throw new UnsupportedOperationException("TestMailbox does not support this operation");
   }
-  
+
+  private void resumeAll() {
+    while (!queue.isEmpty()) {
+      final Message queued = queue.poll();
+      queued.actor().viewTestStateInitialization(null);
+      queued.deliver();
+    }
+  }
+
   private boolean isLifecycleMessage(final Message message) {
     final String representation = message.representation();
     final int openParenIndex = representation.indexOf("(");
