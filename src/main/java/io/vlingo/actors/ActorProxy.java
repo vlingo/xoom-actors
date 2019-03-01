@@ -23,20 +23,20 @@ public final class ActorProxy {
       return maybeCachedProxy;
     }
 
-    final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
-
     T newProxy;
-    
-    try {
-      newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
-    } catch (Exception e) {
-      synchronized (protocol) {
+
+    synchronized (protocol) {
+      final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
+
+      try {
+        newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
+      } catch (Exception e) {
         newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
       }
+
+      actor.lifeCycle.environment.cacheProxy(newProxy);
     }
-    
-    actor.lifeCycle.environment.cacheProxy(newProxy);
-    
+
     return newProxy;
   }
 
