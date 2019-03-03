@@ -12,12 +12,12 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+//import org.junit.Test;
 
 import io.vlingo.actors.testkit.AccessSafely;
 
 public class ActorStopTest extends ActorsTest {
-  @Test
+//  @Test
   public void testStopActors() throws Exception {
     final TestResults results = new TestResults();
 
@@ -60,7 +60,7 @@ public class ActorStopTest extends ActorsTest {
     assertEquals(0, terminatingStopCount);
   }
 
-  @Test
+//  @Test
   public void testWorldTerminateToStopAllActors() throws Exception {
     final TestResults results = new TestResults();
 
