@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  * {@code writeUsing()} behavior is employed before the {@code readUsing()} can complete.
  */
 public class AccessSafely {
-  //public int totalWrites = 0;
+  public int totalWrites = 0;
   private final Object lock;
   private final Map<String,BiConsumer<?,?>> biConsumers;
   private final Map<String,Consumer<?>> consumers;
@@ -218,7 +218,7 @@ public class AccessSafely {
     }
 
     synchronized (lock) {
-      //++totalWrites;
+      ++totalWrites;
       consumer.accept(value);
       until.happened();
     }
