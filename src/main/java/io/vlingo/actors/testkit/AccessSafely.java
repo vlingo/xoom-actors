@@ -9,6 +9,7 @@ package io.vlingo.actors.testkit;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
  * {@code writeUsing()} behavior is employed before the {@code readUsing()} can complete.
  */
 public class AccessSafely {
-  public int totalWrites = 0;
+  private final AtomicInteger totalWrites = new AtomicInteger(0);
   private final Object lock;
   private final Map<String,BiConsumer<?,?>> biConsumers;
   private final Map<String,Consumer<?>> consumers;
@@ -218,7 +219,7 @@ public class AccessSafely {
     }
 
     synchronized (lock) {
-      ++totalWrites;
+      totalWrites.incrementAndGet();
       consumer.accept(value);
       until.happened();
     }
@@ -264,5 +265,9 @@ public class AccessSafely {
    */
   private AccessSafely() {
     this(0);
+  }
+  
+  public int totalWrites() {
+    return totalWrites.get();
   }
 }
