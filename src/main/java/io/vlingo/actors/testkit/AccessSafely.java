@@ -241,7 +241,7 @@ public class AccessSafely {
     }
 
     synchronized (lock) {
-      //++totalWrites;
+      totalWrites.incrementAndGet();
       biConsumer.accept(value1, value2);
       until.happened();
     }
