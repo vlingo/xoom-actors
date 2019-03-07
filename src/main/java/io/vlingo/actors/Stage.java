@@ -174,7 +174,7 @@ public class Stage implements Stoppable {
    * @return {@code Completes<T>}
    */
   public <T> Completes<T> actorOf(final Class<T> protocol, final Address address) {
-    return directoryScanner.actorOf(protocol, address);
+    return directoryScanner.actorOf(protocol, address).andThen(null, proxy -> proxy);
   }
 
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
