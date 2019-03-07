@@ -115,23 +115,24 @@ public class StageTest extends ActorsTest {
     });
 
     world.stage().actorOf(NoProtocol.class, address6)
-      .andThenConsume(actor -> {
-        assertNull(actor);
+      .andThen(actor -> {
+        assertNotNull(actor);
         until.happened();
+        return actor;
       })
-      .otherwise((NoProtocol actor) -> {
-        assertNull(actor);
+      .otherwise((noSuchActor) -> {
+        assertNull(noSuchActor);
         until.happened();
         return null;
       });
     world.stage().actorOf(NoProtocol.class, address7)
       .andThen(actor -> {
-        assertNull(actor);
+        assertNotNull(actor);
         until.happened();
-        return null;
+        return actor;
       })
-      .otherwise((actor) -> {
-        assertNull(actor);
+      .otherwise((noSuchActor) -> {
+        assertNull(noSuchActor);
         until.happened();
         return null;
       });
