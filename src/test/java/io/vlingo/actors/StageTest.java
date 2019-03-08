@@ -21,11 +21,10 @@ import io.vlingo.actors.WorldTest.Simple;
 import io.vlingo.actors.WorldTest.SimpleActor;
 import io.vlingo.actors.WorldTest.TestResults;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestUntil;
 
 public class StageTest extends ActorsTest {
-  private AtomicInteger scanFound = new AtomicInteger(0);
-
   @Test
   public void testActorForDefinitionAndProtocol() throws Exception {
     final NoProtocol test = world.stage().actorFor(NoProtocol.class, TestInterfaceActor.class);
@@ -87,60 +86,55 @@ public class StageTest extends ActorsTest {
     world.stage().directory().register(address4, new TestInterfaceActor());
     world.stage().directory().register(address5, new TestInterfaceActor());
 
-    final TestUntil until = TestUntil.happenings(7);
+    final ScanResult scanResult = new ScanResult();
+    scanResult.afterCompleting(7);
 
     world.stage().actorOf(NoProtocol.class, address5).andThenConsume(actor -> {
       assertNotNull(actor);
-      scanFound.incrementAndGet();
-      until.happened();
+      scanResult.scanFound.writeUsing("foundCount", 1);
     });
     world.stage().actorOf(NoProtocol.class, address4).andThenConsume(actor -> {
       assertNotNull(actor);
-      scanFound.incrementAndGet();
-      until.happened();
+      scanResult.scanFound.writeUsing("foundCount", 1);
     });
     world.stage().actorOf(NoProtocol.class, address3).andThenConsume(actor -> {
       assertNotNull(actor);
-      scanFound.incrementAndGet();
-      until.happened();
+      scanResult.scanFound.writeUsing("foundCount", 1);
     });
     world.stage().actorOf(NoProtocol.class, address2).andThenConsume(actor -> {
       assertNotNull(actor);
-      scanFound.incrementAndGet();
-      until.happened();
+      scanResult.scanFound.writeUsing("foundCount", 1);
     });
     world.stage().actorOf(NoProtocol.class, address1).andThenConsume(actor -> {
       assertNotNull(actor);
-      scanFound.incrementAndGet();
-      until.happened();
+      scanResult.scanFound.writeUsing("foundCount", 1);
     });
 
     world.stage().actorOf(NoProtocol.class, address6)
       .andThen(actor -> {
         assertNotNull(actor);
-        until.happened();
+        scanResult.scanFound.writeUsing("foundCount", 1);
         return actor;
       })
       .otherwise((noSuchActor) -> {
         assertNull(noSuchActor);
-        until.happened();
+        scanResult.scanFound.writeUsing("notFoundCount", 1);
         return null;
       });
     world.stage().actorOf(NoProtocol.class, address7)
       .andThen(actor -> {
         assertNotNull(actor);
-        until.happened();
+        scanResult.scanFound.writeUsing("foundCount", 1);
         return actor;
       })
       .otherwise((noSuchActor) -> {
         assertNull(noSuchActor);
-        until.happened();
+        scanResult.scanFound.writeUsing("notFoundCount", 1);
         return null;
       });
 
-    until.completes();
-
-    assertEquals(5, scanFound.get());
+    assertEquals(5, (int) scanResult.scanFound.readFrom("foundCount"));
+    assertEquals(2, (int) scanResult.scanFound.readFrom("notFoundCount"));
   }
 
   @Test
@@ -160,50 +154,50 @@ public class StageTest extends ActorsTest {
     world.stage().directory().register(address4, new TestInterfaceActor());
     world.stage().directory().register(address5, new TestInterfaceActor());
 
-    final TestUntil until = TestUntil.happenings(7);
+    final ScanResult scanResult = new ScanResult();
+    scanResult.afterCompleting(7);
 
     world.stage().maybeActorOf(NoProtocol.class, address5).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
-      scanFound.incrementAndGet();
+      scanResult.scanFound.writeUsing("foundCount", 1);
       until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address4).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
-      scanFound.incrementAndGet();
+      scanResult.scanFound.writeUsing("foundCount", 1);
       until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address3).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
-      scanFound.incrementAndGet();
+      scanResult.scanFound.writeUsing("foundCount", 1);
       until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address2).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
-      scanFound.incrementAndGet();
+      scanResult.scanFound.writeUsing("foundCount", 1);
       until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address1).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
-      scanFound.incrementAndGet();
+      scanResult.scanFound.writeUsing("foundCount", 1);
       until.happened();
     });
 
     world.stage().maybeActorOf(NoProtocol.class, address6)
       .andThen(maybe -> {
         assertFalse(maybe.isPresent());
-        until.happened();
+        scanResult.scanFound.writeUsing("notFoundCount", 1);
         return maybe;
       });
     world.stage().maybeActorOf(NoProtocol.class, address7)
       .andThen(maybe -> {
         assertFalse(maybe.isPresent());
-        until.happened();
+        scanResult.scanFound.writeUsing("notFoundCount", 1);
         return maybe;
       });
 
-    until.completes();
-
-    assertEquals(5, scanFound.get());
+    assertEquals(5, (int) scanResult.scanFound.readFrom("foundCount"));
+    assertEquals(2, (int) scanResult.scanFound.readFrom("notFoundCount"));
   }
 
   @Test
@@ -237,6 +231,21 @@ public class StageTest extends ActorsTest {
 
     public TestInterfaceActor() {
       instance.set(this);
+    }
+  }
+
+  private static class ScanResult {
+    final AtomicInteger foundCount = new AtomicInteger(0);
+    final AtomicInteger notFoundCount = new AtomicInteger(0);
+    AccessSafely scanFound;
+
+    public AccessSafely afterCompleting(final int times) {
+      scanFound = AccessSafely.afterCompleting(times);
+      scanFound.writingWith("foundCount", (Integer increment) -> foundCount.set(foundCount.get() + increment));
+      scanFound.readingWith("foundCount", () -> foundCount.get());
+      scanFound.writingWith("notFoundCount", (Integer increment) -> notFoundCount.set(notFoundCount.get() + increment));
+      scanFound.readingWith("notFoundCount", () -> notFoundCount.get());
+      return scanFound;
     }
   }
 }
