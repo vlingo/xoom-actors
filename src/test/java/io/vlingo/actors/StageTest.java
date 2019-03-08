@@ -111,7 +111,7 @@ public class StageTest extends ActorsTest {
     });
 
     world.stage().actorOf(NoProtocol.class, address6)
-      .andThen(actor -> {
+      .andThen(null, actor -> {
         assertNotNull(actor);
         scanResult.scanFound.writeUsing("foundCount", 1);
         return actor;
@@ -122,7 +122,7 @@ public class StageTest extends ActorsTest {
         return null;
       });
     world.stage().actorOf(NoProtocol.class, address7)
-      .andThen(actor -> {
+      .andThen(null, actor -> {
         assertNotNull(actor);
         scanResult.scanFound.writeUsing("foundCount", 1);
         return actor;
