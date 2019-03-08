@@ -10,6 +10,7 @@ package io.vlingo.actors;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
@@ -177,6 +178,19 @@ public class Stage implements Stoppable {
     return directoryScanner.actorOf(protocol, address).andThen(null, proxy -> proxy);
   }
 
+  /**
+   * Answer the {@code protocol} reference of the actor with {@code address} as a non-empty
+   * {@code Completes<Optional<T>>} eventual outcome, or an empty {@code Completes<Optional<T>>}
+   * if not found.
+   * @param protocol the {@code Class<T>} of the protocol that the actor must support
+   * @param address the {@code Address} of the actor to find
+   * @param <T> the protocol type
+   * @return {@code Completes<Optional<T>>}
+   */
+  public <T> Completes<Optional<T>> maybeActorOf(final Class<T> protocol, final Address address) {
+    return directoryScanner.maybeActorOf(protocol, address).andThen(proxy -> proxy);
+  }
+
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
     return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, world.addressFactory().unique().name()));
   }
@@ -197,7 +211,7 @@ public class Stage implements Stoppable {
                     definition.parameters(),
                     TestMailbox.Name,
                     definition.actorName());
-    
+
     try {
       return actorProtocolFor(
               protocol,
@@ -208,7 +222,7 @@ public class Stage implements Stoppable {
               definition.supervisor(),
               definition.loggerOr(world.defaultLogger())
               ).toTestActor();
-      
+
     } catch (Exception e) {
       world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
       e.printStackTrace();
@@ -231,7 +245,7 @@ public class Stage implements Stoppable {
                     definition.parameters(),
                     TestMailbox.Name,
                     definition.actorName());
-    
+
     final ActorProtocolActor<Object>[] all =
             actorProtocolFor(
                     protocols,
@@ -241,7 +255,7 @@ public class Stage implements Stoppable {
                     null,
                     definition.supervisor(),
                     definition.loggerOr(world.defaultLogger()));
-    
+
     return new Protocols(ActorProtocolActor.toTestActors(all));
   }
 
@@ -311,7 +325,7 @@ public class Stage implements Stoppable {
     while (count() > 1 && ++retries < 10) {
       try { Thread.sleep(10L); } catch (Exception e) {}
     }
-    
+
     scheduler.close();
   }
 
@@ -452,11 +466,11 @@ public class Stage implements Stoppable {
    */
   final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
     final Object[] proxies = new Object[protocol.length];
-    
+
     for (int idx = 0; idx < protocol.length; ++idx) {
       proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
     }
-    
+
     return proxies;
   }
 
@@ -469,7 +483,7 @@ public class Stage implements Stoppable {
    */
   Supervisor commonSupervisorOr(final Class<?> protocol, final Supervisor defaultSupervisor) {
     final Supervisor common = commonSupervisors.get(protocol);
-    
+
     if (common != null) {
       return common;
     }
@@ -508,7 +522,7 @@ public class Stage implements Stoppable {
    */
   void stop(final Actor actor) {
     final Actor removedActor = directory.remove(actor.address());
-    
+
     if (actor == removedActor) {
       removedActor.lifeCycle.stop(actor);
     }
@@ -620,7 +634,7 @@ public class Stage implements Stoppable {
       world.privateRoot().stop();
     }
   }
-  
+
   /**
    * Internal type used to manage Actor proxy creation. (INTERNAL ONLY)
    * @param <T> the protocol type
@@ -662,7 +676,7 @@ public class Stage implements Stoppable {
     T protocolActor() {
       return protocolActor;
     }
-    
+
     TestActor<T> toTestActor() {
       return new TestActor<T>(actor, protocolActor, actor.address());
     }
