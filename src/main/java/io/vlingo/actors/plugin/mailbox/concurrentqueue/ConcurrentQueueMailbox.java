@@ -86,7 +86,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public void run() {
     if (delivering.compareAndSet(false, true)) {
-      final int total = (int) throttlingCount;
+      final int total = throttlingCount;
       for (int count = 0; count < total; ++count) {
         if (isSuspended()) {
           break;
@@ -104,13 +104,13 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
       }
     }
   }
-  
+
   /* @see io.vlingo.actors.Mailbox#pendingMessages() */
   @Override
   public int pendingMessages() {
     return queue.size();
   }
-  
+
   protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
     this.dispatcher = dispatcher;
     this.delivering = new AtomicBoolean(false);
