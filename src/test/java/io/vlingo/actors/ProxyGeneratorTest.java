@@ -83,6 +83,11 @@ public class ProxyGeneratorTest {
     public void testThatProtocolsInheritanceWithStoppableDoesCompile() {
         proxyGenerator.generateFor(ProtocolExtendsStoppable.class.getCanonicalName());
     }
+
+    @Test
+    public void testThatCustomInterfaceWithExtensionDoesCompile() {
+        proxyGenerator.generateFor(ProtocolUsingAnnotationDirectly.class.getCanonicalName());
+    }
 }
 
 interface ProtocolWithGenericMethods {
@@ -101,3 +106,7 @@ interface ProtocolWithPrimitive {
 }
 
 interface ProtocolExtendsStoppable extends Stoppable {}
+@SafeProxyGenerable
+interface ProtocolUsingAnnotationDirectly {
+    boolean shouldBeValid();
+}
