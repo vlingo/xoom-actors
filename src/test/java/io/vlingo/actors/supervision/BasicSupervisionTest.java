@@ -35,33 +35,33 @@ public class BasicSupervisionTest extends ActorsTest {
     // will never be delivered unless time is given to
     // empty to stowed messages
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
-    
+
     final FailureControl failure =
             world.actorFor(
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), world.defaultParent(), "failure-for-default"));
 
-    AccessSafely access = failureControlTestResults.afterCompleting(2);
+    AccessSafely access = failureControlTestResults.afterCompleting(3);
 
     failure.failNow();
     assertEquals(1, (int) access.readFrom("failNowCount"));
 
     // actor may or may not be resumed by now
     assertEquals(1, (int) access.readFrom("afterRestartCount"));
-    
+
     access = failureControlTestResults.afterCompleting(1);
-    
+
     failure.afterFailure();
     assertEquals(1, (int) access.readFrom("afterFailureCount"));
   }
-  
+
   @Test
   public void testStoppingSupervisor() {
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
                     Supervisor.class,
                     Definition.has(StoppingSupervisorActor.class, Definition.NoParameters, "stopping-supervisor"));
-    
+
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
 
     final TestActor<FailureControl> failure =
@@ -73,28 +73,28 @@ public class BasicSupervisionTest extends ActorsTest {
 
     failure.actor().failNow();
     assertEquals(1, (int) access.readFrom("failNowCount"));
-    
+
     failure.actor().afterFailure();
     assertEquals(1, (int) access.readFrom("stoppedCount"));
     assertEquals(0, (int) access.readFrom("afterFailureCount"));
   }
-  
+
   @Test
   public void testRestartSupervisor() {
     final RestartSupervisorTestResults restartSupervisorTestResults = new RestartSupervisorTestResults();
-    
+
     final TestActor<Supervisor> supervisor =
             testWorld.actorFor(
                     Supervisor.class,
                     Definition.has(RestartSupervisorActor.class, Definition.parameters(restartSupervisorTestResults), "restart-supervisor"));
-    
+
     final FailureControlTestResults failureControlTestResults = new FailureControlTestResults();
-    
+
     final TestActor<FailureControl> failure =
             testWorld.actorFor(
                     FailureControl.class,
                     Definition.has(FailureControlActor.class, Definition.parameters(failureControlTestResults), supervisor.actorInside(), "failure-for-restart"));
-    
+
     AccessSafely failureAccess = failureControlTestResults.afterCompleting(6);
     AccessSafely restartAccess = restartSupervisorTestResults.afterCompleting(1);
 
@@ -110,7 +110,7 @@ public class BasicSupervisionTest extends ActorsTest {
 
     failure.actor().afterFailure();
     assertEquals(1, (int) afterFailureAccess.readFrom("afterFailureCount"));
-    
+
     assertEquals(0, (int) afterFailureAccess.readFrom("stoppedCount"));
   }
 
@@ -144,32 +144,32 @@ public class BasicSupervisionTest extends ActorsTest {
         };
     }
   }
-  
+
   public static class RestartSupervisorActor extends Actor implements Supervisor {
     private final RestartSupervisorTestResults testResults;
-    
+
     public RestartSupervisorActor(final RestartSupervisorTestResults testResults) {
       this.testResults = testResults;
     }
-    
+
     private final SupervisionStrategy strategy =
             new SupervisionStrategy() {
               @Override
               public int intensity() {
                 return 2;
               }
-        
+
               @Override
               public long period() {
                 return SupervisionStrategy.DefaultPeriod;
               }
-        
+
               @Override
               public Scope scope() {
                 return Scope.One;
               }
             };
-    
+
     @Override
     public void inform(final Throwable throwable, final Supervised supervised) {
       //logger().log("RestartSupervisorActor informed of failure in: " + supervised.address().name() + " because: " + throwable.getMessage(), throwable);
@@ -183,7 +183,7 @@ public class BasicSupervisionTest extends ActorsTest {
       return strategy;
     }
   }
-  
+
   private static class RestartSupervisorTestResults {
     public AccessSafely access = afterCompleting(0);
 
