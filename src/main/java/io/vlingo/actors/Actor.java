@@ -94,6 +94,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answers the {@code TestState} for this {@code Actor}. Override to provide a snapshot of the current {@code Actor} state.
    * @return TestState
    */
+  @Override
   public TestState viewTestState() {
     // override for concrete actor state
     return new TestState();
@@ -109,7 +110,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     if (other == null || other.getClass() != this.getClass()) {
       return false;
     }
-    
+
     return address().equals(((Actor) other).lifeCycle.address());
   }
 
