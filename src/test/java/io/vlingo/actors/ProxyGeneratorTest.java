@@ -60,6 +60,20 @@ public class ProxyGeneratorTest {
     }
 
     @Test
+    public void testThatProxyGeneratesValidClassDefinitionForWildcardGenericProtocol() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithWilcardGenerics.class.getCanonicalName());
+
+        assertFalse("Proxy class has invalid generic signature due to generics wildcard", result.source.contains("import ?"));
+    }
+
+    @Test
+    public void testThatProxyGeneratesValidClassDefinitionForWildcardGenericMethods() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithWildcardGenericMethods.class.getCanonicalName());
+
+        assertFalse("Proxy class has invalid generic signature due to generics wildcard", result.source.contains("import ?"));
+    }
+
+    @Test
     public void testThatProxyImportsDependenciesFromGenerics() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
@@ -91,13 +105,22 @@ public class ProxyGeneratorTest {
 }
 
 interface ProtocolWithGenericMethods {
-    Completes<Optional<List<Boolean>>> someMethod();
-    <T extends RuntimeException> T someOtherMethod();
+  Completes<Optional<List<Boolean>>> someMethod();
+  <T extends RuntimeException> T someOtherMethod();
+}
+
+interface ProtocolWithWildcardGenericMethods {
+  Completes<Optional<? extends Number>> someMethod();
 }
 
 interface ProtocolWithGenerics<A extends RuntimeException, B extends Queue<IOException>> {
-    Completes<Queue<List<A>>> someMethod();
-    Completes<Queue<List<B>>> otherMethod();
+  Completes<Queue<List<A>>> someMethod();
+  Completes<Queue<List<B>>> otherMethod();
+}
+
+interface ProtocolWithWilcardGenerics<A extends RuntimeException, B extends Queue<?>> {
+  Completes<Queue<List<A>>> someMethod();
+  Completes<Queue<List<B>>> otherMethod();
 }
 
 interface ProtocolWithPrimitive {

@@ -36,6 +36,9 @@ import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 
 public class ProxyGenerator implements AutoCloseable {
+  
+  private static final String GENERICS_WILDCARD = "?";
+
   public static class Result {
     public final String classname;
     public final String fullyQualifiedClassname;
@@ -142,6 +145,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)
+            .filter(d -> !d.startsWith(GENERICS_WILDCARD))
             .map(type1 -> "import " + type1 + ";\n")
             .collect(Collectors.toSet()).forEach(builder::append);
     return builder.toString();
