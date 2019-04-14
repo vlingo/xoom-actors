@@ -173,6 +173,24 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
+   * Answers the {@code Protocols} for the child {@code Actor} to be created by this parent {@code  Actor}.
+   * @param protocols the {@code Class<T>[]} protocols of the child {@code Actor}
+   * @param definition the {@code Definition} of the child {@code Actor} to be created by this parent {@code Actor}
+   * @return Protocols
+   */
+  protected Protocols childActorFor(final Class<?>[] protocols, final Definition definition) {
+    if (definition.supervisor() != null) {
+      return lifeCycle.environment.stage.actorFor(protocols, definition, this, definition.supervisor(), logger());
+    } else {
+      if (this instanceof Supervisor) {
+        return lifeCycle.environment.stage.actorFor(protocols, definition, this, lifeCycle.lookUpProxy(Supervisor.class), logger());
+      } else {
+        return lifeCycle.environment.stage.actorFor(protocols, definition, this, null, logger());
+      }
+    }
+  }
+
+  /**
    * Answers the {@code Completes<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
    * delivered {@code Message} does not answer a {@code Completes<T>}.
    * @param <T> the protocol type
