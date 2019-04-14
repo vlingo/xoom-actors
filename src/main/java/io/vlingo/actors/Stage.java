@@ -158,6 +158,28 @@ public class Stage implements Stoppable {
    * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
    * newly created {@code Actor} according to {@code definition}.
    * @param protocols the {@code Class<?>}[] array of protocols that the {@code Actor} supports
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @param parent the Actor that is this actor's parent
+   * @param maybeSupervisor the possible Supervisor of this actor
+   * @param logger the Logger of this actor
+   * @return Protocols
+   */
+  public Protocols actorFor(final Class<?>[] protocols, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+    final ActorProtocolActor<Object>[] all =
+            actorProtocolFor(
+                    protocols,
+                    definition,
+                    parent,
+                    maybeSupervisor,
+                    logger);
+
+    return new Protocols(ActorProtocolActor.toActors(all));
+  }
+
+  /**
+   * Answers a {@code Protocols} that provides one or more supported {@code protocols} for the
+   * newly created {@code Actor} according to {@code definition}.
+   * @param protocols the {@code Class<?>}[] array of protocols that the {@code Actor} supports
    * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
    * @param parameters the {@code Object[]} of constructor parameters
    * @return Protocols
@@ -365,7 +387,6 @@ public class Stage implements Stoppable {
     ActorProtocolActor<T> actor = actorProtocolFor(protocol, definition, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
   }
-
 
   /**
    * Answers the ActorProtocolActor[] for the newly created Actor instance. (INTERNAL ONLY)
