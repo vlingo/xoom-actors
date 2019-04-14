@@ -21,45 +21,51 @@ import io.vlingo.common.TriFunction;
  * Routee represents a potential target for for a routed message.
  */
 public class Routee<P> {
-  
+
+  private final Addressable addressable;
   private P delegate;
   private long messageCount;
 
-  static <T> Routee<T> of(final T actor) {
-    return new Routee<T>(actor);
+  static <T> Routee<T> of(final T actor, final Addressable addressable) {
+    return new Routee<T>(actor, addressable);
   }
 
-  Routee(final P actor) {
+  static <T> Routee<T> of(final T actor) {
+    return new Routee<T>(actor, null);
+  }
+
+  Routee(final P actor, final Addressable addressable) {
     super();
     this.delegate = actor;
+    this.addressable = addressable;
     this.messageCount = 0;
   }
-  
+
   public P delegate() {
     return delegate;
   }
-  
-  public Actor delegateActor() {
-    return (Actor) delegate;
+
+  public LifeCycle delegateLifeCycle() {
+    return addressable.lifeCycle();
   }
-  
+
   public Address address() {
-    return delegateActor().address();
+    return addressable.address();
   }
-  
+
   public int pendingMessages() {
-    return delegateActor().lifeCycle.environment.mailbox.pendingMessages();
+    return delegateLifeCycle().environment.mailbox.pendingMessages();
   }
-  
+
   public long messageCount() {
     return messageCount;
   }
-  
+
   protected <T1> void receiveCommand(final BiConsumer<P, T1> consumer, final T1 routable1) {
     messageCount++;
     consumer.accept(delegate, routable1);
   }
-  
+
   protected <T1, T2> void receiveCommand(final TriConsumer<P, T1, T2> consumer, final T1 routable1, final T2 routable2) {
     messageCount++;
     consumer.accept(delegate, routable1, routable2);
@@ -74,27 +80,27 @@ public class Routee<P> {
     messageCount++;
     consumer.accept(delegate, routable1, routable2, routable3, routable4);
   }
-  
+
   public <T1, R extends Completes<?>> R receiveQuery(final BiFunction<P, T1, R> query, final T1 routable1) {
     messageCount++;
     return query.apply(delegate, routable1);
   }
-  
+
   public <T1, T2, R extends Completes<?>> R receiveQuery(final TriFunction<P, T1, T2, R> query, final T1 routable1, final T2 routable2) {
     messageCount++;
     return query.apply(delegate, routable1, routable2);
   }
-  
+
   public <T1, T2, T3, R extends Completes<?>> R receiveQuery(final QuadFunction<P, T1, T2, T3, R> query, final T1 routable1, final T2 routable2, final T3 routable3) {
     messageCount++;
     return query.apply(delegate, routable1, routable2, routable3);
   }
-  
+
   public <T1, T2, T3, T4, R extends Completes<?>> R receiveQuery(final PentaFunction<P, T1, T2, T3, T4, R> query, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
     messageCount++;
     return query.apply(delegate, routable1, routable2, routable3, routable4);
   }
-  
+
   /* @see java.lang.Object#hashCode() */
   @Override
   public int hashCode() {
