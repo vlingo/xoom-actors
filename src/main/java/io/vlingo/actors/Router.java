@@ -25,52 +25,53 @@ import io.vlingo.common.TriFunction;
  * computed {@link Routing}.
  */
 public abstract class Router<P> extends Actor {
-  
+
   protected final List<Routee<P>> routees;
-  
+
   public Router(final RouterSpecification<P> specification) {
     this.routees = new ArrayList<Routee<P>>();
     initRoutees(specification);
   }
-  
+
   protected void initRoutees(final RouterSpecification<P> specification) {
     for (int i = 0; i < specification.initialPoolSize(); i++) {
-      P child = childActorFor(specification.routerProtocol(), specification.routerDefinition());
-      subscribe(Routee.of(child));
+      final Class<?>[] protocols = new Class<?>[] { specification.routerProtocol(), Addressable.class };
+      final Protocols two = childActorFor(protocols, specification.routerDefinition());
+      subscribe(Routee.of(two.get(0), two.get(1)));
     }
   }
-  
+
   protected List<Routee<P>> routees() {
     return Collections.unmodifiableList(routees);
   }
-  
+
   public Routee<P> routeeAt(int index) {
     return (index < 0 || index >= routees.size()) ? null : routees.get(index);
   }
-  
+
   //SUBSCRIPTION
-  
+
   protected void subscribe(Routee<P> routee) {
     if (!routees.contains(routee))
       routees.add(routee);
   }
-  
+
   protected void subscribe(List<Routee<P>> toSubscribe) {
     toSubscribe.forEach(routee -> subscribe(routee));
   }
-  
+
   protected void unsubscribe(Routee<P> routee) {
     routees.remove(routee);
   }
-  
+
   protected void unsubscribe(List<Routee<P>> toUnsubscribe) {
     toUnsubscribe.forEach(routee -> unsubscribe(routee));
   }
-  
+
   //ROUTE COMPUTATION
-  
+
   protected abstract Routing<P> computeRouting();
-  
+
   protected <T1> Routing<P> routingFor(final T1 routable1) {
     /* by default, assume the routing is not dependent on message content */
     return computeRouting();
@@ -80,7 +81,7 @@ public abstract class Router<P> extends Actor {
     /* by default, assume the routing is not dependent on message content */
     return computeRouting();
   }
-  
+
   protected <T1, T2, T3> Routing<P> routingFor(final T1 routable1, final T2 routable2, final T3 routable3) {
     /* by default, assume the routing is not dependent on message content */
     return computeRouting();
@@ -90,33 +91,33 @@ public abstract class Router<P> extends Actor {
     /* by default, assume the routing is not dependent on message content */
     return computeRouting();
   }
-  
+
   //DISPATCHING - COMMANDS
-  
+
   protected <T1> void dispatchCommand(final BiConsumer<P, T1> action, final T1 routable1) {
     routingFor(routable1)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1));
   }
-  
+
   protected <T1, T2> void dispatchCommand(final TriConsumer<P, T1, T2> action, final T1 routable1, final T2 routable2) {
     routingFor(routable1, routable2)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2));
   }
-  
+
   protected <T1, T2, T3> void dispatchCommand(final QuadConsumer<P, T1, T2, T3> action, final T1 routable1, final T2 routable2, final T3 routable3) {
     routingFor(routable1, routable2, routable3)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2, routable3));
   }
-  
+
   protected <T1, T2, T3, T4> void dispatchCommand(final PentaConsumer<P, T1, T2, T3, T4> action, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
     routingFor(routable1, routable2, routable3, routable4)
       .routees()
       .forEach(routee -> routee.receiveCommand(action, routable1, routable2, routable3, routable4));
   }
-  
+
   //DISPATCHING - QUERIES
 
   @SuppressWarnings("unchecked")
@@ -128,7 +129,7 @@ public abstract class Router<P> extends Actor {
       .andThenConsume(outcome -> completesEventually.with(outcome));
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
-  
+
   @SuppressWarnings("unchecked")
   protected <T1, T2, R extends Completes<?>> R dispatchQuery(final TriFunction<P, T1, T2, R> query, final T1 routable1, final T2 routable2) {
     final CompletesEventually completesEventually = completesEventually();
@@ -148,7 +149,7 @@ public abstract class Router<P> extends Actor {
       .andThenConsume(outcome -> completesEventually.with(outcome));
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
-  
+
   @SuppressWarnings("unchecked")
   protected <T1, T2, T3, T4, R extends Completes<?>> R dispatchQuery(final PentaFunction<P, T1, T2, T3, T4, R> query, final T1 routable1, final T2 routable2, final T3 routable3, final T4 routable4) {
     final CompletesEventually completesEventually = completesEventually();
