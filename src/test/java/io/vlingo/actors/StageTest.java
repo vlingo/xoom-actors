@@ -10,7 +10,6 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -110,28 +109,16 @@ public class StageTest extends ActorsTest {
       scanResult.scanFound.writeUsing("foundCount", 1);
     });
 
-    world.stage().actorOf(NoProtocol.class, address6)
-      .andThen(null, actor -> {
-        assertNotNull(actor);
-        scanResult.scanFound.writeUsing("foundCount", 1);
-        return actor;
-      })
-      .otherwise((noSuchActor) -> {
-        assertNull(noSuchActor);
-        scanResult.scanFound.writeUsing("notFoundCount", 1);
-        return null;
+    world.stage().maybeActorOf(NoProtocol.class, address6)
+      .andThenConsume((maybe) -> {
+        if (maybe.isPresent()) scanResult.scanFound.writeUsing("foundCount", 1);
+        else scanResult.scanFound.writeUsing("notFoundCount", 1);
       });
-    world.stage().actorOf(NoProtocol.class, address7)
-      .andThen(null, actor -> {
-        assertNotNull(actor);
-        scanResult.scanFound.writeUsing("foundCount", 1);
-        return actor;
-      })
-      .otherwise((noSuchActor) -> {
-        assertNull(noSuchActor);
-        scanResult.scanFound.writeUsing("notFoundCount", 1);
-        return null;
-      });
+    world.stage().maybeActorOf(NoProtocol.class, address7)
+      .andThenConsume((maybe) -> {
+        if (maybe.isPresent()) scanResult.scanFound.writeUsing("foundCount", 1);
+        else scanResult.scanFound.writeUsing("notFoundCount", 1);
+    });
 
     assertEquals(5, (int) scanResult.scanFound.readFrom("foundCount"));
     assertEquals(2, (int) scanResult.scanFound.readFrom("notFoundCount"));
