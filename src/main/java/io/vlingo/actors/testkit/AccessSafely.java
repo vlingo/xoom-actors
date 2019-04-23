@@ -52,6 +52,15 @@ public class AccessSafely {
   }
 
   /**
+   * Answer a new AccessSafely with my existing reads and writes functionality.
+   * @param happenings the int number of times that writeUsing() is employed prior to readFrom() answering
+   * @return AccessSafely
+   */
+  public AccessSafely resetAfterCompletingTo(final int happenings) {
+    return new AccessSafely(this, happenings);
+  }
+
+  /**
    * Answer me with {@code function} registered for reading.
    * @param name the String name of the {@code Function<T,R>} to register
    * @param function the {@code Function<T,R>} to register
@@ -248,6 +257,14 @@ public class AccessSafely {
   }
 
   /**
+   * Answer the total of writes completed.
+   * @return int
+   */
+  public int totalWrites() {
+    return totalWrites.get();
+  }
+
+  /**
    * Construct my default state.
    * @param happenings the int number of times that {@code TestUntil} will count down before readUsing() completes
    */
@@ -260,14 +277,19 @@ public class AccessSafely {
     this.lock = new Object();
   }
 
+  private AccessSafely(final AccessSafely existing, final int happenings) {
+    this.until = TestUntil.happenings(happenings);
+    this.biConsumers = existing.biConsumers;
+    this.consumers = existing.consumers;
+    this.functions = existing.functions;
+    this.suppliers = existing.suppliers;
+    this.lock = new Object();
+  }
+
   /**
    * Construct my default state.
    */
   private AccessSafely() {
     this(0);
-  }
-  
-  public int totalWrites() {
-    return totalWrites.get();
   }
 }
