@@ -10,27 +10,64 @@ package io.vlingo.actors.testkit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A context useful for testing.
+ * A context useful for testing, consisting of an atomic reference value
+ * and a safe access to state modification with expected number of outcomes.
  */
 public class TestContext {
   /**
    * A reference to any object that may be of use to the test.
    * Use reference() to cast the inner object to a specific type.
    */
-  public final AtomicReference<Object> reference = new AtomicReference<>();
+  public final AtomicReference<Object> reference;
 
   /**
    * Track number of expected happenings. Use resetHappeningsTo(n)
    * to change expectations inside a single test.
    */
-  public final TestUntil until = TestUntil.happenings(0);
+  public AccessSafely access;
 
+  /**
+   * Constructs my default state.
+   */
+  public TestContext() {
+    this.access = AccessSafely.afterCompleting(0);
+    this.reference = new AtomicReference<>();
+  }
+
+  /**
+   * Constructs my default state with {@code times}.
+   */
+  public TestContext(final int times) {
+    this.access = AccessSafely.afterCompleting(times);
+    this.reference = new AtomicReference<>();
+  }
+
+  /**
+   * Answer my reference values as a {@code T}.
+   * @return T
+   */
   @SuppressWarnings("unchecked")
   public <T> T reference() {
     return (T) reference.get();
   }
 
-  public void resetHappeningsTo(final int times) {
-    until.resetHappeningsTo(times);
+  /**
+   * Answer a new TestContext with my full copy but with a new {@code times}.
+   * @param times the number of expected completions
+   * @return TestContext
+   */
+  public TestContext resetAfterCompletingTo(final int times) {
+    return new TestContext(this, times);
+  }
+
+  /**
+   * Constructs my default state from an existing {@code TestContext} but new {@code times}.
+   * @param context the TestContext to use as a copy
+   * @param times the number of expected completions
+   */
+  private TestContext(final TestContext context, final int times) {
+    this.access = context.access.resetAfterCompletingTo(times);
+    this.reference = new AtomicReference<>();
+    this.reference.set(context.reference.get());
   }
 }
