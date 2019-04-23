@@ -99,7 +99,7 @@ public class TestMailbox implements Mailbox {
   public Message receive() {
     throw new UnsupportedOperationException("TestMailbox does not support this operation.");
   }
-  
+
   /* @see io.vlingo.actors.Mailbox#pendingMessages() */
   @Override
   public int pendingMessages() {
