@@ -18,7 +18,7 @@ public class TestContext {
    * Track number of expected happenings. Use resetHappeningsTo(n)
    * to change expectations inside a single test.
    */
-  private final AccessSafely access;
+  private AccessSafely access;
 
   /**
    * A reference to any object that may be of use to the test.
@@ -46,6 +46,30 @@ public class TestContext {
     setUpWriteRead();
   }
 
+  /**
+   * Answer my access;
+   * @return AccessSafely
+   */
+  public AccessSafely access() {
+    return access;
+  }
+
+  /**
+   * Answer the {@code T} typed value of my {@code access} when it is available.
+   * Block unless the value is immediately available.
+   * @param <T> the type of my reference to answer
+   * @return T
+   */
+  public <T> T mustComplete() {
+    return access.readFrom("reference");
+  }
+
+  /**
+   * Answer myself after initializing my atomic reference to {@code value}.
+   * @param value the T value
+   * @param <T> the type of value to set
+   * @return TestContext
+   */
   public <T> TestContext initialReferenceValueOf(final T value) {
     this.reference.set(value);
     return this;
@@ -66,23 +90,13 @@ public class TestContext {
   }
 
   /**
-   * Answer a new TestContext with my full copy but with a new {@code times}.
+   * Answer a myself with with a new expected completions/happenings {@code times}.
    * @param times the number of expected completions
    * @return TestContext
    */
   public TestContext resetAfterCompletingTo(final int times) {
-    return new TestContext(this, times);
-  }
-
-  /**
-   * Constructs my default state from an existing {@code TestContext} but new {@code times}.
-   * @param context the TestContext to use as a copy
-   * @param times the number of expected completions
-   */
-  private TestContext(final TestContext context, final int times) {
-    this.access = context.access.resetAfterCompletingTo(times);
-    this.reference = new AtomicReference<>();
-    this.reference.set(context.reference.get());
+    this.access = access.resetAfterCompletingTo(times);
+    return this;
   }
 
   /**
