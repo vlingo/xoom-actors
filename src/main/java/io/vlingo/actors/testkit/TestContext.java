@@ -15,16 +15,16 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class TestContext {
   /**
-   * A reference to any object that may be of use to the test.
-   * Use reference() to cast the inner object to a specific type.
-   */
-  public final AtomicReference<Object> reference;
-
-  /**
    * Track number of expected happenings. Use resetHappeningsTo(n)
    * to change expectations inside a single test.
    */
-  public AccessSafely access;
+  private final AccessSafely access;
+
+  /**
+   * A reference to any object that may be of use to the test.
+   * Use reference() to cast the inner object to a specific type.
+   */
+  private final AtomicReference<Object> reference;
 
   /**
    * Constructs my default state.
@@ -32,6 +32,8 @@ public class TestContext {
   public TestContext() {
     this.access = AccessSafely.afterCompleting(0);
     this.reference = new AtomicReference<>();
+
+    setUpWriteRead();
   }
 
   /**
@@ -40,6 +42,13 @@ public class TestContext {
   public TestContext(final int times) {
     this.access = AccessSafely.afterCompleting(times);
     this.reference = new AtomicReference<>();
+
+    setUpWriteRead();
+  }
+
+  public <T> TestContext initialReferenceValueOf(final T value) {
+    this.reference.set(value);
+    return this;
   }
 
   /**
@@ -47,8 +56,13 @@ public class TestContext {
    * @return T
    */
   @SuppressWarnings("unchecked")
-  public <T> T reference() {
+  public <T> T referenceValue() {
     return (T) reference.get();
+  }
+
+  public <T> TestContext referenceValueTo(final T value) {
+    access.writeUsing("reference", value);
+    return this;
   }
 
   /**
@@ -69,5 +83,14 @@ public class TestContext {
     this.access = context.access.resetAfterCompletingTo(times);
     this.reference = new AtomicReference<>();
     this.reference.set(context.reference.get());
+  }
+
+  /**
+   * Set up writer and reader of state.
+   */
+  private void setUpWriteRead() {
+    access
+      .writingWith("reference", (value) -> reference.set(value))
+      .readingWith("reference", () -> reference.get());
   }
 }
