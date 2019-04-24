@@ -175,9 +175,10 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
                 overrides.remove(index);
                 popped = true;
                 --elements;
-                for (int possiblyObsolete = index + 1; possiblyObsolete < elements; ++possiblyObsolete) {
-                  if (overrides.get(possiblyObsolete).obsolete) {
+                while (index < elements) {
+                  if (overrides.get(index).obsolete) {
                     overrides.remove(index);
+                    --elements;
                   } else {
                     break;
                   }

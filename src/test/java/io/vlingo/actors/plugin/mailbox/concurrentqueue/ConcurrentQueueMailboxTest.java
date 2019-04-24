@@ -8,6 +8,7 @@
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +27,16 @@ import io.vlingo.actors.testkit.TestUntil;
 
 public class ConcurrentQueueMailboxTest extends ActorsTest {
   private static int Total = 10_000;
-  
+
   private Dispatcher dispatcher;
   private Mailbox mailbox;
-  
+
   @Test
   public void testMailboxSendReceive() throws Exception {
     final TestResults testResults = new TestResults();
-    
+
     final CountTakerActor actor = new CountTakerActor(testResults);
-    
+
     actor.testResults.until = until(Total);
 
     for (int count = 0; count < Total; ++count) {
@@ -44,50 +45,71 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
     }
-    
+
     actor.testResults.until.completes();
-    
+
     for (int idx = 0; idx < Total; ++idx) {
       assertEquals(idx, (int) actor.testResults.counts.get(idx));
     }
   }
-  
+
+  @Test
+  public void testThatSuspendResumes()
+  {
+      final String paused = "paused#";
+      final String exceptional = "exceptional#";
+
+      final Dispatcher dispatcher = new ExecutorDispatcher(1, 1.0f);
+      final Mailbox mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
+
+      mailbox.suspendExceptFor(paused, CountTakerActor.class);
+
+      mailbox.suspendExceptFor(exceptional, CountTakerActor.class);
+
+      mailbox.resume(exceptional);
+
+      mailbox.resume(paused);
+
+      assertFalse(mailbox.isSuspended());
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    
+
     dispatcher = new ExecutorDispatcher(1, 1.0f);
     mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
   }
-  
+
+  @Override
   @After
   public void tearDown() throws Exception {
     super.tearDown();
-    
+
     mailbox.close();
     dispatcher.close();
   }
-  
+
   public static interface CountTaker {
     void take(final int count);
   }
-  
+
   public static class CountTakerActor extends Actor implements CountTaker {
     private final TestResults testResults;
-    
+
     public CountTakerActor(final TestResults testResults) {
       this.testResults = testResults;
     }
-    
+
     @Override
     public void take(final int count) {
       testResults.counts.add(count);
-      
+
       testResults.until.happened();
     }
   }
-  
+
   private static class TestResults {
     public final List<Integer> counts = new ArrayList<>();
     public TestUntil until = TestUntil.happenings(0);
