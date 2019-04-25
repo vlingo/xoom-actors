@@ -6,7 +6,8 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 /**
- * BroadcastRouter
+ * ContentBasedRouter is a kind of {@link Router} that considers the
+ * content of messages in computing a {@link Routing}
  */
 public abstract class ContentBasedRouter<P> extends Router<P> {
   
