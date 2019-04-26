@@ -47,7 +47,7 @@ public class BasicSupervisionTest extends ActorsTest {
     assertEquals(1, (int) access.readFrom("failNowCount"));
 
     // actor may or may not be resumed by now
-    assertEquals(1, (int) access.readFrom("afterRestartCount"));
+    assertEquals(1, (int) access.readFromExpecting("afterRestartCount", 1, 1_000));
 
     access = failureControlTestResults.afterCompleting(1);
 
