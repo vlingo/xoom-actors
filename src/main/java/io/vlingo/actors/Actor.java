@@ -325,7 +325,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param reason the {@code Throwable} cause of the supervision restart
    */
   protected void beforeRestart(final Throwable reason) {
-    // override
+    // override for specific recovery
+
+    logger().log("Default before restart recovery after: " + reason.getMessage(), reason);
+
     lifeCycle.afterStop(this);
   }
 
@@ -335,7 +338,10 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param reason the {@code Throwable} cause of the supervision restart
    */
   protected void afterRestart(final Throwable reason) {
-    // override
+    // override for specific recovery
+
+    logger().log("Default after restart recovery after: " + reason.getMessage(), reason);
+
     lifeCycle.beforeStart(this);
   }
 
@@ -345,6 +351,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param reason the {@code Throwable} cause of the supervision resume
    */
   protected void beforeResume(final Throwable reason) {
-    // override
+    // override for specific recovery
+
+    logger().log("Default before resume recovery after: " + reason.getMessage(), reason);
   }
 }
