@@ -27,7 +27,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,7 +43,7 @@ import io.vlingo.common.compiler.DynaFile;
 import io.vlingo.common.compiler.DynaType;
 
 public class ProxyGenerator implements AutoCloseable {
-  
+
   private static final String GENERICS_WILDCARD = "?";
 
   public static class Result {
@@ -428,6 +435,7 @@ public class ProxyGenerator implements AutoCloseable {
 
     public static Stream<String> dependenciesOf(final Class<?> classRef) {
         return Arrays.stream(classRef.getMethods())
+                .filter(GenericParser::instanceOnly)
                 .flatMap(GenericParser::dependenciesOf)
                 .filter(GenericParser::onlyNotPrimitives)
                 .map(GenericParser::normalizeTypeName);
@@ -456,6 +464,10 @@ public class ProxyGenerator implements AutoCloseable {
                 .map(GenericParser::normalizeTypeName)
                 .collect(Collectors.joining(", ", "<", ">"))
                 .replace("<>", "");
+    }
+
+    public static boolean instanceOnly(final Method method) {
+      return ((method.getModifiers() & Modifier.STATIC) == 0);
     }
 
     public static String parametersTemplateOf(final Method method) {
