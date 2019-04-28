@@ -14,7 +14,7 @@ import io.vlingo.actors.Supervisor;
 
 public class DefaultSupervisorOverride extends Actor implements Supervisor {
   private final Supervisor parentSupervisor;
-  
+
   private final SupervisionStrategy supervisionStrategy =
           new SupervisionStrategy() {
             @Override
@@ -39,7 +39,7 @@ public class DefaultSupervisorOverride extends Actor implements Supervisor {
 
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    logger().log("DefaultSupervisorOverride: Failure of: " + supervised.address(), throwable);
+    logger().log("DefaultSupervisorOverride: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Resuming.", throwable);
     supervised.resume();
   }
 
