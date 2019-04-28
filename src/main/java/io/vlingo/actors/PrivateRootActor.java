@@ -25,10 +25,10 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
               return Scope.One;
             }
           };
-  
+
   public PrivateRootActor() {
     stage().world().setPrivateRoot(selfAs(Stoppable.class));
-    
+
     stage().actorProtocolFor(
               NoProtocol.class,
               Definition.has(PublicRootActor.class, Definition.NoParameters, World.PUBLIC_ROOT_NAME),
@@ -47,7 +47,7 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
               null,
               logger());
   }
-  
+
   @Override
   protected void afterStop() {
     stage().world().setPrivateRoot(null);
@@ -60,7 +60,7 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
 
   @Override
   public void inform(Throwable throwable, Supervised supervised) {
-    logger().log("PrivateRootActor: Failure of: " + supervised.address() + ": Stopping.", throwable);
+    logger().log("PrivateRootActor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Stopping.", throwable);
     supervised.stop(strategy.scope());
   }
 
