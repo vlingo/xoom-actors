@@ -26,10 +26,10 @@ public class PublicRootActor extends Actor implements Stoppable, Supervisor {
               return Scope.One;
             }
           };
-  
+
   public PublicRootActor() {
     this.self = selfAs(Supervisor.class);
-    
+
     stage().world().setDefaultParent(this);
     stage().world().setPublicRoot(selfAs(Stoppable.class));
   }
@@ -43,7 +43,7 @@ public class PublicRootActor extends Actor implements Stoppable, Supervisor {
 
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    logger().log("PublicRootActor: Failure of: " + supervised.address() + ": Restarting.", throwable);
+    logger().log("PublicRootActor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Restarting.", throwable);
     supervised.restartWithin(supervisionStrategy.period(), supervisionStrategy.intensity(), supervisionStrategy.scope());
   }
 
