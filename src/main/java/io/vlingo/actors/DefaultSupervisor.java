@@ -14,12 +14,12 @@ public abstract class DefaultSupervisor extends Actor implements Supervisor {
       public int intensity() {
         return SupervisionStrategy.DefaultIntensity;
       }
-  
+
       @Override
       public long period() {
         return SupervisionStrategy.DefaultPeriod;
       }
-  
+
       @Override
       public Scope scope() {
         return Scope.One;
@@ -28,6 +28,7 @@ public abstract class DefaultSupervisor extends Actor implements Supervisor {
 
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
+    logger().log("DefaultSupervisor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Possibly restarting.", throwable);
     supervised.restartWithin(DefaultSupervisionStrategy.period(), DefaultSupervisionStrategy.intensity(), DefaultSupervisionStrategy.scope());
   }
 
@@ -35,6 +36,6 @@ public abstract class DefaultSupervisor extends Actor implements Supervisor {
   public SupervisionStrategy supervisionStrategy() {
     return DefaultSupervisionStrategy;
   }
-  
+
   protected DefaultSupervisor() { }
 }
