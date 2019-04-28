@@ -182,8 +182,6 @@ public class AccessSafely {
       throw new IllegalArgumentException("Unknown supplier: " + name);
     }
 
-    until.completes();
-
     for (long count = 0; count < retries; ++count) {
       synchronized (lock) {
         final T value = supplier.get();
@@ -261,7 +259,30 @@ public class AccessSafely {
    * @return int
    */
   public int totalWrites() {
-    return totalWrites.get();
+    synchronized (lock) {
+      return totalWrites.get();
+    }
+  }
+
+  /**
+   * Answer the total of writes completed after ensuring that it surpasses {@code lesser},
+   * or if {@code retries} is reached first throw {@code IllegalStateException}.
+   * @param lesser the int value that must be surpassed
+   * @param retries the int number of retries before failing
+   * @return int
+   * @throws IllegalStateException when the total is not surpassed before the maximum retries
+   */
+  public int totalWritesGreaterThan(final int lesser, final long retries) {
+    for (long count = 0; count < retries; ++count) {
+      synchronized (lock) {
+        final int total = totalWrites.get();
+        if (total > lesser) {
+          return total;
+        }
+      }
+      try { Thread.sleep(1L); } catch (Exception e) { }
+    }
+    throw new IllegalStateException("Did not reach expected value: " + (lesser + 1));
   }
 
   /**
