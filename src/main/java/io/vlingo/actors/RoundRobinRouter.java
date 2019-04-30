@@ -18,6 +18,10 @@ public class RoundRobinRouter<P> extends Router<P> {
     super(specification);
   }
   
+  int poolIndex() {
+    return poolIndex;
+  }
+  
   /* @see io.vlingo.actors.Router#computeRouting() */
   @Override
   protected Routing<P> computeRouting() {
@@ -26,6 +30,11 @@ public class RoundRobinRouter<P> extends Router<P> {
 
   protected Routee<P> nextRoutee() {
     final List<Routee<P>> routees = routees();
-    return routees.get(poolIndex++ % routees.size());
+    return routees.get(incrementAndGetPoolIndex() % routees.size());
+  }
+  
+  private int incrementAndGetPoolIndex() {
+    poolIndex = (poolIndex == Integer.MAX_VALUE) ? 0 : poolIndex + 1;
+    return poolIndex;
   }
 }
