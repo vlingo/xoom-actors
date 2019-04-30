@@ -7,10 +7,10 @@
 
 package io.vlingo.actors;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Environment {
@@ -54,12 +54,12 @@ public class Environment {
     this.maybeSupervisor = maybeSupervisor;
     this.failureMark = new FailureMark();
     this.logger = logger;
-    this.children = new ArrayList<Actor>(0);
+    this.children = new CopyOnWriteArrayList<Actor>();
     this.proxyCache = new HashMap<>();
 //    this.stowage = new Stowage();
     this.stowageOverrides = null;
 //    this.suspended = new Stowage();
-    
+
     this.secured = new AtomicBoolean(false);
     this.stopped = new AtomicBoolean(false);
   }
