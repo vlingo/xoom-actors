@@ -42,7 +42,7 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   @Override
   public void resume(final String name) {
     // TODO: Consider supporting Stowage here
-    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
+    System.out.println("WARNING: ManyToOneConcurrentArrayQueueMailbox does not support resume(): " + name);
   }
 
   @Override
@@ -58,7 +58,7 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   @Override
   public void suspendExceptFor(final String name, final Class<?>... overrides) {
     // TODO: Consider supporting Stowage here
-    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation.");
+    System.out.println("WARNING: ManyToOneConcurrentArrayQueueMailbox does not support suspendExceptFor(): " + name + " overrides: " + overrides);
   }
 
   @Override
@@ -74,7 +74,7 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   /* @see io.vlingo.actors.Mailbox#pendingMessages() */
   @Override
   public int pendingMessages() {
-    throw new UnsupportedOperationException("ManyToOneConcurrentArrayQueueMailbox does not support this operation");
+    return queue.size();
   }
 
   protected ManyToOneConcurrentArrayQueueMailbox(final Dispatcher dispatcher, final int mailboxSize, final int totalSendRetries) {
