@@ -78,6 +78,7 @@ public class LocalMessage<T> implements Message {
     return false;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation) {
     this.actor = actor;
