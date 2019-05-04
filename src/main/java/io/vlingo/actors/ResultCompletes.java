@@ -93,11 +93,13 @@ class ResultCompletes implements Completes<Object> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object await() {
     throw new UnsupportedOperationException();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object await(final long timeout) {
     throw new UnsupportedOperationException();
   }
