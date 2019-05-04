@@ -90,6 +90,7 @@ public class TestActor<T> implements TestStateView {
   /**
    * Answer the {@code V} typed value of my {@code context} when it is available.
    * Block unless the value is immediately available.
+   * @param <V> the value type
    * @return V
    */
   public <V> V mustComplete() {

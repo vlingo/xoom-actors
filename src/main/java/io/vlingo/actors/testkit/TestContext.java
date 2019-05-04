@@ -38,6 +38,7 @@ public class TestContext {
 
   /**
    * Constructs my default state with {@code times}.
+   * @param times the int number of times to complete
    */
   public TestContext(final int times) {
     this.access = AccessSafely.afterCompleting(times);
@@ -77,6 +78,7 @@ public class TestContext {
 
   /**
    * Answer my reference values as a {@code T}.
+   * @param <T> the value type
    * @return T
    */
   @SuppressWarnings("unchecked")
@@ -84,6 +86,12 @@ public class TestContext {
     return (T) reference.get();
   }
 
+  /**
+   * Answer the {@code TestContext} after writing the value at {@code "reference"}.
+   * @param value the T typed value to write
+   * @param <T> type value type
+   * @return TestContext
+   */
   public <T> TestContext referenceValueTo(final T value) {
     access.writeUsing("reference", value);
     return this;
