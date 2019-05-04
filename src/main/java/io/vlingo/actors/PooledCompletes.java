@@ -41,6 +41,9 @@ public class PooledCompletes implements CompletesEventually {
   }
 
   @Override
+  public void conclude() { }
+
+  @Override
   public boolean isStopped() {
     return completesEventually.isStopped();
   }

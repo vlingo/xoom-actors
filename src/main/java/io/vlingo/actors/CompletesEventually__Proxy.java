@@ -10,6 +10,7 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 public class CompletesEventually__Proxy implements CompletesEventually {
+  private static final String representationConclude0 = "conclude()";
   private static final String representationStop1 = "stop()";
   private static final String representationWith2 = "with(Object)";
 
@@ -24,6 +25,17 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   @Override
   public Address address() {
     return actor.address();
+  }
+
+  @Override
+  public void conclude() {
+    if (!actor.isStopped()) {
+      final Consumer<DeadLetters> consumer = (actor) -> actor.conclude();
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, representationConclude0); }
+      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, representationConclude0)); }
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, representationConclude0));
+    }
   }
 
   @Override

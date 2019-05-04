@@ -19,6 +19,17 @@ public class Stoppable__Proxy implements Stoppable {
   }
 
   @Override
+  public void conclude() {
+    if (!actor.isStopped()) {
+      final Consumer<DeadLetters> consumer = (actor) -> actor.conclude();
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, "conclude()"); }
+      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "conclude()")); }
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, "conclude()"));
+    }
+  }
+
+  @Override
   public boolean isStopped() {
     return actor.isStopped();
   }

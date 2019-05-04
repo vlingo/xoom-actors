@@ -335,6 +335,14 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * @see io.vlingo.actors.Stoppable#conclude()
+   */
+  @Override
+  public void conclude() {
+    stop();
+  }
+
+  /**
    * Initiates the process of stopping this {@code Stage}.
    */
   @Override

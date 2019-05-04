@@ -33,6 +33,14 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
+   * @see io.vlingo.actors.Stoppable#conclude()
+   */
+  @Override
+  public void conclude() {
+    selfAs(Stoppable.class).stop();
+  }
+
+  /**
    * Answers the {@code DeadLetters} for this {@code Actor}.
    * @return DeadLetters
    */
@@ -65,7 +73,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Initiates the process or stopping this {@code Actor} and all of its children.
+   * Initiates the process of stopping this {@code Actor} and all of its children.
    */
   @Override
   public void stop() {

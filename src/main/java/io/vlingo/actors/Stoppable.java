@@ -7,8 +7,38 @@
 
 package io.vlingo.actors;
 
+/**
+ * Arranges for stopping the receiver.
+ * <p>
+ * Note that the contract of stop() is to suspend the receivers mailbox
+ * deliveries, which will prevent further processing. To arrange for
+ * eventually stopping the receiver send conclude(), which will then
+ * cause stop(). In essence the conclude() marks the mailbox for ending
+ * operations, but allows messages already queued to first be delivered.
+ */
 @SafeProxyGenerable
 public interface Stoppable {
+  /**
+   * Concludes the receiver, eventually causing
+   * it to receive a stop() message.
+   */
+  void conclude();
+
+  /**
+   * Answer whether or not the receiver is stopped.
+   * @return boolean
+   */
   boolean isStopped();
+
+  /**
+   * Causes the receiver to stop reacting to messages and to eventually
+   * be garbage collected.
+   * <p>
+   * Note that the contract of stop() is to suspend the receivers mailbox
+   * deliveries, which will prevent further processing. To arrange for
+   * eventually stopping the receiver send conclude(), which will then
+   * cause stop(). In essence the conclude() marks the mailbox for ending
+   * operations, but allows messages already queued to first be delivered.
+   */
   void stop();
 }

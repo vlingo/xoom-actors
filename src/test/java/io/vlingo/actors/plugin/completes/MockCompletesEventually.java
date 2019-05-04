@@ -26,6 +26,9 @@ public class MockCompletesEventually implements CompletesEventually {
   }
 
   @Override
+  public void conclude() { }
+
+  @Override
   public boolean isStopped() {
     return false;
   }

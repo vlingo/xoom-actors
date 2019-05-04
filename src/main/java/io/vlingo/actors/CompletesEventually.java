@@ -10,6 +10,10 @@ package io.vlingo.actors;
 public interface CompletesEventually extends Stoppable {
   Address address();
   void with(final Object outcome);
+  @Override
+  default void conclude() { }
+  @Override
   default boolean isStopped() { return false; }
+  @Override
   default void stop() { }
 }
