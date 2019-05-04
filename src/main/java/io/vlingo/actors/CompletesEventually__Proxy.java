@@ -30,9 +30,9 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   @Override
   public void conclude() {
     if (!actor.isStopped()) {
-      final Consumer<DeadLetters> consumer = (actor) -> actor.conclude();
-      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, representationConclude0); }
-      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, representationConclude0)); }
+      final Consumer<Stoppable> consumer = (actor) -> actor.conclude();
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, representationConclude0); }
+      else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, representationConclude0)); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, representationConclude0));
     }

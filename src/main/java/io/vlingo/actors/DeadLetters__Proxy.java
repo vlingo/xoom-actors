@@ -21,9 +21,9 @@ public class DeadLetters__Proxy implements DeadLetters {
   @Override
   public void conclude() {
     if (!actor.isStopped()) {
-      final Consumer<DeadLetters> consumer = (actor) -> actor.conclude();
-      if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLetters.class, consumer, null, "conclude()"); }
-      else { mailbox.send(new LocalMessage<DeadLetters>(actor, DeadLetters.class, consumer, "conclude()")); }
+      final Consumer<Stoppable> consumer = (actor) -> actor.conclude();
+      if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, "conclude()"); }
+      else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "conclude()")); }
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, "conclude()"));
     }
