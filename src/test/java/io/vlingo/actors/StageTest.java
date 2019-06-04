@@ -25,7 +25,7 @@ import io.vlingo.actors.testkit.TestUntil;
 
 public class StageTest extends ActorsTest {
   @Test
-  public void testActorForDefinitionAndProtocol() throws Exception {
+  public void testActorForDefinitionAndProtocol() {
     final NoProtocol test = world.stage().actorFor(NoProtocol.class, TestInterfaceActor.class);
 
     assertNotNull(test);
@@ -34,7 +34,7 @@ public class StageTest extends ActorsTest {
   }
 
   @Test
-  public void testActorForNoDefinitionAndProtocol() throws Exception {
+  public void testActorForNoDefinitionAndProtocol() {
     final TestResults testResults = new TestResults();
     final Simple simple = world.stage().actorFor(Simple.class, SimpleActor.class, testResults);
     testResults.untilSimple = TestUntil.happenings(1);
@@ -51,7 +51,7 @@ public class StageTest extends ActorsTest {
   }
 
   @Test
-  public void testActorForAll() throws Exception {
+  public void testActorForAll() {
     world.actorFor(NoProtocol.class, ParentInterfaceActor.class);
 
     final Definition definition =
@@ -147,27 +147,22 @@ public class StageTest extends ActorsTest {
     world.stage().maybeActorOf(NoProtocol.class, address5).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.scanFound.writeUsing("foundCount", 1);
-      until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address4).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.scanFound.writeUsing("foundCount", 1);
-      until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address3).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.scanFound.writeUsing("foundCount", 1);
-      until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address2).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.scanFound.writeUsing("foundCount", 1);
-      until.happened();
     });
     world.stage().maybeActorOf(NoProtocol.class, address1).andThenConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.scanFound.writeUsing("foundCount", 1);
-      until.happened();
     });
 
     world.stage().maybeActorOf(NoProtocol.class, address6)
