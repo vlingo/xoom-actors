@@ -17,7 +17,6 @@ import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.MockCompletes;
 import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.testkit.TestUntil;
 
 public class PooledCompletesProviderTest extends ActorsTest {
   
@@ -36,14 +35,13 @@ public class PooledCompletesProviderTest extends ActorsTest {
     
     plugin.start(world);
     
-    final MockCompletes<Object> clientCompletes = new MockCompletes<Object>();
+    final MockCompletes<Object> clientCompletes = new MockCompletes<>(1);
     
-    clientCompletes.untilWith = TestUntil.happenings(1);
     final CompletesEventually asyncCompletes = world.completesFor(clientCompletes);
-    asyncCompletes.with(new Integer(5));
-    clientCompletes.untilWith.completes();
-    assertEquals(1, ((MockCompletes<Object>) clientCompletes).withCount);
-    assertEquals(5, ((MockCompletes<Object>) clientCompletes).outcome);
+    asyncCompletes.with(5);
+
+    assertEquals(1, clientCompletes.getWithCount());
+    assertEquals(5, clientCompletes.outcome());
   }
 
   @Test
@@ -61,23 +59,19 @@ public class PooledCompletesProviderTest extends ActorsTest {
     
     plugin.start(world);
     
-    final MockCompletes<Object> clientCompletes1 = new MockCompletes<Object>();
-    final MockCompletes<Object> clientCompletes2 = new MockCompletes<Object>();
+    final MockCompletes<Object> clientCompletes1 = new MockCompletes<>(1);
+    final MockCompletes<Object> clientCompletes2 = new MockCompletes<>(1);
     
-    clientCompletes1.untilWith = TestUntil.happenings(1);
     final CompletesEventually completes1 = world.completesFor(clientCompletes1);
-    completes1.with(new Integer(5));
-    clientCompletes1.untilWith.completes();
+    completes1.with(5);
 
-    clientCompletes2.untilWith = TestUntil.happenings(1);
     final CompletesEventually completes2 = world.completesFor(completes1.address(), clientCompletes2);
-    completes2.with(new Integer(10));
-    clientCompletes2.untilWith.completes();
+    completes2.with(10);
 
-    assertEquals(1, ((MockCompletes<Object>) clientCompletes1).withCount);
-    assertEquals(5, ((MockCompletes<Object>) clientCompletes1).outcome);
-    assertEquals(1, ((MockCompletes<Object>) clientCompletes2).withCount);
-    assertEquals(10, ((MockCompletes<Object>) clientCompletes2).outcome);
+    assertEquals(1, clientCompletes1.getWithCount());
+    assertEquals(5, clientCompletes1.outcome());
+    assertEquals(1, clientCompletes2.getWithCount());
+    assertEquals(10, clientCompletes2.outcome());
     assertEquals(completes1, completes2);
   }
 }
