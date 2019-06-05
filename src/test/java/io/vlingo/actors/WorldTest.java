@@ -17,13 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Test;
-
-import io.vlingo.actors.testkit.TestUntil;
 import org.mockito.Mockito;
+
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class WorldTest extends ActorsTest {
   @Test
-  public void testStartWorld() throws Exception {
+  public void testStartWorld() {
     assertNotNull(world.deadLetters());
     assertEquals("test", world.name());
     assertNotNull(world.stage());
@@ -39,52 +39,39 @@ public class WorldTest extends ActorsTest {
   }
   
   @Test
-  public void testWorldActorForDefintion() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testWorldActorForDefintion() {
+    final TestResults testResults = new TestResults(1);
     
     final Simple simple = world.actorFor(Simple.class, Definition.has(SimpleActor.class, Definition.parameters(testResults)));
-    
-    testResults.untilSimple = TestUntil.happenings(1);
-    
+
     simple.simpleSay();
-    
-    testResults.untilSimple.completes();
-    
-    assertTrue(testResults.invoked.get());
+
+    assertTrue(testResults.getInvoked());
   }
   
   @Test
-  public void testWorldActorForFlat() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testWorldActorForFlat() {
+    final TestResults testResults = new TestResults(1);
     
     final Simple simple = world.actorFor(Simple.class, SimpleActor.class, testResults);
     
-    testResults.untilSimple = TestUntil.happenings(1);
-    
     simple.simpleSay();
-    
-    testResults.untilSimple.completes();
-    
-    assertTrue(testResults.invoked.get());
+
+    assertTrue(testResults.getInvoked());
   }
   
   @Test
-  public void testWorldNoDefintionActorFor() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testWorldNoDefintionActorFor() {
+    final TestResults testResults = new TestResults(1);
     
     final Simple simple = world.actorFor(Simple.class, SimpleActor.class, testResults);
-    
-    testResults.untilSimple = TestUntil.happenings(1);
-    
     simple.simpleSay();
-    
-    testResults.untilSimple.completes();
-    
-    assertTrue(testResults.invoked.get());
+
+    assertTrue(testResults.getInvoked());
   }
 
   @Test
-  public void testThatARegisteredDependencyCanBeResolved() throws Exception {
+  public void testThatARegisteredDependencyCanBeResolved() {
     String name = UUID.randomUUID().toString();
 
     AnyDependency dep = Mockito.mock(AnyDependency.class);
@@ -116,14 +103,27 @@ public class WorldTest extends ActorsTest {
     
     @Override
     public void simpleSay() {
-      testResults.invoked.set(true);
-      testResults.untilSimple.happened();
+      testResults.setInvoked(true);
     }
   }
   
   public static class TestResults {
-    public AtomicBoolean invoked = new AtomicBoolean(false);
-    public TestUntil untilSimple = TestUntil.happenings(0);
+    private final AccessSafely safely;
+
+    public TestResults(final int times) {
+      AtomicBoolean invoked = new AtomicBoolean(false);
+      safely = AccessSafely.afterCompleting(times)
+              .writingWith("invoked", invoked::set)
+              .readingWith("invoked", invoked::get);
+    }
+
+    public boolean getInvoked(){
+      return this.safely.readFrom("invoked");
+    }
+
+    void setInvoked(Boolean invoked){
+      this.safely.writeUsing("invoked", invoked);
+    }
   }
 
   public interface AnyDependency {}
