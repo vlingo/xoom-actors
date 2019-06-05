@@ -8,19 +8,20 @@
 package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduled;
 import io.vlingo.common.Scheduler;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class SchedulerTest extends ActorsTest {
   private Scheduled<CounterHolder> scheduled;
@@ -28,31 +29,24 @@ public class SchedulerTest extends ActorsTest {
   private World world;
 
   @Test
-  public void testScheduleOnceOneHappyDelivery() throws Exception {
-    final CounterHolder holder = new CounterHolder();
-
-    holder.until = until(1);
+  public void testScheduleOnceOneHappyDelivery() {
+    final CounterHolder holder = new CounterHolder(1);
 
     scheduler.scheduleOnce(scheduled, holder, 0L, 1L);
 
-    holder.until.completes();
-
-    assertEquals(1, holder.counter);
+    assertEquals(1, holder.getCounter());
   }
 
   @Test
-  public void testScheduleManyHappyDelivery() throws Exception {
-    final CounterHolder holder = new CounterHolder();
-
-    holder.until = until(505);
+  public void testScheduleManyHappyDelivery() {
+    final CounterHolder holder = new CounterHolder(505);
 
     scheduler.schedule(scheduled, holder, 0L, 1L);
 
-    holder.until.completes();
-
-    assertFalse(0 == holder.counter);
-    assertFalse(1 == holder.counter);
-    assertTrue(holder.counter > 500);
+    final int counter = holder.getCounter();
+    assertNotEquals(0, counter);
+    assertNotEquals(1, counter);
+    assertTrue(counter > 500);
   }
 
   @Test
@@ -86,13 +80,23 @@ public class SchedulerTest extends ActorsTest {
     world.terminate();
   }
 
-  public static class CounterHolder {
-    public int counter;
-    public TestUntil until;
+  private static class CounterHolder {
+    private final AccessSafely safely;
 
-    public void increment() {
-      ++counter;
-      until.happened();
+    private CounterHolder(final int times) {
+      final AtomicInteger counter = new AtomicInteger(0);
+      this.safely = AccessSafely
+              .afterCompleting(times)
+              .writingWith("counter", (Integer ignored) -> counter.incrementAndGet())
+              .readingWith("counter", counter::get);
+    }
+
+    private void increment() {
+      this.safely.writeUsing("counter", 1);
+    }
+
+    private int getCounter() {
+      return this.safely.readFrom("counter");
     }
   }
 
