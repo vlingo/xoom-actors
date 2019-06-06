@@ -18,8 +18,6 @@ import io.vlingo.actors.testkit.TestWorld;
 public abstract class ActorsTest {
   protected World world;
   protected TestWorld testWorld;
-
-  public TestUntil until;
   
   protected ActorsTest() {
   }

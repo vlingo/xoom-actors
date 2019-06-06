@@ -12,30 +12,25 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.vlingo.actors.testkit.AccessSafely;
 import org.junit.Test;
-
-import io.vlingo.actors.testkit.TestUntil;
 
 public class ActorLifecycleTest extends ActorsTest {
   @Test
-  public void testBeforeStart() throws Exception {
-    final TestResults testResults = new TestResults();
-    testResults.until = until(1);
+  public void testBeforeStart() {
+    final TestResults testResults = TestResults.afterCompleting(1);
     world.actorFor(Stoppable.class, LifecycleActor.class, testResults);
-    testResults.until.completes();
-    assertTrue(testResults.receivedBeforeStart.get());
-    assertFalse(testResults.receivedAfterStop.get());
+    assertTrue(testResults.getReceivedBeforeStart());
+    assertFalse(testResults.getReceivedAfterStop());
   }
 
   @Test
-  public void testAfterStop() throws Exception {
-    final TestResults testResults = new TestResults();
-    testResults.until = until(2);
+  public void testAfterStop() {
+    final TestResults testResults = TestResults.afterCompleting(2);
     final Stoppable actor = world.actorFor(Stoppable.class, LifecycleActor.class, testResults);
     actor.stop();
-    testResults.until.completes();
-    assertTrue(testResults.receivedBeforeStart.get());
-    assertTrue(testResults.receivedAfterStop.get());
+    assertTrue(testResults.getReceivedBeforeStart());
+    assertTrue(testResults.getReceivedAfterStop());
   }
 
   public static class LifecycleActor extends Actor implements Stoppable {
@@ -47,20 +42,39 @@ public class ActorLifecycleTest extends ActorsTest {
 
     @Override
     protected void beforeStart() {
-      testResults.receivedBeforeStart.set(true);
-      testResults.until.happened();
+      testResults.received.writeUsing("receivedBeforeStart", true);
     }
 
     @Override
     protected void afterStop() {
-      testResults.receivedAfterStop.set(true);
-      testResults.until.happened();
+      testResults.received.writeUsing("receivedAfterStop", true);
     }
   }
 
-  private static class TestResults {
-    public AtomicBoolean receivedBeforeStart = new AtomicBoolean(false);
-    public AtomicBoolean receivedAfterStop = new AtomicBoolean(false);
-    public TestUntil until = TestUntil.happenings(0);
+  private static class TestResults{
+    private final AtomicBoolean receivedBeforeStart = new AtomicBoolean(false);
+    private final AtomicBoolean receivedAfterStop = new AtomicBoolean(false);
+    private final AccessSafely received;
+
+    private TestResults(AccessSafely received) {
+      this.received = received;
+    }
+
+    private static TestResults afterCompleting(final int times) {
+      final TestResults testResults = new TestResults(AccessSafely.afterCompleting(times));
+      testResults.received.writingWith("receivedBeforeStart", testResults.receivedBeforeStart::set);
+      testResults.received.readingWith("receivedBeforeStart", testResults.receivedBeforeStart::get);
+      testResults.received.writingWith("receivedAfterStop", testResults.receivedAfterStop::set);
+      testResults.received.readingWith("receivedAfterStop", testResults.receivedAfterStop::get);
+      return testResults;
+    }
+
+    private Boolean getReceivedBeforeStart(){
+      return this.received.readFrom("receivedBeforeStart");
+    }
+
+    private Boolean getReceivedAfterStop(){
+      return this.received.readFrom("receivedAfterStop");
+    }
   }
 }

@@ -11,45 +11,51 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * BroadcastRouterTest tests {@link BroadcastRouter}.
  */
 public class BroadcastRouterTest extends ActorsTest {
 
   @Test
-  public void testThreeArgConsumerProtocol() throws Exception {
+  public void testThreeArgConsumerProtocol() {
     final int poolSize = 4;
     final int rounds = 2;
     final int messagesToSend = poolSize * rounds;
-    final TestUntil until = TestUntil.happenings(messagesToSend);
+    final int totalMessagesExpected = messagesToSend * poolSize;
+
+    final TestResults testResults = TestResults.afterCompleting(totalMessagesExpected);
+
     final TestActor<ThreeArgConsumerProtocol> testRouter = testWorld.actorFor(
             ThreeArgConsumerProtocol.class,
-            Definition.has(MathCommandRouter.class, Definition.parameters(poolSize, until)));
+            Definition.has(MathCommandRouter.class, Definition.parameters(poolSize, testResults)));
     
     for (int round = 0; round < messagesToSend; round++) {
       testRouter.actor().doSomeMath(round, round, round);
     }
     
-    until.completes();
-    
+    assertEquals("Total received count ", totalMessagesExpected, testResults.getReceivedCount().intValue());
+
     MathCommandRouter routerActor = (MathCommandRouter) testRouter.actorInside();
     for (Routee<ThreeArgConsumerProtocol> routee : routerActor.routees()) {
       assertEquals("message count for " + routee, messagesToSend, routee.messageCount());
     }
   }
   
-  public static interface ThreeArgConsumerProtocol {
+  public interface ThreeArgConsumerProtocol {
     void doSomeMath(int arg1, int arg2, int arg3);
   }
   
   public static class MathCommandRouter extends BroadcastRouter<ThreeArgConsumerProtocol> implements ThreeArgConsumerProtocol {
     
-    public MathCommandRouter(final int poolSize, final TestUntil testUntil) {
+    public MathCommandRouter(final int poolSize, final TestResults testResults) {
       super(
-        new RouterSpecification<ThreeArgConsumerProtocol>(
+        new RouterSpecification<>(
           poolSize,
-          Definition.has(MathCommandWorker.class, Definition.parameters(testUntil)),
+          Definition.has(MathCommandWorker.class, Definition.parameters(testResults)),
           ThreeArgConsumerProtocol.class
         )
       );
@@ -64,11 +70,11 @@ public class BroadcastRouterTest extends ActorsTest {
   
   public static class MathCommandWorker extends Actor implements ThreeArgConsumerProtocol {
     
-    private final TestUntil testUntil;
+    private final TestResults testResults;
     
-    public MathCommandWorker(TestUntil testUntil) {
+    public MathCommandWorker(TestResults testResults) {
       super();
-      this.testUntil = testUntil;
+      this.testResults = testResults;
     }
 
     @Override
@@ -76,7 +82,29 @@ public class BroadcastRouterTest extends ActorsTest {
     public void doSomeMath(int arg1, int arg2, int arg3) {
       int sum = arg1 + arg2 + arg3;
       int product = arg1 * arg2 * arg3;
-      testUntil.happened();
+      testResults.received.writeUsing("receivedCount", 1);
     }
   }
+
+
+  private static class TestResults{
+    private final AtomicInteger receivedCount = new AtomicInteger(0);
+    private final AccessSafely received;
+
+    private TestResults(AccessSafely received) {
+      this.received = received;
+    }
+
+    private static TestResults afterCompleting(final int times) {
+      final TestResults testResults = new TestResults(AccessSafely.afterCompleting(times));
+      testResults.received.writingWith("receivedCount", (Integer i) -> testResults.receivedCount.incrementAndGet());
+      testResults.received.readingWith("receivedCount", testResults.receivedCount::get);
+      return testResults;
+    }
+
+    private Integer getReceivedCount(){
+      return this.received.readFrom("receivedCount");
+    }
+  }
+
 }

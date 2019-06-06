@@ -10,10 +10,11 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class CharactersTest extends ActorsTest {
 
@@ -29,12 +30,10 @@ public class CharactersTest extends ActorsTest {
       threeBehaviors.two();
       threeBehaviors.three();
     }
-
-    results.until.completes();
-
-    assertEquals(10, results.one);
-    assertEquals(20, results.two);
-    assertEquals(30, results.three);
+    
+    assertEquals(10, results.getCounterValue("one"));
+    assertEquals(20, results.getCounterValue("two"));
+    assertEquals(30, results.getCounterValue("three"));
   }
 
   public static interface ThreeBehaviors {
@@ -43,13 +42,23 @@ public class CharactersTest extends ActorsTest {
     static final int Three = 2;
 
     class Results {
-      public int one;
-      public int two;
-      public int three;
-      public TestUntil until;
+      private final AccessSafely counters;
 
       Results(final int times) {
-        until = TestUntil.happenings(times);
+        final AtomicInteger one = new AtomicInteger(0);
+        final AtomicInteger two = new AtomicInteger(0);
+        final AtomicInteger three = new AtomicInteger(0);
+        counters = AccessSafely.afterCompleting(times);
+        counters.writingWith("one" , one::addAndGet);
+        counters.readingWith("one" , one::get);
+        counters.writingWith("two" , two::addAndGet);
+        counters.readingWith("two" , two::get);
+        counters.writingWith("three" , three::addAndGet);
+        counters.readingWith("three" , three::get);
+      }
+
+      int getCounterValue(String name){
+        return counters.readFrom(name);
       }
     }
 
@@ -95,23 +104,20 @@ public class CharactersTest extends ActorsTest {
 
       @Override
       public void one() {
-        results.one += incrementBy;
+        results.counters.writeUsing("one", incrementBy);
         characters.become(Two);
-        results.until.happened();
       }
 
       @Override
       public void two() {
-        results.two += incrementBy;
+        results.counters.writeUsing("two", incrementBy);
         characters.become(Three);
-        results.until.happened();
       }
 
       @Override
       public void three() {
-        results.three += incrementBy;
+        results.counters.writeUsing("three", incrementBy);
         characters.become(One);
-        results.until.happened();
       }
     }
   }

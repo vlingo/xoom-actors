@@ -14,12 +14,14 @@ import org.junit.Test;
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PropertiesFileConfigRingBufferMailboxActorTest extends ActorsTest {
   @Test
   public void testThatRingBufferIsUsed() {
-    final TestResults results = new TestResults();
+    final TestResults results = new TestResults(1);
 
     final OneBehavior one =
             world.actorFor(
@@ -28,9 +30,7 @@ public class PropertiesFileConfigRingBufferMailboxActorTest extends ActorsTest {
 
     one.doSomething();
 
-    results.until.completes();
-
-    assertEquals(1, results.times);
+    assertEquals(1, ((int) results.accessSafely.readFrom("times")));
   }
 
   public static interface OneBehavior {
@@ -46,13 +46,19 @@ public class PropertiesFileConfigRingBufferMailboxActorTest extends ActorsTest {
 
     @Override
     public void doSomething() {
-      results.times++;
-      results.until.happened();
+      results.accessSafely.writeUsing("times", 1);
     }
   }
 
   private static class TestResults {
-    public volatile int times = 0;
-    public TestUntil until = TestUntil.happenings(1);
+    private final AccessSafely accessSafely;
+
+    private TestResults(int happenings) {
+      final AtomicInteger times = new AtomicInteger(0);
+      this.accessSafely = AccessSafely
+              .afterCompleting(happenings)
+              .writingWith("times", (Integer ignored) -> times.incrementAndGet())
+              .readingWith("times", times::get);
+    }
   }
 }

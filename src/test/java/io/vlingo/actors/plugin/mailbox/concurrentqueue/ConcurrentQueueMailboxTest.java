@@ -11,7 +11,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.After;
@@ -23,7 +22,7 @@ import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class ConcurrentQueueMailboxTest extends ActorsTest {
   private static int Total = 10_000;
@@ -32,13 +31,11 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   private Mailbox mailbox;
 
   @Test
-  public void testMailboxSendReceive() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testMailboxSendReceive() {
+    final TestResults testResults = new TestResults(Total);
 
     final CountTakerActor actor = new CountTakerActor(testResults);
-
-    actor.testResults.until = until(Total);
-
+    
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -46,16 +43,13 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       mailbox.send(message);
     }
 
-    actor.testResults.until.completes();
-
     for (int idx = 0; idx < Total; ++idx) {
-      assertEquals(idx, (int) actor.testResults.counts.get(idx));
+      assertEquals(idx, (int) actor.testResults.getCount(idx));
     }
   }
 
   @Test
-  public void testThatSuspendResumes()
-  {
+  public void testThatSuspendResumes(){
       final String paused = "paused#";
       final String exceptional = "exceptional#";
 
@@ -104,14 +98,27 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
 
     @Override
     public void take(final int count) {
-      testResults.counts.add(count);
-
-      testResults.until.happened();
+      testResults.addCount(count);
     }
   }
 
   private static class TestResults {
-    public final List<Integer> counts = new ArrayList<>();
-    public TestUntil until = TestUntil.happenings(0);
+    private final AccessSafely accessSafely;
+
+    private TestResults(final int happenings) {
+      final ArrayList<Integer> list = new ArrayList<>();
+      this.accessSafely = AccessSafely
+              .afterCompleting(happenings)
+              .writingWith("counts", (Consumer<Integer>) list::add)
+              .readingWith("counts", (Integer index)-> list.get(index));
+    }
+
+    void addCount(Integer i){
+      this.accessSafely.writeUsing("counts", i);
+    }
+
+    Integer getCount(int index){
+      return this.accessSafely.readFrom("counts", index);
+    }
   }
 }

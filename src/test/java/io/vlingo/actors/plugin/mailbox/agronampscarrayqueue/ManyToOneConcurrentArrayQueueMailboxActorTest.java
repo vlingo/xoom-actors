@@ -20,15 +20,15 @@ import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
   
   @Test
-  public void testBasicDispatch() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testBasicDispatch() {
+    final TestResults testResults = new TestResults(MaxCount);
     
     final CountTaker countTaker =
             world.actorFor(
@@ -36,21 +36,17 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
                     Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-1"));
     
     final int totalCount = MailboxSize / 2;
-    
-    testResults.until = until(MaxCount);
-    
+
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
     
-    testResults.until.completes();
-    
-    assertEquals(MaxCount, testResults.highest.get());
+    assertEquals(MaxCount, testResults.getHighest());
   }
 
   @Test
-  public void testOverflowDispatch() throws Exception {
-    final TestResults testResults = new TestResults();
+  public void testOverflowDispatch() {
+    final TestResults testResults = new TestResults(MaxCount);
 
     final CountTaker countTaker =
             world.actorFor(
@@ -59,15 +55,12 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
 
     final int totalCount = MailboxSize * 2;
     
-    testResults.until = until(MaxCount);
-    
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
 
-    testResults.until.completes();
 
-    assertEquals(MaxCount, testResults.highest.get());
+    assertEquals(MaxCount, testResults.getHighest());
   }
 
   @Before
@@ -97,19 +90,18 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   }
   
   public static class CountTakerActor extends Actor implements CountTaker {
-    public final TestResults testResults;
-    private CountTaker self;
+    private final TestResults testResults;
+    private final CountTaker self;
     
     public CountTakerActor(final TestResults testResults) {
       this.testResults = testResults;
-      self = selfAs(CountTaker.class);
+      this.self = selfAs(CountTaker.class);
     }
     
     @Override
     public void take(final int count) {
-      if (count > testResults.highest.get()) {
-        testResults.highest.set(count);
-        testResults.until.happened();
+      if (testResults.isHighest(count)) {
+        testResults.setHighest(count);
       }
       if (count < MaxCount) {
         self.take(count + 1);
@@ -118,7 +110,27 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   }
 
   private static class TestResults {
-    public AtomicInteger highest = new AtomicInteger(0);
-    public TestUntil until = TestUntil.happenings(0);
+    private final AccessSafely accessSafely;
+
+    private TestResults(final int happenings) {
+      final AtomicInteger highest = new AtomicInteger(0);
+      this.accessSafely = AccessSafely
+              .afterCompleting(happenings)
+              .writingWith("highest", highest::set)
+              .readingWith("highest", highest::get)
+              .readingWith("isHighest", (Integer count) -> count > highest.get());
+    }
+
+    void setHighest(Integer value){
+      this.accessSafely.writeUsing("highest", value);
+    }
+
+    int getHighest(){
+      return this.accessSafely.readFrom("highest");
+    }
+
+    boolean isHighest(Integer value){
+      return this.accessSafely.readFromNow("isHighest", value);
+    }
   }
 }

@@ -7,33 +7,46 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.common.BasicCompletes;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MockCompletes<T> extends BasicCompletes<T> {
-  public TestUntil untilWith;
-  public T outcome;
-  public int withCount;
-  
-  public MockCompletes() {
+  private final AtomicReference<T> outcome = new AtomicReference<>(null);
+  private final AtomicInteger withCount = new AtomicInteger(0);
+  private final AccessSafely safely;
+
+  public MockCompletes(final int times) {
     super((Scheduler) null);
-    
-    untilWith = TestUntil.happenings(0);
+
+    this.safely = AccessSafely
+            .afterCompleting(times)
+            .writingWith("outcome", (T newValue) -> {
+              this.outcome.set(newValue);
+              this.withCount.incrementAndGet();
+            })
+            .readingWith("outcome", this.outcome::get)
+            .readingWith("count", withCount::get);
   }
-  
+
   @Override
   @SuppressWarnings("unchecked")
   public <O> Completes<O> with(final O outcome) {
-    this.outcome = (T) outcome;
-    ++withCount;
-    untilWith.happened();
+    this.safely.writeUsing("outcome", outcome);
     return (Completes<O>) this;
   }
 
   @Override
   public T outcome() {
-    return outcome;
+    return this.safely.readFrom("outcome");
+  }
+
+  public int getWithCount() {
+    return this.safely.readFrom("count");
   }
 }
