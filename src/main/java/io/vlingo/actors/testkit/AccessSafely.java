@@ -29,6 +29,24 @@ public class AccessSafely {
   private final Map<String,Supplier<?>> suppliers;
   private final TestUntil until;
 
+  @SuppressWarnings("unchecked")
+  private <T, R> Function<T, R> getRequiredFunction(String name) {
+    final Function<T, R> function = (Function<T, R>) functions.get(name);
+    if (function == null) {
+      throw new IllegalArgumentException("Unknown function: " + name);
+    }
+    return function;
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> Supplier<T> getRequiredSupplier(String name) {
+    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
+    if (supplier == null) {
+      throw new IllegalArgumentException("Unknown supplier: " + name);
+    }
+    return supplier;
+  }
+
   /**
    * Answer a new {@code AccessSafely} with a completion count of {@code happenings}. This construct
    * provides a reliable barrier/fence around data access between two or more threads, given that the
@@ -116,12 +134,8 @@ public class AccessSafely {
    * @param <T> the type of the value associated with name
    * @return T
    */
-  @SuppressWarnings("unchecked")
   public <T> T readFrom(final String name) {
-    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
-    if (supplier == null) {
-      throw new IllegalArgumentException("Unknown supplier: " + name);
-    }
+    final Supplier<T> supplier = getRequiredSupplier(name);
 
     until.completes();
 
@@ -129,7 +143,7 @@ public class AccessSafely {
       return supplier.get();
     }
   }
-
+  
   /**
    * Answer the value associated with {@code name}.
    * @param name the String name of the value to answer
@@ -138,12 +152,8 @@ public class AccessSafely {
    * @param <R> the type of the return value associated with name
    * @return R
    */
-  @SuppressWarnings("unchecked")
   public <T,R> R readFrom(final String name, final T parameter) {
-    final Function<T,R> function = (Function<T,R>) functions.get(name);
-    if (function == null) {
-      throw new IllegalArgumentException("Unknown function: " + name);
-    }
+    final Function<T, R> function = getRequiredFunction(name);
 
     until.completes();
 
@@ -175,12 +185,8 @@ public class AccessSafely {
    * @param <T> the type of the value associated with name
    * @return T
    */
-  @SuppressWarnings("unchecked")
   public <T> T readFromExpecting(final String name, final T expected, final long retries) {
-    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
-    if (supplier == null) {
-      throw new IllegalArgumentException("Unknown supplier: " + name);
-    }
+    final Supplier<T> supplier = getRequiredSupplier(name);
 
     for (long count = 0; count < retries; ++count) {
       synchronized (lock) {
@@ -200,15 +206,27 @@ public class AccessSafely {
    * @param <T> the type of the value associated with name
    * @return T
    */
-  @SuppressWarnings("unchecked")
   public <T> T readFromNow(final String name) {
-    final Supplier<T> supplier = (Supplier<T>) suppliers.get(name);
-    if (supplier == null) {
-      throw new IllegalArgumentException("Unknown supplier: " + name);
-    }
+    final Supplier<T> supplier = getRequiredSupplier(name);
 
     synchronized (lock) {
       return supplier.get();
+    }
+  }
+
+  /**
+   * Answer the value associated with {@code name} immediately.
+   * @param name the String name of the value to answer
+   * @param parameter the T typed function parameter
+   * @param <T> the type of the parameter to the {@code Function<T,R>}
+   * @param <R> the type of the return value associated with name
+   * @return R
+   */
+  public <T,R> R readFromNow(final String name, final T parameter) {
+    final Function<T, R> function = getRequiredFunction(name);
+    
+    synchronized (lock) {
+      return function.apply(parameter);
     }
   }
 
