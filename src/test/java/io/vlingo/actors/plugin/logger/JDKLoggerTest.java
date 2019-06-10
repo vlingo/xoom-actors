@@ -58,9 +58,9 @@ public class JDKLoggerTest extends ActorsTest {
     
     assertEquals("testLoggedMessagesCount", plugin.logger().name());
 
-    logger.log("TEST:1 1");
-    logger.log("TEST:1 2");
-    logger.log("TEST:1 3");
+    logger.debug("TEST:1 1");
+    logger.debug("TEST:1 2");
+    logger.debug("TEST:1 3");
     
     assertEquals(3, MockHandler.instance.get().logMessagesCount.get());
   }
@@ -83,9 +83,9 @@ public class JDKLoggerTest extends ActorsTest {
     
     assertEquals("testNamedHandler", plugin.logger().name());
 
-    logger.log("TEST:2 1");
-    logger.log("TEST:2 2");
-    logger.log("TEST:2 3");
+    logger.debug("TEST:2 1");
+    logger.debug("TEST:2 2");
+    logger.debug("TEST:2 3");
     
     assertEquals(3, MockHandler.instance.get().logMessagesCount.get());
   }
@@ -123,6 +123,26 @@ public class JDKLoggerTest extends ActorsTest {
     logger.log("TEST:4 1");
     logger.log("TEST:4 2");
     logger.log("TEST:4 3");
+
+    logger.trace("TRACE message");
+    logger.trace("TRACE message with parameters {0}", "1");
+    logger.trace("TRACE message with exception", new Exception("test trace exception"));
+
+    logger.debug("DEBUG message");
+    logger.debug("DEBUG message with parameters {0}", "2");
+    logger.debug("DEBUG message with exception", new Exception("test debug exception"));
+
+    logger.info("INFO message");
+    logger.info("INFO message with parameters {0}", "3");
+    logger.info("INFO message with exception", new Exception("test info exception"));
+
+    logger.warn("WARN message");
+    logger.warn("WARN message with parameters {0}", "4");
+    logger.warn("WARN message with exception", new Exception("test warn exception"));
+
+    logger.error("ERROR message");
+    logger.error("ERROR message with parameters {0}", "4");
+    logger.error("ERROR message with exception", new Exception("test error exception"));
   }
   
   @After
