@@ -7,27 +7,10 @@
 
 package io.vlingo.actors.plugin.logging.jdk;
 
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import java.util.logging.ConsoleHandler;
 
-public class DefaultHandler extends Handler {
-  public DefaultHandler() { }
-
-  @Override
-  public void publish(final LogRecord record) {
-    final String message = record.getMessage();
-    
-    System.out.println(record.getLoggerName() + ": " + message);
-  }
-
-  @Override
-  public void flush() {
-    
-  }
-
-  @Override
-  public void close() throws SecurityException {
-    
+public class DefaultHandler extends ConsoleHandler {
+  public DefaultHandler() {
   }
 
   @Override

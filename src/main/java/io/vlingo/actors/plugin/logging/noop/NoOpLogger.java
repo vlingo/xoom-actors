@@ -29,6 +29,66 @@ public class NoOpLogger implements Logger {
   }
 
   @Override
+  public void trace(String message) {
+  }
+
+  @Override
+  public void trace(String message, Object... args) {
+  }
+
+  @Override
+  public void trace(String message, Throwable throwable) {
+  }
+
+  @Override
+  public void debug(String message) {
+  }
+
+  @Override
+  public void debug(String message, Object... args) {
+  }
+
+  @Override
+  public void debug(String message, Throwable throwable) {
+  }
+
+  @Override
+  public void info(String message) {
+  }
+
+  @Override
+  public void info(String message, Object... args) {
+  }
+
+  @Override
+  public void info(String message, Throwable throwable) {
+  }
+
+  @Override
+  public void warn(String message) {
+  }
+
+  @Override
+  public void warn(String message, Object... args) {
+  }
+
+  @Override
+  public void warn(String message, Throwable throwable) {
+  }
+
+  @Override
+  public void error(String message) {
+  }
+
+  @Override
+  public void error(String message, Object... args) {
+  }
+
+  @Override
+  public void error(String message, Throwable throwable) {
+  }
+
+  @Override
   public String name() {
     return "no-op";
   }

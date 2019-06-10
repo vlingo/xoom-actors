@@ -7,8 +7,6 @@
 
 package io.vlingo.actors.plugin.logging.jdk;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -35,13 +33,16 @@ public class JDKLogger implements Logger {
     return basicInstance();
   }
 
-  protected JDKLogger(final String name, final JDKLoggerPluginConfiguration confirguration) {
+  protected JDKLogger(final String name, final JDKLoggerPluginConfiguration configuration) {
     this.name = name;
     this.logger = java.util.logging.Logger.getLogger(name);
-    this.level = java.util.logging.Level.parse(confirguration.handlerLevel());
+    this.level = java.util.logging.Level.parse(configuration.handlerLevel());
     this.logger.setLevel(this.level);
-    this.handler = determineHandler(confirguration);
+    this.handler = determineHandler(configuration);
     this.logger.addHandler(handler);
+    this.handler.setLevel(this.level);
+    //Disable default console handler.
+    this.logger.setUseParentHandlers(false);
   }
 
   @Override
@@ -58,24 +59,90 @@ public class JDKLogger implements Logger {
   @Override
   public void log(final String message) {
     if (isEnabled()) {
-      logger.log(this.level, message);
+      debug(message);
     }
   }
 
   @Override
   public void log(final String message, final Throwable throwable) {
     if (isEnabled()) {
-      try {
-        logger.log(this.level, message);
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        final PrintStream stream = new PrintStream(output);
-        throwable.printStackTrace(stream);
-        final String stacktrace = output.toString("UTF-8");
-        logger.log(this.level, stacktrace);
-      } catch (Exception e) {
-        logger.severe("JDKLogger: Failed to log exception about: " + message + " and reason: " + throwable.getMessage());
-      }
+      debug(message, throwable);
     }
+  }
+
+  @Override
+  public void trace(String message) {
+    log(Level.FINEST, message);
+  }
+
+  @Override
+  public void trace(String message, Object... args) {
+    log(Level.FINEST, message, args);
+  }
+
+  @Override
+  public void trace(String message, Throwable throwable) {
+    log(Level.FINEST, message, throwable);
+  }
+
+  @Override
+  public void debug(String message) {
+    log(Level.FINE, message);
+  }
+
+  @Override
+  public void debug(String message, Object... args) {
+    log(Level.FINE, message, args);
+  }
+
+  @Override
+  public void debug(String message, Throwable throwable) {
+    log(Level.FINE, message, throwable);
+  }
+
+  @Override
+  public void info(String message) {
+    log(Level.INFO, message);
+  }
+
+  @Override
+  public void info(String message, Object... args) {
+    log(Level.INFO, message, args);
+  }
+
+  @Override
+  public void info(String message, Throwable throwable) {
+    log(Level.INFO, message, throwable);
+  }
+
+  @Override
+  public void warn(String message) {
+    log(Level.WARNING, message);
+  }
+
+  @Override
+  public void warn(String message, Object... args) {
+    log(Level.WARNING, message, args);
+  }
+
+  @Override
+  public void warn(String message, Throwable throwable) {
+    log(Level.WARNING, message, throwable);
+  }
+
+  @Override
+  public void error(String message) {
+    log(Level.SEVERE, message);
+  }
+
+  @Override
+  public void error(String message, Object... args) {
+    log(Level.SEVERE, message, args);
+  }
+
+  @Override
+  public void error(String message, Throwable throwable) {
+    log(Level.SEVERE, message, throwable);
   }
 
   @Override
@@ -88,42 +155,62 @@ public class JDKLogger implements Logger {
     return getClass().getSimpleName() + " TYPE: " + handler;
   }
 
-  private Handler determineHandler(final JDKLoggerPluginConfiguration confirguration) {
-    final String classname = confirguration.handlerClass().getName();
+  private void log(Level level, String message) {
+    if (isEnabled()) {
+      this.logger.log(level, message);
+    }
+  }
+
+  private void log(Level level, String message, Object... args) {
+    if (isEnabled()) {
+      this.logger.log(level, message, args);
+    }
+  }
+
+  private void log(Level level, String message, Throwable throwable) {
+    if (isEnabled()) {
+      this.logger.log(level, message, throwable);
+    }
+  }
+
+  private Handler determineHandler(final JDKLoggerPluginConfiguration configuration) {
+    final String classname = configuration.handlerClass().getName();
     try {
       if (classname.equals("java.util.logging.FileHandler")) {
-        return loadFileHandler(confirguration);
+        return loadFileHandler(configuration);
       } else if (classname.equals("java.util.logging.MemoryHandler")) {
-        return loadMemoryHandler(confirguration);
+        return loadMemoryHandler(configuration);
       } else {
-        return loadNamedHandler(confirguration);
+        return loadNamedHandler(configuration);
       }
-      
+
     } catch (Exception e) {
       final Handler handler = new DefaultHandler();
       this.logger.addHandler(handler);
-      this.logger.log(this.level, "vlingo/actors: Could not load the logger " + confirguration.name() + " because: " + e.getMessage(), e);
+      this.logger.log(this.level,
+              "vlingo/actors: Could not load the logger " + configuration.name() + " because: " + e.getMessage(), e);
       this.logger.log(this.level, "vlingo/actors: Instead we defaulted to: " + handler.getClass().getName());
       return handler;
     }
   }
-  
+
   private Handler loadFileHandler(final JDKLoggerPluginConfiguration confirguration) throws Exception {
-    return new FileHandler(confirguration.fileHandlerPattern(), confirguration.fileHandlerLimit(), confirguration.fileHandlerCount(), confirguration.fileHandlerAppend());
+    return new FileHandler(confirguration.fileHandlerPattern(), confirguration.fileHandlerLimit(),
+            confirguration.fileHandlerCount(), confirguration.fileHandlerAppend());
   }
 
   private Handler loadMemoryHandler(final JDKLoggerPluginConfiguration confirguration) throws Exception {
     final String message = "Must correctly configure target, size, and pushLevel for logging MemoryHandler.";
 
-    if (confirguration.memoryHandlerTarget() == null ||
-            confirguration.memoryHandlerSize() == -1 ||
-            confirguration.memoryHandlerPushLevel() == null) {
+    if (confirguration.memoryHandlerTarget() == null || confirguration.memoryHandlerSize() == -1
+            || confirguration.memoryHandlerPushLevel() == null) {
       throw new IllegalArgumentException(message);
     }
 
     try {
       Class<?> targetClass = Class.forName(confirguration.memoryHandlerTarget());
-      return new MemoryHandler((Handler) targetClass.newInstance(), confirguration.memoryHandlerSize(), Level.parse(confirguration.memoryHandlerPushLevel()));
+      return new MemoryHandler((Handler) targetClass.newInstance(), confirguration.memoryHandlerSize(),
+              Level.parse(confirguration.memoryHandlerPushLevel()));
     } catch (Exception e) {
       throw new IllegalArgumentException(message, e);
     }
