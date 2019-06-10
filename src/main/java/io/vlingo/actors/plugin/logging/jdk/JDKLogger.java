@@ -33,12 +33,12 @@ public class JDKLogger implements Logger {
     return basicInstance();
   }
 
-  protected JDKLogger(final String name, final JDKLoggerPluginConfiguration confirguration) {
+  protected JDKLogger(final String name, final JDKLoggerPluginConfiguration configuration) {
     this.name = name;
     this.logger = java.util.logging.Logger.getLogger(name);
-    this.level = java.util.logging.Level.parse(confirguration.handlerLevel());
+    this.level = java.util.logging.Level.parse(configuration.handlerLevel());
     this.logger.setLevel(this.level);
-    this.handler = determineHandler(confirguration);
+    this.handler = determineHandler(configuration);
     this.logger.addHandler(handler);
     this.handler.setLevel(this.level);
     //Disable default console handler.
