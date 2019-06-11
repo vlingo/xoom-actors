@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo</groupId>
   <artifactId>vlingo-actors</artifactId>
-  <version>0.8.3</version>
+  <version>0.9.0</version>
   <name>vlingo-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
   <url>https://github.com/vlingo/vlingo-actors</url>
@@ -85,6 +85,22 @@
   </repositories>
   <dependencies>
     <dependency>
+      <groupId>org.agrona</groupId>
+      <artifactId>agrona</artifactId>
+      <version>0.9.20</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vlingo</groupId>
+      <artifactId>vlingo-common</artifactId>
+      <version>0.8.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.26</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
@@ -97,14 +113,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.agrona</groupId>
-      <artifactId>agrona</artifactId>
-      <version>0.9.20</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vlingo</groupId>
-      <artifactId>vlingo-common</artifactId>
-      <version>0.8.3</version>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.0.13</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <distributionManagement>
