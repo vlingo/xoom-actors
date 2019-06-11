@@ -107,10 +107,10 @@ public class JDKLoggerTest extends ActorsTest {
     
     assertNotNull(logger);
     assertEquals("testRegistration", plugin.logger().name());
-    
-    logger.log("TEST:3 1");
-    logger.log("TEST:3 2");
-    logger.log("TEST:3 3");
+
+    logger.debug("TEST:3 1");
+    logger.debug("TEST:3 2");
+    logger.debug("TEST:3 3");
   }
   
   @Test
@@ -120,10 +120,6 @@ public class JDKLoggerTest extends ActorsTest {
     assertNotNull(logger);
     assertEquals("testStandardLogger", logger.name());
     
-    logger.log("TEST:4 1");
-    logger.log("TEST:4 2");
-    logger.log("TEST:4 3");
-
     logger.trace("TRACE message");
     logger.trace("TRACE message with parameters {0}", "1");
     logger.trace("TRACE message with exception", new Exception("test trace exception"));

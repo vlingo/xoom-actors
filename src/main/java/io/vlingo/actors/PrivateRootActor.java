@@ -60,7 +60,7 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
 
   @Override
   public void inform(Throwable throwable, Supervised supervised) {
-    logger().log("PrivateRootActor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Stopping.", throwable);
+    logger().error("PrivateRootActor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Stopping.", throwable);
     supervised.stop(strategy.scope());
   }
 

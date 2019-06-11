@@ -246,7 +246,7 @@ public class Stage implements Stoppable {
               ).toTestActor();
 
     } catch (Exception e) {
-      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       e.printStackTrace();
       return null;
     }
@@ -295,7 +295,7 @@ public class Stage implements Stoppable {
   public void dump() {
     final Logger logger = this.world.defaultLogger();
     if (logger.isEnabled()) {
-      logger.log("STAGE: " + name);
+      logger.debug("STAGE: " + name);
       directory.dump(logger);
     }
   }
@@ -439,7 +439,7 @@ public class Stage implements Stoppable {
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
       e.printStackTrace();
-      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
   }
@@ -469,7 +469,7 @@ public class Stage implements Stoppable {
       final Object[] protocolActors = actorProxyFor(protocols, actor, actor.lifeCycle.environment.mailbox);
       return ActorProtocolActor.allOf(protocolActors, actor);
     } catch (Exception e) {
-      world.defaultLogger().log("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
   }
@@ -644,7 +644,7 @@ public class Stage implements Stoppable {
     try {
       actor = ActorFactory.actorFor(this, parent, definition, address, mailbox, maybeSupervisor, logger);
     } catch (Exception e) {
-      logger.log("Actor instantiation failed because: " + e.getMessage(), e);
+      logger.error("Actor instantiation failed because: " + e.getMessage(), e);
       throw new IllegalArgumentException("Actor instantiation failed because: " + e.getMessage(), e);
     }
 

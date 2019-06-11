@@ -23,7 +23,7 @@ public class ActorStopTest extends ActorsTest {
 
     final AccessSafely beforeStartCountAccess = results.beforeStartCountAccessCompletes(12);
     
-    world.defaultLogger().log("Test: testStopActors: starting actors");
+    world.defaultLogger().debug("Test: testStopActors: starting actors");
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world, results);
 
@@ -34,7 +34,7 @@ public class ActorStopTest extends ActorsTest {
     final int beforeStartCount = beforeStartCountAccess.readFrom("value");
     assertEquals(12, beforeStartCount);
 
-    world.defaultLogger().log("Test: testStopActors: stopping actors");
+    world.defaultLogger().debug("Test: testStopActors: stopping actors");
 
     results.terminatingAccessCompletes(0).writeUsing("value", false);
 
@@ -47,8 +47,8 @@ public class ActorStopTest extends ActorsTest {
     final int stopCount = stopCountAccess.readFromExpecting("value", 12);
     assertEquals(12, stopCount);
 
-    world.defaultLogger().log("Test: testStopActors: stopped actors");
-    world.defaultLogger().log("Test: testStopActors: terminating world");
+    world.defaultLogger().debug("Test: testStopActors: stopped actors");
+    world.defaultLogger().debug("Test: testStopActors: terminating world");
 
     results.terminatingStopCountAccessCompletes(0);
 

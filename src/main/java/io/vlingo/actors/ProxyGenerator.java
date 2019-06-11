@@ -1,4 +1,5 @@
 // Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -90,7 +91,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   public Result generateFor(final String actorProtocol) {
-    logger.log("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
+    logger.debug("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
 
     try {
       final Class<?> protocolInterface = readProtocolInterface(actorProtocol);

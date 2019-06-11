@@ -120,12 +120,12 @@ public class ExecutorDispatcherTest extends ActorsTest {
     public void run() {
       final Message message = receive();
       if (testResults.shouldLog) {
-        logger.log("TestMailbox: run: received: " + message);
+        logger.debug("TestMailbox: run: received: " + message);
       }
       if (message != null) {
         message.deliver();
         if (testResults.shouldLog) {
-          logger.log("TestMailbox: run: adding: " + testResults.getHighest());
+          logger.debug("TestMailbox: run: adding: " + testResults.getHighest());
         }
       }
     }
@@ -208,11 +208,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
               .afterCompleting(happenings)
               .writingWith("results", (BiConsumer<Integer, Logger>) (count, logger) -> {
                 if (shouldLog) {
-                  logger.log("CountTakerActor: take: " + count);
+                  logger.debug("CountTakerActor: take: " + count);
                 }
                 if (count > highest.get()) {
                   if (shouldLog) {
-                    logger.log("CountTakerActor: take: " + count + " > " + highest.get());
+                    logger.debug("CountTakerActor: take: " + count + " > " + highest.get());
                   }
                   highest.set(count);
                 }

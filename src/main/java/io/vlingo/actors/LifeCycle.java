@@ -64,7 +64,7 @@ final class LifeCycle {
     try {
       actor.afterStop();
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor afterStop() failed: " + t.getMessage(), t);
+      environment.logger.error("vlingo/actors: Actor afterStop() failed: " + t.getMessage(), t);
       environment.stage.handleFailureOf(new StageSupervisedActor(Stoppable.class, actor, t));
     }
   }
@@ -73,7 +73,7 @@ final class LifeCycle {
     try {
       actor.beforeStart();
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
+      environment.logger.error("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, actor, t));
     }
   }
@@ -82,7 +82,7 @@ final class LifeCycle {
     try {
       actor.afterRestart(throwable);
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
+      environment.logger.error("vlingo/actors: Actor beforeStart() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, actor, t));
     }
   }
@@ -91,7 +91,7 @@ final class LifeCycle {
     try {
       actor.beforeRestart(reason);
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor beforeRestart() failed: " + t.getMessage());
+      environment.logger.error("vlingo/actors: Actor beforeRestart() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(protocol, actor, t));
     }
   }
@@ -100,7 +100,7 @@ final class LifeCycle {
     try {
       actor.beforeResume(reason);
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor beforeResume() failed: " + t.getMessage());
+      environment.logger.error("vlingo/actors: Actor beforeResume() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(protocol, actor, t));
     }
   }
@@ -115,7 +115,7 @@ final class LifeCycle {
         environment.mailbox.send(targetActor, Startable.class, consumer, null, "start()");
       }
     } catch (Throwable t) {
-      environment.logger.log("vlingo/actors: Actor start() failed: " + t.getMessage());
+      environment.logger.error("vlingo/actors: Actor start() failed: " + t.getMessage());
       environment.stage.handleFailureOf(new StageSupervisedActor(Startable.class, targetActor, t));
     }
   }

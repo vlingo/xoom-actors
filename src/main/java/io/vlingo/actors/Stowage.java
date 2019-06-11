@@ -33,7 +33,7 @@ public class Stowage {
 
   void dump(final Logger logger) {
     for (final Message message : stowedMessages) {
-      logger.log("STOWED: " + message);
+      logger.debug("STOWED: " + message);
     }
   }
 
