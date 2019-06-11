@@ -112,5 +112,9 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
       this.name = name;
       return this;
     }
+
+    public static Slf4jLoggerPluginConfiguration define() {
+      return new Slf4jLoggerPluginConfiguration();
+    }
   }
 }
