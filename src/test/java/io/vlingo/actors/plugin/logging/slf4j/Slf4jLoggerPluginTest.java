@@ -7,6 +7,7 @@
 
 package io.vlingo.actors.plugin.logging.slf4j;
 
+import io.vlingo.actors.ActorsTest;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -22,7 +23,7 @@ import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.MockRegistrar;
 
-public class Slf4jLoggerPluginTest {
+public class Slf4jLoggerPluginTest extends ActorsTest {
   private boolean registered;
 
   private final Registrar registrar = new MockRegistrar() {
@@ -31,6 +32,35 @@ public class Slf4jLoggerPluginTest {
       registered = true;
     }
   };
+
+
+  @Test
+  public void testStandardLogger() {
+    Logger logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
+
+    assertNotNull(logger);
+    assertEquals("testStandardLogger", logger.name());
+
+    logger.trace("TRACE message");
+    logger.trace("TRACE message with parameters {0}", "1");
+    logger.trace("TRACE message with exception", new Exception("test trace exception"));
+
+    logger.debug("DEBUG message");
+    logger.debug("DEBUG message with parameters {0}", "2");
+    logger.debug("DEBUG message with exception", new Exception("test debug exception"));
+
+    logger.info("INFO message");
+    logger.info("INFO message with parameters {0}", "3");
+    logger.info("INFO message with exception", new Exception("test info exception"));
+
+    logger.warn("WARN message");
+    logger.warn("WARN message with parameters {0}", "4");
+    logger.warn("WARN message with exception", new Exception("test warn exception"));
+
+    logger.error("ERROR message");
+    logger.error("ERROR message with parameters {0}", "4");
+    logger.error("ERROR message with exception", new Exception("test error exception"));
+  }
 
   @Test
   public void testRegistration() {

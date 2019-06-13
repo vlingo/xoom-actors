@@ -16,10 +16,31 @@ import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
+
+import java.util.Properties;
+
 public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerProvider {
   private final Slf4jLoggerPluginConfiguration pluginConfiguration;
   private int pass = 1;
   private Logger logger;
+
+  public static Logger basicInstance() {
+    final Configuration configuration = Configuration.define();
+    final Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration loggerConfiguration
+            = Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration.define();
+    loggerConfiguration.build(configuration);
+    return new Slf4jLogger(loggerConfiguration.name());
+  }
+
+  public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
+    final Slf4jLoggerPlugin plugin = new Slf4jLoggerPlugin();
+    final Slf4jLoggerPluginConfiguration pluginConfiguration = (Slf4jLoggerPluginConfiguration) plugin.configuration();
+    final Properties properties = new Properties();
+    properties.setProperty("plugin." + name + ".defaulLogger", "true");
+    pluginConfiguration.buildWith(registrar.world().configuration(), new PluginProperties(name, properties));
+    plugin.start(registrar);
+    return plugin;
+  }
 
   /**
    * Required for plugin creation at runtime.
@@ -61,7 +82,7 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
   public void start(Registrar registrar) {
     // pass 0 or 1 is bootstrap, pass 2 is for reals
     if (pass < 2) {
-      logger = new Slf4jLogger();
+      logger = new Slf4jLogger(this.pluginConfiguration.name());
       registrar.register(this.pluginConfiguration.name(), this.pluginConfiguration.isDefaultLogger(), this);
       pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World

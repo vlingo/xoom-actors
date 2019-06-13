@@ -113,34 +113,6 @@ public class JDKLoggerTest extends ActorsTest {
     logger.debug("TEST:3 3");
   }
   
-  @Test
-  public void testStandardLogger() {
-    logger = LoggerProvider.standardLoggerProvider(world, "testStandardLogger").logger();
-    
-    assertNotNull(logger);
-    assertEquals("testStandardLogger", logger.name());
-    
-    logger.trace("TRACE message");
-    logger.trace("TRACE message with parameters {0}", "1");
-    logger.trace("TRACE message with exception", new Exception("test trace exception"));
-
-    logger.debug("DEBUG message");
-    logger.debug("DEBUG message with parameters {0}", "2");
-    logger.debug("DEBUG message with exception", new Exception("test debug exception"));
-
-    logger.info("INFO message");
-    logger.info("INFO message with parameters {0}", "3");
-    logger.info("INFO message with exception", new Exception("test info exception"));
-
-    logger.warn("WARN message");
-    logger.warn("WARN message with parameters {0}", "4");
-    logger.warn("WARN message with exception", new Exception("test warn exception"));
-
-    logger.error("ERROR message");
-    logger.error("ERROR message with parameters {0}", "4");
-    logger.error("ERROR message with exception", new Exception("test error exception"));
-  }
-  
   @After
   @Override
   public void tearDown() throws Exception {

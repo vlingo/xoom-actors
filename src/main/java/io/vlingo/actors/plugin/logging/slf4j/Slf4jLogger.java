@@ -12,14 +12,15 @@ import org.slf4j.LoggerFactory;
 
 public class Slf4jLogger implements Logger {
   private final org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.class);
-
-  public static Logger basicInstance() {
-    return new Slf4jLogger();
+  private final String name;
+  
+  Slf4jLogger(final String name){
+    this.name = name;
   }
 
   @Override
   public String name() {
-    return this.logger.getName();
+    return name;
   }
 
   @Override
@@ -49,7 +50,7 @@ public class Slf4jLogger implements Logger {
 
   @Override
   public void trace(String message, Object... args) {
-    this.trace(message, args);
+    this.logger.trace(message, args);
   }
 
   @Override

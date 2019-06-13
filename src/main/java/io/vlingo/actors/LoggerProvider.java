@@ -7,18 +7,19 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin;
 import io.vlingo.actors.plugin.logging.noop.NoOpLoggerProvider;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 
 public interface LoggerProvider {
-  public static LoggerProvider noOpLoggerProvider() {
+  static LoggerProvider noOpLoggerProvider() {
     return new NoOpLoggerProvider();
   }
 
-  public static LoggerProvider standardLoggerProvider(final World world, final String name) {
-    return JDKLoggerPlugin.registerStandardLogger(name, world);
+  static LoggerProvider standardLoggerProvider(final World world, final String name) {
+    return Slf4jLoggerPlugin.registerStandardLogger(name, world);
   }
 
   void close();
+  
   Logger logger();
 }
