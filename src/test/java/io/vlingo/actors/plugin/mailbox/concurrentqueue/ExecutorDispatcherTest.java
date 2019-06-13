@@ -38,7 +38,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
   @Test
   public void testClose() {
-    final TestResults testResults = new TestResults(3, true);
+    final TestResults testResults = new TestResults(3, false);
 
     final TestMailbox mailbox = new TestMailbox(testResults, world.defaultLogger());
 
@@ -71,7 +71,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
   @Test
   public void testExecute() {
-    final TestResults testResults = new TestResults(Total, true);
+    final TestResults testResults = new TestResults(Total, false);
     
     final TestMailbox mailbox = new TestMailbox(testResults, world.defaultLogger());
 
