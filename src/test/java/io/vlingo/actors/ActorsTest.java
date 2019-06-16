@@ -10,10 +10,10 @@ package io.vlingo.actors;
 import org.junit.After;
 import org.junit.Before;
 
-import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
 import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.actors.testkit.TestWorld;
+
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 
 public abstract class ActorsTest {
   protected World world;
@@ -31,13 +31,11 @@ public abstract class ActorsTest {
     Configuration configuration =
             Configuration
               .define()
-              .with(JDKLoggerPluginConfiguration
+              .with(Slf4jLoggerPlugin
+                      .Slf4jLoggerPluginConfiguration
                       .define()
                       .defaultLogger()
-                      .name("vlingo/actors")
-                      .handlerClass(QuietHandler.class) // SWITCH TO DefaultHandler TO SEE LOGS
-                      .handlerName("vlingo-supervisors-test")
-                      .handlerLevel("ALL"));
+                      .name("vlingo/actors"));
 
       testWorld = TestWorld.start("test", configuration);
       world = testWorld.world();

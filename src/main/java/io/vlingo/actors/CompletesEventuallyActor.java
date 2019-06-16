@@ -16,7 +16,7 @@ public class CompletesEventuallyActor extends Actor implements CompletesEventual
       final PooledCompletes pooled = (PooledCompletes) outcome;
       pooled.clientCompletes.with(pooled.outcome());
     } catch (Throwable t) {
-      logger().log("The eventually completed outcome failed in the client because: " + t.getMessage(), t);
+      logger().error("The eventually completed outcome failed in the client because: " + t.getMessage(), t);
     }
   }
 }

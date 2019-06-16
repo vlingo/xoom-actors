@@ -25,6 +25,17 @@ public class JDKLoggerPlugin extends AbstractPlugin implements Plugin, LoggerPro
   private Logger logger;
   private int pass = 1;
 
+  public static Logger basicInstance() {
+    final Configuration configuration = Configuration.define();
+    final JDKLoggerPluginConfiguration loggerConfiguration = JDKLoggerPluginConfiguration.define();
+    loggerConfiguration.build(configuration);
+    return new JDKLogger(loggerConfiguration.name(), loggerConfiguration);
+  }
+
+  public static Logger testInstance() {
+    return basicInstance();
+  }
+
   public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
     final JDKLoggerPlugin plugin = new JDKLoggerPlugin();
     final JDKLoggerPluginConfiguration pluginConfiguration = (JDKLoggerPluginConfiguration) plugin.configuration();

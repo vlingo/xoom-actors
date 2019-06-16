@@ -24,6 +24,7 @@ import io.vlingo.actors.plugin.PluginLoader;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
 import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
 import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
 import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
@@ -35,6 +36,7 @@ public class Configuration {
   private CommonSupervisorsPluginConfiguration commonSupervisorsPluginConfiguration;
   private DefaultSupervisorOverridePluginConfiguration defaultSupervisorOverridePluginConfiguration;
   private JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration;
+  private Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration slf4jPluginConfiguration;
   private PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
   private ManyToOneConcurrentArrayQueuePluginConfiguration manyToOneConcurrentArrayQueuePluginConfiguration;
   private SharedRingBufferMailboxPluginConfiguration sharedRingBufferMailboxPluginConfiguration;
@@ -106,6 +108,19 @@ public class Configuration {
 
   public JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration() {
     return jdkLoggerPluginConfiguration;
+  }
+
+  public Configuration with(final Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration configuration) {
+    if (this.slf4jPluginConfiguration != null) {
+
+    }
+    this.slf4jPluginConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
+    return this;
+  }
+
+  public Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration slf4jPluginConfiguration() {
+    return slf4jPluginConfiguration;
   }
 
   public Configuration with(final ManyToOneConcurrentArrayQueuePluginConfiguration configuration) {
@@ -214,8 +229,8 @@ public class Configuration {
   private Configuration(final Properties properties, final boolean includeBaseLoad) {
     this.configurationOverrides = new HashMap<>();
     this.plugins = new ArrayList<>();
-    this.properties = null;
-    this.mergeProperties = false;
+    this.properties = properties;
+    this.mergeProperties = includeBaseLoad;
 
     this
       .usingMainProxyGeneratedClassesPath("target/classes/")
@@ -237,6 +252,7 @@ public class Configuration {
     final List<Class<?>> pluginClasses = Arrays.asList(
             io.vlingo.actors.plugin.completes.PooledCompletesPlugin.class,
             io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.class,
+            io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin.class,
             io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.class,
             io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.class,
             io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.class,

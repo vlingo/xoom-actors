@@ -37,7 +37,7 @@ final class Directory {
         for (final Actor actor : map.values()) {
           final Address address = actor.address();
           final Address parent = actor.lifeCycle.environment.parent == null ? none : actor.lifeCycle.environment.parent.address();
-          logger.log("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent + " TYPE: " + actor.getClass());
+          logger.debug("DIR: DUMP: ACTOR: " + address + " PARENT: " + parent + " TYPE: " + actor.getClass());
         }
       }
     }

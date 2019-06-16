@@ -20,14 +20,14 @@ public class DeadLettersActor extends Actor implements DeadLetters {
   }
 
   public void failedDelivery(final DeadLetter deadLetter) {
-    logger().log(deadLetter.toString());
+    logger().debug(deadLetter.toString());
 
     for (final DeadLettersListener listener : listeners) {
       try {
         listener.handle(deadLetter);
       } catch (Throwable t) {
         // ignore, but log
-        logger().log("DeadLetters listener failed to handle: " + deadLetter, t);
+        logger().warn("DeadLetters listener failed to handle: " + deadLetter, t);
       }
     }
   }

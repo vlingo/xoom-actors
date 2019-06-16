@@ -28,7 +28,7 @@ public abstract class DefaultSupervisor extends Actor implements Supervisor {
 
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
-    logger().log("DefaultSupervisor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Possibly restarting.", throwable);
+    logger().error("DefaultSupervisor: Failure of: " + supervised.address() + " because: " + throwable.getMessage() + " Action: Possibly restarting.", throwable);
     supervised.restartWithin(DefaultSupervisionStrategy.period(), DefaultSupervisionStrategy.intensity(), DefaultSupervisionStrategy.scope());
   }
 

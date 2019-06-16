@@ -126,7 +126,7 @@ public class ActorFactory {
     }
 
     if (cause != null) {
-      logger.log("ActorFactory: failed actor creation. "
+      logger.error("ActorFactory: failed actor creation. "
               + "This is sometimes cause be the constructor parameter types not matching "
               + "the types in the Definition.parameters(). Often it is caused by a "
               + "failure in the actor constructor. We have attempted to uncover "

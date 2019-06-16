@@ -7,32 +7,20 @@
 
 package io.vlingo.actors.plugin.logging.jdk;
 
+import io.vlingo.actors.Logger;
+import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
+
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.MemoryHandler;
-
-import io.vlingo.actors.Configuration;
-import io.vlingo.actors.Logger;
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
 
 public class JDKLogger implements Logger {
   private final Handler handler;
   private final Level level;
   private final java.util.logging.Logger logger;
   private final String name;
-
-  public static Logger basicInstance() {
-    final Configuration configuration = Configuration.define();
-    final JDKLoggerPluginConfiguration loggerConfiguration = JDKLoggerPluginConfiguration.define();
-    loggerConfiguration.build(configuration);
-    return new JDKLogger(loggerConfiguration.name(), loggerConfiguration);
-  }
-
-  public static Logger testInstance() {
-    return basicInstance();
-  }
-
+  
   protected JDKLogger(final String name, final JDKLoggerPluginConfiguration configuration) {
     this.name = name;
     this.logger = java.util.logging.Logger.getLogger(name);

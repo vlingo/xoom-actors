@@ -50,10 +50,10 @@ public class DirectoryScannerActor extends Actor implements DirectoryScanner {
       if (actor != null) {
         return stage().actorAs(actor, protocol);
       } else {
-        logger().log("Actor with address: " + address + " not found; protocol is: " + protocol.getName());
+        logger().debug("Actor with address: " + address + " not found; protocol is: " + protocol.getName());
       }
     } catch (Exception e) {
-      logger().log("Error providing protocol: " + protocol.getName() + " for actor with address: " + address, e);
+      logger().error("Error providing protocol: " + protocol.getName() + " for actor with address: " + address, e);
     }
     return null;
   }
