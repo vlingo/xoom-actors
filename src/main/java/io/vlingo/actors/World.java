@@ -315,7 +315,7 @@ public final class World implements Registrar {
       final Supervisor common = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
       stage.registerCommonSupervisor(supervisedProtocol, common);
     } catch (Exception e) {
-      defaultLogger().log("vlingo/actors: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
+      defaultLogger().error("vlingo/actors: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
     }
   }
 
@@ -333,8 +333,7 @@ public final class World implements Registrar {
       final Stage stage = stageNamed(actualStageName);
       defaultSupervisor = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
     } catch (Exception e) {
-      defaultLogger().log("vlingo/actors: World cannot register default supervisor override: " + supervisorClass.getName(), e);
-      e.printStackTrace();
+      defaultLogger().error("vlingo/actors: World cannot register default supervisor override: " + supervisorClass.getName(), e);
     }
   }
 

@@ -7,27 +7,25 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.logging.jdk.JDKLogger;
 import io.vlingo.actors.plugin.logging.noop.NoOpLogger;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 
 public interface Logger {
-  public static Logger noOpLogger() {
+  static Logger noOpLogger() {
     return new NoOpLogger();
   }
 
-  public static Logger basicLogger() {
-    return JDKLogger.basicInstance();
+  static Logger basicLogger() {
+    return Slf4jLoggerPlugin.basicInstance();
   }
-
-  public static Logger testLogger() {
-    return JDKLogger.testInstance();
-  }
-
+  
   String name();
   void close();
   boolean isEnabled();
 
+  @Deprecated
   void log(final String message);
+  @Deprecated
   void log(final String message, final Throwable throwable);
 
   void trace(String message);

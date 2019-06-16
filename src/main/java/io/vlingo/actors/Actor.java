@@ -335,7 +335,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   protected void beforeRestart(final Throwable reason) {
     // override for specific recovery
 
-    logger().log("Default before restart recovery after: " + reason.getMessage(), reason);
+    logger().error("Default before restart recovery after: " + reason.getMessage(), reason);
 
     lifeCycle.afterStop(this);
   }
@@ -348,7 +348,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   protected void afterRestart(final Throwable reason) {
     // override for specific recovery
 
-    logger().log("Default after restart recovery after: " + reason.getMessage(), reason);
+    logger().error("Default after restart recovery after: " + reason.getMessage(), reason);
 
     lifeCycle.beforeStart(this);
   }
@@ -361,6 +361,6 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   protected void beforeResume(final Throwable reason) {
     // override for specific recovery
 
-    logger().log("Default before resume recovery after: " + reason.getMessage(), reason);
+    logger().error("Default before resume recovery after: " + reason.getMessage(), reason);
   }
 }

@@ -25,7 +25,7 @@ public class ProxyGeneratorTest {
 
     @Before
     public void setUp() throws Exception {
-        proxyGenerator = ProxyGenerator.forTest(false, Logger.testLogger());
+        proxyGenerator = ProxyGenerator.forTest(false, Logger.basicLogger());
     }
 
     @Test
