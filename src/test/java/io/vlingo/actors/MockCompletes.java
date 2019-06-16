@@ -7,14 +7,13 @@
 
 package io.vlingo.actors;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import io.vlingo.actors.testkit.AccessSafely;
-import io.vlingo.actors.testkit.TestUntil;
 import io.vlingo.common.BasicCompletes;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MockCompletes<T> extends BasicCompletes<T> {
   private final AtomicReference<T> outcome = new AtomicReference<>(null);
