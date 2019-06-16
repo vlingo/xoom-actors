@@ -20,7 +20,12 @@ public class JDKLogger implements Logger {
   private final Level level;
   private final java.util.logging.Logger logger;
   private final String name;
-  
+
+  //TODO remove when dependencies are updated.
+  public static Logger testInstance() {
+    return JDKLoggerPlugin.testInstance();
+  }
+
   protected JDKLogger(final String name, final JDKLoggerPluginConfiguration configuration) {
     this.name = name;
     this.logger = java.util.logging.Logger.getLogger(name);
