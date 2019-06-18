@@ -40,16 +40,6 @@ public class Slf4jLoggerActor extends Actor implements Logger {
   }
 
   @Override
-  public void log(String message) {
-    this.logger.log(message);
-  }
-
-  @Override
-  public void log(String message, Throwable throwable) {
-    this.logger.log(message, throwable);
-  }
-
-  @Override
   public void trace(String message) {
     this.logger.trace(message);
   }

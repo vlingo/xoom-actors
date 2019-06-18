@@ -21,14 +21,6 @@ public class NoOpLogger implements Logger {
   }
 
   @Override
-  public void log(final String message) {
-  }
-
-  @Override
-  public void log(final String message, final Throwable throwable) {
-  }
-
-  @Override
   public void trace(String message) {
   }
 

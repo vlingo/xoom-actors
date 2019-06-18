@@ -7,16 +7,8 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
-import io.vlingo.actors.plugin.logging.jdk.DefaultHandler;
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
 import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
 import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
@@ -27,6 +19,12 @@ import io.vlingo.actors.supervision.Ping;
 import io.vlingo.actors.supervision.PingSupervisorActor;
 import io.vlingo.actors.supervision.Pong;
 import io.vlingo.actors.supervision.PongSupervisorActor;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ConfigurationTest {
 
@@ -55,13 +53,10 @@ public class ConfigurationTest {
                       .defaultMailbox()
                       .numberOfDispatchersFactor(1.5f)
                       .dispatcherThrottlingCount(10))
-              .with(JDKLoggerPluginConfiguration
+              .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration
                       .define()
                       .defaultLogger()
-                      .name("vlingo/actors(test)")
-                      .handlerClass(DefaultHandler.class)
-                      .handlerName("vlingo")
-                      .handlerLevel("ALL"))
+                      .name("vlingo/actors(test)"))
               .with(CommonSupervisorsPluginConfiguration
                       .define()
                       .supervisor("default", "pingSupervisor", Ping.class, PingSupervisorActor.class)
@@ -96,12 +91,9 @@ public class ConfigurationTest {
     assertEquals(1.5f, configuration.concurrentQueueMailboxPluginConfiguration().numberOfDispatchersFactor(), 0);
     assertEquals(10, configuration.concurrentQueueMailboxPluginConfiguration().dispatcherThrottlingCount());
 
-    assertNotNull(configuration.jdkLoggerPluginConfiguration());
-    assertTrue(configuration.jdkLoggerPluginConfiguration().isDefaultLogger());
-    assertEquals("vlingo/actors(test)", configuration.jdkLoggerPluginConfiguration().name());
-    assertEquals(DefaultHandler.class, configuration.jdkLoggerPluginConfiguration().handlerClass());
-    assertEquals("vlingo", configuration.jdkLoggerPluginConfiguration().handlerName());
-    assertEquals("ALL", configuration.jdkLoggerPluginConfiguration().handlerLevel());
+    assertNotNull(configuration.slf4jPluginConfiguration());
+    assertTrue(configuration.slf4jPluginConfiguration().isDefaultLogger());
+    assertEquals("vlingo/actors(test)", configuration.slf4jPluginConfiguration().name());
 
     assertNotNull(configuration.commonSupervisorsPluginConfiguration());
     assertEquals(2, configuration.commonSupervisorsPluginConfiguration().count());
@@ -153,12 +145,9 @@ public class ConfigurationTest {
     assertEquals(1.5f, configuration.concurrentQueueMailboxPluginConfiguration().numberOfDispatchersFactor(), 0);
     assertEquals(1, configuration.concurrentQueueMailboxPluginConfiguration().dispatcherThrottlingCount());
 
-    assertNotNull(configuration.jdkLoggerPluginConfiguration());
-    assertTrue(configuration.jdkLoggerPluginConfiguration().isDefaultLogger());
-    assertEquals("vlingo/actors", configuration.jdkLoggerPluginConfiguration().name());
-    assertEquals(DefaultHandler.class, configuration.jdkLoggerPluginConfiguration().handlerClass());
-    assertEquals("vlingo", configuration.jdkLoggerPluginConfiguration().handlerName());
-    assertEquals("ALL", configuration.jdkLoggerPluginConfiguration().handlerLevel());
+    assertNotNull(configuration.slf4jPluginConfiguration());
+    assertTrue(configuration.slf4jPluginConfiguration().isDefaultLogger());
+    assertEquals("vlingo/actors", configuration.slf4jPluginConfiguration().name());
 
     assertNotNull(configuration.defaultSupervisorOverridePluginConfiguration());
     assertEquals(1, configuration.defaultSupervisorOverridePluginConfiguration().count());
