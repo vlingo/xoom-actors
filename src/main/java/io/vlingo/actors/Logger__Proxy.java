@@ -12,8 +12,6 @@ import java.util.function.Consumer;
 public class Logger__Proxy implements Logger {
 
   private static final String nameRepresentation1 = "name()";
-  private static final String logRepresentation2 = "log(java.lang.String)";
-  private static final String logRepresentation3 = "log(java.lang.String, java.lang.Throwable)";
   private static final String closeRepresentation4 = "close()";
   private static final String isEnabledRepresentation5 = "isEnabled()";
   private static final String traceRepresentation1 = "trace(java.lang.String)";
@@ -44,16 +42,6 @@ public class Logger__Proxy implements Logger {
     final Consumer<Logger> consumer = (actor) -> actor.name();
     send(consumer, nameRepresentation1);
     return null;
-  }
-
-  public void log(java.lang.String arg0) {
-    final Consumer<Logger> consumer = (actor) -> actor.log(arg0);
-    send(consumer, logRepresentation2);
-  }
-
-  public void log(java.lang.String arg0, java.lang.Throwable arg1) {
-    final Consumer<Logger> consumer = (actor) -> actor.log(arg0, arg1);
-    send(consumer, logRepresentation3);
   }
 
   @Override

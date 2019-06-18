@@ -23,11 +23,6 @@ public interface Logger {
   void close();
   boolean isEnabled();
 
-  @Deprecated
-  void log(final String message);
-  @Deprecated
-  void log(final String message, final Throwable throwable);
-
   void trace(String message);
   void trace(String message, Object... args);
   void trace(String message, final Throwable throwable);
