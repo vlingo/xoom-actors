@@ -7,18 +7,9 @@
 
 package io.vlingo.actors.supervision;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
-import io.vlingo.actors.plugin.logging.jdk.QuietHandler;
 import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
 import io.vlingo.actors.supervision.PingActor.PingTestResults;
 import io.vlingo.actors.supervision.PingSupervisorActor.PingSupervisorTestResults;
@@ -27,6 +18,12 @@ import io.vlingo.actors.supervision.PongSupervisorActor.PongSupervisorTestResult
 import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestWorld;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CommonSupervisionTest extends ActorsTest {
 
@@ -100,13 +97,6 @@ public class CommonSupervisionTest extends ActorsTest {
     Configuration configuration =
             Configuration
               .define()
-              .with(JDKLoggerPluginConfiguration
-                      .define()
-                      .defaultLogger()
-                      .name("vlingo/actors")
-                      .handlerClass(QuietHandler.class)
-                      .handlerName("vlingo-supervisors-test")
-                      .handlerLevel("ALL"))
               .with(CommonSupervisorsPluginConfiguration
                       .define()
                       .supervisor("default", "pingSupervisor", Ping.class, PingSupervisorActor.class)
