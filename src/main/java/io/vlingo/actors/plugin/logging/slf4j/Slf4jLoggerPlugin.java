@@ -32,6 +32,10 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
     return new Slf4jLogger(loggerConfiguration.name());
   }
 
+  public static Logger testInstance() {
+    return basicInstance();
+  }
+
   public static LoggerProvider registerStandardLogger(final String name, final Registrar registrar) {
     final Slf4jLoggerPlugin plugin = new Slf4jLoggerPlugin();
     final Slf4jLoggerPluginConfiguration pluginConfiguration = (Slf4jLoggerPluginConfiguration) plugin.configuration();
