@@ -7,6 +7,18 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
+import io.vlingo.actors.plugin.PluginLoader;
+import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
+import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
+import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
+import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
+import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
+import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,24 +30,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import io.vlingo.actors.plugin.Plugin;
-import io.vlingo.actors.plugin.PluginConfiguration;
-import io.vlingo.actors.plugin.PluginLoader;
-import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
-import io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.JDKLoggerPluginConfiguration;
-import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
-import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
-import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
-import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
-import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
-import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
-
 public class Configuration {
   private ConcurrentQueueMailboxPluginConfiguration concurrentQueueMailboxPluginConfiguration;
   private CommonSupervisorsPluginConfiguration commonSupervisorsPluginConfiguration;
   private DefaultSupervisorOverridePluginConfiguration defaultSupervisorOverridePluginConfiguration;
-  private JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration;
   private Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration slf4jPluginConfiguration;
   private PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
   private ManyToOneConcurrentArrayQueuePluginConfiguration manyToOneConcurrentArrayQueuePluginConfiguration;
@@ -95,19 +93,6 @@ public class Configuration {
 
   public DefaultSupervisorOverridePluginConfiguration defaultSupervisorOverridePluginConfiguration() {
     return defaultSupervisorOverridePluginConfiguration;
-  }
-
-  public Configuration with(final JDKLoggerPluginConfiguration configuration) {
-    if (this.jdkLoggerPluginConfiguration != null) {
-      
-    }
-    this.jdkLoggerPluginConfiguration = configuration;
-    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
-    return this;
-  }
-
-  public JDKLoggerPluginConfiguration jdkLoggerPluginConfiguration() {
-    return jdkLoggerPluginConfiguration;
   }
 
   public Configuration with(final Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration configuration) {
@@ -251,7 +236,6 @@ public class Configuration {
   private List<Plugin> loadPlugins(final boolean build) {
     final List<Class<?>> pluginClasses = Arrays.asList(
             io.vlingo.actors.plugin.completes.PooledCompletesPlugin.class,
-            io.vlingo.actors.plugin.logging.jdk.JDKLoggerPlugin.class,
             io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin.class,
             io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.class,
             io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.class,

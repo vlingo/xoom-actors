@@ -34,16 +34,6 @@ public class Slf4jLogger implements Logger {
   }
 
   @Override
-  public void log(String message) {
-    debug(message);
-  }
-
-  @Override
-  public void log(String message, Throwable throwable) {
-    debug(message, throwable);
-  }
-
-  @Override
   public void trace(String message) {
     this.logger.trace(message);
   }
