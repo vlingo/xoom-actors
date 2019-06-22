@@ -206,8 +206,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> Completes<T> completes() {
-    if (completes == null) {
-      throw new IllegalStateException("Completes is not available for this protocol behavior.");
+    if (completes == null || completes.__internal__clientCompletes == null) {
+      throw new IllegalStateException("Completes is not available for this protocol behavior; return type must not be void.");
     }
     return (Completes<T>) completes;
   }
