@@ -9,26 +9,28 @@ package io.vlingo.actors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import io.vlingo.common.Completes;
 import io.vlingo.actors.testkit.AccessSafely;
+import io.vlingo.common.Completes;
 
 public class CompletesActorProtocolTest extends ActorsTest {
   private static final String Hello = "Hello, Completes!";
   private static final String HelloNot = "Bye!";
   private static final String Prefix = "*** ";
-  
+
   @Test
   public void testReturnsCompletesForSideEffects() {
     final TestResults testResults = TestResults.afterCompleting(2);
 
-    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class, testResults);
 
     uc.getHello().andThenConsume((hello) -> testResults.setGreeting(hello.greeting));
     uc.getOne().andThenConsume((value) -> testResults.setValue(value));
@@ -41,7 +43,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public void testAfterAndThenCompletesForSideEffects() {
     final TestResults greetingsTestResult = TestResults.afterCompleting(1);
 
-    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class, greetingsTestResult);
     final Completes<Hello> helloCompletes = uc.getHello();
     helloCompletes.andThen((hello) -> new Hello(Prefix + hello.greeting))
          .andThenConsume((hello) -> greetingsTestResult.setGreeting(hello.greeting));
@@ -55,7 +57,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     final Completes<Integer> one = uc.getOne();
     one.andThen((value) -> value + 1).andThenConsume((value) -> valueTestResult.setValue(value));
-    
+
     assertNotEquals(1, valueTestResult.getValue().intValue());
     assertNotEquals(new Integer(1), one.outcome());
     assertEquals(2, valueTestResult.getValue().intValue());
@@ -63,10 +65,21 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   @Test
+  public void testThatVoidReturnTypeThrowsException() {
+    final TestResults exceptionTestResults = TestResults.afterCompleting(1);
+
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class, exceptionTestResults);
+
+    uc.completesNotSupportedForVoidReturnType();
+
+    assertTrue(exceptionTestResults.getExceptionThrown());
+  }
+
+  @Test
   @Ignore("Need explanation of why it should timeout")
   public void testThatTimeOutOccursForSideEffects() {
-    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesCausesTimeoutActor.class);
     final TestResults greetingsTestResult = TestResults.afterCompleting(1);
+    final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesCausesTimeoutActor.class, greetingsTestResult);
 
     final Completes<Hello> helloCompletes =
             uc.getHello()
@@ -87,7 +100,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     assertNotEquals(1, valueTestResult.getValue().intValue());
     assertEquals(new Integer(0), oneCompletes.outcome());
   }
-  
+
   public static class Hello {
     public final String greeting;
 
@@ -104,10 +117,15 @@ public class CompletesActorProtocolTest extends ActorsTest {
   public static interface UsesCompletes {
     Completes<Hello> getHello();
     Completes<Integer> getOne();
+    void completesNotSupportedForVoidReturnType();
   }
 
   public static class UsesCompletesActor extends Actor implements UsesCompletes {
-    public UsesCompletesActor() { }
+    private final TestResults results;
+
+    public UsesCompletesActor(final TestResults results) {
+      this.results = results;
+    }
 
     @Override
     public Completes<Hello> getHello() {
@@ -117,11 +135,25 @@ public class CompletesActorProtocolTest extends ActorsTest {
     @Override
     public Completes<Integer> getOne() {
       return completes().with(new Integer(1));
+    }
+
+    @Override
+    public void completesNotSupportedForVoidReturnType() {
+      try {
+        completes().with("Must throw exception");
+        results.received.writeUsing("exceptionThrown", false);
+      } catch (Exception e) {
+        results.received.writeUsing("exceptionThrown", true);
+      }
     }
   }
 
   public static class UsesCompletesCausesTimeoutActor extends Actor implements UsesCompletes {
-    public UsesCompletesCausesTimeoutActor() { }
+    private final TestResults results;
+
+    public UsesCompletesCausesTimeoutActor(final TestResults results) {
+      this.results = results;
+    }
 
     @Override
     public Completes<Hello> getHello() {
@@ -141,6 +173,16 @@ public class CompletesActorProtocolTest extends ActorsTest {
         // ignore
       }
       return completes().with(new Integer(1));
+    }
+
+    @Override
+    public void completesNotSupportedForVoidReturnType() {
+      try {
+        completes().with("Must throw exception");
+        results.received.writeUsing("exceptionThrown", false);
+      } catch (Exception e) {
+        results.received.writeUsing("exceptionThrown", true);
+      }
     }
   }
 
@@ -149,6 +191,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     private final AtomicReference<String> receivedGreeting = new AtomicReference<>(null);
     private final AtomicInteger receivedValue = new AtomicInteger(0);
     private final AccessSafely received;
+    private final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
 
     private TestResults(AccessSafely received) {
       this.received = received;
@@ -160,6 +203,8 @@ public class CompletesActorProtocolTest extends ActorsTest {
       testResults.received.readingWith("receivedGreeting", testResults.receivedGreeting::get);
       testResults.received.writingWith("receivedValue", testResults.receivedValue::set);
       testResults.received.readingWith("receivedValue", testResults.receivedValue::get);
+      testResults.received.writingWith("exceptionThrown", testResults.exceptionThrown::set);
+      testResults.received.readingWith("exceptionThrown", testResults.exceptionThrown::get);
       return testResults;
     }
 
@@ -177,6 +222,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     private Integer getValue(){
       return this.received.readFrom("receivedValue");
+    }
+
+    private Boolean getExceptionThrown(){
+      return this.received.readFrom("exceptionThrown");
     }
   }
 }
