@@ -25,22 +25,22 @@ import io.vlingo.actors.testkit.AccessSafely;
 public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
-  
+
   @Test
   public void testBasicDispatch() {
     final TestResults testResults = new TestResults(MaxCount);
-    
+
     final CountTaker countTaker =
             world.actorFor(
                     CountTaker.class,
                     Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-1"));
-    
+
     final int totalCount = MailboxSize / 2;
 
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
-    
+
     assertEquals(MaxCount, testResults.getHighest());
   }
 
@@ -51,10 +51,10 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     final CountTaker countTaker =
             world.actorFor(
                     CountTaker.class,
-                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"));
+                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testArrayQueueMailbox", "countTaker-2"));
 
     final int totalCount = MailboxSize * 2;
-    
+
     for (int count = 1; count <= totalCount; ++count) {
       countTaker.take(count);
     }
@@ -67,7 +67,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    
+
     Properties properties = new Properties();
     properties.setProperty("plugin.name.testArrayQueueMailbox", "true");
     properties.setProperty("plugin.testArrayQueueMailbox.classname", "io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin");
@@ -76,28 +76,28 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testArrayQueueMailbox.fixedBackoff", "2");
     properties.setProperty("plugin.testArrayQueueMailbox.dispatcherThrottlingCount", "1");
     properties.setProperty("plugin.testArrayQueueMailbox.sendRetires", "10");
-    
+
     ManyToOneConcurrentArrayQueuePlugin provider = new ManyToOneConcurrentArrayQueuePlugin();
-    final PluginProperties pluginProperties = new PluginProperties("testRingMailbox", properties);
+    final PluginProperties pluginProperties = new PluginProperties("testArrayQueueMailbox", properties);
     final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
     plugin.configuration().buildWith(world.configuration(), pluginProperties);
-    
+
     provider.start(world);
   }
-  
+
   public static interface CountTaker {
     void take(final int count);
   }
-  
+
   public static class CountTakerActor extends Actor implements CountTaker {
     private final TestResults testResults;
     private final CountTaker self;
-    
+
     public CountTakerActor(final TestResults testResults) {
       this.testResults = testResults;
       this.self = selfAs(CountTaker.class);
     }
-    
+
     @Override
     public void take(final int count) {
       if (testResults.isHighest(count)) {
