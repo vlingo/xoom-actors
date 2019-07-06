@@ -10,8 +10,6 @@ package io.vlingo.actors;
 import java.util.function.Consumer;
 
 final class LifeCycle {
-  private final static String Exceptional = "#exceptional";
-
   final Environment environment;
 
   LifeCycle(final Environment environment) {
@@ -52,7 +50,7 @@ final class LifeCycle {
 
   void stop(final Actor actor) {
     environment.stop();
-    
+
     afterStop(actor);
   }
 
@@ -125,7 +123,7 @@ final class LifeCycle {
   //=======================================
 
   void resume() {
-    environment.mailbox.resume(Exceptional);
+    environment.mailbox.resume(Mailbox.Exceptional);
   }
 
   boolean isSuspended() {
@@ -133,16 +131,20 @@ final class LifeCycle {
   }
 
   void suspend() {
-    environment.mailbox.suspendExceptFor(Exceptional, Stoppable.class);
+    environment.mailbox.suspendExceptFor(Mailbox.Exceptional, Stoppable.class);
+  }
+
+  void suspendForStop() {
+    environment.mailbox.suspendExceptFor(Mailbox.Stopping, Stoppable.class);
   }
 
   Supervisor supervisor(final Class<?> protocol) {
     Supervisor supervisor = environment.maybeSupervisor;
-    
+
     if (supervisor == null) {
       supervisor = environment.stage.commonSupervisorOr(protocol, environment.stage.world().defaultSupervisor());
     }
-    
+
     return supervisor;
   }
 }
