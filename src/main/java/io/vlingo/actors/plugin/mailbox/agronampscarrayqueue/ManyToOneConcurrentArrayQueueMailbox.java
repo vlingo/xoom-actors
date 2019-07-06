@@ -51,6 +51,7 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
       if (queue.offer(message)) {
         return;
       }
+      while (pendingMessages() >= queue.capacity()) ;
     }
     throw new IllegalStateException("Count not enqueue message due to busy mailbox.");
   }
@@ -58,7 +59,9 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   @Override
   public void suspendExceptFor(final String name, final Class<?>... overrides) {
     // TODO: Consider supporting Stowage here
-    System.out.println("WARNING: ManyToOneConcurrentArrayQueueMailbox does not support suspendExceptFor(): " + name + " overrides: " + overrides);
+    if (!name.equals(Mailbox.Stopping)) {
+      System.out.println("WARNING: ManyToOneConcurrentArrayQueueMailbox does not support suspendExceptFor(): " + name + " overrides: " + overrides);
+    }
   }
 
   @Override
