@@ -13,21 +13,21 @@
     },
 
     "version": {
-        "name": "0.8.4",
+        "name": "0.8.5",
         "gpgSign": true
     },
 
     "files": [
         {
             "includePattern": "target/(.*).jar",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.8.4/$1.jar",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.8.5/$1.jar",
             "matrixParams": {
                 "override": 1
             }
         },
         {
             "includePattern": "pom.xml",
-            "uploadPattern": "/io/vlingo/vlingo-actors/0.8.4/vlingo-actors-0.8.4.pom",
+            "uploadPattern": "/io/vlingo/vlingo-actors/0.8.5/vlingo-actors-0.8.5.pom",
             "matrixParams": {
                 "override": 1
             }
