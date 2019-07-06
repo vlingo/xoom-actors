@@ -15,6 +15,10 @@ import io.vlingo.common.Completes;
  * Standard actor mailbox protocol.
  */
 public interface Mailbox extends Runnable {
+  final static String Exceptional = "#exceptional";
+  final static String Paused = "#paused";
+  final static String Stopping = "#stopping";
+
   /**
    * Close me.
    */
