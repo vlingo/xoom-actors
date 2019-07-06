@@ -19,7 +19,6 @@ import io.vlingo.common.Scheduler;
  * facilities and life cycle processing for all {@code Actor} types.
  */
 public abstract class Actor implements Startable, Stoppable, TestStateView {
-  private final static String Paused = "#paused";
 
   final ResultCompletes completes;
   final LifeCycle lifeCycle;
@@ -80,7 +79,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     if (!isStopped()) {
       if (lifeCycle.address().id() != World.DEADLETTERS_ID) {
         // TODO: remove this actor as a child on parent
-        lifeCycle.suspend();
+        lifeCycle.suspendForStop();
         lifeCycle.stop(this);
       }
     }
@@ -297,7 +296,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Starts the process of dispersing any messages stowed for this {@code Actor}.
    */
   protected void disperseStowedMessages() {
-    lifeCycle.environment.mailbox.resume(Paused);
+    lifeCycle.environment.mailbox.resume(Mailbox.Paused);
   }
 
   /**
@@ -306,7 +305,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @param stowageOverrides the {@code Class<T>} protocol that will trigger dispersal
    */
   protected void stowMessages(final Class<?>... stowageOverrides) {
-    lifeCycle.environment.mailbox.suspendExceptFor(Paused, stowageOverrides);
+    lifeCycle.environment.mailbox.suspendExceptFor(Mailbox.Paused, stowageOverrides);
   }
 
   //=======================================
