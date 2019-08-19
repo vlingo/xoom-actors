@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -296,6 +297,7 @@ public final class World implements Registrar {
    * @param name the {@code String} name of the {@code MailboxProvider} to register
    * @param mailboxProvider the {@code MailboxProvider} to register
    */
+  @Override
   public void register(final String name, final boolean isDefault, final MailboxProvider mailboxProvider) {
     mailboxProviderKeeper.keep(name, isDefault, mailboxProvider);
   }
@@ -407,13 +409,35 @@ public final class World implements Registrar {
    * @param name the {@code String} name of the {@code Stage} to answer
    * @return Stage
    */
-  public synchronized Stage stageNamed(final String name) {
+  public Stage stageNamed(final String name) {
+    return stageNamed(name, Stage.class, addressFactory);
+  }
+
+  /**
+   * Answers the {@code Stage} named by {@code name}, or the newly created {@code Stage} instance named by {@code name}
+   * if the {@code Stage} does not already exist.
+   * @param name the {@code String} name of the {@code Stage} to answer
+   * @param stageType the {@code Class<? extends Stage>}
+   * @param addressFactory the AddressFactory of the Stage if not existing
+   * @return Stage
+   */
+  @SuppressWarnings("rawtypes")
+  public synchronized Stage stageNamed(final String name, final Class<? extends Stage> stageType, final AddressFactory addressFactory) {
     Stage stage = stages.get(name);
 
     if (stage == null) {
-      stage = new Stage(this, name);
-      if (!name.equals(DEFAULT_STAGE)) stage.startDirectoryScanner();
-      stages.put(name, stage);
+      try {
+        final Constructor ctor = stageType.getConstructor(World.class, AddressFactory.class, String.class);
+        stage = (Stage) ctor.newInstance(this, addressFactory, name);
+        if (!name.equals(DEFAULT_STAGE)) {
+          stage.startDirectoryScanner();
+        }
+        stages.put(name, stage);
+      } catch (Exception e) {
+        final String message = "World cannot create new stage: " + name + " because: " + e.getMessage();
+        defaultLogger().error(message, e);
+        throw new IllegalStateException(message, e);
+      }
     }
 
     return stage;
