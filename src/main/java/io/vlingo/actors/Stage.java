@@ -19,6 +19,7 @@ import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
 
 public class Stage implements Stoppable {
+  private final AddressFactory addressFactory;
   private final Map<Class<?>, Supervisor> commonSupervisors;
   private final Directory directory;
   private DirectoryScanner directoryScanner;
@@ -26,6 +27,21 @@ public class Stage implements Stoppable {
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
   private final World world;
+
+  /**
+   * Initializes the new {@code Stage} of the world and with name.
+   * @param world the {@code World} parent of this {@code Stage}
+   * @param name the {@code String} name of this {@code Stage}
+   */
+  public Stage(final World world, final AddressFactory addressFactory, final String name) {
+    this.world = world;
+    this.addressFactory = addressFactory;
+    this.name = name;
+    this.directory = new Directory(addressFactory.none());
+    this.commonSupervisors = new HashMap<>();
+    this.scheduler = new Scheduler();
+    this.stopped = new AtomicBoolean(false);
+  }
 
   /**
    * Answers the {@code T} protocol type as the means to message the backing {@code Actor}.
@@ -201,6 +217,14 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * Answer my {@code addressFactory}.
+   * @return AddressFactory
+   */
+  public AddressFactory addressFactory() {
+    return addressFactory;
+  }
+
+  /**
    * Answer the {@code protocol} reference of the actor with {@code address} as a non-empty
    * {@code Completes<Optional<T>>} eventual outcome, or an empty {@code Completes<Optional<T>>}
    * if not found.
@@ -365,20 +389,6 @@ public class Stage implements Stoppable {
    */
   public World world() {
     return world;
-  }
-
-  /**
-   * Initializes the new {@code Stage} of the world and with name. (INTERNAL ONLY)
-   * @param world the {@code World} parent of this {@code Stage}
-   * @param name the {@code String} name of this {@code Stage}
-   */
-  Stage(final World world, final String name) {
-    this.world = world;
-    this.name = name;
-    this.directory = new Directory(world.addressFactory().none());
-    this.commonSupervisors = new HashMap<>();
-    this.scheduler = new Scheduler();
-    this.stopped = new AtomicBoolean(false);
   }
 
   /**
