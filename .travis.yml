@@ -6,7 +6,6 @@ before_install:
 - cd ${TRAVIS_BUILD_DIR}
 script:
 - mvn install
-jdk: openjdk8
 deploy:
   provider: bintray
   file: bintray.json
