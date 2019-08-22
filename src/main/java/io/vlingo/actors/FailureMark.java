@@ -7,14 +7,17 @@
 
 package io.vlingo.actors;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class FailureMark {
-  private long startOfPeriod;
-  private int timedIntensity;
-  
+  private AtomicLong startOfPeriod;
+  private AtomicInteger timedIntensity;
+
   public FailureMark() {
     reset();
   }
-  
+
   boolean failedWithExcessiveFailures(final long period, final int intensity) {
     if (intensity == SupervisionStrategy.ForeverIntensity) {
       return false;
@@ -23,28 +26,28 @@ public class FailureMark {
     }
 
     final long currentTime = System.currentTimeMillis();
-    
-    if (startOfPeriod == 0) {
-      startOfPeriod = currentTime;
-      timedIntensity = 1;
+
+    if (startOfPeriod.get() == 0) {
+      startOfPeriod.set(currentTime);
+      timedIntensity.set(1);
     } else {
-      ++timedIntensity;
+      timedIntensity.incrementAndGet();
     }
-    
-    final boolean periodExceeded = startOfPeriod - currentTime >= period;
-    
-    if (timedIntensity > intensity && !periodExceeded) {
+
+    final boolean periodExceeded = startOfPeriod.get() - currentTime >= period;
+
+    if (timedIntensity.get() > intensity && !periodExceeded) {
       return true;
     } else if (periodExceeded) {
       reset();
       return failedWithExcessiveFailures(period, intensity);
     }
-    
+
     return false;
   }
 
   void reset() {
-    startOfPeriod = 0;
-    timedIntensity = 0;
+    startOfPeriod = new AtomicLong(0);
+    timedIntensity = new AtomicInteger(0);
   }
 }
