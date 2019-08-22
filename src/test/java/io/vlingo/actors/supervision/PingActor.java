@@ -14,18 +14,18 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class PingActor extends Actor implements Ping {
   public static final ThreadLocal<PingActor> instance = new ThreadLocal<>();
-  
+
   private final PingTestResults testResults;
-  
+
   public PingActor(final PingTestResults testResults) {
     this.testResults = testResults;
     instance.set(this);
   }
-  
+
   @Override
   public void stop() {
-    super.stop();
     testResults.access.writeUsing("stopCount", 1);
+    super.stop();
   }
 
   @Override
