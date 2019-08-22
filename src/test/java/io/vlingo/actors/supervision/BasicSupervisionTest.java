@@ -192,7 +192,7 @@ public class BasicSupervisionTest extends ActorsTest {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

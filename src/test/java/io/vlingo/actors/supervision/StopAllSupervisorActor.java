@@ -42,7 +42,7 @@ public class StopAllSupervisorActor extends Actor implements Supervisor {
               return Scope.All;
             }
           };
-  
+
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     supervised.stop(strategy.scope());
@@ -53,7 +53,7 @@ public class StopAllSupervisorActor extends Actor implements Supervisor {
   public SupervisionStrategy supervisionStrategy() {
     return strategy;
   }
-  
+
   public static class StopAllSupervisorResult {
     public AccessSafely access = AccessSafely.afterCompleting(0);
 
@@ -62,7 +62,7 @@ public class StopAllSupervisorActor extends Actor implements Supervisor {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

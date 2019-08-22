@@ -17,11 +17,11 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class RestartForeverSupervisorActor extends Actor implements Supervisor {
   private final RestartForeverSupervisorTestResults testResults;
-  
+
   public RestartForeverSupervisorActor(final RestartForeverSupervisorTestResults testResults) {
     this.testResults = testResults;
   }
-  
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override
@@ -39,7 +39,7 @@ public class RestartForeverSupervisorActor extends Actor implements Supervisor {
               return Scope.One;
             }
           };
-  
+
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
@@ -59,7 +59,7 @@ public class RestartForeverSupervisorActor extends Actor implements Supervisor {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

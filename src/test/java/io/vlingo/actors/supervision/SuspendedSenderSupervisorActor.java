@@ -22,12 +22,12 @@ public class SuspendedSenderSupervisorActor extends Actor implements Supervisor,
 
   private FailureControl failureControl;
   private int times;
-  
+
   public SuspendedSenderSupervisorActor(final SuspendedSenderSupervisorResults results) {
     instance = this;
     this.results = results;
   }
-  
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override
@@ -45,18 +45,18 @@ public class SuspendedSenderSupervisorActor extends Actor implements Supervisor,
               return Scope.One;
             }
           };
-  
+
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     for (int idx = 1; idx <= times; ++idx) {
       failureControl.afterFailureCount(idx);
     }
-    
+
     supervised.resume();
 
     results.access.writeUsing("informedCount", 1);
   }
-  
+
   @Override
   public SupervisionStrategy supervisionStrategy() {
     return strategy;
@@ -76,7 +76,7 @@ public class SuspendedSenderSupervisorActor extends Actor implements Supervisor,
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

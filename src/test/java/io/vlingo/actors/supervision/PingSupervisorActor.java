@@ -17,14 +17,14 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class PingSupervisorActor extends Actor implements Supervisor {
   public static final ThreadLocal<PingSupervisorActor> instance = new ThreadLocal<>();
-  
+
   public final PingSupervisorTestResults testResults;
-  
+
   public PingSupervisorActor() {
     this.testResults = new PingSupervisorTestResults();
     instance.set(this);
   }
-  
+
   private final SupervisionStrategy strategy =
           new SupervisionStrategy() {
             @Override
@@ -42,7 +42,7 @@ public class PingSupervisorActor extends Actor implements Supervisor {
               return Scope.One;
             }
           };
-  
+
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
@@ -62,7 +62,7 @@ public class PingSupervisorActor extends Actor implements Supervisor {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

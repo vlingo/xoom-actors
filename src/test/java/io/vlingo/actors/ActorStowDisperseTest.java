@@ -70,12 +70,12 @@ public class ActorStowDisperseTest extends ActorsTest {
 
       this.stowedAccess = AccessSafely.afterCompleting(stowReceived);
       this.stowedAccess
-        .writingWith("stowReceivedCount", (Integer increment) -> stowReceivedCount.set(stowReceivedCount.get() + increment))
+        .writingWith("stowReceivedCount", (Integer increment) -> stowReceivedCount.incrementAndGet())
         .readingWith("stowReceivedCount", () -> stowReceivedCount.get());
 
       this.overrideAccess = AccessSafely.afterCompleting(overrideReceived);
       this.overrideAccess
-        .writingWith("overrideReceivedCount", (Integer increment) -> overrideReceivedCount.set(overrideReceivedCount.get() + increment))
+        .writingWith("overrideReceivedCount", (Integer increment) -> overrideReceivedCount.incrementAndGet())
         .readingWith("overrideReceivedCount", () -> overrideReceivedCount.get());
     }
   }

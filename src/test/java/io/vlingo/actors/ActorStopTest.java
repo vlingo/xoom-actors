@@ -22,7 +22,7 @@ public class ActorStopTest extends ActorsTest {
     final TestResults results = new TestResults();
 
     final AccessSafely beforeStartCountAccess = results.beforeStartCountAccessCompletes(12);
-    
+
     world.defaultLogger().debug("Test: testStopActors: starting actors");
 
     final ChildCreatingStoppable[] stoppables = setUpActors(world, results);
@@ -95,10 +95,10 @@ public class ActorStopTest extends ActorsTest {
   public static interface ChildCreatingStoppable extends Stoppable {
     void createChildren();
   }
-  
+
   public static class ChildCreatingStoppableActor extends Actor implements ChildCreatingStoppable {
     private final TestResults results;
-    
+
     public ChildCreatingStoppableActor(final TestResults results) {
       this.results = results;
     }
@@ -144,7 +144,7 @@ public class ActorStopTest extends ActorsTest {
       beforeStartCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (Integer value) -> beforeStartCount.set(beforeStartCount.get() + value))
+                .writingWith("value", (Integer value) -> beforeStartCount.incrementAndGet())
                 .readingWith("value", () -> beforeStartCount.get());
 
       return beforeStartCountAccess;
@@ -154,7 +154,7 @@ public class ActorStopTest extends ActorsTest {
       stopCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (Integer value) -> stopCount.set(stopCount.get() + value))
+                .writingWith("value", (Integer value) -> stopCount.incrementAndGet())
                 .readingWith("value", () -> stopCount.get());
 
       return stopCountAccess;
@@ -174,7 +174,7 @@ public class ActorStopTest extends ActorsTest {
       terminatingStopCountAccess =
               AccessSafely
                 .afterCompleting(times)
-                .writingWith("value", (Integer value) -> terminatingStopCount.set(terminatingStopCount.get() + value))
+                .writingWith("value", (Integer value) -> terminatingStopCount.incrementAndGet())
                 .readingWith("value", () -> terminatingStopCount.get());
 
       return terminatingStopCountAccess;

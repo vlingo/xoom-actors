@@ -17,9 +17,9 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class PongSupervisorActor extends Actor implements Supervisor {
   public static final ThreadLocal<PongSupervisorActor> instance = new ThreadLocal<>();
-  
+
   public final PongSupervisorTestResults testResults;
-  
+
   public PongSupervisorActor() {
     this.testResults = new PongSupervisorTestResults();
     instance.set(this);
@@ -42,7 +42,7 @@ public class PongSupervisorActor extends Actor implements Supervisor {
               return Scope.One;
             }
           };
-  
+
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
@@ -62,7 +62,7 @@ public class PongSupervisorActor extends Actor implements Supervisor {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("informedCount", (Integer increment) -> informedCount.set(informedCount.get() + increment))
+        .writingWith("informedCount", (Integer increment) -> informedCount.incrementAndGet())
         .readingWith("informedCount", () -> informedCount.get());
 
       return access;

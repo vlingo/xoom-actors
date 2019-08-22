@@ -14,15 +14,15 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class FailureControlActor extends Actor implements FailureControl {
   public static final ThreadLocal<FailureControlActor> instance = new ThreadLocal<>();
-  
+
   private final FailureControlTestResults testResults;
-  
+
   public FailureControlActor(final FailureControlTestResults testResults) {
     this.testResults = testResults;
     instance.set(this);
     this.testResults.access = this.testResults.afterCompleting(0);
   }
-  
+
   @Override
   public void failNow() {
     testResults.access.writeUsing("failNowCount", 1);
@@ -74,7 +74,7 @@ public class FailureControlActor extends Actor implements FailureControl {
     testResults.access.writeUsing("stoppedCount", 1);
     super.stop();
   }
-  
+
   public static class FailureControlTestResults {
     public AccessSafely access = afterCompleting(0);
 
@@ -91,31 +91,31 @@ public class FailureControlActor extends Actor implements FailureControl {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("afterFailureCount", (Integer increment) -> afterFailureCount.set(afterFailureCount.get() + increment))
+        .writingWith("afterFailureCount", (Integer increment) -> afterFailureCount.incrementAndGet())
         .readingWith("afterFailureCount", () -> afterFailureCount.get())
 
-        .writingWith("afterFailureCountCount", (Integer increment) -> afterFailureCountCount.set(afterFailureCountCount.get() + increment))
+        .writingWith("afterFailureCountCount", (Integer increment) -> afterFailureCountCount.incrementAndGet())
         .readingWith("afterFailureCountCount", () -> afterFailureCountCount.get())
 
-        .writingWith("afterRestartCount", (Integer increment) -> afterRestartCount.set(afterRestartCount.get() + increment))
+        .writingWith("afterRestartCount", (Integer increment) -> afterRestartCount.incrementAndGet())
         .readingWith("afterRestartCount", () -> afterRestartCount.get())
 
-        .writingWith("afterStopCount", (Integer increment) -> afterStopCount.set(afterStopCount.get() + increment))
+        .writingWith("afterStopCount", (Integer increment) -> afterStopCount.incrementAndGet())
         .readingWith("afterStopCount", () -> afterStopCount.get())
 
-        .writingWith("beforeRestartCount", (Integer increment) -> beforeRestartCount.set(beforeRestartCount.get() + increment))
+        .writingWith("beforeRestartCount", (Integer increment) -> beforeRestartCount.incrementAndGet())
         .readingWith("beforeRestartCount", () -> beforeRestartCount.get())
 
-        .writingWith("beforeResume", (Integer increment) -> beforeResume.set(beforeResume.get() + increment))
+        .writingWith("beforeResume", (Integer increment) -> beforeResume.incrementAndGet())
         .readingWith("beforeResume", () -> beforeResume.get())
 
-        .writingWith("beforeStartCount", (Integer increment) -> beforeStartCount.set(beforeStartCount.get() + increment))
+        .writingWith("beforeStartCount", (Integer increment) -> beforeStartCount.incrementAndGet())
         .readingWith("beforeStartCount", () -> beforeStartCount.get())
 
-        .writingWith("failNowCount", (Integer increment) -> failNowCount.set(failNowCount.get() + increment))
+        .writingWith("failNowCount", (Integer increment) -> failNowCount.incrementAndGet())
         .readingWith("failNowCount", () -> failNowCount.get())
 
-        .writingWith("stoppedCount", (Integer increment) -> stoppedCount.set(stoppedCount.get() + increment))
+        .writingWith("stoppedCount", (Integer increment) -> stoppedCount.incrementAndGet())
         .readingWith("stoppedCount", () -> stoppedCount.get());
 
       return access;
