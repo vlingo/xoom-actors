@@ -30,8 +30,8 @@ public class PongActor extends Actor implements Pong {
 
   @Override
   public void stop() {
-    testResults.access.writeUsing("stopCount", 1);
     super.stop();
+    testResults.access.writeUsing("stopCount", 1);
   }
 
   public static class PongTestResults {

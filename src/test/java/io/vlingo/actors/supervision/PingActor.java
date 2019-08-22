@@ -24,8 +24,8 @@ public class PingActor extends Actor implements Ping {
 
   @Override
   public void stop() {
-    testResults.access.writeUsing("stopCount", 1);
     super.stop();
+    testResults.access.writeUsing("stopCount", 1);
   }
 
   @Override
