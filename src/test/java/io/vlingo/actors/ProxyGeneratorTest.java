@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -83,8 +85,16 @@ public class ProxyGeneratorTest {
         assertTrue("IOException is not imported", result.source.contains("import java.io.IOException;"));
     }
 
+    @Test
+    public void testThatImportsFutureAndCompletableFuture() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithFutureAndCompletableFuture.class.getCanonicalName());
+
+        assertTrue("Future is not imported", result.source.contains("import java.util.concurrent.Future;"));
+        assertTrue("CompletableFuture is not imported", result.source.contains("import java.util.concurrent.CompletableFuture;"));
+    }
+
     @Test(expected = InvalidProtocolException.class)
-    public void testThatProtocolsWithAMethodThatDoesntReturnVoidOrCompletesFail() {
+    public void testThatProtocolsWithAMethodThatDoesntReturnVoidOrCompletesOrFutureFail() {
         proxyGenerator.generateFor(ProtocolWithPrimitive.class.getCanonicalName());
     }
 
@@ -121,6 +131,11 @@ interface ProtocolWithGenerics<A extends RuntimeException, B extends Queue<IOExc
 interface ProtocolWithWilcardGenerics<A extends RuntimeException, B extends Queue<?>> {
   Completes<Queue<List<A>>> someMethod();
   Completes<Queue<List<B>>> otherMethod();
+}
+
+interface ProtocolWithFutureAndCompletableFuture {
+    Future<Optional<List<Boolean>>> someMethod();
+    CompletableFuture<Boolean> otherMethod();
 }
 
 interface ProtocolWithPrimitive {

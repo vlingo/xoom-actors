@@ -185,6 +185,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String parameterTemplate = GenericParser.parametersTemplateOf(method);
     final String signatureReturnType = GenericParser.returnTypeOf(method);
     final boolean isACompletes = signatureReturnType.startsWith("io.vlingo.common.Completes");
+    final boolean isAFuture = signatureReturnType.startsWith("java.util.concurrent.Future") || signatureReturnType.startsWith("java.util.concurrent.CompletableFuture");
 
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
@@ -203,11 +204,12 @@ public class ProxyGenerator implements AutoCloseable {
             && !returnValue.isEmpty()
             && !genericTemplate.contains(signatureReturnType)
             && !genericTemplate.contains(parameterTemplate)
-            && !isSafeGenerable(protocolInterface)) {
+            && !isSafeGenerable(protocolInterface)
+            && !isAFuture) {
         return Tuple2.from(
                 new InvalidProtocolException.Failure(
                         methodSignature,
-                        "method return type should be either `void` or `Completes<T>`. The found return type is `" + signatureReturnType + "`. Consider wrapping it in `Completes<T>`, like `Completes<" + validForCompletes(signatureReturnType) + ">`."
+                        "method return type should be either `void`, `Completes<T>`, `Future<T>` or `CompletableFuture<T>`. The found return type is `" + signatureReturnType + "`. Consider wrapping it in `Completes<T>`, like `Completes<" + validForCompletes(signatureReturnType) + ">`."
                 ), null
         );
     }
