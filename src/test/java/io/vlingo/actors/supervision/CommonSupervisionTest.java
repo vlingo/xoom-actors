@@ -7,6 +7,13 @@
 
 package io.vlingo.actors.supervision;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
@@ -18,26 +25,20 @@ import io.vlingo.actors.supervision.PongSupervisorActor.PongSupervisorTestResult
 import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestWorld;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class CommonSupervisionTest extends ActorsTest {
 
   @Test
   public void testPingSupervisor() {
     final PingTestResults testResults = new PingTestResults();
-    
+
     final TestActor<Ping> ping =
             testWorld.actorFor(
                     Ping.class,
                     Definition.has(PingActor.class, Definition.parameters(testResults), "ping"));
 
     PingSupervisorTestResults supervisorResults = PingSupervisorActor.instance.get().testResults;
-    
+
     AccessSafely pingAccess = testResults.afterCompleting(5);
     AccessSafely supervisorAccess = supervisorResults.afterCompleting(5);
 
@@ -52,6 +53,7 @@ public class CommonSupervisionTest extends ActorsTest {
     pingAccess = testResults.afterCompleting(2);
 
     ping.actor().ping();
+    supervisorAccess = supervisorResults.afterCompleting(1);
 
     assertEquals(6, (int) pingAccess.readFrom("pingCount"));
     assertEquals(6, (int) supervisorAccess.readFrom("informedCount"));
@@ -61,7 +63,7 @@ public class CommonSupervisionTest extends ActorsTest {
   @Test
   public void testPongSupervisor() {
     final PongTestResults testResults = new PongTestResults();
-    
+
     final TestActor<Pong> pong =
             testWorld.actorFor(
                     Pong.class,
@@ -71,7 +73,7 @@ public class CommonSupervisionTest extends ActorsTest {
 
     AccessSafely pongAccess = testResults.afterCompleting(10);
     AccessSafely supervisorAccess = supervisorResults.afterCompleting(10);
-    
+
     for (int idx = 1; idx <= 10; ++idx) {
       pong.actor().pong();
     }
@@ -83,6 +85,7 @@ public class CommonSupervisionTest extends ActorsTest {
     assertFalse(pong.actorInside().isStopped());
 
     pongAccess = testResults.afterCompleting(2);
+    supervisorAccess = supervisorResults.afterCompleting(1);
 
     pong.actor().pong();
 
