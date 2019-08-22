@@ -14,14 +14,14 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class PongActor extends Actor implements Pong {
   public static final ThreadLocal<PongActor> instance = new ThreadLocal<>();
-  
+
   private final PongTestResults testResults;
-  
+
   public PongActor(final PongTestResults testResults) {
     this.testResults = testResults;
     instance.set(this);
   }
-  
+
   @Override
   public void pong() {
     testResults.access.writeUsing("pongCount", 1);
@@ -43,10 +43,10 @@ public class PongActor extends Actor implements Pong {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("pongCount", (Integer increment) -> pongCount.set(pongCount.get() + increment))
+        .writingWith("pongCount", (Integer increment) -> pongCount.incrementAndGet())
         .readingWith("pongCount", () -> pongCount.get())
 
-        .writingWith("stopCount", (Integer increment) -> stopCount.set(stopCount.get() + increment))
+        .writingWith("stopCount", (Integer increment) -> stopCount.incrementAndGet())
         .readingWith("stopCount", () -> stopCount.get());
 
       return access;
