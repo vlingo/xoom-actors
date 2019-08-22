@@ -43,10 +43,10 @@ public class PingActor extends Actor implements Ping {
     public AccessSafely afterCompleting(final int times) {
       access =
         AccessSafely.afterCompleting(times)
-        .writingWith("pingCount", (Integer increment) -> pingCount.set(pingCount.get() + increment))
+        .writingWith("pingCount", (Integer increment) -> pingCount.incrementAndGet())
         .readingWith("pingCount", () -> pingCount.get())
 
-        .writingWith("stopCount", (Integer increment) -> stopCount.set(stopCount.get() + increment))
+        .writingWith("stopCount", (Integer increment) -> stopCount.incrementAndGet())
         .readingWith("stopCount", () -> stopCount.get());
 
       return access;
