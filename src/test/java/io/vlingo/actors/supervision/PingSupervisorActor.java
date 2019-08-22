@@ -8,6 +8,7 @@
 package io.vlingo.actors.supervision;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Supervised;
@@ -16,11 +17,12 @@ import io.vlingo.actors.Supervisor;
 import io.vlingo.actors.testkit.AccessSafely;
 
 public class PingSupervisorActor extends Actor implements Supervisor {
-  public static final ThreadLocal<PingSupervisorActor> instance = new ThreadLocal<>();
+  public static final AtomicReference<PingSupervisorActor> instance = new AtomicReference<>();
 
   public final PingSupervisorTestResults testResults;
 
   public PingSupervisorActor() {
+    System.out.println("*********** PingSupervisorActor");
     this.testResults = new PingSupervisorTestResults();
     instance.set(this);
   }
@@ -34,7 +36,7 @@ public class PingSupervisorActor extends Actor implements Supervisor {
 
             @Override
             public long period() {
-              return 1000;
+              return 2000;
             }
 
             @Override
