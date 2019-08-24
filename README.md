@@ -2,7 +2,7 @@
 
 [![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
 
-The vlingo-actors toolkit is nearly full featured, so don't be fooled by the seemingly low version number.
+The vlingo/PLATFORM type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.
 
 A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-tutorial-1/
 
