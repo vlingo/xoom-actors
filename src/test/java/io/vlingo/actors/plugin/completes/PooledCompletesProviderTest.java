@@ -11,6 +11,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
+import io.vlingo.actors.Returns;
+import io.vlingo.common.Completes;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
@@ -37,7 +39,7 @@ public class PooledCompletesProviderTest extends ActorsTest {
     
     final MockCompletes<Object> clientCompletes = new MockCompletes<>(1);
     
-    final CompletesEventually asyncCompletes = world.completesFor(clientCompletes);
+    final CompletesEventually asyncCompletes = world.completesFor(Returns.value(clientCompletes));
     asyncCompletes.with(5);
 
     assertEquals(1, clientCompletes.getWithCount());
@@ -62,10 +64,10 @@ public class PooledCompletesProviderTest extends ActorsTest {
     final MockCompletes<Object> clientCompletes1 = new MockCompletes<>(1);
     final MockCompletes<Object> clientCompletes2 = new MockCompletes<>(1);
     
-    final CompletesEventually completes1 = world.completesFor(clientCompletes1);
+    final CompletesEventually completes1 = world.completesFor(Returns.value(clientCompletes1));
     completes1.with(5);
 
-    final CompletesEventually completes2 = world.completesFor(completes1.address(), clientCompletes2);
+    final CompletesEventually completes2 = world.completesFor(completes1.address(), Returns.value(clientCompletes2));
     completes2.with(10);
 
     assertEquals(1, clientCompletes1.getWithCount());

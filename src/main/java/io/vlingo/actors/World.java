@@ -189,7 +189,7 @@ public final class World implements Registrar {
    * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
    * @return CompletesEventually
    */
-  public CompletesEventually completesFor(final Completes<?> clientCompletes) {
+  public CompletesEventually completesFor(final Returns<Object> clientCompletes) {
     return completesProviderKeeper.findDefault().provideCompletesFor(clientCompletes);
   }
 
@@ -200,7 +200,7 @@ public final class World implements Registrar {
    * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
    * @return CompletesEventually
    */
-  public CompletesEventually completesFor(final Address address, final Completes<?> clientCompletes) {
+  public CompletesEventually completesFor(final Address address, final Returns<Object> clientCompletes) {
     return completesProviderKeeper.findDefault().provideCompletesFor(address, clientCompletes);
   }
 

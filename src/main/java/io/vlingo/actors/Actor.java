@@ -14,13 +14,17 @@ import io.vlingo.actors.testkit.TestStateView;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 /**
  * The abstract base class of all concrete {@code Actor} types. This base provides common
  * facilities and life cycle processing for all {@code Actor} types.
  */
 public abstract class Actor implements Startable, Stoppable, TestStateView {
 
-  final ResultCompletes completes;
+  final ResultReturns returns;
   final LifeCycle lifeCycle;
 
   /**
@@ -157,7 +161,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
     this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
     ActorFactory.threadLocalEnvironment.set(null);
-    this.completes = new ResultCompletes();
+    this.returns = new ResultReturns();
   }
 
   /**
@@ -205,10 +209,47 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> Completes<T> completes() {
-    if (completes == null || completes.__internal__clientCompletes == null) {
-      throw new IllegalStateException("Completes is not available for this protocol behavior; return type must not be void.");
+    if (returns == null || returns.__internal__clientReturns == null) {
+      throw new IllegalStateException("Completes is not available for this protocol behavior; return type must be Completes<T>.");
     }
-    return (Completes<T>) completes;
+    return (Completes<T>) returns;
+  }
+
+  /**
+   * Answers the {@code CompletableFuture<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * delivered {@code Message} does not answer a {@code CompletableFuture<T>}.
+   * @param <T> the protocol type
+   * @return {@code CompletableFuture<T>}
+   */
+  @SuppressWarnings("unchecked")
+  protected <T> CompletableFuture<T> completableFuture() {
+    if (returns == null || returns.__internal__clientReturns == null) {
+      throw new IllegalStateException("CompletableFuture is not available for this protocol behavior; return type must be CompletableFuture<T>.");
+    }
+    return (CompletableFuture<T>) returns.asCompletableFuture();
+  }
+
+  /**
+   * Answers the {@code Future<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * delivered {@code Message} does not answer a {@code Future<T>}.
+   * @param <T> the protocol type
+   * @param callable
+   * @return {@code Future<T>}
+   */
+  @SuppressWarnings("unchecked")
+  protected <T> Future<T> future(final Callable<T> callable) {
+    if (returns == null || returns.__internal__clientReturns == null) {
+      throw new IllegalStateException("Future is not available for this protocol behavior; return type must be Future<T>.");
+    }
+    final CompletableFuture<T> completableFuture = (CompletableFuture<T>) returns.clientReturns().asFuture();
+    try {
+      final T outcome = callable.call();
+      returns.__internal__outcome = outcome;
+      completableFuture.complete(outcome);
+    } catch (Exception e) {
+      throw new RuntimeException("Actor method returning Future<T> failed.", e);
+    }
+    return (Future<T>) completableFuture;
   }
 
   /**
@@ -218,7 +259,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * @return CompletesEventually
    */
   protected CompletesEventually completesEventually() {
-    return lifeCycle.environment.completesEventually(completes);
+    return lifeCycle.environment.completesEventually(returns);
   }
 
   /**

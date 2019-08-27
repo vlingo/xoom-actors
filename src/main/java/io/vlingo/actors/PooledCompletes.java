@@ -7,10 +7,8 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Completes;
-
 public class PooledCompletes implements CompletesEventually {
-  public final Completes<Object> clientCompletes;
+  public final Returns<Object> clientReturns;
   public final CompletesEventually completesEventually;
   public final long id;
   private Object outcome;
@@ -18,10 +16,10 @@ public class PooledCompletes implements CompletesEventually {
   @SuppressWarnings("unchecked")
   public PooledCompletes(
           final long id,
-          final Completes<?> clientCompletes,
+          final Returns<?> clientReturns,
           final CompletesEventually completesEventually) {
     this.id = id;
-    this.clientCompletes = (Completes<Object>) clientCompletes;
+    this.clientReturns = (Returns<Object>) clientReturns;
     this.completesEventually = completesEventually;
   }
 

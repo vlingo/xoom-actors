@@ -9,22 +9,20 @@ package io.vlingo.actors;
 
 import java.util.function.Consumer;
 
-import io.vlingo.common.Completes;
-
 public class LocalMessage<T> implements Message {
   Actor actor;
-  Completes<Object> completes;
+  Returns<Object> returns;
   Consumer<T> consumer;
   Class<T> protocol;
   String representation;
 
   @SuppressWarnings("unchecked")
-  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Completes<?> completes, final String representation) {
+  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Returns<?> returns, final String representation) {
     this.actor = actor;
     this.consumer = consumer;
     this.protocol = protocol;
     this.representation = representation;
-    this.completes = (Completes<Object>) completes;
+    this.returns = (Returns<Object>) returns;
   }
 
   public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final String representation) {
@@ -32,7 +30,7 @@ public class LocalMessage<T> implements Message {
   }
 
   public LocalMessage(final LocalMessage<T> message) {
-    this(message.actor, message.protocol, message.consumer, message.completes, message.representation);
+    this(message.actor, message.protocol, message.consumer, message.returns, message.representation);
   }
 
   public LocalMessage(final Mailbox mailbox) {
@@ -80,12 +78,12 @@ public class LocalMessage<T> implements Message {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation) {
+  public void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation) {
     this.actor = actor;
     this.consumer = (Consumer<T>) consumer;
     this.protocol = (Class<T>) protocol;
     this.representation = representation;
-    this.completes = (Completes<Object>) completes;
+    this.returns = (Returns<Object>) returns;
   }
 
   @Override
@@ -113,13 +111,13 @@ public class LocalMessage<T> implements Message {
 //      actor.lifeCycle.environment.stowage.stow(message);
     } else {
       try {
-        actor.completes.reset(completes);
+        actor.returns.reset(returns);
         consumer.accept((T) actor);
-        if (actor.completes.__internal__outcomeSet) {
+        if (actor.returns.__internal__outcomeSet) {
           // USE THE FOLLOWING. this forces the same ce actor to be used for
           // all completes outcomes such that completes outcomes cannot be
           // delivered to the client out of order from the original ordered causes.
-          actor.lifeCycle.environment.completesEventually(actor.completes).with(actor.completes.__internal__outcome);
+          actor.lifeCycle.environment.completesEventually(actor.returns).with(actor.returns.__internal__outcome);
           // DON'T USE THE FOLLOWING. it selects ce actors in round-robin order which
           // can easily cause clients to see outcomes of messages delivered later to
           // an actor before outcomes of messages delivered earlier to the same actor.
