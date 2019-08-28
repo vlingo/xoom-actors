@@ -8,8 +8,12 @@
 package io.vlingo.actors.plugin.completes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import io.vlingo.actors.Returns;
 import io.vlingo.common.Completes;
@@ -24,19 +28,8 @@ public class PooledCompletesProviderTest extends ActorsTest {
   
   @Test
   public void testActuallyCompletes() {
-    final Properties properties = new Properties();
-    
-    properties.setProperty("plugin.name.pooledCompletes", "true");
-    properties.setProperty("plugin.pooledCompletes.classname", "io.vlingo.actors.plugin.completes.PooledCompletesPlugin");
-    properties.setProperty("plugin.pooledCompletes.pool", "10");
-    
-    final PluginProperties pluginProperties = new PluginProperties("pooledCompletes", properties);
-    
-    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
-    plugin.configuration().buildWith(world.configuration(), pluginProperties);
-    
-    plugin.start(world);
-    
+    ConfigureWorldWithPooledCompletes();
+
     final MockCompletes<Object> clientCompletes = new MockCompletes<>(1);
     
     final CompletesEventually asyncCompletes = world.completesFor(Returns.value(clientCompletes));
@@ -48,19 +41,8 @@ public class PooledCompletesProviderTest extends ActorsTest {
 
   @Test
   public void testCompletesAddressMatches() {
-    final Properties properties = new Properties();
-    
-    properties.setProperty("plugin.name.pooledCompletes", "true");
-    properties.setProperty("plugin.pooledCompletes.classname", "io.vlingo.actors.plugin.completes.PooledCompletesPlugin");
-    properties.setProperty("plugin.pooledCompletes.pool", "10");
-    
-    final PluginProperties pluginProperties = new PluginProperties("pooledCompletes", properties);
-    
-    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
-    plugin.configuration().buildWith(world.configuration(), pluginProperties);
-    
-    plugin.start(world);
-    
+    ConfigureWorldWithPooledCompletes();
+
     final MockCompletes<Object> clientCompletes1 = new MockCompletes<>(1);
     final MockCompletes<Object> clientCompletes2 = new MockCompletes<>(1);
     
@@ -75,5 +57,44 @@ public class PooledCompletesProviderTest extends ActorsTest {
     assertEquals(1, clientCompletes2.getWithCount());
     assertEquals(10, clientCompletes2.outcome());
     assertEquals(completes1, completes2);
+  }
+
+  @Test
+  public void testCompletableFuture() throws ExecutionException, InterruptedException {
+    ConfigureWorldWithPooledCompletes();
+
+    final CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+
+    final CompletesEventually completes1 = world.completesFor(Returns.value(completableFuture));
+    completes1.with(5);
+
+    assertEquals(5, completableFuture.get().intValue());
+  }
+
+  @Test
+  public void testFuture() throws ExecutionException, InterruptedException {
+    ConfigureWorldWithPooledCompletes();
+
+    final CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
+
+    final CompletesEventually completes1 = world.completesFor(Returns.value((Future) completableFuture));
+    completes1.with(5);
+
+    assertEquals(5, completableFuture.get().intValue());
+  }
+
+  private void ConfigureWorldWithPooledCompletes() {
+    final Properties properties = new Properties();
+
+    properties.setProperty("plugin.name.pooledCompletes", "true");
+    properties.setProperty("plugin.pooledCompletes.classname", "io.vlingo.actors.plugin.completes.PooledCompletesPlugin");
+    properties.setProperty("plugin.pooledCompletes.pool", "10");
+
+    final PluginProperties pluginProperties = new PluginProperties("pooledCompletes", properties);
+
+    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
+    plugin.configuration().buildWith(world.configuration(), pluginProperties);
+
+    plugin.start(world);
   }
 }
