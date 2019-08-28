@@ -202,35 +202,35 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
-   * Answers the {@code Completes<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * Answers the {@code Completes<T>} instance for this {@code Actor}, or throws {@code IllegalStateException} if the behavior of the currently
    * delivered {@code Message} does not answer a {@code Completes<T>}.
    * @param <T> the protocol type
    * @return {@code Completes<T>}
    */
   @SuppressWarnings("unchecked")
   protected <T> Completes<T> completes() {
-    if (returns == null || returns.__internal__clientReturns == null) {
+    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asCompletes() == null) {
       throw new IllegalStateException("Completes is not available for this protocol behavior; return type must be Completes<T>.");
     }
     return (Completes<T>) returns;
   }
 
   /**
-   * Answers the {@code CompletableFuture<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * Answers the {@code CompletableFuture<T>} instance for this {@code Actor}, or throws {@code IllegalStateException} if the behavior of the currently
    * delivered {@code Message} does not answer a {@code CompletableFuture<T>}.
    * @param <T> the protocol type
    * @return {@code CompletableFuture<T>}
    */
   @SuppressWarnings("unchecked")
   protected <T> CompletableFuture<T> completableFuture() {
-    if (returns == null || returns.__internal__clientReturns == null) {
+    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asCompletableFuture() == null) {
       throw new IllegalStateException("CompletableFuture is not available for this protocol behavior; return type must be CompletableFuture<T>.");
     }
     return (CompletableFuture<T>) returns.asCompletableFuture();
   }
 
   /**
-   * Answers the {@code Future<T>} instance for this {@code Actor}, or {@code null} if the behavior of the currently
+   * Answers the {@code Future<T>} instance for this {@code Actor}, or throws {@code IllegalStateException} if the behavior of the currently
    * delivered {@code Message} does not answer a {@code Future<T>}.
    * @param <T> the protocol type
    * @param callable
@@ -238,7 +238,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> Future<T> future(final Callable<T> callable) {
-    if (returns == null || returns.__internal__clientReturns == null) {
+    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asFuture() == null) {
       throw new IllegalStateException("Future is not available for this protocol behavior; return type must be Future<T>.");
     }
     final CompletableFuture<T> completableFuture = (CompletableFuture<T>) returns.clientReturns().asFuture();

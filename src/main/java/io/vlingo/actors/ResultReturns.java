@@ -146,8 +146,8 @@ class ResultReturns implements Completes<Object> {
     return __internal__clientReturns;
   }
 
-  public void reset(final Returns<Object> clientCompletes) {
-    this.__internal__clientReturns = clientCompletes;
+  public void reset(final Returns<Object> clientReturns) {
+    this.__internal__clientReturns = clientReturns;
     this.__internal__outcome = null;
     this.__internal__outcomeSet = false;
   }

@@ -8,14 +8,14 @@
 package io.vlingo.actors;
 
 
-import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.completes.PooledCompletesPlugin;
 import org.junit.Test;
 
-import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class FutureActorProtocolTest extends ActorsTest {
   private static final String Hello = "Hello, Future!";
