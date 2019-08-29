@@ -16,13 +16,13 @@ public class CompletesEventuallyActor extends Actor implements CompletesEventual
   public void with(final Object outcome) {
     try {
       final PooledCompletes pooled = (PooledCompletes) outcome;
-      if(pooled.clientReturns.asCompletes() != null) {
+      if(pooled.clientReturns.isCompletes()) {
         pooled.clientReturns.asCompletes().with(pooled.outcome());
       }
-      if(pooled.clientReturns.asCompletableFuture() != null) {
+      if(pooled.clientReturns.isCompletableFuture()) {
         pooled.clientReturns.asCompletableFuture().complete(pooled.outcome());
       }
-      if(pooled.clientReturns.asFuture() != null) {
+      if(pooled.clientReturns.isFuture()) {
         ((CompletableFuture) pooled.clientReturns.asFuture()).complete(pooled.outcome());
       }
       } catch (Throwable t) {

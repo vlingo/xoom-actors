@@ -7,23 +7,13 @@ import java.util.concurrent.Future;
 
 public class Returns<T> {
 
-    private Completes<T> completes;
-    private Future<T> future;
-    private CompletableFuture<T> completableFuture;
+    private Object value;
 
-    private Returns(final Completes<T> completes) {
-        this.completes = completes;
+    private Returns(Object value) {
+        this.value = value;
     }
 
-    private Returns(final Future<T> future) {
-        this.future = future;
-    }
-
-    private Returns(final CompletableFuture<T> completableFuture) {
-        this.completableFuture = completableFuture;
-    }
-
-    public static <T> Returns value(final Completes completes) {
+    public static <T> Returns value(final Completes<T> completes) {
         return new Returns(completes);
     }
 
@@ -35,15 +25,27 @@ public class Returns<T> {
         return new Returns(completableFuture);
     }
 
+    public boolean isCompletes() {
+        return value instanceof Completes;
+    }
+
+    public boolean isFuture() {
+        return value instanceof Future;
+    }
+
+    public boolean isCompletableFuture() {
+        return value instanceof CompletableFuture;
+    }
+
     public Completes<T> asCompletes() {
-        return completes;
+        return (Completes<T>) value;
     };
 
     public Future<T> asFuture() {
-        return future;
+        return (Future<T>) value;
     }
 
     public CompletableFuture<T> asCompletableFuture() {
-        return completableFuture;
+        return (CompletableFuture<T>) value;
     }
 }

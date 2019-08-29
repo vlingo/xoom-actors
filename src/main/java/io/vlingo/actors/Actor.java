@@ -209,7 +209,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> Completes<T> completes() {
-    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asCompletes() == null) {
+    if (returns == null || returns.__internal__clientReturns == null || !returns.__internal__clientReturns.isCompletes()) {
       throw new IllegalStateException("Completes is not available for this protocol behavior; return type must be Completes<T>.");
     }
     return (Completes<T>) returns;
@@ -223,7 +223,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> CompletableFuture<T> completableFuture() {
-    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asCompletableFuture() == null) {
+    if (returns == null || returns.__internal__clientReturns == null || !returns.__internal__clientReturns.isCompletableFuture()) {
       throw new IllegalStateException("CompletableFuture is not available for this protocol behavior; return type must be CompletableFuture<T>.");
     }
     return (CompletableFuture<T>) returns.asCompletableFuture();
@@ -238,7 +238,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   @SuppressWarnings("unchecked")
   protected <T> Future<T> future(final Callable<T> callable) {
-    if (returns == null || returns.__internal__clientReturns == null || returns.__internal__clientReturns.asFuture() == null) {
+    if (returns == null || returns.__internal__clientReturns == null || !returns.__internal__clientReturns.isFuture()) {
       throw new IllegalStateException("Future is not available for this protocol behavior; return type must be Future<T>.");
     }
     final CompletableFuture<T> completableFuture = (CompletableFuture<T>) returns.clientReturns().asFuture();
