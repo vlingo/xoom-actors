@@ -17,7 +17,6 @@ import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
 import io.vlingo.actors.Returns;
-import io.vlingo.common.Completes;
 
 public class SharedRingBufferMailbox implements Mailbox {
   private final AtomicBoolean closed;
@@ -28,6 +27,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   private final AtomicLong readyIndex;
   private final AtomicLong receiveIndex;
 
+  @Override
   public void close() {
     if (!closed.get()) {
       closed.set(true);
@@ -73,7 +73,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
-  public void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation) {
+  public void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation) {
     final long messageIndex = sendIndex.incrementAndGet();
     final int ringSendIndex = (int) (messageIndex % mailboxSize);
 
@@ -88,7 +88,7 @@ public class SharedRingBufferMailbox implements Mailbox {
       }
     }
 
-    messages[ringSendIndex].set(actor, protocol, consumer, Returns.value(completes), representation);
+    messages[ringSendIndex].set(actor, protocol, consumer, returns, representation);
 
     while (!readyIndex.compareAndSet(messageIndex - 1, messageIndex))
       ;
