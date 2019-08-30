@@ -7,8 +7,6 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Completes;
-
 public interface CompletesEventuallyProvider {
   void close();
   CompletesEventually completesEventually();
