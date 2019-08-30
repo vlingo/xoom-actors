@@ -7,11 +7,11 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Completes;
-
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+
+import io.vlingo.common.Completes;
 
 public class Returns<T> {
 
@@ -21,16 +21,16 @@ public class Returns<T> {
         this.value = value;
     }
 
-    public static <T> Returns value(final Completes<T> completes) {
-        return new Returns(completes);
+    public static <T> Returns<T> value(final Completes<T> completes) {
+        return new Returns<>(completes);
     }
 
-    public static <T> Returns value(final Future<T> future) {
-        return new Returns(future);
+    public static <T> Returns<T> value(final Future<T> future) {
+        return new Returns<>(future);
     }
 
-    public static <T> Returns value(final CompletableFuture<T> completableFuture) {
-        return new Returns(completableFuture);
+    public static <T> Returns<T> value(final CompletableFuture<T> completableFuture) {
+        return new Returns<>(completableFuture);
     }
 
     public boolean isCompletes() {
@@ -45,6 +45,7 @@ public class Returns<T> {
         return value instanceof CompletableFuture;
     }
 
+    @SuppressWarnings("unchecked")
     public Completes<T> asCompletes() {
         if(!isCompletes()) {
             throw new IllegalStateException(MessageFormat.format("The value type should be Completes<T> but was {0}.", value.getClass().getName()));
@@ -52,6 +53,7 @@ public class Returns<T> {
         return (Completes<T>) value;
     };
 
+    @SuppressWarnings("unchecked")
     public Future<T> asFuture() {
         if(!isFuture()) {
             throw new IllegalStateException(MessageFormat.format("The value type should be Future<T> but was {0}.", value.getClass().getName()));
@@ -59,6 +61,7 @@ public class Returns<T> {
         return (Future<T>) value;
     }
 
+    @SuppressWarnings("unchecked")
     public CompletableFuture<T> asCompletableFuture() {
         if(!isCompletableFuture()) {
             throw new IllegalStateException(MessageFormat.format("The value type should be CompletableFuture<T> but was {0}.", value.getClass().getName()));
