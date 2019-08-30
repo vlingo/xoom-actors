@@ -7,16 +7,16 @@
 
 package io.vlingo.actors;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import io.vlingo.actors.testkit.TestContext;
 import io.vlingo.actors.testkit.TestEnvironment;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestStateView;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * The abstract base class of all concrete {@code Actor} types. This base provides common
@@ -233,7 +233,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answers the {@code Future<T>} instance for this {@code Actor}, or throws {@code IllegalStateException} if the behavior of the currently
    * delivered {@code Message} does not answer a {@code Future<T>}.
    * @param <T> the protocol type
-   * @param callable
+   * @param callable the {@code Callable<T>} producing the outcome for the {@code Future<T>} to answer
    * @return {@code Future<T>}
    */
   @SuppressWarnings("unchecked")
@@ -249,7 +249,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
     } catch (Exception e) {
       throw new RuntimeException("Actor method returning Future<T> failed.", e);
     }
-    return (Future<T>) completableFuture;
+    return completableFuture;
   }
 
   /**
