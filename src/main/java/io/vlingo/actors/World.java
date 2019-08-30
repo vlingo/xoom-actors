@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
-import io.vlingo.common.Completes;
 
 /**
  * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
@@ -187,9 +186,10 @@ public final class World implements Registrar {
    * Answers a new {@code CompletesEventually} instance that backs the {@code clientReturns}.
    * This manages the {@code Returns} using the {@code CompletesEventually} plugin {@code Actor} pool.
    * @param clientReturns the {@code CompletesEventually} allocated for eventual completion of {@code clientReturns}
+   * @param <T> the type of the Returns
    * @return CompletesEventually
    */
-  public CompletesEventually completesFor(final Returns<Object> clientReturns) {
+  public <T> CompletesEventually completesFor(final Returns<T> clientReturns) {
     return completesProviderKeeper.findDefault().provideCompletesFor(clientReturns);
   }
 
