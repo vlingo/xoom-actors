@@ -13,6 +13,7 @@ public class CompletesEventuallyActor extends Actor implements CompletesEventual
   public CompletesEventuallyActor() { }
 
   @Override
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public void with(final Object outcome) {
     try {
       final PooledCompletes pooled = (PooledCompletes) outcome;
