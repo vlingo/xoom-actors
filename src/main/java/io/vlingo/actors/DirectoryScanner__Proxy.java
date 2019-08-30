@@ -31,7 +31,7 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.actorOf(arg0, arg1);
       final Completes<T> completes = new BasicCompletes<>(actor.scheduler());
-      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, completes, actorOfRepresentation1); }
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation1); }
       else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation1)); }
       return completes;
     } else {
@@ -45,7 +45,7 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.maybeActorOf(arg0, arg1);
       final Completes<Optional<T>> completes = new BasicCompletes<>(actor.scheduler());
-      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, completes, actorOfRepresentation2); }
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2); }
       else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2)); }
       return completes;
     } else {
