@@ -8,30 +8,27 @@
 package io.vlingo.actors.plugin.completes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import io.vlingo.actors.Returns;
-import io.vlingo.common.Completes;
 import org.junit.Test;
 
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.CompletesEventually;
 import io.vlingo.actors.MockCompletes;
+import io.vlingo.actors.Returns;
 import io.vlingo.actors.plugin.PluginProperties;
 
 public class PooledCompletesProviderTest extends ActorsTest {
-  
+
   @Test
   public void testActuallyCompletes() {
     ConfigureWorldWithPooledCompletes();
 
     final MockCompletes<Object> clientCompletes = new MockCompletes<>(1);
-    
+
     final CompletesEventually asyncCompletes = world.completesFor(Returns.value(clientCompletes));
     asyncCompletes.with(5);
 
@@ -45,7 +42,7 @@ public class PooledCompletesProviderTest extends ActorsTest {
 
     final MockCompletes<Object> clientCompletes1 = new MockCompletes<>(1);
     final MockCompletes<Object> clientCompletes2 = new MockCompletes<>(1);
-    
+
     final CompletesEventually completes1 = world.completesFor(Returns.value(clientCompletes1));
     completes1.with(5);
 
@@ -77,7 +74,7 @@ public class PooledCompletesProviderTest extends ActorsTest {
 
     final CompletableFuture<Integer> completableFuture = new CompletableFuture<>();
 
-    final CompletesEventually completes1 = world.completesFor(Returns.value((Future) completableFuture));
+    final CompletesEventually completes1 = world.completesFor(Returns.value(completableFuture));
     completes1.with(5);
 
     assertEquals(5, completableFuture.get().intValue());
