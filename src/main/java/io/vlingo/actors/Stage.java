@@ -31,6 +31,7 @@ public class Stage implements Stoppable {
   /**
    * Initializes the new {@code Stage} of the world and with name.
    * @param world the {@code World} parent of this {@code Stage}
+   * @param addressFactory the AddressFactory to be used
    * @param name the {@code String} name of this {@code Stage}
    */
   public Stage(final World world, final AddressFactory addressFactory, final String name) {
