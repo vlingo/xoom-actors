@@ -17,5 +17,5 @@ public interface Message {
   Class<?> protocol();
   String representation();
   boolean isStowed();
-  void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Completes<?> completes, final String representation);
+  void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation);
 }

@@ -13,6 +13,6 @@ public interface CompletesEventuallyProvider {
   void close();
   CompletesEventually completesEventually();
   void initializeUsing(final Stage stage);
-  CompletesEventually provideCompletesFor(final Completes<?> clientCompletes);
-  CompletesEventually provideCompletesFor(final Address address, final Completes<?> clientCompletes);
+  CompletesEventually provideCompletesFor(final Returns<?> clientReturns);
+  CompletesEventually provideCompletesFor(final Address address, final Returns<?> clientReturns);
 }

@@ -16,6 +16,7 @@ import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
+import io.vlingo.actors.Returns;
 import io.vlingo.common.Completes;
 
 public class SharedRingBufferMailbox implements Mailbox {
@@ -87,7 +88,7 @@ public class SharedRingBufferMailbox implements Mailbox {
       }
     }
 
-    messages[ringSendIndex].set(actor, protocol, consumer, completes, representation);
+    messages[ringSendIndex].set(actor, protocol, consumer, Returns.value(completes), representation);
 
     while (!readyIndex.compareAndSet(messageIndex - 1, messageIndex))
       ;

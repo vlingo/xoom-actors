@@ -68,13 +68,13 @@ public class Environment {
     children.add(child);
   }
 
-  CompletesEventually completesEventually(final ResultCompletes completes) {
+  CompletesEventually completesEventually(final ResultReturns result) {
     if (completesEventuallyAddress == null) {
-      final CompletesEventually completesEventually = stage.world().completesFor(completes.clientCompletes());
+      final CompletesEventually completesEventually = stage.world().completesFor(result.clientReturns());
       completesEventuallyAddress = completesEventually.address();
       return completesEventually;
     }
-    return stage.world().completesFor(completesEventuallyAddress, completes.clientCompletes());
+    return stage.world().completesFor(completesEventuallyAddress, result.clientReturns());
   }
 
   <T> void cacheProxy(final T proxy) {

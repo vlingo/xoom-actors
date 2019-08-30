@@ -15,8 +15,8 @@ import io.vlingo.actors.CompletesEventuallyActor;
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.PooledCompletes;
+import io.vlingo.actors.Returns;
 import io.vlingo.actors.Stage;
-import io.vlingo.common.Completes;
 
 public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   private final AtomicLong completesEventuallyId;
@@ -61,18 +61,18 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   }
 
   @Override
-  public CompletesEventually provideCompletesFor(final Completes<?> clientCompletes) {
+  public CompletesEventually provideCompletesFor(final Returns<?> clientReturns) {
     return new PooledCompletes(
             completesEventuallyId.getAndIncrement(),
-            clientCompletes,
+            clientReturns,
             completesEventually());
   }
 
   @Override
-  public CompletesEventually provideCompletesFor(final Address address, final Completes<?> clientCompletes) {
+  public CompletesEventually provideCompletesFor(final Address address, final Returns<?> clientReturns) {
     return new PooledCompletes(
             completesEventuallyId.getAndIncrement(),
-            clientCompletes,
+            clientReturns,
             completesEventuallyOf(address));
   }
 

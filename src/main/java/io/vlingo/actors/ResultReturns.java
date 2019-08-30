@@ -7,13 +7,14 @@
 
 package io.vlingo.actors;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.vlingo.common.Completes;
 
-class ResultCompletes implements Completes<Object> {
-  public Completes<Object> __internal__clientCompletes;
+class ResultReturns implements Completes<Object> {
+  public Returns<Object> __internal__clientReturns;
   public Object __internal__outcome = null;
   public boolean __internal__outcomeSet = false;
 
@@ -141,13 +142,18 @@ class ResultCompletes implements Completes<Object> {
     return this;
   }
 
-  public Completes<Object> clientCompletes() {
-    return __internal__clientCompletes;
+  public Returns<Object> clientReturns() {
+    return __internal__clientReturns;
   }
 
-  public void reset(final Completes<Object> clientCompletes) {
-    this.__internal__clientCompletes = clientCompletes;
+  public void reset(final Returns<Object> clientReturns) {
+    this.__internal__clientReturns = clientReturns;
     this.__internal__outcome = null;
     this.__internal__outcomeSet = false;
+  }
+
+  public CompletableFuture<Object> asCompletableFuture() {
+    __internal__clientReturns.asCompletableFuture().thenApply(o -> this.__internal__outcome = o);
+    return __internal__clientReturns.asCompletableFuture();
   }
 }

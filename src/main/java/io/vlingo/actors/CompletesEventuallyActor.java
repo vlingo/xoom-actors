@@ -7,6 +7,8 @@
 
 package io.vlingo.actors;
 
+import java.util.concurrent.CompletableFuture;
+
 public class CompletesEventuallyActor extends Actor implements CompletesEventually {
   public CompletesEventuallyActor() { }
 
@@ -14,8 +16,16 @@ public class CompletesEventuallyActor extends Actor implements CompletesEventual
   public void with(final Object outcome) {
     try {
       final PooledCompletes pooled = (PooledCompletes) outcome;
-      pooled.clientCompletes.with(pooled.outcome());
-    } catch (Throwable t) {
+      if(pooled.clientReturns.isCompletes()) {
+        pooled.clientReturns.asCompletes().with(pooled.outcome());
+      }
+      if(pooled.clientReturns.isCompletableFuture()) {
+        pooled.clientReturns.asCompletableFuture().complete(pooled.outcome());
+      }
+      if(pooled.clientReturns.isFuture()) {
+        ((CompletableFuture) pooled.clientReturns.asFuture()).complete(pooled.outcome());
+      }
+      } catch (Throwable t) {
       logger().error("The eventually completed outcome failed in the client because: " + t.getMessage(), t);
     }
   }

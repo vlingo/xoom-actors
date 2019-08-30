@@ -184,24 +184,24 @@ public final class World implements Registrar {
   }
 
   /**
-   * Answers a new {@code CompletesEventually} instance that backs the {@code clientCompletes}.
-   * This manages the {@code Completes} using the {@code CompletesEventually} plugin {@code Actor} pool.
-   * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
+   * Answers a new {@code CompletesEventually} instance that backs the {@code clientReturns}.
+   * This manages the {@code Returns} using the {@code CompletesEventually} plugin {@code Actor} pool.
+   * @param clientReturns the {@code CompletesEventually} allocated for eventual completion of {@code clientReturns}
    * @return CompletesEventually
    */
-  public CompletesEventually completesFor(final Completes<?> clientCompletes) {
-    return completesProviderKeeper.findDefault().provideCompletesFor(clientCompletes);
+  public CompletesEventually completesFor(final Returns<Object> clientReturns) {
+    return completesProviderKeeper.findDefault().provideCompletesFor(clientReturns);
   }
 
   /**
-   * Answers a {@code CompletesEventually} instance identified by {@code address} that backs the {@code clientCompletes}.
-   * This manages the {@code Completes} using the {@code CompletesEventually} plugin {@code Actor} pool.
+   * Answers a {@code CompletesEventually} instance identified by {@code address} that backs the {@code clientReturns}.
+   * This manages the {@code Returns} using the {@code CompletesEventually} plugin {@code Actor} pool.
    * @param address the {@code Address} of the CompletesEventually actor to reuse
-   * @param clientCompletes the {@code CompletesEventually} allocated for eventual completion of {@code clientCompletes}
+   * @param clientReturns the {@code CompletesEventually} allocated for eventual completion of {@code clientReturns}
    * @return CompletesEventually
    */
-  public CompletesEventually completesFor(final Address address, final Completes<?> clientCompletes) {
-    return completesProviderKeeper.findDefault().provideCompletesFor(address, clientCompletes);
+  public CompletesEventually completesFor(final Address address, final Returns<Object> clientReturns) {
+    return completesProviderKeeper.findDefault().provideCompletesFor(address, clientReturns);
   }
 
   /**
