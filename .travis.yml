@@ -1,4 +1,5 @@
 language: java
+dist: trusty
 before_install:
 - cd ${TRAVIS_BUILD_DIR}/..
 - git clone --depth=50 --branch=master https://github.com/vlingo/vlingo-common.git
