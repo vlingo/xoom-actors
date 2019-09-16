@@ -127,7 +127,19 @@ class ResultReturns implements Completes<Object> {
 
   @Override
   public Object outcome() {
-    throw new UnsupportedOperationException();
+    try {
+      if (__internal__clientReturns.isCompletes()) {
+        return __internal__clientReturns.asCompletes().outcome();
+      } else if (__internal__clientReturns.isCompletableFuture()) {
+        return __internal__clientReturns.asCompletableFuture().getNow(null);
+      } else if (__internal__clientReturns.isFuture()) {
+        return __internal__clientReturns.asFuture().get();
+      }
+    } catch (Exception e) {
+      // fall through
+    }
+
+    throw new IllegalStateException("Unknown result type.");
   }
 
   @Override
