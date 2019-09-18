@@ -7,24 +7,35 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
-
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExecutorDispatcher implements Dispatcher {
   private final AtomicBoolean closed = new AtomicBoolean(false);
   private final ExecutorService executor;
+  private final int numberOfThreads;
 
   protected ExecutorDispatcher(final int availableThreads, final float numberOfDispatchersFactor) {
-    final int numberOfThreads = (int) ((float) availableThreads * numberOfDispatchersFactor);
+    this.numberOfThreads = (int) (availableThreads * numberOfDispatchersFactor);
     this.executor = new ThreadPoolExecutor(numberOfThreads, numberOfThreads,
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<>(),
         new RejectionHandler());
   }
 
+  @Override
+  public int concurrencyCapacity() {
+    return numberOfThreads;
+  }
+
+  @Override
   public void close() {
     closed.set(true);
     executor.shutdown();
@@ -35,18 +46,21 @@ public class ExecutorDispatcher implements Dispatcher {
     return closed.get();
   }
 
+  @Override
   public void execute(final Mailbox mailbox) {
     if (!closed.get()) {
       executor.execute(mailbox);
     }
   }
 
+  @Override
   public boolean requiresExecutionNotification() {
     return false;
   }
 
   private class RejectionHandler implements RejectedExecutionHandler {
 
+    @Override
     public void rejectedExecution(final Runnable runnable, final ThreadPoolExecutor executor) {
       if (!executor.isShutdown() && !executor.isTerminated())
         throw new IllegalStateException("Message cannot be sent due to current system resource limitations.");
