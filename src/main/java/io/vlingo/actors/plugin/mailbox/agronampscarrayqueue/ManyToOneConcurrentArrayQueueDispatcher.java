@@ -7,12 +7,12 @@
 
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.vlingo.actors.Backoff;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements Dispatcher {
   private final Backoff backoff;
@@ -36,6 +36,11 @@ public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements D
   @Override
   public boolean isClosed() {
     return closed.get();
+  }
+
+  @Override
+  public int concurrencyCapacity() {
+    return 1;
   }
 
   @Override
