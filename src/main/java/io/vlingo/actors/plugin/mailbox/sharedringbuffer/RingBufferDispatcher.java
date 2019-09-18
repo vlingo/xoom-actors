@@ -7,12 +7,12 @@
 
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.vlingo.actors.Backoff;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.Message;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RingBufferDispatcher extends Thread implements Dispatcher {
   private final Backoff backoff;
@@ -21,6 +21,7 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
   private final boolean requiresExecutionNotification;
   private final int throttlingCount;
 
+  @Override
   public void close() {
     closed.set(true);
     mailbox.close();
@@ -31,10 +32,17 @@ public class RingBufferDispatcher extends Thread implements Dispatcher {
     return closed.get();
   }
 
+  @Override
+  public int concurrencyCapacity() {
+    return 1;
+  }
+
+  @Override
   public void execute(final Mailbox mailbox) {
     interrupt();
   }
 
+  @Override
   public boolean requiresExecutionNotification() {
     return requiresExecutionNotification;
   }
