@@ -33,7 +33,7 @@ import io.vlingo.actors.testkit.AccessSafely;
 
 public class ExecutorDispatcherTest extends ActorsTest {
   private static int Total = 10_000;
-  
+
   private Dispatcher dispatcher;
 
   @Test
@@ -53,12 +53,12 @@ public class ExecutorDispatcherTest extends ActorsTest {
     }
 
     dispatcher.close();
-    
+
     final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
     final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
-    
+
     mailbox.send(message);
-    
+
     dispatcher.execute(mailbox);
 
     final List<Integer> counts = testResults.getCounts();
@@ -72,7 +72,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
   @Test
   public void testExecute() {
     final TestResults testResults = new TestResults(Total, false);
-    
+
     final TestMailbox mailbox = new TestMailbox(testResults, world.defaultLogger());
 
     final CountTakerActor actor = new CountTakerActor(testResults, world.defaultLogger());
@@ -92,12 +92,12 @@ public class ExecutorDispatcherTest extends ActorsTest {
       assertTrue(counts.contains(idx));
     }
   }
-  
+
   @Test
   public void testRequiresExecutionNotification() {
     assertFalse(dispatcher.requiresExecutionNotification());
   }
-  
+
   @Before
   @Override
   public void setUp() throws Exception {
@@ -132,7 +132,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
     @Override
     public void close() {
-      
+
     }
 
     @Override
@@ -143,6 +143,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
     @Override
     public boolean isDelivering() {
       return false;
+    }
+
+    @Override
+    public int concurrencyCapacity() {
+      return 1;
     }
 
     @Override
@@ -176,11 +181,11 @@ public class ExecutorDispatcherTest extends ActorsTest {
       throw new UnsupportedOperationException("ExecutorDispatcherTest does not support this operation");
     }
   }
-  
+
   public static interface CountTaker {
     void take(final int count);
   }
-  
+
   public static class CountTakerActor extends Actor implements CountTaker {
     private final Logger logger;
     private final TestResults testResults;
@@ -189,13 +194,13 @@ public class ExecutorDispatcherTest extends ActorsTest {
       this.testResults = testResults;
       this.logger = logger;
     }
-    
+
     @Override
     public void take(final int count) {
       testResults.take(count, this.logger);
     }
   }
-  
+
   private static class TestResults {
     private final AccessSafely accessSafely;
     private final boolean shouldLog;
