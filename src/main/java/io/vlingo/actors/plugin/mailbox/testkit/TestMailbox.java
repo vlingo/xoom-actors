@@ -55,6 +55,11 @@ public class TestMailbox implements Mailbox {
   }
 
   @Override
+  public int concurrencyCapacity() {
+    return 1;
+  }
+
+  @Override
   public void resume(final String name) {
     if (!suspendedOverrides.get().empty()) {
       suspendedOverrides.get().pop();
