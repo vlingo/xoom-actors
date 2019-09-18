@@ -35,6 +35,12 @@ public interface Mailbox extends Runnable {
   boolean isDelivering();
 
   /**
+   * Answer the total capacity for concurrent operations.
+   * @return int
+   */
+  int concurrencyCapacity();
+
+  /**
    * Recovers the previous operational mode, either active or suspended,
    * and if active resumes delivery. If the restored operational mode
    * is still suspended, then at least one more {@code resume()} is required.
