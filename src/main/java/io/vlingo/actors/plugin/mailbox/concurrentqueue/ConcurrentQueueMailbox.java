@@ -38,6 +38,11 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   }
 
   @Override
+  public int concurrencyCapacity() {
+    return dispatcher.concurrencyCapacity();
+  }
+
+  @Override
   public void resume(final String name) {
     if (suspendedDeliveryOverrides.get().pop(name)) {
       dispatcher.execute(this);
