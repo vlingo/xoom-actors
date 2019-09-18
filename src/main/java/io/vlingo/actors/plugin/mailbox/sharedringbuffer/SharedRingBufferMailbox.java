@@ -51,6 +51,11 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
+  public int concurrencyCapacity() {
+    return 1;
+  }
+
+  @Override
   public void resume(final String name) {
     // TODO: Consider supporting Stowage here
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation.");
