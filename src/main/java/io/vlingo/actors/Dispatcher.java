@@ -8,8 +8,32 @@
 package io.vlingo.actors;
 
 public interface Dispatcher {
+  /**
+   * Close me.
+   */
   void close();
+
+  /**
+   * Answer whether or not I am closed.
+   * @return boolean
+   */
   boolean isClosed();
+
+  /**
+   * Answer the total capacity for concurrent operations.
+   * @return int
+   */
+  int concurrencyCapacity();
+
+  /**
+   * Execute message dispatching for the {@code mailbox}'s next message(s).
+   * @param mailbox the Mailbox to execute message dispatching
+   */
   void execute(final Mailbox mailbox);
+
+  /**
+   * Answer whether or not I require notification of execution.
+   * @return boolean
+   */
   boolean requiresExecutionNotification();
 }
