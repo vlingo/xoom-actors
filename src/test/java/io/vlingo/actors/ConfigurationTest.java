@@ -7,6 +7,13 @@
 
 package io.vlingo.actors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
 import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
@@ -19,12 +26,6 @@ import io.vlingo.actors.supervision.Ping;
 import io.vlingo.actors.supervision.PingSupervisorActor;
 import io.vlingo.actors.supervision.Pong;
 import io.vlingo.actors.supervision.PongSupervisorActor;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ConfigurationTest {
 
@@ -159,5 +160,34 @@ public class ConfigurationTest {
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());
     assertEquals("target/test-classes/", configuration.testProxyGeneratedClassesPath());
     assertEquals("target/generated-test-sources/", configuration.testProxyGeneratedSourcesPath());
+  }
+
+  @Test
+  public void testThatConfigurationOverrides() {
+    final float numberOfDispatchersFactor = 5.0f;
+
+    final Configuration configuration =
+            Configuration
+              .define()
+              .with(PooledCompletesPluginConfiguration
+                      .define()
+                      .mailbox("queueMailbox")
+                      .poolSize(10))
+              .with(ConcurrentQueueMailboxPluginConfiguration
+                      .define()
+                      .defaultMailbox()
+                      .numberOfDispatchersFactor(numberOfDispatchersFactor)
+                      .dispatcherThrottlingCount(10));
+
+    assertEquals(numberOfDispatchersFactor, configuration.concurrentQueueMailboxPluginConfiguration().numberOfDispatchersFactor(), 0);
+
+    final World world = World.start("override-config", configuration);
+
+    final Mailbox mailbox = world.assignMailbox(world.findDefaultMailboxName(), 10);
+
+    assertNotNull(mailbox);
+
+    final int expected = (int) (Runtime.getRuntime().availableProcessors() * numberOfDispatchersFactor);
+    assertEquals(expected, mailbox.concurrencyCapacity());
   }
 }
