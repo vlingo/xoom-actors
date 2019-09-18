@@ -29,6 +29,9 @@ public class ResumingMailbox implements Mailbox {
   public boolean isDelivering() { return true; }
 
   @Override
+  public int concurrencyCapacity() { return 0; }
+
+  @Override
   public void resume(final String name) { }
 
   @Override
