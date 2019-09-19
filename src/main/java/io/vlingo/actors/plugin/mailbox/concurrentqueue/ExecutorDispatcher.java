@@ -22,8 +22,12 @@ public class ExecutorDispatcher implements Dispatcher {
   private final ExecutorService executor;
   private final int numberOfThreads;
 
-  protected ExecutorDispatcher(final int availableThreads, final float numberOfDispatchersFactor) {
-    this.numberOfThreads = (int) (availableThreads * numberOfDispatchersFactor);
+  protected ExecutorDispatcher(final int availableThreads, final int numberOfDispatchers, final float numberOfDispatchersFactor) {
+    this.numberOfThreads =
+            numberOfDispatchers > 0 ?
+                    numberOfDispatchers :
+                    (int) (availableThreads * numberOfDispatchersFactor);
+
     this.executor = new ThreadPoolExecutor(numberOfThreads, numberOfThreads,
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<>(),
