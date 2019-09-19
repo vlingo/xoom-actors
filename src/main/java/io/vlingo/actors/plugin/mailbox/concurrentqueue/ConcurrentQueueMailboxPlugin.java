@@ -50,11 +50,13 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
     executorDispatcher =
             new ExecutorDispatcher(
                 Runtime.getRuntime().availableProcessors(),
+                configuration.numberOfDispatchers,
                 configuration.numberOfDispatchersFactor);
 
     registrar.register(configuration.name(), configuration.isDefaultMailbox(), this);
   }
 
+  @Override
   public Mailbox provideMailboxFor(final int hashCode) {
     return new ConcurrentQueueMailbox(executorDispatcher, configuration.dispatcherThrottlingCount());
   }
@@ -84,6 +86,7 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
     private boolean defaultMailbox;
     private int dispatcherThrottlingCount;
     private String name = "queueMailbox";
+    private int numberOfDispatchers;
     private float numberOfDispatchersFactor;
 
     public static ConcurrentQueueMailboxPluginConfiguration define() {
@@ -113,6 +116,10 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
       return this;
     }
 
+    public int numberOfDispatchers() {
+      return numberOfDispatchers;
+    }
+
     public float numberOfDispatchersFactor() {
       return numberOfDispatchersFactor;
     }
@@ -128,6 +135,7 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
       this.defaultMailbox = properties.getBoolean("defaultMailbox", true);
       this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
       this.numberOfDispatchersFactor = properties.getFloat("numberOfDispatchersFactor", 1.5f);
+      this.numberOfDispatchers = properties.getInteger("numberOfDispatchers", 0);
     }
 
     @Override
