@@ -35,7 +35,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     final TestResults testResults = new TestResults(Total);
 
     final CountTakerActor actor = new CountTakerActor(testResults);
-    
+
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
       final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
@@ -53,7 +53,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
       final String paused = "paused#";
       final String exceptional = "exceptional#";
 
-      final Dispatcher dispatcher = new ExecutorDispatcher(1, 1.0f);
+      final Dispatcher dispatcher = new ExecutorDispatcher(1, 0, 1.0f);
       final Mailbox mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
 
       mailbox.suspendExceptFor(paused, CountTakerActor.class);
@@ -72,7 +72,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
   public void setUp() throws Exception {
     super.setUp();
 
-    dispatcher = new ExecutorDispatcher(1, 1.0f);
+    dispatcher = new ExecutorDispatcher(1, 0, 1.0f);
     mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
   }
 
