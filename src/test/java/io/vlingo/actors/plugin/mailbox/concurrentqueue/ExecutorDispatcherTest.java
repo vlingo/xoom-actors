@@ -98,12 +98,23 @@ public class ExecutorDispatcherTest extends ActorsTest {
     assertFalse(dispatcher.requiresExecutionNotification());
   }
 
+  @Test
+  public void testThatPoolSizeSet() {
+    final Dispatcher dispatcher1 = new ExecutorDispatcher(1, 10, 0);
+    final Dispatcher dispatcher2 = new ExecutorDispatcher(1, 8, 20.5f);
+    final Dispatcher dispatcher3 = new ExecutorDispatcher(1, 5, 10.0f);
+
+    assertEquals(10, dispatcher1.concurrencyCapacity());
+    assertEquals(8, dispatcher2.concurrencyCapacity());
+    assertEquals(5, dispatcher3.concurrencyCapacity());
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    dispatcher = new ExecutorDispatcher(1, 1.0f);
+    dispatcher = new ExecutorDispatcher(1, 0, 1.0f);
   }
 
   private static class TestMailbox implements Mailbox {
