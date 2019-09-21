@@ -161,16 +161,14 @@ public class StageTest extends ActorsTest {
     });
 
     world.stage().maybeActorOf(NoProtocol.class, address6)
-      .andThen(maybe -> {
+      .andThenConsume(maybe -> {
         assertFalse(maybe.isPresent());
         scanResult.notFound();
-        return maybe;
       });
     world.stage().maybeActorOf(NoProtocol.class, address7)
-      .andThen(maybe -> {
+      .andThenConsume(maybe -> {
         assertFalse(maybe.isPresent());
         scanResult.notFound();
-        return maybe;
       });
 
     assertEquals(5, scanResult.getFoundCount());

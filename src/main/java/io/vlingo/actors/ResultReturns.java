@@ -94,6 +94,11 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
+  public Completes<Object> ready() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
   public Object await() {
     throw new UnsupportedOperationException();
