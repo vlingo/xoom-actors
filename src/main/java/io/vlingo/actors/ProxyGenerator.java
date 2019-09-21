@@ -150,7 +150,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
       .append("import io.vlingo.actors.Mailbox;").append("\n")
       .append("import io.vlingo.actors.Returns;").append("\n")
-      .append("import io.vlingo.common.BasicCompletes;").append("\n")
+      .append("import io.vlingo.common.Completes;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)
@@ -193,7 +193,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
     final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
-    final String completesStatement = isACompletes ? MessageFormat.format("      final {0} returnValue = new BasicCompletes<>(actor.scheduler());\n", signatureReturnType) : "";
+    final String completesStatement = isACompletes ? MessageFormat.format("      final {0} returnValue = Completes.using(actor.scheduler());\n", signatureReturnType) : "";
     final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new CompletableFuture<>();\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, {1}, {2}{3}); '}'", protocolInterface.getSimpleName(), "consumer", hasResult ? "Returns.value(returnValue), ":"null, ", representationName);
