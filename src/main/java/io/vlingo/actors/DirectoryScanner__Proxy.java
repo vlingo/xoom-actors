@@ -30,7 +30,7 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
   public <T> Completes<T> actorOf(final java.lang.Class<T> arg0, final io.vlingo.actors.Address arg1) {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.actorOf(arg0, arg1);
-      final Completes<T> completes = new BasicCompletes<>(actor.scheduler());
+      final Completes<T> completes = Completes.using(actor.scheduler());
       if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation1); }
       else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation1)); }
       return completes;
@@ -44,7 +44,7 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
   public <T> Completes<Optional<T>> maybeActorOf(final Class<T> arg0, final Address arg1) {
     if (!actor.isStopped()) {
       final Consumer<DirectoryScanner> consumer = (actor) -> actor.maybeActorOf(arg0, arg1);
-      final Completes<Optional<T>> completes = new BasicCompletes<>(actor.scheduler());
+      final Completes<Optional<T>> completes = Completes.using(actor.scheduler());
       if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2); }
       else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2)); }
       return completes;
