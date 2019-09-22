@@ -37,7 +37,8 @@ public class RoundRobinRouterTest extends ActorsTest {
       final int round = i;
       router
         .productOf(round, round)
-        .andThenConsume(answer -> results.access.writeUsing("answers", answer));
+        .andThenConsume(answer -> results.access.writeUsing("answers", answer))
+        .ready();
     }
     
     final List<Integer> allExpected = new ArrayList<>();
