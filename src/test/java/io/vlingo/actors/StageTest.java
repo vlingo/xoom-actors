@@ -84,34 +84,34 @@ public class StageTest extends ActorsTest {
 
     final ScanResult scanResult = new ScanResult(7);
 
-    world.stage().actorOf(NoProtocol.class, address5).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address5).andFinallyConsume(actor -> {
       assertNotNull(actor);
       scanResult.found();
     });
-    world.stage().actorOf(NoProtocol.class, address4).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address4).andFinallyConsume(actor -> {
       assertNotNull(actor);
       scanResult.found();
     });
-    world.stage().actorOf(NoProtocol.class, address3).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address3).andFinallyConsume(actor -> {
       assertNotNull(actor);
       scanResult.found();
     });
-    world.stage().actorOf(NoProtocol.class, address2).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address2).andFinallyConsume(actor -> {
       assertNotNull(actor);
       scanResult.found();
     });
-    world.stage().actorOf(NoProtocol.class, address1).andThenConsume(actor -> {
+    world.stage().actorOf(NoProtocol.class, address1).andFinallyConsume(actor -> {
       assertNotNull(actor);
       scanResult.found();
     });
 
     world.stage().maybeActorOf(NoProtocol.class, address6)
-      .andThenConsume((maybe) -> {
+      .andFinallyConsume((maybe) -> {
         if (maybe.isPresent()) scanResult.found();
         else scanResult.notFound();
       });
     world.stage().maybeActorOf(NoProtocol.class, address7)
-      .andThenConsume((maybe) -> {
+      .andFinallyConsume((maybe) -> {
         if (maybe.isPresent()) scanResult.found();
         else scanResult.notFound();
     });
@@ -139,34 +139,34 @@ public class StageTest extends ActorsTest {
 
     final ScanResult scanResult = new ScanResult(7);
 
-    world.stage().maybeActorOf(NoProtocol.class, address5).andThenConsume(maybe -> {
+    world.stage().maybeActorOf(NoProtocol.class, address5).andFinallyConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.found();
     });
-    world.stage().maybeActorOf(NoProtocol.class, address4).andThenConsume(maybe -> {
+    world.stage().maybeActorOf(NoProtocol.class, address4).andFinallyConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.found();
     });
-    world.stage().maybeActorOf(NoProtocol.class, address3).andThenConsume(maybe -> {
+    world.stage().maybeActorOf(NoProtocol.class, address3).andFinallyConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.found();
     });
-    world.stage().maybeActorOf(NoProtocol.class, address2).andThenConsume(maybe -> {
+    world.stage().maybeActorOf(NoProtocol.class, address2).andFinallyConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.found();
     });
-    world.stage().maybeActorOf(NoProtocol.class, address1).andThenConsume(maybe -> {
+    world.stage().maybeActorOf(NoProtocol.class, address1).andFinallyConsume(maybe -> {
       assertTrue(maybe.isPresent());
       scanResult.found();
     });
 
     world.stage().maybeActorOf(NoProtocol.class, address6)
-      .andThenConsume(maybe -> {
+      .andFinallyConsume(maybe -> {
         assertFalse(maybe.isPresent());
         scanResult.notFound();
       });
     world.stage().maybeActorOf(NoProtocol.class, address7)
-      .andThenConsume(maybe -> {
+      .andFinallyConsume(maybe -> {
         assertFalse(maybe.isPresent());
         scanResult.notFound();
       });

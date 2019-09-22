@@ -52,11 +52,11 @@ public class RandomRouterTest extends ActorsTest {
     }
     assertEquals(0, allExpected.size());
   }
-  
+
   public static interface OneArgSupplierProtocol {
     Completes<Integer> cubeOf(int arg1);
   }
-  
+
   public static class TestSupplierActor extends RoundRobinRouter<OneArgSupplierProtocol> implements OneArgSupplierProtocol {
     public TestSupplierActor(final int poolSize) {
       super(
@@ -73,7 +73,7 @@ public class RandomRouterTest extends ActorsTest {
       return dispatchQuery(OneArgSupplierProtocol::cubeOf, arg1);
     }
   }
-  
+
   public static class TestSupplierWorker extends Actor implements OneArgSupplierProtocol {
     public TestSupplierWorker() { }
 
@@ -83,7 +83,7 @@ public class RandomRouterTest extends ActorsTest {
       return completes().with(arg1 * arg1 * arg1);
     }
   }
-  
+
   @Test
   public void testConsumerProtocol() throws Exception {
     final int poolSize = 4;
@@ -110,13 +110,13 @@ public class RandomRouterTest extends ActorsTest {
     }
     assertEquals(0, allExpected.size());
   }
-  
+
   public static interface OneArgConsumerProtocol {
     void remember(int number);
   }
-  
+
   public static class TestConsumerActor extends RoundRobinRouter<OneArgConsumerProtocol> implements OneArgConsumerProtocol {
-    
+
     public TestConsumerActor(final Results results, final int poolSize) {
       super(
         new RouterSpecification<OneArgConsumerProtocol>(
@@ -126,14 +126,14 @@ public class RandomRouterTest extends ActorsTest {
         )
       );
     }
-    
+
     /* @see io.vlingo.actors.RandomRouterTest.OneArgConsumerProtocol#remember(int) */
     @Override
     public void remember(int number) {
       dispatchCommand(OneArgConsumerProtocol::remember, number);
     }
   }
-  
+
   public static class TestConsumerWorker extends Actor implements OneArgConsumerProtocol {
     private final Results results;
 
