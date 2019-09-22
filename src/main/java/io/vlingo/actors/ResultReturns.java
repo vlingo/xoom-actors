@@ -94,7 +94,7 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
-  public Completes<Object> ready() {
+  public void andFinallyConsume(Consumer<Object> consumer) {
     throw new UnsupportedOperationException();
   }
 

@@ -37,7 +37,7 @@ public class RandomRouterTest extends ActorsTest {
       final int round = i;
       router
         .cubeOf(round)
-        .andThenConsume(answer -> results.access.writeUsing("answers", answer));
+        .andFinallyConsume(answer -> results.access.writeUsing("answers", answer));
     }
 
     final List<Integer> allExpected = new ArrayList<>();
