@@ -10,7 +10,6 @@ package io.vlingo.actors;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import io.vlingo.common.BasicCompletes;
 import io.vlingo.common.Completes;
 
 public class DirectoryScanner__Proxy implements DirectoryScanner {
