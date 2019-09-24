@@ -126,7 +126,7 @@ public abstract class Router<P> extends Actor {
     routingFor(routable1)
       .first() //by default, for protocols with a return value, route only to first routee
       .receiveQuery(query, routable1)
-      .andThenConsume(outcome -> completesEventually.with(outcome));
+      .andFinallyConsume(completesEventually::with);
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
 
@@ -136,7 +136,7 @@ public abstract class Router<P> extends Actor {
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee
       .receiveQuery(query, routable1, routable2)
-      .andThenConsume(outcome -> completesEventually.with(outcome));
+      .andFinallyConsume(completesEventually::with);
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
 
@@ -146,7 +146,7 @@ public abstract class Router<P> extends Actor {
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee
       .receiveQuery(query, routable1, routable2, routable3)
-      .andThenConsume(outcome -> completesEventually.with(outcome));
+      .andFinallyConsume(completesEventually::with);
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
 
@@ -156,7 +156,7 @@ public abstract class Router<P> extends Actor {
     routingFor(routable1, routable2)
       .first() //by default, for protocols with a return value, route only to first routee
       .receiveQuery(query, routable1, routable2, routable3, routable4)
-      .andThenConsume(outcome -> completesEventually.with(outcome));
+      .andFinallyConsume(completesEventually::with);
     return (R) completes(); //this is a fake out; the real completes doesn't happen until inside the lambda
   }
 }

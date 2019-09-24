@@ -32,8 +32,8 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class, testResults);
 
-    uc.getHello().andThenConsume((hello) -> testResults.setGreeting(hello.greeting));
-    uc.getOne().andThenConsume((value) -> testResults.setValue(value));
+    uc.getHello().andFinallyConsume((hello) -> testResults.setGreeting(hello.greeting));
+    uc.getOne().andFinallyConsume(testResults::setValue);
 
     assertEquals(Hello, testResults.getGreeting());
     assertEquals(1, testResults.getValue().intValue());
@@ -46,7 +46,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesActor.class, greetingsTestResult);
     final Completes<Hello> helloCompletes = uc.getHello();
     helloCompletes.andThen((hello) -> new Hello(Prefix + hello.greeting))
-         .andThenConsume((hello) -> greetingsTestResult.setGreeting(hello.greeting));
+         .andFinallyConsume((hello) -> greetingsTestResult.setGreeting(hello.greeting));
 
     assertNotEquals(Hello, greetingsTestResult.getGreeting());
     assertNotEquals(Hello, helloCompletes.outcome().greeting);
@@ -56,7 +56,8 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final TestResults valueTestResult = TestResults.afterCompleting(1);
 
     final Completes<Integer> one = uc.getOne();
-    one.andThen((value) -> value + 1).andThenConsume((value) -> valueTestResult.setValue(value));
+    one.andThen((value) -> value + 1)
+            .andFinallyConsume(valueTestResult::setValue);
 
     assertNotEquals(1, valueTestResult.getValue().intValue());
     assertNotEquals(new Integer(1), one.outcome());
