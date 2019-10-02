@@ -42,11 +42,13 @@ public class ConfigurationTest {
                       .define()
                       .ringSize(65535)
                       .fixedBackoff(2)
+                      .notifyOnSend(true)
                       .dispatcherThrottlingCount(10))
               .with(ManyToOneConcurrentArrayQueuePluginConfiguration
                       .define()
                       .ringSize(65535)
                       .fixedBackoff(2)
+                      .notifyOnSend(true)
                       .dispatcherThrottlingCount(10)
                       .sendRetires(10))
               .with(ConcurrentQueueMailboxPluginConfiguration
@@ -79,12 +81,14 @@ public class ConfigurationTest {
     assertFalse(configuration.sharedRingBufferMailboxPluginConfiguration().isDefaultMailbox());
     assertEquals(65535, configuration.sharedRingBufferMailboxPluginConfiguration().ringSize());
     assertEquals(2, configuration.sharedRingBufferMailboxPluginConfiguration().fixedBackoff());
+    assertEquals(true, configuration.sharedRingBufferMailboxPluginConfiguration().notifyOnSend());
     assertEquals(10, configuration.sharedRingBufferMailboxPluginConfiguration().dispatcherThrottlingCount());
 
     assertNotNull(configuration.manyToOneConcurrentArrayQueuePluginConfiguration());
     assertFalse(configuration.manyToOneConcurrentArrayQueuePluginConfiguration().isDefaultMailbox());
     assertEquals(65535, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().ringSize());
     assertEquals(2, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().fixedBackoff());
+    assertEquals(true, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().notifyOnSend());
     assertEquals(10, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().dispatcherThrottlingCount());
 
     assertNotNull(configuration.concurrentQueueMailboxPluginConfiguration());
@@ -133,12 +137,14 @@ public class ConfigurationTest {
     assertFalse(configuration.sharedRingBufferMailboxPluginConfiguration().isDefaultMailbox());
     assertEquals(65535, configuration.sharedRingBufferMailboxPluginConfiguration().ringSize());
     assertEquals(2, configuration.sharedRingBufferMailboxPluginConfiguration().fixedBackoff());
+    assertEquals(false, configuration.sharedRingBufferMailboxPluginConfiguration().notifyOnSend());
     assertEquals(10, configuration.sharedRingBufferMailboxPluginConfiguration().dispatcherThrottlingCount());
 
     assertNotNull(configuration.manyToOneConcurrentArrayQueuePluginConfiguration());
     assertFalse(configuration.manyToOneConcurrentArrayQueuePluginConfiguration().isDefaultMailbox());
     assertEquals(65535, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().ringSize());
     assertEquals(2, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().fixedBackoff());
+    assertEquals(false, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().notifyOnSend());
     assertEquals(1, configuration.manyToOneConcurrentArrayQueuePluginConfiguration().dispatcherThrottlingCount());
 
     assertNotNull(configuration.concurrentQueueMailboxPluginConfiguration());
