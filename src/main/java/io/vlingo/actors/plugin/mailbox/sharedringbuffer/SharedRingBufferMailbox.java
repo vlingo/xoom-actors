@@ -23,6 +23,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   private final Dispatcher dispatcher;
   private final int mailboxSize;
   private final Message[] messages;
+  private final boolean notifyOnSend;
   private final AtomicLong sendIndex;
   private final AtomicLong readyIndex;
   private final AtomicLong receiveIndex;
@@ -97,6 +98,10 @@ public class SharedRingBufferMailbox implements Mailbox {
 
     while (!readyIndex.compareAndSet(messageIndex - 1, messageIndex))
       ;
+
+    if (notifyOnSend) {
+      dispatcher.execute(this);
+    }
   }
 
   @Override
@@ -123,7 +128,7 @@ public class SharedRingBufferMailbox implements Mailbox {
     throw new UnsupportedOperationException("SharedRingBufferMailbox does not support this operation");
   }
 
-  protected SharedRingBufferMailbox(final Dispatcher dispatcher, final int mailboxSize) {
+  protected SharedRingBufferMailbox(final Dispatcher dispatcher, final int mailboxSize, final boolean notifyOnSend) {
     this.dispatcher = dispatcher;
     this.mailboxSize = mailboxSize;
     this.closed = new AtomicBoolean(false);
@@ -131,6 +136,7 @@ public class SharedRingBufferMailbox implements Mailbox {
     this.readyIndex = new AtomicLong(-1);
     this.receiveIndex = new AtomicLong(-1);
     this.sendIndex = new AtomicLong(-1);
+    this.notifyOnSend = notifyOnSend;
 
     initPreallocated();
   }

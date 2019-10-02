@@ -67,6 +67,7 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
     this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
+  @Override
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }
@@ -83,6 +84,7 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
               new RingBufferDispatcher(
                       configuration.ringSize(),
                       configuration.fixedBackoff(),
+                      configuration.notifyOnSend(),
                       configuration.dispatcherThrottlingCount());
 
       final RingBufferDispatcher otherDispatcher =
@@ -105,6 +107,7 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
     private int dispatcherThrottlingCount;
     private int fixedBackoff;
     private String name = "ringMailbox";
+    private boolean notifyOnSend;
     private int ringSize;
 
     public static SharedRingBufferMailboxPluginConfiguration define() {
@@ -138,6 +141,15 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
       return fixedBackoff;
     }
 
+    public SharedRingBufferMailboxPluginConfiguration notifyOnSend(final boolean notifyOnSend) {
+      this.notifyOnSend = notifyOnSend;
+      return this;
+    }
+
+    public boolean notifyOnSend() {
+      return notifyOnSend;
+    }
+
     public SharedRingBufferMailboxPluginConfiguration ringSize(final int ringSize) {
       this.ringSize = ringSize;
       return this;
@@ -149,7 +161,7 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
 
     @Override
     public void build(final Configuration configuration) {
-      configuration.with(ringSize(65535).fixedBackoff(2).dispatcherThrottlingCount(10));
+      configuration.with(ringSize(65535).fixedBackoff(2).notifyOnSend(false).dispatcherThrottlingCount(10));
     }
 
     @Override
@@ -158,6 +170,7 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
       this.defaultMailbox = properties.getBoolean("defaultMailbox", false);
       this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
       this.fixedBackoff = properties.getInteger("fixedBackoff", 2);
+      this.notifyOnSend = properties.getBoolean("notifyOnSend", false);
       this.ringSize = properties.getInteger("size", 65535);
       configuration.with(this);
     }
