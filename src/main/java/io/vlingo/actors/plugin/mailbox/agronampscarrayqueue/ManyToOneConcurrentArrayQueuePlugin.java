@@ -67,6 +67,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
+  @Override
   public Mailbox provideMailboxFor(final int hashCode) {
     return provideMailboxFor(hashCode, null);
   }
@@ -83,6 +84,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
               new ManyToOneConcurrentArrayQueueDispatcher(
                       configuration.ringSize(),
                       configuration.fixedBackoff(),
+                      configuration.notifyOnSend(),
                       configuration.dispatcherThrottlingCount(),
                       configuration.sendRetires());
 
@@ -106,6 +108,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     private int dispatcherThrottlingCount;
     private int fixedBackoff;
     private String name = "arrayQueueMailbox";
+    private boolean notifyOnSend;
     private int ringSize;
     private int sendRetires;
 
@@ -140,6 +143,15 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
       return fixedBackoff;
     }
 
+    public ManyToOneConcurrentArrayQueuePluginConfiguration notifyOnSend(final boolean notifyOnSend) {
+      this.notifyOnSend = notifyOnSend;
+      return this;
+    }
+
+    public boolean notifyOnSend() {
+      return notifyOnSend;
+    }
+
     public ManyToOneConcurrentArrayQueuePluginConfiguration ringSize(final int ringSize) {
       this.ringSize = ringSize;
       return this;
@@ -160,7 +172,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
 
     @Override
     public void build(final Configuration configuration) {
-      configuration.with(ringSize(65535).dispatcherThrottlingCount(1).fixedBackoff(2).sendRetires(10));
+      configuration.with(ringSize(65535).dispatcherThrottlingCount(1).fixedBackoff(2).notifyOnSend(false).sendRetires(10));
     }
 
     @Override
@@ -169,6 +181,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
       this.defaultMailbox = properties.getBoolean("defaultMailbox", false);
       this.dispatcherThrottlingCount = properties.getInteger("dispatcherThrottlingCount", 1);
       this.fixedBackoff = properties.getInteger("fixedBackoff", 2);
+      this.notifyOnSend = properties.getBoolean("notifyOnSend", false);
       this.ringSize = properties.getInteger("size", 65535);
       this.sendRetires = properties.getInteger("sendRetires", 10);
       configuration.with(this);
