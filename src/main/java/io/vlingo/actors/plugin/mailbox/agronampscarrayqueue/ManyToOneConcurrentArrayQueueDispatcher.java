@@ -21,10 +21,10 @@ public class ManyToOneConcurrentArrayQueueDispatcher extends Thread implements D
   private final int throttlingCount;
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
-  protected ManyToOneConcurrentArrayQueueDispatcher(final int mailboxSize, final long fixedBackoff, final int throttlingCount, final int totalSendRetries) {
+  protected ManyToOneConcurrentArrayQueueDispatcher(final int mailboxSize, final long fixedBackoff, final boolean notifyOnSend, final int throttlingCount, final int totalSendRetries) {
     this.backoff = fixedBackoff == 0L ? null : new Backoff(fixedBackoff);
     this.requiresExecutionNotification = fixedBackoff == 0L;
-    this.mailbox = new ManyToOneConcurrentArrayQueueMailbox(this, mailboxSize, totalSendRetries);
+    this.mailbox = new ManyToOneConcurrentArrayQueueMailbox(this, mailboxSize, totalSendRetries, notifyOnSend);
     this.throttlingCount = throttlingCount;
   }
 
