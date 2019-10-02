@@ -15,6 +15,7 @@ import io.vlingo.actors.Message;
 
 public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   private final Dispatcher dispatcher;
+  private final boolean notifyOnSend;
   private final ManyToOneConcurrentArrayQueue<Message> queue;
   private final int totalSendRetries;
 
@@ -54,6 +55,9 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
   public void send(final Message message) {
     for (int tries = 0; tries < totalSendRetries; ++tries) {
       if (queue.offer(message)) {
+        if (notifyOnSend) {
+          dispatcher.execute(this);
+        }
         return;
       }
       while (pendingMessages() >= queue.capacity()) ;
@@ -85,9 +89,10 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
     return queue.size();
   }
 
-  protected ManyToOneConcurrentArrayQueueMailbox(final Dispatcher dispatcher, final int mailboxSize, final int totalSendRetries) {
+  protected ManyToOneConcurrentArrayQueueMailbox(final Dispatcher dispatcher, final int mailboxSize, final int totalSendRetries, final boolean notifyOnSend) {
     this.dispatcher = dispatcher;
     this.queue = new ManyToOneConcurrentArrayQueue<>(mailboxSize);
     this.totalSendRetries = totalSendRetries;
+    this.notifyOnSend = notifyOnSend;
   }
 }
