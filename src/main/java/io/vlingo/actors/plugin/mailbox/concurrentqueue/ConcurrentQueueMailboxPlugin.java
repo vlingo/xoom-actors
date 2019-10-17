@@ -116,6 +116,11 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
       return this;
     }
 
+    public ConcurrentQueueMailboxPluginConfiguration numberOfDispatchers(final int numberOfDispatchers) {
+      this.numberOfDispatchers = numberOfDispatchers;
+      return this;
+    }
+
     public int numberOfDispatchers() {
       return numberOfDispatchers;
     }
