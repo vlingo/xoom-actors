@@ -7,15 +7,16 @@
 
 package io.vlingo.actors;
 
+import org.pcollections.PVector;
+import org.pcollections.TreePVector;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Environment {
   final Address address;
-  final List<Actor> children;
+  PVector<Actor> children;
   Address completesEventuallyAddress;
   final Definition definition;
   final FailureMark failureMark;
@@ -54,7 +55,7 @@ public class Environment {
     this.maybeSupervisor = maybeSupervisor;
     this.failureMark = new FailureMark();
     this.logger = logger;
-    this.children = new CopyOnWriteArrayList<Actor>();
+    this.children = TreePVector.empty();
     this.proxyCache = new HashMap<>();
 //    this.stowage = new Stowage();
     this.stowageOverrides = null;
@@ -65,7 +66,7 @@ public class Environment {
   }
 
   void addChild(final Actor child) {
-    children.add(child);
+    children = children.plus(child);
   }
 
   CompletesEventually completesEventually(final ResultReturns result) {
@@ -128,6 +129,6 @@ public class Environment {
   private void stopChildren() {
     // TODO: re-implement as: children.forEach(child -> selfAs(Stoppable.class).stop());
     children.forEach(child -> child.stop());
-    children.clear();
+    children = TreePVector.empty();
   }
 }
