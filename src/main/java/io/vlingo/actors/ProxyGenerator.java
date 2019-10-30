@@ -155,6 +155,7 @@ public class ProxyGenerator implements AutoCloseable {
 
     GenericParser.dependenciesOf(protocolInterface)
             .filter(d -> !d.startsWith(GENERICS_WILDCARD))
+            .filter(t -> !t.contains("[]"))
             .map(type1 -> "import " + type1 + ";\n")
             .collect(Collectors.toSet()).forEach(builder::append);
     return builder.toString();

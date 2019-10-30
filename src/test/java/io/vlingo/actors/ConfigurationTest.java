@@ -55,6 +55,7 @@ public class ConfigurationTest {
                       .define()
                       .defaultMailbox()
                       .numberOfDispatchersFactor(1.5f)
+                      .numberOfDispatchers(0)
                       .dispatcherThrottlingCount(10))
               .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration
                       .define()

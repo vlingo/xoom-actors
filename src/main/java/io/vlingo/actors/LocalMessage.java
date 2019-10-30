@@ -124,7 +124,8 @@ public class LocalMessage<T> implements Message {
           //actor.lifeCycle.environment.stage.world().completesFor(completes).with(actor.completes.__internal__outcome);
         }
       } catch (Throwable t) {
-        actor.logger().error("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
+        // Logging here duplicates logging provided by supervisor.
+        // actor.logger().error("Message#deliver(): Exception: " + t.getMessage() + " for Actor: " + actor + " sending: " + representation, t);
         actor.stage().handleFailureOf(new StageSupervisedActor(protocol, actor, t));
       }
     }
