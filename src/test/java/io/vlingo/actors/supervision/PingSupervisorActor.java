@@ -19,11 +19,11 @@ import io.vlingo.actors.testkit.AccessSafely;
 public class PingSupervisorActor extends Actor implements Supervisor {
   public static final AtomicReference<PingSupervisorActor> instance = new AtomicReference<>();
 
-  public final PingSupervisorTestResults testResults;
+  public final AtomicReference<PingSupervisorTestResults> testResults;
 
   public PingSupervisorActor() {
     System.out.println("*********** PingSupervisorActor");
-    this.testResults = new PingSupervisorTestResults();
+    this.testResults = new AtomicReference<>(new PingSupervisorTestResults());
     instance.set(this);
   }
 
@@ -48,7 +48,7 @@ public class PingSupervisorActor extends Actor implements Supervisor {
   @Override
   public void inform(final Throwable throwable, final Supervised supervised) {
     supervised.restartWithin(strategy.period(), strategy.intensity(), strategy.scope());
-    testResults.access.writeUsing("informedCount", 1);
+    testResults.get().access.writeUsing("informedCount", 1);
   }
 
   @Override

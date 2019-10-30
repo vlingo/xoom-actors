@@ -37,7 +37,7 @@ public class CommonSupervisionTest extends ActorsTest {
                     Ping.class,
                     Definition.has(PingActor.class, Definition.parameters(testResults), "ping"));
 
-    PingSupervisorTestResults supervisorResults = PingSupervisorActor.instance.get().testResults;
+    PingSupervisorTestResults supervisorResults = PingSupervisorActor.instance.get().testResults.get();
 
     AccessSafely pingAccess = testResults.afterCompleting(5);
     AccessSafely supervisorAccess = supervisorResults.afterCompleting(5);
@@ -51,9 +51,9 @@ public class CommonSupervisionTest extends ActorsTest {
     assertEquals(5, (int) supervisorAccess.readFrom("informedCount"));
 
     pingAccess = testResults.afterCompleting(2);
+    supervisorAccess = supervisorResults.afterCompleting(1);
 
     ping.actor().ping();
-    supervisorAccess = supervisorResults.afterCompleting(1);
 
     assertEquals(6, (int) pingAccess.readFrom("pingCount"));
     assertEquals(6, (int) supervisorAccess.readFrom("informedCount"));
