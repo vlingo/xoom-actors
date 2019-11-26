@@ -568,6 +568,10 @@ public class Stage implements Stoppable {
     }
   }
 
+  protected void extenderStartDirectoryScanner() {
+    startDirectoryScanner();
+  }
+
   /**
    * Answers an Address for an Actor. If maybeAddress is allocated answer it; otherwise
    * answer a newly allocated Address. (INTERNAL ONLY)
