@@ -19,7 +19,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
     <dependency>
       <groupId>io.vlingo</groupId>
       <artifactId>vlingo-actors</artifactId>
-      <version>0.9.2-RC3</version>
+      <version>0.9.3-RC4</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -27,7 +27,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
 
 ```gradle
 dependencies {
-    compile 'io.vlingo:vlingo-actors:0.9.2-RC3'
+    compile 'io.vlingo:vlingo-actors:0.9.3-RC4'
 }
 
 repositories {
