@@ -97,6 +97,23 @@ public final class World implements Registrar {
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
    * @param protocol the {@code Class<T>} protocol
    * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param instantiator the {@code ActorInstantiator<A>} used to instantiate the Actor
+   * @param <T> the protocol type
+   * @param <A> the Actor type
+   * @return T
+   */
+  public <T,A extends Actor> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final ActorInstantiator<A> instantiator) {
+    if (isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: Stopped.");
+    }
+
+    return stage().actorFor(protocol, type, instantiator);
+  }
+
+  /**
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param protocol the {@code Class<T>} protocol
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
    * @param parameters the {@code Object[]} of constructor parameters
    * @param <T> the protocol type
    * @return T

@@ -8,6 +8,7 @@
 package io.vlingo.actors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class Definition {
@@ -15,8 +16,21 @@ public final class Definition {
 
   public static Definition has(
           final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator) {
+    return new Definition(type, instantiator);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
           final List<Object> parameters) {
     return new Definition(type, parameters);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Logger logger) {
+    return new Definition(type, instantiator, logger);
   }
 
   public static Definition has(
@@ -28,9 +42,24 @@ public final class Definition {
 
   public static Definition has(
           final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final String actorName) {
+    return new Definition(type, instantiator, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
           final List<Object> parameters,
           final String actorName) {
     return new Definition(type, parameters, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final String actorName,
+          final Logger logger) {
+    return new Definition(type, instantiator, actorName, logger);
   }
 
   public static Definition has(
@@ -43,10 +72,26 @@ public final class Definition {
 
   public static Definition has(
           final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String actorName) {
+    return new Definition(type, instantiator, parent, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
           final List<Object> parameters,
           final Actor parent,
           final String actorName) {
     return new Definition(type, parameters, parent, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final String mailboxName,
+          final String actorName) {
+    return new Definition(type, instantiator, null, mailboxName, actorName);
   }
 
   public static Definition has(
@@ -59,11 +104,30 @@ public final class Definition {
 
   public static Definition has(
           final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String mailboxName,
+          final String actorName) {
+    return new Definition(type, instantiator, parent, mailboxName, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
           final List<Object> parameters,
           final Actor parent,
           final String mailboxName,
           final String actorName) {
     return new Definition(type, parameters, parent, mailboxName, actorName);
+  }
+
+  public static Definition has(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String mailboxName,
+          final String actorName,
+          final Logger logger) {
+    return new Definition(type, instantiator, parent, mailboxName, actorName, logger);
   }
 
   public static Definition has(
@@ -85,6 +149,7 @@ public final class Definition {
   }
 
   private final String actorName;
+  private final ActorInstantiator<? extends Actor> instantiator;
   private final Logger logger;
   private final String mailboxName;
   private final List<Object> parameters;
@@ -92,12 +157,24 @@ public final class Definition {
   private final Supervisor supervisor;
   private final Class<? extends Actor> type;
 
-  public Definition(final Class<? extends Actor> type, final List<Object> parameters) {
-    this(type, parameters, null, null, null, null);
+  public Definition(final Class<? extends Actor> type, final ActorInstantiator<? extends Actor> instantiator) {
+    this(type, instantiator, null, null, null, null);
+  }
+
+  public Definition(final Class<? extends Actor> type, final ActorInstantiator<? extends Actor> instantiator, final Logger logger) {
+    this(type, instantiator, null, null, null, logger);
+  }
+
+  public Definition(final Class<? extends Actor> actor, final List<Object> parameters) {
+    this(actor, parameters, null, null, null, null);
   }
 
   public Definition(final Class<? extends Actor> actor, final List<Object> parameters, final Logger logger) {
     this(actor, parameters, null, null, null, logger);
+  }
+
+  public Definition(final Class<? extends Actor> actor, final ActorInstantiator<? extends Actor> instantiator, final String actorName, final Logger logger) {
+    this(actor, instantiator, null, null, actorName, logger);
   }
 
   public Definition(final Class<? extends Actor> actor, final List<Object> parameters, final String actorName, final Logger logger) {
@@ -106,10 +183,27 @@ public final class Definition {
 
   public Definition(
           final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final String actorName) {
+
+    this(type, instantiator, null, null, actorName, null);
+  }
+
+  public Definition(
+          final Class<? extends Actor> type,
           final List<Object> parameters,
           final String actorName) {
-    
+
     this(type, parameters, null, null, actorName, null);
+  }
+
+  public Definition(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String actorName) {
+
+    this(type, instantiator, parent, null, actorName, null);
   }
 
   public Definition(
@@ -117,17 +211,27 @@ public final class Definition {
           final List<Object> parameters,
           final Actor parent,
           final String actorName) {
-    
+
     this(type, parameters, parent, null, actorName, null);
   }
 
   public Definition(
-          Class<? extends Actor> type,
-          List<Object> parameters,
-          Actor parent,
-          String mailboxName,
-          String actorName) {
-    
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String mailboxName,
+          final String actorName) {
+
+    this(type, instantiator, parent, mailboxName, actorName, null);
+  }
+
+  public Definition(
+          final Class<? extends Actor> type,
+          final List<Object> parameters,
+          final Actor parent,
+          final String mailboxName,
+          final String actorName) {
+
     this(type, parameters, parent, mailboxName, actorName, null);
   }
 
@@ -138,9 +242,28 @@ public final class Definition {
           final String mailboxName,
           final String actorName,
           final Logger logger) {
-    
+
     this.type = type;
+    this.instantiator = null;
     this.parameters = parameters;
+    this.parent = parent;
+    this.mailboxName = mailboxName;
+    this.actorName = actorName;
+    this.supervisor = assignSupervisor(parent);
+    this.logger = logger;
+  }
+
+  public Definition(
+          final Class<? extends Actor> type,
+          final ActorInstantiator<? extends Actor> instantiator,
+          final Actor parent,
+          final String mailboxName,
+          final String actorName,
+          final Logger logger) {
+
+    this.type = type;
+    this.instantiator = instantiator;
+    this.parameters = Collections.emptyList();
     this.parent = parent;
     this.mailboxName = mailboxName;
     this.actorName = actorName;
@@ -150,6 +273,14 @@ public final class Definition {
 
   public String actorName() {
     return actorName;
+  }
+
+  public boolean hasInstantiator() {
+    return instantiator != null;
+  }
+
+  public ActorInstantiator<? extends Actor> instantiator() {
+    return instantiator;
   }
 
   public Logger loggerOr(final Logger defaultLogger) {
