@@ -17,7 +17,17 @@ import org.junit.Test;
 public class ActorInstantiatorTest extends ActorsTest {
 
   @Test
-  public void testThatActorInstantiates() {
+  public void testThatActorInstantiatesWithParameter() {
+    final AtomicInteger holder = new AtomicInteger(0);
+
+    final Protocol protocol = world.actorFor(Protocol.class, ProtocolActor.class, new ProtocolInstantiator(100, holder));
+
+    assertNotNull(protocol);
+    assertEquals(100, holder.get());
+  }
+
+  @Test
+  public void testThatActorInstantiatesWithDefinition() {
     final AtomicInteger holder = new AtomicInteger(0);
     final ProtocolInstantiator instantiator = new ProtocolInstantiator(100, holder);
 
@@ -49,7 +59,6 @@ public class ActorInstantiatorTest extends ActorsTest {
 
     public ProtocolActor(final int value, final AtomicInteger holder) {
       this.value = value;
-      System.out.println("VALUE: " + this.value);
       holder.set(this.value);
     }
   }
