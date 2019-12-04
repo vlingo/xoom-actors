@@ -265,18 +265,7 @@ public class Stage implements Stoppable {
    * @return T
    */
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Definition definition) {
-    final Definition redefinition =
-            definition.hasInstantiator() ?
-                    Definition.has(
-                            definition.type(),
-                            definition.instantiator(),
-                            TestMailbox.Name,
-                            definition.actorName()) :
-                    Definition.has(
-                            definition.type(),
-                            definition.parameters(),
-                            TestMailbox.Name,
-                            definition.actorName());
+    final Definition redefinition = redefinitionWithMailboxName(definition, TestMailbox.Name);
 
     try {
       return actorProtocolFor(
@@ -305,12 +294,7 @@ public class Stage implements Stoppable {
    * @return Protocols
    */
   public final Protocols testActorFor(final Class<?>[] protocols, final Definition definition) {
-    final Definition redefinition =
-            Definition.has(
-                    definition.type(),
-                    definition.parameters(),
-                    TestMailbox.Name,
-                    definition.actorName());
+    final Definition redefinition = redefinitionWithMailboxName(definition, TestMailbox.Name);
 
     final ActorProtocolActor<Object>[] all =
             actorProtocolFor(
@@ -696,6 +680,23 @@ public class Stage implements Stoppable {
     if (world.privateRoot() != null) {
       world.privateRoot().stop();
     }
+  }
+
+  private Definition redefinitionWithMailboxName(final Definition definition, final String mailboxName) {
+    final Definition redefinition =
+            definition.hasInstantiator() ?
+                    Definition.has(
+                            definition.type(),
+                            definition.instantiator(),
+                            mailboxName,
+                            definition.actorName()) :
+                    Definition.has(
+                            definition.type(),
+                            definition.parameters(),
+                            mailboxName,
+                            definition.actorName());
+
+    return redefinition;
   }
 
   /**
