@@ -13,131 +13,167 @@ import java.util.function.Function;
 
 import io.vlingo.common.Completes;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class ResultReturns implements Completes<Object> {
   public Returns<Object> __internal__clientReturns;
   public Object __internal__outcome = null;
   public boolean __internal__outcomeSet = false;
 
+  private Completes completes;
+
   @Override
   public <O> Completes<O> andThen(final long timeout, final O failedOutcomeValue, final Function<Object, O> function) {
-    throw new UnsupportedOperationException();
+    completes().andThen(timeout, failedOutcomeValue, function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <O> Completes<O> andThen(final O failedOutcomeValue, final Function<Object, O> function) {
-    throw new UnsupportedOperationException();
+    completes().andThen(failedOutcomeValue, function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <O> Completes<O> andThen(final long timeout, final Function<Object, O> function) {
-    throw new UnsupportedOperationException();
+    completes().andThen(timeout, function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <O> Completes<O> andThen(final Function<Object, O> function) {
-    throw new UnsupportedOperationException();
+    completes().andThen(function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <F,O> O andThenTo(final long timeout, final F failedOutcomeValue, final Function<Object,O> function) {
-    throw new UnsupportedOperationException();
+    completes = (Completes) completes().andThenTo(timeout, failedOutcomeValue, function);
+    setOutcome();
+    return (O) completes;
   }
 
   @Override
   public <F,O> O andThenTo(final F failedOutcomeValue, final Function<Object,O> function) {
-    throw new UnsupportedOperationException();
+    completes = (Completes) completes().andThenTo(failedOutcomeValue, function);
+    setOutcome();
+    return (O) completes;
   }
 
   @Override
   public <O> O andThenTo(final long timeout, final Function<Object,O> function) {
-    throw new UnsupportedOperationException();
+    completes = (Completes) completes().andThenTo(timeout, function);
+    setOutcome();
+    return (O) completes;
   }
 
   @Override
   public <O> O andThenTo(final Function<Object,O> function) {
-    throw new UnsupportedOperationException();
+    completes = (Completes) completes().andThenTo(function);
+    setOutcome();
+    return (O) completes;
   }
 
   @Override
   public Completes<Object> andThenConsume(final Consumer<Object> consumer) {
-    throw new UnsupportedOperationException();
+    completes = completes().andThenConsume(consumer);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> andThenConsume(final long timeout, final Consumer<Object> consumer) {
-    throw new UnsupportedOperationException();
+    completes = completes().andThenConsume(timeout, consumer);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> andThenConsume(final Object failedOutcomeValue, final Consumer<Object> consumer) {
-    throw new UnsupportedOperationException();
+    completes = completes().andThenConsume(failedOutcomeValue, consumer);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> andThenConsume(final long timeout, final Object failedOutcomeValue, final Consumer<Object> consumer) {
-    throw new UnsupportedOperationException();
+    completes = completes().andThenConsume(timeout, failedOutcomeValue, consumer);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> otherwise(final Function<Object,Object> function) {
-    throw new UnsupportedOperationException();
+    completes = completes().otherwise(function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> otherwiseConsume(final Consumer<Object> function) {
-    throw new UnsupportedOperationException();
+    completes = completes().otherwiseConsume(function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public Completes<Object> recoverFrom(final Function<Exception,Object> function) {
-    throw new UnsupportedOperationException();
+    completes = completes().recoverFrom(function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <O> Completes<O> andFinally() {
-    throw new UnsupportedOperationException();
+    completes = completes().andFinally();
+    setOutcome();
+    return completes;
   }
 
   @Override
   public <O> Completes<O> andFinally(final Function<Object, O> function) {
-    throw new UnsupportedOperationException();
+    completes = completes().andFinally(function);
+    setOutcome();
+    return completes;
   }
 
   @Override
   public void andFinallyConsume(final Consumer<Object> consumer) {
-    throw new UnsupportedOperationException();
+    completes().andFinallyConsume(consumer);
+    setOutcome();
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Object await() {
-    throw new UnsupportedOperationException();
+    return completes().await();
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Object await(final long timeout) {
-    throw new UnsupportedOperationException();
+    return completes().await(timeout);
   }
 
   @Override
   public boolean isCompleted() {
-    throw new UnsupportedOperationException();
+    return completes().isCompleted();
   }
 
   @Override
   public boolean hasFailed() {
-    throw new UnsupportedOperationException();
+    return completes().hasFailed();
   }
 
   @Override
   public void failed() {
-    throw new UnsupportedOperationException();
+    completes().failed();
   }
 
   @Override
   public boolean hasOutcome() {
-    throw new UnsupportedOperationException();
+    return completes().hasOutcome();
   }
 
   @Override
@@ -182,5 +218,18 @@ class ResultReturns implements Completes<Object> {
   public CompletableFuture<Object> asCompletableFuture() {
     __internal__clientReturns.asCompletableFuture().thenApply(o -> this.__internal__outcome = o);
     return __internal__clientReturns.asCompletableFuture();
+  }
+
+  private Completes completes() {
+    if (completes == null) {
+      completes = Completes.using(null);
+    }
+    return completes;
+  }
+
+  private void setOutcome() {
+    if (__internal__outcomeSet && !completes.hasOutcome()) {
+      completes.with(outcome());
+    }
   }
 }
