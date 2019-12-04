@@ -69,8 +69,10 @@ public class ActorFactory {
 
     if (definition.hasInstantiator()) {
       actor = definition.instantiator().instantiate();
+      actor.lifeCycle.sendStart(actor);
     } else if (definition.internalParameters().isEmpty()) {
       actor = definition.type().newInstance();
+      actor.lifeCycle.sendStart(actor);
     } else {
       for (final Constructor<?> ctor : definition.type().getConstructors()) {
         if (ctor.getParameterCount() == definition.internalParameters().size()) {
