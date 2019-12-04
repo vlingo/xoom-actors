@@ -266,11 +266,17 @@ public class Stage implements Stoppable {
    */
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Definition definition) {
     final Definition redefinition =
-            Definition.has(
-                    definition.type(),
-                    definition.parameters(),
-                    TestMailbox.Name,
-                    definition.actorName());
+            definition.hasInstantiator() ?
+                    Definition.has(
+                            definition.type(),
+                            definition.instantiator(),
+                            TestMailbox.Name,
+                            definition.actorName()) :
+                    Definition.has(
+                            definition.type(),
+                            definition.parameters(),
+                            TestMailbox.Name,
+                            definition.actorName());
 
     try {
       return actorProtocolFor(
