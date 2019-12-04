@@ -54,7 +54,7 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
                       CompletesEventually.class,
                       Definition.has(
                               CompletesEventuallyActor.class,
-                              Definition.NoParameters,
+                              CompletesEventually.Instantiator,
                               mailboxName,
                               "completes-eventually-" + (idx + 1)));
     }

@@ -50,6 +50,11 @@ public class ActorInstantiatorTest extends ActorsTest {
     public ProtocolActor instantiate() {
       return new ProtocolActor(value, holder);
     }
+
+    @Override
+    public Class<ProtocolActor> type() {
+      return ProtocolActor.class;
+    }
   }
 
   public static interface Protocol { }

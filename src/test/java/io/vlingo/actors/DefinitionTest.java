@@ -123,6 +123,11 @@ public class DefinitionTest extends ActorsTest {
     public ParentInterfaceActor instantiate() {
       return new ParentInterfaceActor(parentHolder);
     }
+
+    @Override
+    public Class<ParentInterfaceActor> type() {
+      return ParentInterfaceActor.class;
+    }
   }
 
   public static interface ParentInterface { }

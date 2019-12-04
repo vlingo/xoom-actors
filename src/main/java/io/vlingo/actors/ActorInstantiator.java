@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
-public interface ActorInstantiator<T extends Actor> {
-  T instantiate();
+public interface ActorInstantiator<A extends Actor> {
+  A instantiate();
+  Class<A> type();
 }
