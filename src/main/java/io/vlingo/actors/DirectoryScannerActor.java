@@ -57,4 +57,22 @@ public class DirectoryScannerActor extends Actor implements DirectoryScanner {
     }
     return null;
   }
+
+  public static class DirectoryScannerInstantiator implements ActorInstantiator<DirectoryScannerActor> {
+    private final Directory directory;
+
+    public DirectoryScannerInstantiator(final Directory directory) {
+      this.directory = directory;
+    }
+
+    @Override
+    public DirectoryScannerActor instantiate() {
+      return new DirectoryScannerActor(directory);
+    }
+
+    @Override
+    public Class<DirectoryScannerActor> type() {
+      return DirectoryScannerActor.class;
+    }
+  }
 }
