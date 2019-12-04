@@ -6,6 +6,8 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors.plugin.logging.slf4j;
 
+import java.util.Properties;
+
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.Logger;
@@ -15,9 +17,7 @@ import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
-
-
-import java.util.Properties;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerActor.Slf4jLoggerInstantiator;
 
 public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerProvider {
   private final Slf4jLoggerPluginConfiguration pluginConfiguration;
@@ -87,7 +87,7 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
       pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
       logger = registrar.world()
-              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, Definition.parameters(logger), logger));
+              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, new Slf4jLoggerInstantiator(logger), logger));
       registrar.register(this.pluginConfiguration.name(), this.pluginConfiguration.isDefaultLogger(), this);
     }
   }
