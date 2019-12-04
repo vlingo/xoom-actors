@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.vlingo.actors.DirectoryScannerActor.DirectoryScannerInstantiator;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
@@ -555,7 +556,7 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, Definition.parameters(directory)));
+    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, new DirectoryScannerInstantiator(directory)));
   }
 
   /**
