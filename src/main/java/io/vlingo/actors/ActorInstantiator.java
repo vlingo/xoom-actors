@@ -10,4 +10,6 @@ package io.vlingo.actors;
 public interface ActorInstantiator<A extends Actor> {
   A instantiate();
   Class<A> type();
+
+  default void set(final String name, final Object value) { }
 }
