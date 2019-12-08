@@ -13,6 +13,7 @@ import java.util.function.Function;
 
 import io.vlingo.common.Completes;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class ResultReturns implements Completes<Object> {
   public Returns<Object> __internal__clientReturns;
   public Object __internal__outcome = null;
