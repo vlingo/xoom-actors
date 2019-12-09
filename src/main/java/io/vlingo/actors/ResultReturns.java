@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 import io.vlingo.common.Completes;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
 class ResultReturns implements Completes<Object> {
   public Returns<Object> __internal__clientReturns;
   public Object __internal__outcome = null;
@@ -110,11 +109,13 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object await() {
     throw new UnsupportedOperationException();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object await(final long timeout) {
     throw new UnsupportedOperationException();
   }
