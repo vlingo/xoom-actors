@@ -449,9 +449,9 @@ public final class World implements Registrar {
         } else {
           final Constructor ctor = stageType.getConstructor(World.class, AddressFactory.class, String.class);
           stage = (Stage) ctor.newInstance(this, addressFactory, name);
-          if (!name.equals(DEFAULT_STAGE)) {
-            stage.startDirectoryScanner();
-          }
+        }
+        if (!name.equals(DEFAULT_STAGE)) {
+          stage.startDirectoryScanner();
         }
         stages.put(name, stage);
       } catch (Exception e) {
