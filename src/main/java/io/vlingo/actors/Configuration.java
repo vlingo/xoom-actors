@@ -7,10 +7,7 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.Plugin;
-import io.vlingo.actors.plugin.PluginConfiguration;
-import io.vlingo.actors.plugin.PluginLoader;
-import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.*;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
 import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
@@ -234,20 +231,19 @@ public class Configuration {
   }
 
   private List<Plugin> loadPlugins(final boolean build) {
-    final List<Class<?>> pluginClasses = Arrays.asList(
-            io.vlingo.actors.plugin.completes.PooledCompletesPlugin.class,
-            io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin.class,
-            io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.class,
-            io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.class,
-            io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.class,
-            io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.class,
-            io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.class);
+    final List<PluginFactory> pluginFactories = Arrays.asList(
+            io.vlingo.actors.plugin.completes.PooledCompletesPlugin::new,
+            io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin::new,
+            io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin::new,
+            io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin::new,
+            io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin::new,
+            io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin::new,
+            io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin::new);
 
     final List<Plugin> plugins = new ArrayList<>();
-    for (final Class<?> pluginClass : pluginClasses) {
-      final String classname = pluginClass.getName();
+    for (final PluginFactory pluginFactory : pluginFactories) {
       try {
-        final Plugin plugin = (Plugin) pluginClass.newInstance();
+        final Plugin plugin = pluginFactory.build();
         final PluginConfiguration pc = overrideConfiguration(plugin);
         final boolean reallyBuild = pc == null ? build : false;
         final Plugin configuredPlugin = plugin.with(pc);
@@ -266,8 +262,7 @@ public class Configuration {
 //        }
         plugins.add(configuredPlugin);
       } catch (Exception e) {
-        e.printStackTrace();
-        throw new IllegalStateException("Cannot load plugin class: " + classname);
+        throw new IllegalStateException("Cannot load plugin class: " + e.getMessage(), e);
       }
     }
     return plugins;

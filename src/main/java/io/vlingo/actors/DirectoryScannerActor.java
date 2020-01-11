@@ -7,9 +7,9 @@
 
 package io.vlingo.actors;
 
-import java.util.Optional;
-
 import io.vlingo.common.Completes;
+
+import java.util.Optional;
 
 public class DirectoryScannerActor extends Actor implements DirectoryScanner {
   private final Directory directory;
@@ -56,23 +56,5 @@ public class DirectoryScannerActor extends Actor implements DirectoryScanner {
       logger().error("Error providing protocol: " + protocol.getName() + " for actor with address: " + address, e);
     }
     return null;
-  }
-
-  public static class DirectoryScannerInstantiator implements ActorInstantiator<DirectoryScannerActor> {
-    private final Directory directory;
-
-    public DirectoryScannerInstantiator(final Directory directory) {
-      this.directory = directory;
-    }
-
-    @Override
-    public DirectoryScannerActor instantiate() {
-      return new DirectoryScannerActor(directory);
-    }
-
-    @Override
-    public Class<DirectoryScannerActor> type() {
-      return DirectoryScannerActor.class;
-    }
   }
 }

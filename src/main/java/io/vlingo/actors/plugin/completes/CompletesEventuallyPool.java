@@ -7,16 +7,9 @@
 
 package io.vlingo.actors.plugin.completes;
 
-import java.util.concurrent.atomic.AtomicLong;
+import io.vlingo.actors.*;
 
-import io.vlingo.actors.Address;
-import io.vlingo.actors.CompletesEventually;
-import io.vlingo.actors.CompletesEventuallyActor;
-import io.vlingo.actors.CompletesEventuallyProvider;
-import io.vlingo.actors.Definition;
-import io.vlingo.actors.PooledCompletes;
-import io.vlingo.actors.Returns;
-import io.vlingo.actors.Stage;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CompletesEventuallyPool implements CompletesEventuallyProvider {
   private final AtomicLong completesEventuallyId;
@@ -54,7 +47,7 @@ public class CompletesEventuallyPool implements CompletesEventuallyProvider {
                       CompletesEventually.class,
                       Definition.has(
                               CompletesEventuallyActor.class,
-                              CompletesEventually.Instantiator,
+                              CompletesEventuallyActor::new,
                               mailboxName,
                               "completes-eventually-" + (idx + 1)));
     }

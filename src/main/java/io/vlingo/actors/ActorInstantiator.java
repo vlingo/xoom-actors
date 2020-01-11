@@ -7,25 +7,11 @@
 
 package io.vlingo.actors;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+@FunctionalInterface
 public interface ActorInstantiator<A extends Actor> {
   A instantiate();
-  Class<A> type();
 
-  default void set(final String name, final Object value) { }
-
-  static class Registry {
-    private static final Map<Class<?>, ActorInstantiator<?>> instantiators = new ConcurrentHashMap<>();
-
-    @SuppressWarnings("unchecked")
-    public static <A extends Actor> ActorInstantiator<A> instantiatorFor(final Class<?> type) {
-      return (ActorInstantiator<A>) instantiators.get(type);
-    }
-
-    public static void register(final Class<?> type, ActorInstantiator<?> instantiator) {
-      instantiators.put(type, instantiator);
-    }
-  }
+  default Class<A> type() {
+    return null;
+  };
 }
