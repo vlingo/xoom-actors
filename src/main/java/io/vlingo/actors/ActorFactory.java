@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -52,7 +52,7 @@ public class ActorFactory {
           final Mailbox mailbox,
           final Supervisor supervisor,
           final Logger logger) throws Exception {
-    
+
     final Environment environment =
             new Environment(
                     stage,
@@ -61,14 +61,18 @@ public class ActorFactory {
                     parent,
                     mailbox,
                     supervisor,
-                    logger);
-    
+                    new ActorLoggerAdapter(logger, definition.type().getName()));
+
     threadLocalEnvironment.set(environment);
-    
+
     Actor actor = null;
-    
-    if (definition.internalParameters().isEmpty()) {
+
+    if (definition.hasInstantiator()) {
+      actor = definition.instantiator().instantiate();
+      actor.lifeCycle.sendStart(actor);
+    } else if (definition.internalParameters().isEmpty()) {
       actor = definition.type().newInstance();
+      actor.lifeCycle.sendStart(actor);
     } else {
       for (final Constructor<?> ctor : definition.type().getConstructors()) {
         if (ctor.getParameterCount() == definition.internalParameters().size()) {
@@ -79,22 +83,22 @@ public class ActorFactory {
         }
       }
     }
-    
+
     if (actor == null) {
       throw new IllegalArgumentException("No constructor matches the given number of parameters.");
     }
-    
+
     if (parent != null) {
       parent.lifeCycle.environment.addChild(actor);
     }
-    
+
     return actor;
   }
 
   static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition) {
     final String mailboxName = stage.world().mailboxNameFrom(definition.mailboxName());
     final Mailbox mailbox = stage.world().assignMailbox(mailboxName, address.hashCode());
-    
+
     return mailbox;
   }
 

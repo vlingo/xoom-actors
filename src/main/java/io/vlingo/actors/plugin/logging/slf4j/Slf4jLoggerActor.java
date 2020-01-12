@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -11,7 +11,6 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.Logger;
 
 public class Slf4jLoggerActor extends Actor implements Logger {
-
   private final Logger logger;
 
   public Slf4jLoggerActor(Logger logger) {

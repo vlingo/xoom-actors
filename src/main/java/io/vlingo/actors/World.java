@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -7,13 +7,13 @@
 
 package io.vlingo.actors;
 
-import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+
+import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
@@ -91,6 +91,23 @@ public final class World implements Registrar {
    */
   public static World startWithDefaults(final String name) {
     return start(name, Configuration.define());
+  }
+
+  /**
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param protocol the {@code Class<T>} protocol
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param instantiator the {@code ActorInstantiator<A>} used to instantiate the Actor
+   * @param <T> the protocol type
+   * @param <A> the Actor type
+   * @return T
+   */
+  public <T,A extends Actor> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final ActorInstantiator<A> instantiator) {
+    if (isTerminated()) {
+      throw new IllegalStateException("vlingo/actors: Stopped.");
+    }
+
+    return stage().actorFor(protocol, type, instantiator);
   }
 
   /**
@@ -427,8 +444,12 @@ public final class World implements Registrar {
 
     if (stage == null) {
       try {
-        final Constructor ctor = stageType.getConstructor(World.class, AddressFactory.class, String.class);
-        stage = (Stage) ctor.newInstance(this, addressFactory, name);
+        if (stageType == Stage.class) {
+          stage = new Stage(this, addressFactory, name);
+        } else {
+          final Constructor ctor = stageType.getConstructor(World.class, AddressFactory.class, String.class);
+          stage = (Stage) ctor.newInstance(this, addressFactory, name);
+        }
         if (!name.equals(DEFAULT_STAGE)) {
           stage.startDirectoryScanner();
         }
@@ -629,7 +650,7 @@ public final class World implements Registrar {
   private void startRootFor(final Stage stage, final Logger logger) {
     stage.actorProtocolFor(
         Stoppable.class,
-        Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
+        Definition.has(PrivateRootActor.class, PrivateRootActor::new, PRIVATE_ROOT_NAME),
         null,
         addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
         null,

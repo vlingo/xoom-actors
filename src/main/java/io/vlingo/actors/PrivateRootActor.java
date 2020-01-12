@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -26,29 +26,31 @@ public class PrivateRootActor extends Actor implements Stoppable, Supervisor {
             }
           };
 
-  public PrivateRootActor() {
-    stage().world().setPrivateRoot(selfAs(Stoppable.class));
+    @Override
+    protected void beforeStart() {
+        super.beforeStart();
+        stage().world().setPrivateRoot(selfAs(Stoppable.class));
 
-    stage().actorProtocolFor(
-              NoProtocol.class,
-              Definition.has(PublicRootActor.class, Definition.NoParameters, World.PUBLIC_ROOT_NAME),
-              this,
-              stage().world().addressFactory().from(World.PUBLIC_ROOT_ID, World.PUBLIC_ROOT_NAME),
-              null,
-              null,
-              logger());
+        stage().actorProtocolFor(
+                NoProtocol.class,
+                Definition.has(PublicRootActor.class, PublicRootActor::new, World.PUBLIC_ROOT_NAME),
+                this,
+                stage().world().addressFactory().from(World.PUBLIC_ROOT_ID, World.PUBLIC_ROOT_NAME),
+                null,
+                null,
+                logger());
 
-    stage().actorProtocolFor(
-              DeadLetters.class,
-              Definition.has(DeadLettersActor.class, Definition.NoParameters, World.DEADLETTERS_NAME),
-              this,
-              stage().world().addressFactory().from(World.DEADLETTERS_ID, World.DEADLETTERS_NAME),
-              null,
-              null,
-              logger());
-  }
+        stage().actorProtocolFor(
+                DeadLetters.class,
+                Definition.has(DeadLettersActor.class, DeadLettersActor::new, World.DEADLETTERS_NAME),
+                this,
+                stage().world().addressFactory().from(World.DEADLETTERS_ID, World.DEADLETTERS_NAME),
+                null,
+                null,
+                logger());
+    }
 
-  @Override
+    @Override
   protected void afterStop() {
     stage().world().setPrivateRoot(null);
     super.afterStop();

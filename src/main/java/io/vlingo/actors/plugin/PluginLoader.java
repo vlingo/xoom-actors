@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -7,15 +7,9 @@
 
 package io.vlingo.actors.plugin;
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import io.vlingo.actors.Configuration;
+
+import java.util.*;
 
 public class PluginLoader {
   private static final String pluginNamePrefix = "plugin.name.";
@@ -36,7 +30,7 @@ public class PluginLoader {
   }
 
   private Set<String> findEnabledPlugins(final Properties properties) {
-    final Set<String> enabledPlugins = new HashSet<String>();
+    final Set<String> enabledPlugins = new HashSet<>();
 
     for (Enumeration<?> e = properties.keys(); e.hasMoreElements(); ) {
       final String key = (String) e.nextElement();

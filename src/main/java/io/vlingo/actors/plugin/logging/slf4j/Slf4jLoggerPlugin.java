@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -6,16 +6,11 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors.plugin.logging.slf4j;
 
-import io.vlingo.actors.Configuration;
-import io.vlingo.actors.Definition;
-import io.vlingo.actors.Logger;
-import io.vlingo.actors.LoggerProvider;
-import io.vlingo.actors.Registrar;
+import io.vlingo.actors.*;
 import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
-
 
 import java.util.Properties;
 
@@ -87,7 +82,7 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
       pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
       logger = registrar.world()
-              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, Definition.parameters(logger), logger));
+              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, () -> new Slf4jLoggerActor(logger), logger));
       registrar.register(this.pluginConfiguration.name(), this.pluginConfiguration.isDefaultLogger(), this);
     }
   }

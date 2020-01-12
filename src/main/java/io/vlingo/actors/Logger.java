@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -18,29 +18,29 @@ public interface Logger {
   static Logger basicLogger() {
     return Slf4jLoggerPlugin.basicInstance();
   }
-  
+
   String name();
   void close();
   boolean isEnabled();
 
-  void trace(String message);
-  void trace(String message, Object... args);
-  void trace(String message, final Throwable throwable);
+  void trace(final String message);
+  void trace(final String message, final Object... args);
+  void trace(final String message, final Throwable throwable);
 
-  void debug(String message);
-  void debug(String message, Object... args);
-  void debug(String message, final Throwable throwable);
+  void debug(final String message);
+  void debug(final String message, final Object... args);
+  void debug(final String message, final Throwable throwable);
 
-  void info(String message);
-  void info(String message, Object... args);
-  void info(String message, final Throwable throwable);
-  
-  void warn(String message);
-  void warn(String message, Object... args);
-  void warn(String message, final Throwable throwable);
+  void info(final String message);
+  void info(final String message, final Object... args);
+  void info(final String message, final Throwable throwable);
 
-  void error(String message);
-  void error(String message, Object... args);
-  void error(String message, final Throwable throwable);
+  void warn(final String message);
+  void warn(final String message, final Object... args);
+  void warn(final String message, final Throwable throwable);
+
+  void error(final String message);
+  void error(final String message, final Object... args);
+  void error(final String message, final Throwable throwable);
 
 }

@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -7,16 +7,16 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
+import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduler;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
-import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.common.Completes;
-import io.vlingo.common.Scheduler;
 
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
@@ -53,6 +53,19 @@ public class Stage implements Stoppable {
    */
   public <T> T actorAs(final Actor actor, final Class<T> protocol) {
     return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
+  }
+
+  /**
+   * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol}.
+   * @param protocol the {@code Class<T>} protocol
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param instantiator the {@code ActorInstantiator<A>} used to instantiate the Actor
+   * @param <T> the protocol type
+   * @param <A> the Actor type
+   * @return T
+   */
+  public <T,A extends Actor> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final ActorInstantiator<A> instantiator) {
+    return actorFor(protocol, Definition.has(type, instantiator));
   }
 
   /**
@@ -252,12 +265,7 @@ public class Stage implements Stoppable {
    * @return T
    */
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Definition definition) {
-    final Definition redefinition =
-            Definition.has(
-                    definition.type(),
-                    definition.parameters(),
-                    TestMailbox.Name,
-                    definition.actorName());
+    final Definition redefinition = redefinitionWithMailboxName(definition, TestMailbox.Name);
 
     try {
       return actorProtocolFor(
@@ -286,12 +294,7 @@ public class Stage implements Stoppable {
    * @return Protocols
    */
   public final Protocols testActorFor(final Class<?>[] protocols, final Definition definition) {
-    final Definition redefinition =
-            Definition.has(
-                    definition.type(),
-                    definition.parameters(),
-                    TestMailbox.Name,
-                    definition.actorName());
+    final Definition redefinition = redefinitionWithMailboxName(definition, TestMailbox.Name);
 
     final ActorProtocolActor<Object>[] all =
             actorProtocolFor(
@@ -552,7 +555,7 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, Definition.parameters(directory)));
+    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)));
   }
 
   /**
@@ -566,6 +569,10 @@ public class Stage implements Stoppable {
     if (actor == removedActor) {
       removedActor.lifeCycle.stop(actor);
     }
+  }
+
+  protected void extenderStartDirectoryScanner() {
+    startDirectoryScanner();
   }
 
   /**
@@ -673,6 +680,23 @@ public class Stage implements Stoppable {
     if (world.privateRoot() != null) {
       world.privateRoot().stop();
     }
+  }
+
+  private Definition redefinitionWithMailboxName(final Definition definition, final String mailboxName) {
+    final Definition redefinition =
+            definition.hasInstantiator() ?
+                    Definition.has(
+                            definition.type(),
+                            definition.instantiator(),
+                            mailboxName,
+                            definition.actorName()) :
+                    Definition.has(
+                            definition.type(),
+                            definition.parameters(),
+                            mailboxName,
+                            definition.actorName());
+
+    return redefinition;
   }
 
   /**

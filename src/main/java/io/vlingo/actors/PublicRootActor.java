@@ -1,4 +1,4 @@
-// Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+// Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 //
 // This Source Code Form is subject to the terms of the
 // Mozilla Public License, v. 2.0. If a copy of the MPL
@@ -28,13 +28,18 @@ public class PublicRootActor extends Actor implements Stoppable, Supervisor {
           };
 
   public PublicRootActor() {
-    this.self = selfAs(Supervisor.class);
-
-    stage().world().setDefaultParent(this);
-    stage().world().setPublicRoot(selfAs(Stoppable.class));
+      this.self = selfAs(Supervisor.class);
   }
 
-  @Override
+    @Override
+    protected void beforeStart() {
+        super.beforeStart();
+
+        stage().world().setDefaultParent(this);
+        stage().world().setPublicRoot(selfAs(Stoppable.class));
+    }
+
+    @Override
   protected void afterStop() {
     stage().world().setDefaultParent(null);
     stage().world().setPublicRoot(null);

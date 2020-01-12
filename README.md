@@ -19,7 +19,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
     <dependency>
       <groupId>io.vlingo</groupId>
       <artifactId>vlingo-actors</artifactId>
-      <version>0.9.1-RC2</version>
+      <version>1.0.0</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -27,7 +27,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
 
 ```gradle
 dependencies {
-    compile 'io.vlingo:vlingo-actors:0.9.1-RC2'
+    compile 'io.vlingo:vlingo-actors:1.0.0'
 }
 
 repositories {
@@ -37,7 +37,7 @@ repositories {
 
 License (See LICENSE file for full license)
 -------------------------------------------
-Copyright © 2012-2018 Vaughn Vernon. All rights reserved.
+Copyright © 2012-2020 VLINGO LABS. All rights reserved.
 
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a copy of the MPL
