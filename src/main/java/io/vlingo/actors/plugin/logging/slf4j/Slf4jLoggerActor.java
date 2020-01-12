@@ -8,7 +8,6 @@
 package io.vlingo.actors.plugin.logging.slf4j;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.ActorInstantiator;
 import io.vlingo.actors.Logger;
 
 public class Slf4jLoggerActor extends Actor implements Logger {
@@ -112,23 +111,5 @@ public class Slf4jLoggerActor extends Actor implements Logger {
   @Override
   public void error(String message, Throwable throwable) {
     this.logger.error(message, throwable);
-  }
-
-  public static class Slf4jLoggerInstantiator implements ActorInstantiator<Slf4jLoggerActor> {
-    private final Logger logger;
-
-    public Slf4jLoggerInstantiator(final Logger logger) {
-      this.logger = logger;
-    }
-
-    @Override
-    public Slf4jLoggerActor instantiate() {
-      return new Slf4jLoggerActor(logger);
-    }
-
-    @Override
-    public Class<Slf4jLoggerActor> type() {
-      return Slf4jLoggerActor.class;
-    }
   }
 }

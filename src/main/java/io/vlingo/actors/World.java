@@ -7,13 +7,13 @@
 
 package io.vlingo.actors;
 
-import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+
+import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
@@ -650,7 +650,7 @@ public final class World implements Registrar {
   private void startRootFor(final Stage stage, final Logger logger) {
     stage.actorProtocolFor(
         Stoppable.class,
-        Definition.has(PrivateRootActor.class, Definition.NoParameters, PRIVATE_ROOT_NAME),
+        Definition.has(PrivateRootActor.class, PrivateRootActor::new, PRIVATE_ROOT_NAME),
         null,
         addressFactory.from(PRIVATE_ROOT_ID, PRIVATE_ROOT_NAME),
         null,
