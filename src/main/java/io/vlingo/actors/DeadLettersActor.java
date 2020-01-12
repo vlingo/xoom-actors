@@ -14,9 +14,7 @@ public class DeadLettersActor extends Actor implements DeadLetters {
   private final List<DeadLettersListener> listeners;
 
   public DeadLettersActor() {
-    this.listeners = new ArrayList<DeadLettersListener>();
-    
-    stage().world().setDeadLetters(selfAs(DeadLetters.class));
+    this.listeners = new ArrayList<>();
   }
 
   public void failedDelivery(final DeadLetter deadLetter) {
@@ -35,6 +33,13 @@ public class DeadLettersActor extends Actor implements DeadLetters {
   @Override
   public void registerListener(final DeadLettersListener listener) {
     listeners.add(listener);
+  }
+
+  @Override
+  protected void beforeStart() {
+    super.beforeStart();
+
+    stage().world().setDeadLetters(selfAs(DeadLetters.class));
   }
 
   @Override

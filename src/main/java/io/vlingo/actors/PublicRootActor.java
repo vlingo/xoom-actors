@@ -28,13 +28,18 @@ public class PublicRootActor extends Actor implements Stoppable, Supervisor {
           };
 
   public PublicRootActor() {
-    this.self = selfAs(Supervisor.class);
-
-    stage().world().setDefaultParent(this);
-    stage().world().setPublicRoot(selfAs(Stoppable.class));
+      this.self = selfAs(Supervisor.class);
   }
 
-  @Override
+    @Override
+    protected void beforeStart() {
+        super.beforeStart();
+
+        stage().world().setDefaultParent(this);
+        stage().world().setPublicRoot(selfAs(Stoppable.class));
+    }
+
+    @Override
   protected void afterStop() {
     stage().world().setDefaultParent(null);
     stage().world().setPublicRoot(null);
