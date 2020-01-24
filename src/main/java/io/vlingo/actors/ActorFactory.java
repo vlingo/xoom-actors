@@ -95,11 +95,15 @@ public class ActorFactory {
     return actor;
   }
 
-  static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition) {
+  static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition, MailboxWrapper wrapper) {
     final String mailboxName = stage.world().mailboxNameFrom(definition.mailboxName());
     final Mailbox mailbox = stage.world().assignMailbox(mailboxName, address.hashCode());
 
-    return mailbox;
+    return wrapper.wrap(address, mailbox);
+  }
+
+  static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition) {
+    return actorMailbox(stage, address, definition, MailboxWrapper.Identity);
   }
 
   private static Actor start(
@@ -157,5 +161,11 @@ public class ActorFactory {
       }
     }
     return unfolded;
+  }
+
+
+  public interface MailboxWrapper {
+    MailboxWrapper Identity = (a, m) -> m;
+    Mailbox wrap(Address address, Mailbox mailbox);
   }
 }
