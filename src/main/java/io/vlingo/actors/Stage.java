@@ -598,8 +598,12 @@ public class Stage implements Stoppable {
    */
   private Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
     final Mailbox mailbox = maybeMailbox != null ?
-            maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
+            maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
     return mailbox;
+  }
+
+  protected ActorFactory.MailboxWrapper mailboxWrapper() {
+    return ActorFactory.MailboxWrapper.Identity;
   }
 
   /**
@@ -655,7 +659,7 @@ public class Stage implements Stoppable {
     }
 
     final Mailbox mailbox = maybeMailbox != null ?
-            maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
+            maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
 
     final Actor actor;
 
