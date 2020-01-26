@@ -7,12 +7,12 @@
 
 package io.vlingo.actors;
 
-import org.pcollections.PVector;
-import org.pcollections.TreePVector;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.pcollections.PVector;
+import org.pcollections.TreePVector;
 
 public class Environment {
   final Address address;
@@ -56,7 +56,7 @@ public class Environment {
     this.failureMark = new FailureMark();
     this.logger = logger;
     this.children = TreePVector.empty();
-    this.proxyCache = new HashMap<>();
+    this.proxyCache = new HashMap<>(1);
 //    this.stowage = new Stowage();
     this.stowageOverrides = null;
 //    this.suspended = new Stowage();
