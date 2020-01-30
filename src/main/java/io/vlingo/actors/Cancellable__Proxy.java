@@ -7,9 +7,8 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
-
 import io.vlingo.common.Cancellable;
+import io.vlingo.common.SerializableConsumer;
 
 public class Cancellable__Proxy implements Cancellable {
   private final Actor actor;
@@ -23,7 +22,7 @@ public class Cancellable__Proxy implements Cancellable {
   @Override
   public boolean cancel() {
     if (!actor.isStopped()) {
-      final Consumer<Cancellable> consumer = (actor) -> actor.cancel();
+      final SerializableConsumer<Cancellable> consumer = (actor) -> actor.cancel();
       if (mailbox.isPreallocated()) { mailbox.send(actor, Cancellable.class, consumer, null, "cancel()"); }
       else { mailbox.send(new LocalMessage<Cancellable>(actor, Cancellable.class, consumer, "cancel()")); }
       return true;

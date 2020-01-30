@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class Stoppable__Proxy implements Stoppable {
   private final Actor actor;
@@ -21,7 +21,7 @@ public class Stoppable__Proxy implements Stoppable {
   @Override
   public void conclude() {
     if (!actor.isStopped()) {
-      final Consumer<Stoppable> consumer = (actor) -> actor.conclude();
+      final SerializableConsumer<Stoppable> consumer = (actor) -> actor.conclude();
       if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, "conclude()"); }
       else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "conclude()")); }
     } else {
@@ -37,7 +37,7 @@ public class Stoppable__Proxy implements Stoppable {
   @Override
   public void stop() {
     if (!actor.isStopped()) {
-      final Consumer<Stoppable> consumer = (actor) -> actor.stop();
+      final SerializableConsumer<Stoppable> consumer = (actor) -> actor.stop();
       if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, "stop()"); }
       else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, "stop()")); }
     } else {

@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class Startable__Proxy implements Startable {
   private final Actor actor;
@@ -20,7 +20,7 @@ public class Startable__Proxy implements Startable {
 
   @Override
   public void start() {
-    final Consumer<Startable> consumer = (actor) -> actor.start();
+    final SerializableConsumer<Startable> consumer = (actor) -> actor.start();
     if (mailbox.isPreallocated()) { mailbox.send(actor, Startable.class, consumer, null, "start()"); }
     else { mailbox.send(new LocalMessage<Startable>(actor, Startable.class, consumer, "start()")); }
   }

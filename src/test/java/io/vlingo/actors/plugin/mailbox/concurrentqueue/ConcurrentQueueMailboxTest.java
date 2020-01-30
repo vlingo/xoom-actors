@@ -7,22 +7,18 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.util.ArrayList;
-import java.util.function.Consumer;
-
+import io.vlingo.actors.*;
+import io.vlingo.actors.testkit.AccessSafely;
+import io.vlingo.common.SerializableConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.vlingo.actors.Actor;
-import io.vlingo.actors.ActorsTest;
-import io.vlingo.actors.Dispatcher;
-import io.vlingo.actors.LocalMessage;
-import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.testkit.AccessSafely;
+import java.util.ArrayList;
+import java.util.function.Consumer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class ConcurrentQueueMailboxTest extends ActorsTest {
   private static int Total = 10_000;
@@ -38,7 +34,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
 
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
     }

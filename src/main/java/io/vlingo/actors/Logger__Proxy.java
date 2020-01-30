@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class Logger__Proxy implements Logger {
 
@@ -39,113 +39,113 @@ public class Logger__Proxy implements Logger {
   }
 
   public String name() {
-    final Consumer<Logger> consumer = (actor) -> actor.name();
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.name();
     send(consumer, nameRepresentation1);
     return null;
   }
 
   @Override
   public void trace(String message) {
-    final Consumer<Logger> consumer = (actor) -> actor.trace(message);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.trace(message);
     send(consumer, traceRepresentation1);
   }
 
   @Override
   public void trace(String message, Object... args) {
-    final Consumer<Logger> consumer = (actor) -> actor.trace(message, args);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.trace(message, args);
     send(consumer, traceRepresentation2);
   }
 
   @Override
   public void trace(String message, Throwable throwable) {
-    final Consumer<Logger> consumer = (actor) -> actor.trace(message, throwable);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.trace(message, throwable);
     send(consumer, traceRepresentation3);
   }
 
   @Override
   public void debug(String message) {
-    final Consumer<Logger> consumer = (actor) -> actor.debug(message);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.debug(message);
     send(consumer, debugRepresentation1);
   }
 
   @Override
   public void debug(String message, Object... args) {
-    final Consumer<Logger> consumer = (actor) -> actor.debug(message, args);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.debug(message, args);
     send(consumer, debugRepresentation2);
   }
 
   @Override
   public void debug(String message, Throwable throwable) {
-    final Consumer<Logger> consumer = (actor) -> actor.debug(message, throwable);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.debug(message, throwable);
     send(consumer, debugRepresentation3);
   }
 
   @Override
   public void info(String message) {
-    final Consumer<Logger> consumer = (actor) -> actor.info(message);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.info(message);
     send(consumer, infoRepresentation1);
   }
 
   @Override
   public void info(String message, Object... args) {
-    final Consumer<Logger> consumer = (actor) -> actor.info(message, args);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.info(message, args);
     send(consumer, infoRepresentation2);
   }
 
   @Override
   public void info(String message, Throwable throwable) {
-    final Consumer<Logger> consumer = (actor) -> actor.info(message, throwable);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.info(message, throwable);
     send(consumer, infoRepresentation3);
   }
 
   @Override
   public void warn(String message) {
-    final Consumer<Logger> consumer = (actor) -> actor.warn(message);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.warn(message);
     send(consumer, warnRepresentation1);
   }
 
   @Override
   public void warn(String message, Object... args) {
-    final Consumer<Logger> consumer = (actor) -> actor.warn(message, args);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.warn(message, args);
     send(consumer, warnRepresentation2);
   }
 
   @Override
   public void warn(String message, Throwable throwable) {
-    final Consumer<Logger> consumer = (actor) -> actor.warn(message, throwable);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.warn(message, throwable);
     send(consumer, warnRepresentation3);
   }
 
   @Override
   public void error(String message) {
-    final Consumer<Logger> consumer = (actor) -> actor.error(message);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.error(message);
     send(consumer, errorRepresentation1);
   }
 
   @Override
   public void error(String message, Object... args) {
-    final Consumer<Logger> consumer = (actor) -> actor.error(message, args);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.error(message, args);
     send(consumer, errorRepresentation2);
   }
 
   @Override
   public void error(String message, Throwable throwable) {
-    final Consumer<Logger> consumer = (actor) -> actor.error(message, throwable);
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.error(message, throwable);
     send(consumer, errorRepresentation3);
   }
 
   public void close() {
-    final Consumer<Logger> consumer = (actor) -> actor.close();
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.close();
     send(consumer, closeRepresentation4);
   }
 
   public boolean isEnabled() {
-    final Consumer<Logger> consumer = (actor) -> actor.isEnabled();
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.isEnabled();
     send(consumer, isEnabledRepresentation5);
     return false;
   }
 
-  private void send(final Consumer<Logger> consumer, String representation) {
+  private void send(final SerializableConsumer<Logger> consumer, String representation) {
     if (!actor.isStopped()) {
       if (mailbox.isPreallocated()) {
         mailbox.send(actor, Logger.class, consumer, null, representation);

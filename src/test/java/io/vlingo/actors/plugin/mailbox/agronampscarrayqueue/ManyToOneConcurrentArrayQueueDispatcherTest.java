@@ -7,18 +7,17 @@
 
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
-import org.junit.Test;
-
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.common.SerializableConsumer;
+import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
   private static final int MailboxSize = 64;
@@ -38,7 +37,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= MailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
@@ -52,7 +51,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     for (int count = MailboxSize + 1; count <= neverRevieved; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
@@ -80,7 +79,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
@@ -108,7 +107,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
 
       // notify if in back off
