@@ -7,17 +7,16 @@
 
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
-import org.junit.Test;
-
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.common.SerializableConsumer;
+import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 public class RingBufferDispatcherTest extends ActorsTest {
 
@@ -39,7 +38,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
       mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
@@ -52,7 +51,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     for (int count = mailboxSize + 1; count <= neverRevieved; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
       mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
@@ -80,7 +79,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
       mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
@@ -107,7 +106,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= overflowSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
       mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");
     }
@@ -138,7 +137,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
       // notify if in back off
       mailbox.send(actor, CountTaker.class, consumer, null, "take(int)");

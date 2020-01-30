@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class CompletesEventually__Proxy implements CompletesEventually {
   private static final String representationConclude0 = "conclude()";
@@ -30,7 +30,7 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   @Override
   public void conclude() {
     if (!actor.isStopped()) {
-      final Consumer<Stoppable> consumer = (actor) -> actor.conclude();
+      final SerializableConsumer<Stoppable> consumer = (actor) -> actor.conclude();
       if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, representationConclude0); }
       else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, representationConclude0)); }
     } else {
@@ -46,7 +46,7 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   @Override
   public void stop() {
     if (!actor.isStopped()) {
-      final Consumer<Stoppable> consumer = (actor) -> actor.stop();
+      final SerializableConsumer<Stoppable> consumer = (actor) -> actor.stop();
       if (mailbox.isPreallocated()) { mailbox.send(actor, Stoppable.class, consumer, null, representationStop1); }
       else { mailbox.send(new LocalMessage<Stoppable>(actor, Stoppable.class, consumer, representationStop1)); }
     } else {
@@ -57,7 +57,7 @@ public class CompletesEventually__Proxy implements CompletesEventually {
   @Override
   public void with(final Object outcome) {
     if (!actor.isStopped()) {
-      final Consumer<CompletesEventually> consumer = (actor) -> actor.with(outcome);
+      final SerializableConsumer<CompletesEventually> consumer = (actor) -> actor.with(outcome);
       if (mailbox.isPreallocated()) { mailbox.send(actor, CompletesEventually.class, consumer, null, representationWith2); }
       else { mailbox.send(new LocalMessage<CompletesEventually>(actor, CompletesEventually.class, consumer, representationWith2)); }
     } else {

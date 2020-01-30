@@ -151,6 +151,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append("import io.vlingo.actors.Mailbox;").append("\n")
       .append("import io.vlingo.actors.Returns;").append("\n")
       .append("import io.vlingo.common.Completes;").append("\n")
+      .append("import io.vlingo.common.SerializableConsumer;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)
@@ -193,7 +194,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
-    final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
+    final String consumerStatement = MessageFormat.format("      final SerializableConsumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = isACompletes ? MessageFormat.format("      final {0} returnValue = Completes.using(actor.scheduler());\n", signatureReturnType) : "";
     final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new CompletableFuture<>();\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);

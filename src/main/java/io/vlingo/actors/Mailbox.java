@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 /**
  * Standard actor mailbox protocol.
@@ -109,6 +109,6 @@ public interface Mailbox extends Runnable {
    * @param returns the {@code Returns<?>} through which return values are communicated; null if void return
    * @param representation the String representation of this message invocation
    */
-  default void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation)
+  default void send(final Actor actor, final Class<?> protocol, final SerializableConsumer<?> consumer, final Returns<?> returns, final String representation)
     { throw new UnsupportedOperationException("Not a preallocated mailbox."); }
 }

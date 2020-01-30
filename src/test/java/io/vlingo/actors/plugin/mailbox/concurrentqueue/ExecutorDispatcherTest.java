@@ -7,9 +7,11 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import io.vlingo.actors.*;
+import io.vlingo.actors.testkit.AccessSafely;
+import io.vlingo.common.SerializableConsumer;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.Queue;
@@ -17,19 +19,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import io.vlingo.actors.Actor;
-import io.vlingo.actors.ActorsTest;
-import io.vlingo.actors.Dispatcher;
-import io.vlingo.actors.LocalMessage;
-import io.vlingo.actors.Logger;
-import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.testkit.AccessSafely;
+import static org.junit.Assert.*;
 
 public class ExecutorDispatcherTest extends ActorsTest {
   private static int Total = 10_000;
@@ -46,7 +37,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
     for (int count = 0; count < 3; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
       dispatcher.execute(mailbox);
@@ -54,7 +45,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
     dispatcher.close();
 
-    final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
+    final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(10);
     final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
 
     mailbox.send(message);
@@ -79,7 +70,7 @@ public class ExecutorDispatcherTest extends ActorsTest {
 
     for (int count = 0; count < Total; ++count) {
       final int countParam = count;
-      final Consumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
       final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
       mailbox.send(message);
       dispatcher.execute(mailbox);

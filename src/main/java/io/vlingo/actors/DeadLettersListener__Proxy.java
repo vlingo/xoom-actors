@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class DeadLettersListener__Proxy implements DeadLettersListener {
   private final Actor actor;
@@ -21,7 +21,7 @@ public class DeadLettersListener__Proxy implements DeadLettersListener {
   @Override
   public void handle(final DeadLetter deadLetter) {
     if (!actor.isStopped()) {
-      final Consumer<DeadLettersListener> consumer = (actor) -> actor.handle(deadLetter);
+      final SerializableConsumer<DeadLettersListener> consumer = (actor) -> actor.handle(deadLetter);
       if (mailbox.isPreallocated()) { mailbox.send(actor, DeadLettersListener.class, consumer, null, "handle(DeadLetter)"); }
       else { mailbox.send(new LocalMessage<DeadLettersListener>(actor, DeadLettersListener.class, consumer, "handle(DeadLetter)")); }
     } else {

@@ -28,7 +28,7 @@ public class Scheduled__Proxy<T> implements io.vlingo.common.Scheduled<T> {
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public void intervalSignal(io.vlingo.common.Scheduled<T> arg0, T arg1) {
     if (!actor.isStopped()) {
-      final java.util.function.Consumer<Scheduled> consumer = (actor) -> actor.intervalSignal(arg0, arg1);
+      final SerializableConsumer<Scheduled> consumer = (actor) -> actor.intervalSignal(arg0, arg1);
       if (mailbox.isPreallocated()) { mailbox.send(actor, Scheduled.class, consumer, null, intervalSignalRepresentation1); }
       else { mailbox.send(new LocalMessage<Scheduled>(actor, Scheduled.class, consumer, intervalSignalRepresentation1)); }
     } else {
