@@ -11,6 +11,7 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
+import io.vlingo.common.Tuple2;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,6 +54,16 @@ public class Stage implements Stoppable {
    */
   public <T> T actorAs(final Actor actor, final Class<T> protocol) {
     return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
+  }
+
+  /**
+   * Answers the Actor at the specified Address.
+   *
+   * @param address the Address of the actor
+   * @return the Actor
+   */
+  public Actor actorAt(final Address address) {
+    return directory.actorOf(address);
   }
 
   /**

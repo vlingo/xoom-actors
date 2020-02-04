@@ -25,7 +25,7 @@ import io.vlingo.common.Scheduler;
 public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   final ResultReturns returns;
-  final LifeCycle lifeCycle;
+  public final LifeCycle lifeCycle;
 
   /**
    * Answers the {@code address} of this {@code Actor}.

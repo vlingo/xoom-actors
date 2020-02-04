@@ -9,8 +9,8 @@ package io.vlingo.actors;
 
 import io.vlingo.common.SerializableConsumer;
 
-final class LifeCycle {
-  final Environment environment;
+public final class LifeCycle {
+  public final Environment environment;
 
   LifeCycle(final Environment environment) {
     this.environment = environment;
