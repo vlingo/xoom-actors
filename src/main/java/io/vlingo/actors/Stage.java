@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
   private final Map<Class<?>, Supervisor> commonSupervisors;
-  private final Directory directory;
+  protected final Directory directory;
   private DirectoryScanner directoryScanner;
   private final String name;
   private final Scheduler scheduler;
@@ -54,16 +54,6 @@ public class Stage implements Stoppable {
    */
   public <T> T actorAs(final Actor actor, final Class<T> protocol) {
     return actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
-  }
-
-  /**
-   * Answers the Actor at the specified Address.
-   *
-   * @param address the Address of the actor
-   * @return the Actor
-   */
-  public Actor actorAt(final Address address) {
-    return directory.actorOf(address);
   }
 
   /**

@@ -21,7 +21,7 @@ public class Environment {
   final Definition definition;
   final FailureMark failureMark;
   final Logger logger;
-  public final Mailbox mailbox;
+  final Mailbox mailbox;
   final Supervisor maybeSupervisor;
   final Actor parent;
   final Map<String,Object> proxyCache;
