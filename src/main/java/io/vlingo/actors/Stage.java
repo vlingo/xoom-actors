@@ -11,6 +11,7 @@ import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
+import io.vlingo.common.Tuple2;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
   private final Map<Class<?>, Supervisor> commonSupervisors;
-  private final Directory directory;
+  protected final Directory directory;
   private DirectoryScanner directoryScanner;
   private final String name;
   private final Scheduler scheduler;

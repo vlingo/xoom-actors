@@ -42,6 +42,10 @@ public class LocalMessage<T> implements Message {
     return actor;
   }
 
+  public SerializableConsumer<T> consumer() {
+    return consumer;
+  }
+
   @Override
   public void deliver() {
     internalDeliver(this);
