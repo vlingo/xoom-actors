@@ -109,6 +109,7 @@ public interface Mailbox extends Runnable {
    * @param returns the {@code Returns<?>} through which return values are communicated; null if void return
    * @param representation the String representation of this message invocation
    */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   default void send(final Actor actor, final Class<?> protocol, final SerializableConsumer<?> consumer, final Returns<?> returns, final String representation) {
     send(new LocalMessage(actor, protocol, consumer, returns, representation));
   }
