@@ -8,8 +8,13 @@ import java.io.ObjectOutput;
 public abstract class ActorProxyBase<T> implements Externalizable {
 
   public static <T> T thunk(ActorProxyBase<?> proxy, Actor actor, T arg) {
-    if (proxy.isDistributable() && arg instanceof ActorProxyBase) {
-      final Stage stage = actor.lifeCycle.environment.stage;
+    return proxy.isDistributable()
+        ? thunk(actor.lifeCycle.environment.stage, arg)
+        : arg;
+  }
+
+  public static <T> T thunk(Stage stage, T arg) {
+    if (arg instanceof ActorProxyBase) {
       @SuppressWarnings("unchecked")
       final ActorProxyBase<T> base = (ActorProxyBase<T>)arg;
       final Actor argActor = stage.directory.actorOf(base.address);
