@@ -107,7 +107,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String classStatement(final Class<?> protocolInterface) {
-    return GenericParser.implementsInterfaceTemplateOf(classnameFor(protocolInterface, "__Proxy extends io.vlingo.actors.ActorProxyBase<"+protocolInterface.getCanonicalName()+">"), protocolInterface) + " {\n";
+    return GenericParser.implementsInterfaceTemplateOf(classnameFor(protocolInterface, "__Proxy"), protocolInterface) + " {\n";
   }
 
   private String constructor(final Class<?> protocolInterface) {
@@ -502,6 +502,8 @@ public class ProxyGenerator implements AutoCloseable {
                         .collect(Collectors.joining(", ", "<", ">"))
                         .replace("<>", "")
         );
+
+        template.append(" extends ActorProxyBase<").append(classToExtend.getCanonicalName()).append(">");
 
         template.append(" implements ").append(classToExtend.getCanonicalName());
 
