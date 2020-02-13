@@ -119,7 +119,7 @@ public class GenericParserTest {
     @Test
     public void testThatGeneratesAValidClassName() {
         final String result = implementsInterfaceTemplateOf("MyNewClass", MyGenericInterfaceWithMethods.class);
-        assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> implements io.vlingo.actors.MyGenericInterfaceWithMethods<T>", result);
+        assertEquals("public class MyNewClass<T extends java.lang.RuntimeException> extends ActorProxyBase<io.vlingo.actors.MyGenericInterfaceWithMethods> implements io.vlingo.actors.MyGenericInterfaceWithMethods<T>", result);
     }
 
     @Test

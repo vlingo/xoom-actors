@@ -46,6 +46,8 @@ public class LocalMessage<T> implements Message {
     return consumer;
   }
 
+  public Returns<?> returns() { return returns; }
+
   @Override
   public void deliver() {
     internalDeliver(this);
