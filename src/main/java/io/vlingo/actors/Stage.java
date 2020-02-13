@@ -507,11 +507,11 @@ public class Stage implements Stoppable {
    * @param mailbox the Mailbox instance of this Actor
    * @return Object[]
    */
-  final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    final Object[] proxies = new Object[protocol.length];
+  final Object[] actorProxyFor(final Class<?>[] protocols, final Actor actor, final Mailbox mailbox) {
+    final Object[] proxies = new Object[protocols.length];
 
-    for (int idx = 0; idx < protocol.length; ++idx) {
-      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
+    for (int idx = 0; idx < protocols.length; ++idx) {
+      proxies[idx] = actorProxyFor(protocols[idx], actor, mailbox);
     }
 
     return proxies;
@@ -652,7 +652,7 @@ public class Stage implements Stoppable {
     }
 
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
       throw new IllegalStateException("Address already exists: " + address);
