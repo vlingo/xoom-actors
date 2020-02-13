@@ -6,8 +6,26 @@ import java.io.*;
 
 public class ActorProxyBaseTest {
 
+  @Test
+  public void testWriteRead() throws IOException, ClassNotFoundException {
+    ActorProxyBase<Proto> proxy = new ActorProxyBaseImpl(Proto.class, Actor.class, new TestAddress(1));
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
+      out.writeObject(proxy);
+      out.flush();
+      byte[] bytes = bos.toByteArray();
+      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+      try (ObjectInputStream in = new ObjectInputStream(bis)) {
+        ActorProxyBase<Proto> proxy1 = (ActorProxyBase<Proto>) in.readObject();
+        assert proxy1.protocol == Proto.class;
+        assert proxy1.type == Actor.class;
+        assert proxy1.address.id() == 1;
+      }
+    }
+  }
+
+
   interface Proto {
-    void hello(String name);
   }
 
   static class ActorProxyBaseImpl extends ActorProxyBase<Proto> implements Proto {
@@ -19,9 +37,6 @@ public class ActorProxyBaseTest {
     public ActorProxyBaseImpl() {
       super();
     }
-
-    @Override
-    public void hello(String name) { }
   }
 
   static class TestAddress implements Address, Serializable {
@@ -49,7 +64,7 @@ public class ActorProxyBaseTest {
 
     @Override
     public String idString() {
-      return ""+id;
+      return "" + id;
     }
 
     @Override
@@ -70,24 +85,6 @@ public class ActorProxyBaseTest {
     @Override
     public int compareTo(Address o) {
       return 0;
-    }
-  }
-
-  @Test
-  public void testWriteRead() throws IOException, ClassNotFoundException {
-    ActorProxyBase<Proto> proxy = new ActorProxyBaseImpl(Proto.class, Actor.class, new TestAddress(1));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
-      out.writeObject(proxy);
-      out.flush();
-      byte[] bytes = bos.toByteArray();
-      ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-      try (ObjectInputStream in = new ObjectInputStream(bis)) {
-        ActorProxyBase<Proto> proxy1 = (ActorProxyBase<Proto>) in.readObject();
-        assert proxy1.protocol == Proto.class;
-        assert proxy1.type == Actor.class;
-        assert proxy1.address.id() == 1;
-      }
     }
   }
 }
