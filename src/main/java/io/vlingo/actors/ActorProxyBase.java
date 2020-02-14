@@ -19,7 +19,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
       final ActorProxyBase<T> base = (ActorProxyBase<T>)arg;
       final Actor argActor = stage.directory.actorOf(base.address);
       if (argActor == null) {
-        return stage.actorFor(base.protocol, base.type);
+        return stage.actorThunkFor(base.protocol, base.type, base.address);
       }
       else {
         return stage.actorProxyFor(base.protocol, argActor, argActor.lifeCycle.environment.mailbox);

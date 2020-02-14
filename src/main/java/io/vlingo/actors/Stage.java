@@ -7,10 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
@@ -26,7 +23,7 @@ public class Stage implements Stoppable {
   private final String name;
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
-  private final World world;
+  protected final World world;
 
   /**
    * Initializes the new {@code Stage} of the world and with name.
@@ -118,6 +115,24 @@ public class Stage implements Stoppable {
               definition.supervisor(),
               definition.loggerOr(world.defaultLogger()));
 
+    return actor.protocolActor();
+  }
+
+  public <T> T actorThunkFor(
+      final Class<T> protocol,
+      final Class<? extends Actor> type,
+      final Address address) {
+    final Definition definition = Definition.has(type, Collections.emptyList());
+    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
+    final ActorProtocolActor<T> actor =
+        actorProtocolFor(
+            protocol,
+            definition,
+            definition.parentOr(world.defaultParent()),
+            address,
+            actorMailbox,
+            definition.supervisor(),
+            definition.loggerOr(world.defaultLogger()));
     return actor.protocolActor();
   }
 
@@ -555,7 +570,9 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)));
+    this.directoryScanner = actorFor(DirectoryScanner.class,
+        Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
+        world().addressFactory().uniqueWith("DirectoryScanner"));
   }
 
   /**
@@ -596,7 +613,7 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox
    * @return Mailbox
    */
-  private Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
+  protected Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
     return mailbox;
