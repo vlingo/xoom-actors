@@ -252,7 +252,7 @@ public class Stage implements Stoppable {
   }
 
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
-    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, world.addressFactory().unique().name()));
+    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, this.addressFactory().unique().name()));
   }
 
   /**
@@ -584,7 +584,7 @@ public class Stage implements Stoppable {
    */
   private Address allocateAddress(final Definition definition, final Address maybeAddress) {
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
     return address;
   }
 
