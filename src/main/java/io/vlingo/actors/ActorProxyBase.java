@@ -10,6 +10,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
   public static <T> T thunk(ActorProxyBase<?> proxy, Actor actor, T arg) {
     if (proxy.isDistributable() && arg instanceof ActorProxyBase) {
       final Stage stage = actor.lifeCycle.environment.stage;
+      @SuppressWarnings("unchecked")
       final ActorProxyBase<T> base = (ActorProxyBase<T>)arg;
       final Actor argActor = stage.directory.actorOf(base.address);
       if (argActor == null) {
@@ -46,6 +47,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException { ;
     this.protocol = (Class<T>) in.readObject();
     this.type = (Class<? extends Actor>) in.readObject();
