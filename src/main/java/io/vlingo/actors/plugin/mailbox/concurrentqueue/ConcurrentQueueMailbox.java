@@ -29,6 +29,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public void close() {
     queue.clear();
+    dispatcher.close();
   }
 
   @Override
