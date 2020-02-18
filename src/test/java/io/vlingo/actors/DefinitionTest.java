@@ -113,6 +113,8 @@ public class DefinitionTest extends ActorsTest {
   }
 
   public static class ParentInterfaceInstantiator implements ActorInstantiator<ParentInterfaceActor> {
+    private static final long serialVersionUID = -400702345239223541L;
+
     private final ParentHolder parentHolder;
 
     public ParentInterfaceInstantiator(final ParentHolder parentHolder) {
