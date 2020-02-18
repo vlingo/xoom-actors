@@ -8,24 +8,9 @@
 package io.vlingo.actors;
 
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ActorFactory {
   static final ThreadLocal<Environment> threadLocalEnvironment = new ThreadLocal<Environment>();
-
-  @SuppressWarnings("serial")
-  private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_OBJECT_TYPE = new HashMap<Class<?>, Class<?>>(8, 0.75f) {{
-    put(byte.class, Byte.class);
-    put(short.class, Short.class);
-    put(int.class, Integer.class);
-    put(long.class, Long.class);
-    put(float.class, Float.class);
-    put(double.class, Double.class);
-    put(boolean.class, Boolean.class);
-    put(char.class, Character.class);
-  }};
 
   @SuppressWarnings("unchecked")
   public static Class<? extends Actor> actorClassWithProtocol(final String actorClassname, final Class<?> protocolClass) {
@@ -81,8 +66,6 @@ public class ActorFactory {
     threadLocalEnvironment.set(environment);
 
     Actor actor = null;
-    final Object[] parameterTypes = definition.internalParameters()
-        .stream().map(Object::getClass).toArray();
 
     if (definition.hasInstantiator()) {
       actor = definition.instantiator().instantiate();
@@ -93,26 +76,16 @@ public class ActorFactory {
     } else {
       for (final Constructor<?> ctor : definition.type().getConstructors()) {
         if (ctor.getParameterCount() == definition.internalParameters().size()) {
-          boolean cont = true;
-          for (int i = 0; cont  && i < parameterTypes.length; i++) {
-            final Class<?> ctorParameterType = PRIMITIVE_TO_OBJECT_TYPE
-                .getOrDefault(ctor.getParameterTypes()[i], ctor.getParameterTypes()[i]);
-            final Class<?> parameterType = (Class<?>) parameterTypes[i];
-            cont = ctorParameterType.isAssignableFrom(parameterType);
-          }
-
-          if (cont) {
-            actor = start(ctor, definition, address, logger);
-            if (actor != null) {
-              break;
-            }
+          actor = start(ctor, definition, address, logger);
+          if (actor != null) {
+            break;
           }
         }
       }
     }
 
     if (actor == null) {
-      throw new IllegalArgumentException(String.format("No constructor matches the given parameters %s.", parameterTypes));
+      throw new IllegalArgumentException("No constructor matches the given number of parameters.");
     }
 
     if (parent != null) {
@@ -120,16 +93,6 @@ public class ActorFactory {
     }
 
     return actor;
-  }
-
-  @SuppressWarnings("unused")
-  private static boolean implementing(Class<?>[] interfaces, Class<?> type) {
-    return Arrays.asList(interfaces).contains(type);
-  }
-
-  @SuppressWarnings("unused")
-  private static boolean isOrExtending(Class<?> type, Class<?> isOrExtends) {
-    return isOrExtends.isAssignableFrom(type);
   }
 
   static Mailbox actorMailbox(final Stage stage, final Address address, final Definition definition, MailboxWrapper wrapper) {

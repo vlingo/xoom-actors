@@ -10,21 +10,11 @@ package io.vlingo.actors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 
-import java.util.Collection;
-import java.util.Collections;
-
 public class ActorFactoryTest extends ActorsTest {
-
-  @Before
-  public void before() {
-    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
-  }
 
   @Test
   public void testActorForWithNoParametersAndDefaults() throws Exception {
@@ -59,25 +49,22 @@ public class ActorFactoryTest extends ActorsTest {
   }
 
   @Test
-  public void testActorForWithParametersStringInt() throws Exception {
-    final String actorName = "test-child-string-int";
-
+  public void testActorForWithParameters() throws Exception {
+    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
+    
+    final String actorName = "test-child";
+    
     final Definition definition =
             Definition.has(
                     TestInterfaceWithParamsActor.class,
                     Definition.parameters("test-text", 100),
                     ParentInterfaceActor.instance.get(),
                     actorName);
-
-
-    test(actorName, definition);
-  }
-
-  private void test(String actorName, Definition definition) throws Exception {
+    
     final Address address = world.addressFactory().uniqueWith(actorName);
-
+    
     final Mailbox mailbox = new TestMailbox();
-
+    
     final Actor actor =
             ActorFactory.actorFor(
                     world.stage(),
@@ -87,7 +74,7 @@ public class ActorFactoryTest extends ActorsTest {
                     mailbox,
                     null,
                     world.defaultLogger());
-
+    
     assertNotNull(actor);
     assertNotNull(actor.stage());
     assertEquals(world.stage(), actor.stage());
@@ -102,51 +89,10 @@ public class ActorFactoryTest extends ActorsTest {
     assertEquals(mailbox, actor.lifeCycle.environment.mailbox);
   }
 
-  @Test
-  public void testActorForWithParametersIntString() throws Exception {
-    final String actorName = "test-child-int-string";
-
-    final Definition definition =
-            Definition.has(
-                    TestInterfaceWithParamsActor.class,
-                    Definition.parameters(100, "test-text"),
-                    ParentInterfaceActor.instance.get(),
-                    actorName);
-
-    test(actorName, definition);
-  }
-
-  @Test
-  public void testActorForWithParametersInterface() throws Exception {
-    final String actorName = "test-child-interface";
-
-    final Definition definition =
-            Definition.has(
-                    TestInterfaceWithParamsActor.class,
-                    Definition.parameters(Collections.singletonList("test-text")),
-                    ParentInterfaceActor.instance.get(),
-                    actorName);
-
-    test(actorName, definition);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  @Ignore
-  public void testActorForWithParametersGeneric() throws Exception {
-    final String actorName = "test-child-generic";
-
-    final Definition definition =
-        Definition.has(
-            TestInterfaceWithParamsActor.class,
-            Definition.parameters(Collections.singletonList(14)),
-            ParentInterfaceActor.instance.get(),
-            actorName);
-
-    test(actorName, definition);
-  }
-
   @Test(expected = InstantiationException.class)
   public void testConstructorFailure() throws Exception {
+    world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
+
     final Address address = world.addressFactory().uniqueWith("test-actor-ctor-failure");
 
     final Definition definition =
@@ -183,14 +129,6 @@ public class ActorFactoryTest extends ActorsTest {
   public static class TestInterfaceWithParamsActor extends Actor implements TestInterface {
     public TestInterfaceWithParamsActor(final String text, final int val) {
       
-    }
-
-    public TestInterfaceWithParamsActor(final int val, final String text) {
-
-    }
-
-    public TestInterfaceWithParamsActor(final Collection<String> strings) {
-
     }
   }
   
