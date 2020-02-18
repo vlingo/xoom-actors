@@ -1,8 +1,13 @@
 package io.vlingo.actors;
 
-import org.junit.Test;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-import java.io.*;
+import org.junit.Test;
 
 public class ActorProxyBaseTest {
 
@@ -16,6 +21,7 @@ public class ActorProxyBaseTest {
       byte[] bytes = bos.toByteArray();
       ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
       try (ObjectInputStream in = new ObjectInputStream(bis)) {
+        @SuppressWarnings("unchecked")
         ActorProxyBase<Proto> proxy1 = (ActorProxyBase<Proto>) in.readObject();
         assert proxy1.protocol == Proto.class;
         assert proxy1.type == Actor.class;
@@ -40,6 +46,7 @@ public class ActorProxyBaseTest {
   }
 
   static class TestAddress implements Address, Serializable {
+    private static final long serialVersionUID = -211461114490694305L;
 
     public long id;
 
