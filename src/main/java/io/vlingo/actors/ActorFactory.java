@@ -15,6 +15,7 @@ import java.util.Map;
 public class ActorFactory {
   static final ThreadLocal<Environment> threadLocalEnvironment = new ThreadLocal<Environment>();
 
+  @SuppressWarnings("serial")
   private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_OBJECT_TYPE = new HashMap<Class<?>, Class<?>>(8, 0.75f) {{
     put(byte.class, Byte.class);
     put(short.class, Short.class);
@@ -121,10 +122,12 @@ public class ActorFactory {
     return actor;
   }
 
+  @SuppressWarnings("unused")
   private static boolean implementing(Class<?>[] interfaces, Class<?> type) {
     return Arrays.asList(interfaces).contains(type);
   }
 
+  @SuppressWarnings("unused")
   private static boolean isOrExtending(Class<?> type, Class<?> isOrExtends) {
     return isOrExtends.isAssignableFrom(type);
   }
