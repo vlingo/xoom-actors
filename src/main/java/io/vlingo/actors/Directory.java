@@ -88,6 +88,14 @@ final class Directory {
     return this.maps[mapIndex(address)].remove(address);
   }
 
+  Collection<Actor> evictionCandidates(long thresholdMillis) {
+    return Arrays.stream(maps)
+        .flatMap(m -> m.values().stream())
+        .filter(a -> a.lifeCycle.evictable.isStale(thresholdMillis)
+            && a.lifeCycle.environment.mailbox.pendingMessages() == 0)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
   Collection<Address> addresses() {
     return Arrays.stream(maps)
         .flatMap(m -> m.keySet().stream())

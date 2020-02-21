@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduled;
 import io.vlingo.common.Scheduler;
 
 public class Stage implements Stoppable {
@@ -571,7 +572,23 @@ public class Stage implements Stoppable {
   void startDirectoryScanner() {
     this.directoryScanner = actorFor(DirectoryScanner.class,
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
-        world().addressFactory().uniqueWith("DirectoryScanner"));
+        world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
+
+    final EvictorActor.Config config = new EvictorActor.Config(
+        Properties.getLong("stage.evictor.lruThresholdMillis", EvictorActor.Config.DEFAULT_LRU_MILLIS),
+        Properties.getFloat("stage.evictor.fillRatioHigh", EvictorActor.Config.DEFAULT_FILL_RATIO_HIGH)
+    );
+
+    @SuppressWarnings("unchecked")
+    final Scheduled<Object> evictorActor = actorFor(Scheduled.class,
+        Definition.has(EvictorActor.class, () -> new EvictorActor(config, directory)),
+        world().addressFactory().uniqueWith("EvictorActor::"+name()));
+
+    final long evictorActorInterval = Properties.getLong(
+        "stage.evictor.interval", Math.min(15_000L, config.lruThresholdMillis));
+
+    this.scheduler().schedule(
+        evictorActor, null, evictorActorInterval, evictorActorInterval);
   }
 
   /**
