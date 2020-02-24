@@ -9,14 +9,14 @@ import java.util.stream.Stream;
 
 public class EvictorActor extends Actor implements Scheduled<Object> {
 
-  private final Config config;
+  private final DirectoryEvictorConfiguration config;
   private final Directory directory;
 
   public EvictorActor(final Directory directory) {
-    this(new Config(), directory);
+    this(new DirectoryEvictorConfiguration(), directory);
   }
 
-  public EvictorActor(final Config config, final Directory directory) {
+  public EvictorActor(final DirectoryEvictorConfiguration config, final Directory directory) {
     this.config = config;
     this.directory = directory;
     logger().debug("Created with config: {}", config);
@@ -44,31 +44,6 @@ public class EvictorActor extends Actor implements Scheduled<Object> {
     }
     else {
       logger().debug("Memory fill ratio {} was below watermark ({})", fillRatio, config.fillRatioHigh);
-    }
-  }
-
-  static class Config {
-
-    public static final long DEFAULT_LRU_MILLIS = 10 * 60 * 1_000L;
-    public static final float DEFAULT_FILL_RATIO_HIGH = 0.8F;
-
-    final long lruThresholdMillis;
-    final float fillRatioHigh;
-
-    Config() {
-      this(DEFAULT_LRU_MILLIS, DEFAULT_FILL_RATIO_HIGH);
-    }
-
-    Config(long lruThresholdMillis, float fillRatioHigh) {
-      this.lruThresholdMillis = lruThresholdMillis;
-      this.fillRatioHigh = fillRatioHigh;
-    }
-
-    @Override
-    public String toString() {
-      return String.format(
-          "EvictorActor#Config(lruThresholdMillis='%s', fillRatioHigh='%.2f')",
-          lruThresholdMillis, fillRatioHigh);
     }
   }
 

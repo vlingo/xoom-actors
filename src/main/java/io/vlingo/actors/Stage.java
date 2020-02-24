@@ -574,9 +574,9 @@ public class Stage implements Stoppable {
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
         world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
 
-    final EvictorActor.Config config = new EvictorActor.Config(
-        Properties.getLong("stage.evictor.lruThresholdMillis", EvictorActor.Config.DEFAULT_LRU_MILLIS),
-        Properties.getFloat("stage.evictor.fillRatioHigh", EvictorActor.Config.DEFAULT_FILL_RATIO_HIGH)
+    final DirectoryEvictorConfiguration config = new DirectoryEvictorConfiguration(
+        Properties.getLong("stage.evictor.lruThresholdMillis", DirectoryEvictorConfiguration.DEFAULT_LRU_MILLIS),
+        Properties.getFloat("stage.evictor.fillRatioHigh", DirectoryEvictorConfiguration.DEFAULT_FILL_RATIO_HIGH)
     );
 
     @SuppressWarnings("unchecked")
