@@ -6,7 +6,6 @@ final class Evictable {
 
   private long activeOn;
 
-
   Evictable(Actor actor) {
     this.actor = actor;
     this.activeOn = System.currentTimeMillis();
@@ -25,6 +24,8 @@ final class Evictable {
   }
 
   boolean stop(long referenceMillis, long thresholdMillis) {
+    if (!actor.definition().evictable) { return false; }
+
     final int pendingMessageCount = actor.lifeCycle.environment.mailbox.pendingMessages();
     if (isStale(referenceMillis, thresholdMillis)) {
       if (pendingMessageCount == 0) {
