@@ -585,7 +585,7 @@ public class Stage implements Stoppable {
         world().addressFactory().uniqueWith("EvictorActor::"+name()));
 
     final long evictorActorInterval = Properties.getLong(
-        "stage.evictor.interval", Math.min(15_000L, config.lruThresholdMillis));
+        "stage.evictor.interval", Math.min(15_000L, config.lruThresholdMillis()));
 
     this.scheduler().schedule(
         evictorActor, null, evictorActorInterval, evictorActorInterval);

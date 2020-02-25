@@ -68,6 +68,10 @@ public class ConfigurationTest {
               .with(DefaultSupervisorOverridePluginConfiguration
                       .define()
                       .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class))
+              .with(DirectoryEvictorConfiguration
+                  .define()
+                  .fillRatioHigh(0.75F)
+                  .lruThresholdMillis(10000))
               .usingMainProxyGeneratedClassesPath("target/classes/")
               .usingMainProxyGeneratedSourcesPath("target/generated-sources/")
               .usingTestProxyGeneratedClassesPath("target/test-classes/")
@@ -117,6 +121,10 @@ public class ConfigurationTest {
     assertEquals("default", configuration.defaultSupervisorOverridePluginConfiguration().stageName(0));
     assertEquals("overrideSupervisor", configuration.defaultSupervisorOverridePluginConfiguration().name(0));
     assertEquals(DefaultSupervisorOverride.class, configuration.defaultSupervisorOverridePluginConfiguration().supervisorClass(0));
+
+    assertEquals("directoryEvictor", configuration.directoryEvictorConfiguration().name());
+    assertEquals(10000, configuration.directoryEvictorConfiguration().lruThresholdMillis());
+    assertEquals(0.75F, configuration.directoryEvictorConfiguration().fillRatioHigh(), 0);
 
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());

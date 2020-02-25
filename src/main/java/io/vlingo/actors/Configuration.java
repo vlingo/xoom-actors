@@ -35,6 +35,7 @@ public class Configuration {
   private PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
   private ManyToOneConcurrentArrayQueuePluginConfiguration manyToOneConcurrentArrayQueuePluginConfiguration;
   private SharedRingBufferMailboxPluginConfiguration sharedRingBufferMailboxPluginConfiguration;
+  private DirectoryEvictorConfiguration directoryEvictorConfiguration;
 
   private String mainProxyGeneratedClassesPath;
   private String mainProxyGeneratedSourcesPath;
@@ -133,6 +134,16 @@ public class Configuration {
 
   public SharedRingBufferMailboxPluginConfiguration sharedRingBufferMailboxPluginConfiguration() {
     return sharedRingBufferMailboxPluginConfiguration;
+  }
+
+  public Configuration with(final DirectoryEvictorConfiguration configuration) {
+    this.directoryEvictorConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
+    return this;
+  }
+
+  public DirectoryEvictorConfiguration directoryEvictorConfiguration() {
+    return directoryEvictorConfiguration;
   }
 
   public Configuration usingMainProxyGeneratedClassesPath(final String path) {
