@@ -7,16 +7,16 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class EvictorActor extends Actor implements Scheduled<Object> {
+public class DirectoryEvictor extends Actor implements Scheduled<Object> {
 
-  private final DirectoryEvictorConfiguration config;
+  private final DirectoryEvictionConfiguration config;
   private final Directory directory;
 
-  public EvictorActor(final Directory directory) {
-    this(new DirectoryEvictorConfiguration(), directory);
+  public DirectoryEvictor(final Directory directory) {
+    this(new DirectoryEvictionConfiguration(), directory);
   }
 
-  public EvictorActor(final DirectoryEvictorConfiguration config, final Directory directory) {
+  public DirectoryEvictor(final DirectoryEvictionConfiguration config, final Directory directory) {
     this.config = config;
     this.directory = directory;
     logger().debug("Created with config: {}", config);

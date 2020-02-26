@@ -3,33 +3,44 @@ package io.vlingo.actors;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
 
-public class DirectoryEvictorConfiguration implements PluginConfiguration {
+public class DirectoryEvictionConfiguration implements PluginConfiguration {
 
   public static final long DEFAULT_LRU_MILLIS = 10 * 60 * 1_000L;
   public static final float DEFAULT_FILL_RATIO_HIGH = 0.8F;
 
 
-  public static DirectoryEvictorConfiguration define() {
-    return new DirectoryEvictorConfiguration();
+  public static DirectoryEvictionConfiguration define() {
+    return new DirectoryEvictionConfiguration();
   }
 
 
-  private String name = "directoryEvictor";
+  private String name = "directoryEviction";
+  private boolean enabled;
   private long lruThresholdMillis;
   private float fillRatioHigh;
 
 
-  public DirectoryEvictorConfiguration() {
-    this(DEFAULT_LRU_MILLIS, DEFAULT_FILL_RATIO_HIGH);
+  public DirectoryEvictionConfiguration() {
+    this(false, DEFAULT_LRU_MILLIS, DEFAULT_FILL_RATIO_HIGH);
   }
 
-  public DirectoryEvictorConfiguration(long lruThresholdMillis, float fillRatioHigh) {
+  public DirectoryEvictionConfiguration(boolean enabled, long lruThresholdMillis, float fillRatioHigh) {
+    this.enabled = enabled;
     this.lruThresholdMillis = lruThresholdMillis;
     this.fillRatioHigh = fillRatioHigh;
   }
 
 
-  public DirectoryEvictorConfiguration lruThresholdMillis(final long millis) {
+  public DirectoryEvictionConfiguration enabled(final boolean enabled) {
+    this.enabled = enabled;
+    return this;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public DirectoryEvictionConfiguration lruThresholdMillis(final long millis) {
     this.lruThresholdMillis = millis;
     return this;
   }
@@ -38,7 +49,7 @@ public class DirectoryEvictorConfiguration implements PluginConfiguration {
     return lruThresholdMillis;
   }
 
-  public DirectoryEvictorConfiguration fillRatioHigh(final float ratio) {
+  public DirectoryEvictionConfiguration fillRatioHigh(final float ratio) {
     this.fillRatioHigh = ratio;
     return this;
   }
@@ -70,7 +81,7 @@ public class DirectoryEvictorConfiguration implements PluginConfiguration {
   @Override
   public String toString() {
     return String.format(
-        "EvictorActor#Config(lruThresholdMillis='%s', fillRatioHigh='%.2f')",
-        lruThresholdMillis, fillRatioHigh);
+        "DirectoryEvictionConfiguration(name='%s', enabled='%b', lruThresholdMillis='%s', fillRatioHigh='%.2f')",
+        name, enabled, lruThresholdMillis, fillRatioHigh);
   }
 }

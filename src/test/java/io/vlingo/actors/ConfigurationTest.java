@@ -68,7 +68,7 @@ public class ConfigurationTest {
               .with(DefaultSupervisorOverridePluginConfiguration
                       .define()
                       .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class))
-              .with(DirectoryEvictorConfiguration
+              .with(DirectoryEvictionConfiguration
                   .define()
                   .fillRatioHigh(0.75F)
                   .lruThresholdMillis(10000))
@@ -122,9 +122,11 @@ public class ConfigurationTest {
     assertEquals("overrideSupervisor", configuration.defaultSupervisorOverridePluginConfiguration().name(0));
     assertEquals(DefaultSupervisorOverride.class, configuration.defaultSupervisorOverridePluginConfiguration().supervisorClass(0));
 
-    assertEquals("directoryEvictor", configuration.directoryEvictorConfiguration().name());
-    assertEquals(10000, configuration.directoryEvictorConfiguration().lruThresholdMillis());
-    assertEquals(0.75F, configuration.directoryEvictorConfiguration().fillRatioHigh(), 0);
+    assertNotNull(configuration.directoryEvictionConfiguration());
+    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
+    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertEquals(10000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
+    assertEquals(0.75F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
 
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());
@@ -171,10 +173,32 @@ public class ConfigurationTest {
     assertEquals("overrideSupervisor", configuration.defaultSupervisorOverridePluginConfiguration().name(0));
     assertEquals(DefaultSupervisorOverride.class, configuration.defaultSupervisorOverridePluginConfiguration().supervisorClass(0));
 
+    assertNotNull(configuration.directoryEvictionConfiguration());
+    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
+    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertEquals(600000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
+    assertEquals(0.8F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
+
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());
     assertEquals("target/test-classes/", configuration.testProxyGeneratedClassesPath());
     assertEquals("target/generated-test-sources/", configuration.testProxyGeneratedSourcesPath());
+  }
+
+  @Test
+  public void testThatConfigurationIsLoadedFromFile() {
+    Properties properties = new Properties();
+    Configuration configuration = Configuration.defineWith(properties.properties);
+
+
+
+    configuration.load(Integer.MAX_VALUE);
+
+    assertNotNull(configuration.directoryEvictionConfiguration());
+    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
+    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertEquals(300000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
+    assertEquals(0.85F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
   }
 
   @Test

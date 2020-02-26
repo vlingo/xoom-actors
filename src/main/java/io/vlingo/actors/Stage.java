@@ -574,21 +574,24 @@ public class Stage implements Stoppable {
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
         world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
 
-    final DirectoryEvictorConfiguration config = new DirectoryEvictorConfiguration(
-        Properties.getLong("stage.evictor.lruThresholdMillis", DirectoryEvictorConfiguration.DEFAULT_LRU_MILLIS),
-        Properties.getFloat("stage.evictor.fillRatioHigh", DirectoryEvictorConfiguration.DEFAULT_FILL_RATIO_HIGH)
-    );
+    final DirectoryEvictionConfiguration evictionConfiguration =
+        world.configuration().directoryEvictionConfiguration();
 
-    @SuppressWarnings("unchecked")
-    final Scheduled<Object> evictorActor = actorFor(Scheduled.class,
-        Definition.has(EvictorActor.class, () -> new EvictorActor(config, directory)),
-        world().addressFactory().uniqueWith("EvictorActor::"+name()));
+    System.out.println(evictionConfiguration);
 
-    final long evictorActorInterval = Properties.getLong(
-        "stage.evictor.interval", Math.min(15_000L, config.lruThresholdMillis()));
+    if(evictionConfiguration != null && evictionConfiguration.isEnabled()) {
+      world.defaultLogger().debug("Scheduling directory eviction for stage: {} with: {}", name(), evictionConfiguration);
+      @SuppressWarnings("unchecked")
+      final Scheduled<Object> evictorActor = actorFor(Scheduled.class,
+          Definition.has(DirectoryEvictor.class, () -> new DirectoryEvictor(evictionConfiguration, directory)),
+          world().addressFactory().uniqueWith("EvictorActor::"+name()));
 
-    this.scheduler().schedule(
-        evictorActor, null, evictorActorInterval, evictorActorInterval);
+      final long evictorActorInterval = Properties.getLong(
+          "stage.evictor.interval", Math.min(15_000L, evictionConfiguration.lruThresholdMillis()));
+
+      this.scheduler().schedule(
+          evictorActor, null, evictorActorInterval, evictorActorInterval);
+    }
   }
 
   /**
