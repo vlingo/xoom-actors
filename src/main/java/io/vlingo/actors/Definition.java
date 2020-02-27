@@ -11,8 +11,31 @@ import java.io.Serializable;
 import java.util.*;
 
 public final class Definition {
-  public static final List<Object> NoParameters = new ArrayList<Object>();
+  public static final List<Object> NoParameters = Collections.emptyList();
 
+
+  public static Definition from(final Stage stage,
+                                final SerializationProxy proxy,
+                                final Logger logger) {
+
+    final Actor parent = Optional.of(proxy.parent)
+        .map(p -> {
+          ActorProxyBase.thunk(stage, proxy.parent);
+          return stage.directory.actorOf(proxy.parent.address);
+        }).orElse(null);
+
+    return new Definition(
+        proxy.type,
+        proxy.instantiator,
+        proxy.parameters,
+        parent,
+        proxy.mailboxName,
+        proxy.actorName,
+        logger
+    );
+  }
+
+  
 
   private static Supervisor assignSupervisor(final Actor parent) {
     if (parent instanceof Supervisor) {
@@ -251,14 +274,7 @@ public final class Definition {
           final String actorName,
           final Logger logger) {
 
-    this.type = type;
-    this.instantiator = null;
-    this.parameters = parameters;
-    this.parent = parent;
-    this.mailboxName = mailboxName;
-    this.actorName = actorName;
-    this.supervisor = Definition.assignSupervisor(parent);
-    this.logger = logger;
+    this(type, null, parameters, parent, mailboxName, actorName, logger);
   }
 
   public Definition(
@@ -269,15 +285,29 @@ public final class Definition {
           final String actorName,
           final Logger logger) {
 
+    this(type, instantiator, NoParameters, parent, mailboxName, actorName, logger);
+  }
+
+  private Definition(
+      final Class<? extends Actor> type,
+      final ActorInstantiator<? extends Actor> instantiator,
+      final List<Object> parameters,
+      final Actor parent,
+      final String mailboxName,
+      final String actorName,
+      final Logger logger) {
+
     this.type = type;
     this.instantiator = instantiator;
-    this.parameters = Collections.emptyList();
+
+    this.parameters = parameters;
     this.parent = parent;
     this.mailboxName = mailboxName;
     this.actorName = actorName;
     this.supervisor = Definition.assignSupervisor(parent);
     this.logger = logger;
   }
+
 
   public String actorName() {
     return actorName;
