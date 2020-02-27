@@ -7,9 +7,8 @@
 
 package io.vlingo.actors;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 public final class Definition {
   public static final List<Object> NoParameters = new ArrayList<Object>();
@@ -320,5 +319,79 @@ public final class Definition {
       return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
     }
     return null;
+  }
+
+  public static final class SerializationProxy implements Serializable {
+
+    private static final long serialVersionUID = 2654451856010534929L;
+
+
+    public static SerializationProxy from(final Definition definition) {
+      return new SerializationProxy(
+          definition.actorName,
+          definition.instantiator,
+          definition.mailboxName,
+          definition.parameters,
+          Optional.ofNullable(definition.parent)
+              .map(ActorProxyStub::new).orElse(null),
+          definition.type
+      );
+    }
+
+
+    public final String actorName;
+    public final ActorInstantiator<? extends Actor> instantiator;
+    public final String mailboxName;
+    public final List<Object> parameters;
+    public final ActorProxyStub<?> parent;
+    public final Class<? extends Actor> type;
+
+
+    public SerializationProxy(
+        String actorName,
+        ActorInstantiator<? extends Actor> instantiator,
+        String mailboxName,
+        List<Object> parameters,
+        ActorProxyStub<?> parent,
+        Class<? extends Actor> type) {
+
+      this.actorName = actorName;
+      this.instantiator = instantiator;
+      this.mailboxName = mailboxName;
+      this.parameters = parameters;
+      this.parent = parent;
+      this.type = type;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      SerializationProxy that = (SerializationProxy) o;
+      return Objects.equals(actorName, that.actorName) &&
+          Objects.equals(instantiator, that.instantiator) &&
+          Objects.equals(mailboxName, that.mailboxName) &&
+          Objects.equals(parameters, that.parameters) &&
+          Objects.equals(parent, that.parent) &&
+          type.equals(that.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          actorName, instantiator, mailboxName, parameters, parent, type);
+
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "Definition(actorName='%s', instantiator='%s', mailboxName='%s', " +
+              "parameters='%s', parent='%s', type='%s')",
+          actorName, instantiator, mailboxName,
+          parameters, parent, type);
+    }
   }
 }
