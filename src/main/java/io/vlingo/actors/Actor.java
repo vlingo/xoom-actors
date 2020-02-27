@@ -165,6 +165,17 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
+   * Answer my internal {@code Completes<R>} from {@code completes()} after preparing
+   * for the {@code eventualOutcome} to be set in my {@code completesEventually()}.
+   * @param eventualOutcome the {@code Completes<R>} the provides an eventual outcome
+   * @return {@code Completes<R>}
+   */
+  protected <R> Completes<R> answerFrom(final Completes<R> eventualOutcome) {
+    eventualOutcome.andFinallyConsume((R value) -> completesEventually().with(value));
+    return completes();
+  }
+
+  /**
    * Answers the {@code T} protocol for the child {@code Actor} to be created by this parent {@code  Actor}.
    * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol of the child {@code Actor}
