@@ -7,6 +7,8 @@ import java.io.ObjectOutput;
 
 public abstract class ActorProxyBase<T> implements Externalizable {
 
+  private static final long serialVersionUID = -2047182900594333760L;
+
   public static <T> T thunk(ActorProxyBase<?> proxy, Actor actor, T arg) {
     return proxy.isDistributable()
         ? thunk(actor.lifeCycle.environment.stage, arg)
