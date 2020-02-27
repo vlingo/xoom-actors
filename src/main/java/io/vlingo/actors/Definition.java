@@ -13,6 +13,15 @@ import java.util.*;
 public final class Definition {
   public static final List<Object> NoParameters = new ArrayList<Object>();
 
+
+  private static Supervisor assignSupervisor(final Actor parent) {
+    if (parent instanceof Supervisor) {
+      return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
+    }
+    return null;
+  }
+
+
   public static Definition has(
           final Class<? extends Actor> type,
           final ActorInstantiator<? extends Actor> instantiator) {
@@ -248,7 +257,7 @@ public final class Definition {
     this.parent = parent;
     this.mailboxName = mailboxName;
     this.actorName = actorName;
-    this.supervisor = assignSupervisor(parent);
+    this.supervisor = Definition.assignSupervisor(parent);
     this.logger = logger;
   }
 
@@ -266,7 +275,7 @@ public final class Definition {
     this.parent = parent;
     this.mailboxName = mailboxName;
     this.actorName = actorName;
-    this.supervisor = assignSupervisor(parent);
+    this.supervisor = Definition.assignSupervisor(parent);
     this.logger = logger;
   }
 
@@ -314,12 +323,6 @@ public final class Definition {
     return parameters;
   }
 
-  private Supervisor assignSupervisor(final Actor parent) {
-    if (parent != null && parent instanceof Supervisor) {
-      return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
-    }
-    return null;
-  }
 
   public static final class SerializationProxy implements Serializable {
 
