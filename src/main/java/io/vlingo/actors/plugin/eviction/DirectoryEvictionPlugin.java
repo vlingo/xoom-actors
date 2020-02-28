@@ -34,7 +34,7 @@ public class DirectoryEvictionPlugin extends AbstractPlugin {
 
   @Override
   public int pass() {
-    return 1_000_000_000;
+    return 2;
   }
 
   @Override
