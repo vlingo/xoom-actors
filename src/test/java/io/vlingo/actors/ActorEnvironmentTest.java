@@ -49,7 +49,8 @@ public class ActorEnvironmentTest extends ActorsTest {
   
   @Test
   public void testSecuredEnvironment() throws Exception {
-    final Definition definition = Definition.has(CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
+    final Definition definition = Definition.has(
+        CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
     
     final TestActor<EnvironmentProvider> env = testWorld.actorFor(EnvironmentProvider.class, definition);
 

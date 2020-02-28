@@ -119,7 +119,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(signature).append("{\n")
       .append("    super(")
         .append(protocolInterface.getCanonicalName()).append(".class")
-        .append(", actor.definition(), actor.address());").append("\n")
+        .append(", SerializationProxy.from(actor.definition()), actor.address());").append("\n")
       .append("    this.actor = actor;").append("\n")
       .append("    this.mailbox = mailbox;").append("\n")
       .append("  }\n");
@@ -147,6 +147,7 @@ public class ProxyGenerator implements AutoCloseable {
 
     builder
       .append("import io.vlingo.actors.Actor;").append("\n")
+      .append("import io.vlingo.actors.Definition.SerializationProxy;").append("\n")
       .append("import io.vlingo.actors.ActorProxyBase;").append("\n")
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")

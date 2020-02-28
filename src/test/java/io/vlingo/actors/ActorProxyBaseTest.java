@@ -42,7 +42,7 @@ public class ActorProxyBaseTest {
     private static final long serialVersionUID = 2720273987242767538L;
 
     public ActorProxyBaseImpl(Class<Proto> protocol, Definition definition, Address address) {
-      super(protocol, definition, address);
+      super(protocol, Definition.SerializationProxy.from(definition), address);
     }
 
     public ActorProxyBaseImpl() {
