@@ -18,7 +18,7 @@ public final class Definition {
                                 final SerializationProxy proxy,
                                 final Logger logger) {
 
-    final Actor parent = Optional.of(proxy.parent)
+    final Actor parent = Optional.ofNullable(proxy.parent)
         .map(p -> {
           ActorProxyBase.thunk(stage, proxy.parent);
           return stage.directory.actorOf(proxy.parent.address);
