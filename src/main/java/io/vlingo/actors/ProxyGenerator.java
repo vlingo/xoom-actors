@@ -119,7 +119,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(signature).append("{\n")
       .append("    super(")
         .append(protocolInterface.getCanonicalName()).append(".class")
-        .append(", actor.getClass(), actor.address());").append("\n")
+        .append(", actor.definition(), actor.address());").append("\n")
       .append("    this.actor = actor;").append("\n")
       .append("    this.mailbox = mailbox;").append("\n")
       .append("  }\n");

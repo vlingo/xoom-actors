@@ -1,5 +1,7 @@
 package io.vlingo.actors;
 
+import io.vlingo.actors.Definition.SerializationProxy;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -21,7 +23,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
       final ActorProxyBase<T> base = (ActorProxyBase<T>)arg;
       final Actor argActor = stage.directory.actorOf(base.address);
       if (argActor == null) {
-        return stage.actorThunkFor(base.protocol, base.type, base.address);
+        return stage.actorThunkFor(base.protocol, base.definition.type, base.address); // todo definition
       }
       else {
         return stage.actorProxyFor(base.protocol, argActor, argActor.lifeCycle.environment.mailbox);
@@ -30,13 +32,18 @@ public abstract class ActorProxyBase<T> implements Externalizable {
     return arg;
   }
 
+
   public Class<T> protocol;
-  public Class<? extends Actor> type;
+  public SerializationProxy definition;
   public Address address;
 
-  public ActorProxyBase(Class<T> protocol, Class<? extends Actor> type, Address address) {
+  public ActorProxyBase(final Class<T> protocol, final Actor actor) {
+    this(protocol, actor.definition(), actor.address());
+  }
+
+  public ActorProxyBase(Class<T> protocol, Definition definition, Address address) {
     this.protocol = protocol;
-    this.type = type;
+    this.definition = SerializationProxy.from(definition);
     this.address = address;
   }
 
@@ -49,7 +56,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     out.writeObject(protocol);
-    out.writeObject(type);
+    out.writeObject(definition);
     out.writeObject(address);
   }
 
@@ -57,7 +64,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
   @SuppressWarnings("unchecked")
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException { ;
     this.protocol = (Class<T>) in.readObject();
-    this.type = (Class<? extends Actor>) in.readObject();
+    this.definition = (SerializationProxy) in.readObject();
     this.address = (Address) in.readObject();
   }
 }
