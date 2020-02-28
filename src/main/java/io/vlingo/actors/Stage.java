@@ -120,9 +120,8 @@ public class Stage implements Stoppable {
 
   public <T> T actorThunkFor(
       final Class<T> protocol,
-      final Class<? extends Actor> type,
+      final Definition definition,
       final Address address) {
-    final Definition definition = Definition.has(type, Collections.emptyList());
     final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
     final ActorProtocolActor<T> actor =
         actorProtocolFor(
