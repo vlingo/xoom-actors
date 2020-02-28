@@ -186,22 +186,6 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testThatConfigurationIsLoadedFromFile() {
-    Properties properties = new Properties();
-    Configuration configuration = Configuration.defineWith(properties.properties);
-
-
-
-    configuration.load(Integer.MAX_VALUE);
-
-    assertNotNull(configuration.directoryEvictionConfiguration());
-    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
-    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
-    assertEquals(300000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
-    assertEquals(0.85F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
-  }
-
-  @Test
   public void testThatConfigurationOverrides() {
     final float numberOfDispatchersFactor = 5.0f;
 
