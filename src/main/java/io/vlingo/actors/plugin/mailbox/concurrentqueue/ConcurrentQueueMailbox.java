@@ -7,17 +7,19 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
+import io.vlingo.actors.Dispatcher;
+import io.vlingo.actors.Mailbox;
+import io.vlingo.actors.Message;
+import io.vlingo.actors.ResumingMailbox;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.vlingo.actors.Dispatcher;
-import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.ResumingMailbox;
+import java.util.stream.Collectors;
 
 public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
@@ -75,6 +77,12 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public boolean isSuspended() {
     return !suspendedDeliveryOverrides.get().isEmpty();
+  }
+
+  @Override
+  public boolean isSuspendedFor(String name) {
+    return !suspendedDeliveryOverrides.get()
+        .find(name).isEmpty();
   }
 
   @Override
@@ -162,6 +170,25 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
           if (++retries > 100_000_000) {
             (new Exception()).printStackTrace();
             return null;
+          }
+        }
+      }
+    }
+
+    List<Overrides> find(final String name) {
+      int retries = 0;
+      while (true) {
+        if (accessible.compareAndSet(false, true)) {
+          List<Overrides> overridesNamed = this.overrides.stream()
+              .filter(o -> o.name.equals(name))
+              .collect(Collectors.toCollection(ArrayList::new));
+
+          accessible.set(false);
+          return overridesNamed;
+        } else {
+          if (++retries > 100_000_000) {
+            (new Exception()).printStackTrace();
+            return Collections.emptyList();
           }
         }
       }

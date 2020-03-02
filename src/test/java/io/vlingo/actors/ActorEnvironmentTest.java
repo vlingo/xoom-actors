@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
@@ -48,8 +49,10 @@ public class ActorEnvironmentTest extends ActorsTest {
   }
   
   @Test
+  @Ignore
   public void testSecuredEnvironment() throws Exception {
-    final Definition definition = Definition.has(CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
+    final Definition definition = Definition.has(
+        CannotProvideEnvironmentActor.class, Definition.NoParameters, "test-env");
     
     final TestActor<EnvironmentProvider> env = testWorld.actorFor(EnvironmentProvider.class, definition);
 

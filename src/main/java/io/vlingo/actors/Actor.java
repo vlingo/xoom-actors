@@ -277,7 +277,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answers the {@code Definition} of this {@code Actor}.
    * @return Definition
    */
-  protected Definition definition() {
+  public Definition definition() {
     return lifeCycle.definition();
   }
 
