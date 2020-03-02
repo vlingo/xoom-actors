@@ -119,6 +119,7 @@ public class LocalMessage<T> implements Message {
       try {
         actor.returns.reset(returns);
         consumer.accept((T) actor);
+        actor.lifeCycle.evictable.receivedMessage();
         if (actor.returns.__internal__outcomeSet) {
           // USE THE FOLLOWING. this forces the same ce actor to be used for
           // all completes outcomes such that completes outcomes cannot be
