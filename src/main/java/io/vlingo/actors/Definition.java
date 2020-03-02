@@ -7,12 +7,43 @@
 
 package io.vlingo.actors;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 public final class Definition {
-  public static final List<Object> NoParameters = new ArrayList<Object>();
+  public static final List<Object> NoParameters = Collections.emptyList();
+
+
+  public static Definition from(final Stage stage,
+                                final SerializationProxy proxy,
+                                final Logger logger) {
+
+    final Actor parent = Optional.ofNullable(proxy.parent)
+        .map(p -> {
+          ActorProxyBase.thunk(stage, proxy.parent);
+          return stage.directory.actorOf(proxy.parent.address);
+        }).orElse(null);
+
+    return new Definition(
+        proxy.type,
+        proxy.instantiator,
+        proxy.parameters,
+        parent,
+        proxy.mailboxName,
+        proxy.actorName,
+        logger
+    );
+  }
+
+  
+
+  private static Supervisor assignSupervisor(final Actor parent) {
+    if (parent instanceof Supervisor) {
+      return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
+    }
+    return null;
+  }
+
 
   public static Definition has(
           final Class<? extends Actor> type,
@@ -243,14 +274,7 @@ public final class Definition {
           final String actorName,
           final Logger logger) {
 
-    this.type = type;
-    this.instantiator = null;
-    this.parameters = parameters;
-    this.parent = parent;
-    this.mailboxName = mailboxName;
-    this.actorName = actorName;
-    this.supervisor = assignSupervisor(parent);
-    this.logger = logger;
+    this(type, null, parameters, parent, mailboxName, actorName, logger);
   }
 
   public Definition(
@@ -261,15 +285,29 @@ public final class Definition {
           final String actorName,
           final Logger logger) {
 
+    this(type, instantiator, NoParameters, parent, mailboxName, actorName, logger);
+  }
+
+  private Definition(
+      final Class<? extends Actor> type,
+      final ActorInstantiator<? extends Actor> instantiator,
+      final List<Object> parameters,
+      final Actor parent,
+      final String mailboxName,
+      final String actorName,
+      final Logger logger) {
+
     this.type = type;
     this.instantiator = instantiator;
-    this.parameters = Collections.emptyList();
+
+    this.parameters = parameters;
     this.parent = parent;
     this.mailboxName = mailboxName;
     this.actorName = actorName;
-    this.supervisor = assignSupervisor(parent);
+    this.supervisor = Definition.assignSupervisor(parent);
     this.logger = logger;
   }
+
 
   public String actorName() {
     return actorName;
@@ -315,10 +353,78 @@ public final class Definition {
     return parameters;
   }
 
-  private Supervisor assignSupervisor(final Actor parent) {
-    if (parent != null && parent instanceof Supervisor) {
-      return parent.lifeCycle.environment.stage.actorAs(parent, Supervisor.class);
+
+  public static final class SerializationProxy implements Serializable {
+
+    private static final long serialVersionUID = 2654451856010534929L;
+
+
+    public static SerializationProxy from(final Definition definition) {
+      return new SerializationProxy(
+          definition.actorName,
+          definition.instantiator,
+          definition.mailboxName,
+          definition.parameters,
+          Optional.ofNullable(definition.parent)
+              .map(ActorProxyStub::new).orElse(null),
+          definition.type
+      );
     }
-    return null;
+
+
+    public final String actorName;
+    public final ActorInstantiator<? extends Actor> instantiator;
+    public final String mailboxName;
+    public final List<Object> parameters;
+    public final ActorProxyStub<?> parent;
+    public final Class<? extends Actor> type;
+
+
+    public SerializationProxy(
+        String actorName,
+        ActorInstantiator<? extends Actor> instantiator,
+        String mailboxName,
+        List<Object> parameters,
+        ActorProxyStub<?> parent,
+        Class<? extends Actor> type) {
+
+      this.actorName = actorName;
+      this.instantiator = instantiator;
+      this.mailboxName = mailboxName;
+      this.parameters = parameters;
+      this.parent = parent;
+      this.type = type;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      SerializationProxy that = (SerializationProxy) o;
+      return Objects.equals(actorName, that.actorName) &&
+          Objects.equals(instantiator, that.instantiator) &&
+          Objects.equals(mailboxName, that.mailboxName) &&
+          Objects.equals(parameters, that.parameters) &&
+          Objects.equals(parent, that.parent) &&
+          type.equals(that.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          actorName, instantiator, mailboxName, parameters, parent, type);
+
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "Definition(actorName='%s', instantiator='%s', mailboxName='%s', " +
+              "parameters='%s', parent='%s', type='%s')",
+          actorName, instantiator, mailboxName,
+          parameters, parent, type);
+    }
   }
 }

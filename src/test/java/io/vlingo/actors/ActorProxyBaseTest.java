@@ -13,7 +13,9 @@ public class ActorProxyBaseTest {
 
   @Test
   public void testWriteRead() throws IOException, ClassNotFoundException {
-    ActorProxyBase<Proto> proxy = new ActorProxyBaseImpl(Proto.class, Actor.class, new TestAddress(1));
+    ActorProxyBase<Proto> proxy = new ActorProxyBaseImpl(
+        Proto.class, Definition.has(Actor.class, Definition.NoParameters),
+        new TestAddress(1));
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
       out.writeObject(proxy);
@@ -24,7 +26,8 @@ public class ActorProxyBaseTest {
         @SuppressWarnings("unchecked")
         ActorProxyBase<Proto> proxy1 = (ActorProxyBase<Proto>) in.readObject();
         assert proxy1.protocol == Proto.class;
-        assert proxy1.type == Actor.class;
+        assert proxy1.definition.type == Actor.class;
+        assert proxy1.definition.parameters == Definition.NoParameters;
         assert proxy1.address.id() == 1;
       }
     }
@@ -36,8 +39,10 @@ public class ActorProxyBaseTest {
 
   static class ActorProxyBaseImpl extends ActorProxyBase<Proto> implements Proto {
 
-    public ActorProxyBaseImpl(Class<Proto> protocol, Class<? extends Actor> type, Address address) {
-      super(protocol, type, address);
+    private static final long serialVersionUID = 2720273987242767538L;
+
+    public ActorProxyBaseImpl(Class<Proto> protocol, Definition definition, Address address) {
+      super(protocol, Definition.SerializationProxy.from(definition), address);
     }
 
     public ActorProxyBaseImpl() {

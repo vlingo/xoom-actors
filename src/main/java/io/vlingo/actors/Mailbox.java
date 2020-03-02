@@ -80,6 +80,10 @@ public interface Mailbox extends Runnable {
    */
   boolean isSuspended();
 
+  default boolean isSuspendedFor(final String name) {
+    throw new UnsupportedOperationException("Mailbox implementation does not support this operation.");
+  }
+
   /**
    * Answer the next {@code Message} that can be received.
    * @return Message

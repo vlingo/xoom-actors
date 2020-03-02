@@ -7,10 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
@@ -26,7 +23,7 @@ public class Stage implements Stoppable {
   private final String name;
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
-  private final World world;
+  protected final World world;
 
   /**
    * Initializes the new {@code Stage} of the world and with name.
@@ -118,6 +115,23 @@ public class Stage implements Stoppable {
               definition.supervisor(),
               definition.loggerOr(world.defaultLogger()));
 
+    return actor.protocolActor();
+  }
+
+  public <T> T actorThunkFor(
+      final Class<T> protocol,
+      final Definition definition,
+      final Address address) {
+    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
+    final ActorProtocolActor<T> actor =
+        actorProtocolFor(
+            protocol,
+            definition,
+            definition.parentOr(world.defaultParent()),
+            address,
+            actorMailbox,
+            definition.supervisor(),
+            definition.loggerOr(world.defaultLogger()));
     return actor.protocolActor();
   }
 
@@ -252,7 +266,7 @@ public class Stage implements Stoppable {
   }
 
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
-    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, world.addressFactory().unique().name()));
+    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, this.addressFactory().unique().name()));
   }
 
   /**
@@ -507,11 +521,11 @@ public class Stage implements Stoppable {
    * @param mailbox the Mailbox instance of this Actor
    * @return Object[]
    */
-  final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    final Object[] proxies = new Object[protocol.length];
+  final Object[] actorProxyFor(final Class<?>[] protocols, final Actor actor, final Mailbox mailbox) {
+    final Object[] proxies = new Object[protocols.length];
 
-    for (int idx = 0; idx < protocol.length; ++idx) {
-      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
+    for (int idx = 0; idx < protocols.length; ++idx) {
+      proxies[idx] = actorProxyFor(protocols[idx], actor, mailbox);
     }
 
     return proxies;
@@ -555,7 +569,9 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)));
+    this.directoryScanner = actorFor(DirectoryScanner.class,
+        Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
+        world().addressFactory().uniqueWith("DirectoryScanner"));
   }
 
   /**
@@ -584,7 +600,7 @@ public class Stage implements Stoppable {
    */
   private Address allocateAddress(final Definition definition, final Address maybeAddress) {
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
     return address;
   }
 
@@ -596,7 +612,7 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox
    * @return Mailbox
    */
-  private Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
+  protected Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
     return mailbox;
@@ -652,7 +668,7 @@ public class Stage implements Stoppable {
     }
 
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
       throw new IllegalStateException("Address already exists: " + address);
