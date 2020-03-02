@@ -621,7 +621,8 @@ public final class Definition {
           definition.parameters,
           Optional.ofNullable(definition.parent)
               .map(ActorProxyStub::new).orElse(null),
-          definition.type
+          definition.type,
+          definition.evictable
       );
     }
 
@@ -633,24 +634,7 @@ public final class Definition {
     public final ActorProxyStub<?> parent;
     public final Class<? extends Actor> type;
     public final boolean evictable;
-
-
-    public SerializationProxy(
-        String actorName,
-        ActorInstantiator<? extends Actor> instantiator,
-        String mailboxName,
-        List<Object> parameters,
-        ActorProxyStub<?> parent,
-        Class<? extends Actor> type) {
-
-      this(actorName,
-          instantiator,
-          mailboxName,
-          parameters,
-          parent,
-          type,
-          false);
-    }
+    
 
     public SerializationProxy(
         String actorName,
