@@ -11,9 +11,11 @@ import io.vlingo.common.SerializableConsumer;
 
 final class LifeCycle {
   final Environment environment;
+  final Evictable evictable;
 
-  LifeCycle(final Environment environment) {
+  LifeCycle(final Environment environment, Evictable evictable) {
     this.environment = environment;
+    this.evictable = evictable;
   }
 
   @Override

@@ -68,6 +68,10 @@ public class ConfigurationTest {
               .with(DefaultSupervisorOverridePluginConfiguration
                       .define()
                       .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class))
+              .with(DirectoryEvictionConfiguration
+                  .define()
+                  .fillRatioHigh(0.75F)
+                  .lruThresholdMillis(10000))
               .usingMainProxyGeneratedClassesPath("target/classes/")
               .usingMainProxyGeneratedSourcesPath("target/generated-sources/")
               .usingTestProxyGeneratedClassesPath("target/test-classes/")
@@ -118,6 +122,12 @@ public class ConfigurationTest {
     assertEquals("overrideSupervisor", configuration.defaultSupervisorOverridePluginConfiguration().name(0));
     assertEquals(DefaultSupervisorOverride.class, configuration.defaultSupervisorOverridePluginConfiguration().supervisorClass(0));
 
+    assertNotNull(configuration.directoryEvictionConfiguration());
+    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
+    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertEquals(10000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
+    assertEquals(0.75F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
+
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());
     assertEquals("target/test-classes/", configuration.testProxyGeneratedClassesPath());
@@ -162,6 +172,12 @@ public class ConfigurationTest {
     assertEquals("default", configuration.defaultSupervisorOverridePluginConfiguration().stageName(0));
     assertEquals("overrideSupervisor", configuration.defaultSupervisorOverridePluginConfiguration().name(0));
     assertEquals(DefaultSupervisorOverride.class, configuration.defaultSupervisorOverridePluginConfiguration().supervisorClass(0));
+
+    assertNotNull(configuration.directoryEvictionConfiguration());
+    assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
+    assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertEquals(600000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
+    assertEquals(0.8F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
 
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());

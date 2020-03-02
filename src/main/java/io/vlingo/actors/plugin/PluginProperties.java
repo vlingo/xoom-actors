@@ -33,6 +33,11 @@ public class PluginProperties {
     return Integer.parseInt(value);
   }
 
+  public Long getLong(final String key, final Long defaultValue) {
+    String value = getString(key, defaultValue.toString());
+    return Long.parseLong(value);
+  }
+
   public String getString(final String key, final String defaultValue) {
     return properties.getProperty(key(key), defaultValue);
   }

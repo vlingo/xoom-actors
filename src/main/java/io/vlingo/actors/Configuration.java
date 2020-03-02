@@ -35,6 +35,7 @@ public class Configuration {
   private PooledCompletesPluginConfiguration pooledCompletesPluginConfiguration;
   private ManyToOneConcurrentArrayQueuePluginConfiguration manyToOneConcurrentArrayQueuePluginConfiguration;
   private SharedRingBufferMailboxPluginConfiguration sharedRingBufferMailboxPluginConfiguration;
+  private DirectoryEvictionConfiguration directoryEvictionConfiguration;
 
   private String mainProxyGeneratedClassesPath;
   private String mainProxyGeneratedSourcesPath;
@@ -133,6 +134,16 @@ public class Configuration {
 
   public SharedRingBufferMailboxPluginConfiguration sharedRingBufferMailboxPluginConfiguration() {
     return sharedRingBufferMailboxPluginConfiguration;
+  }
+
+  public Configuration with(final DirectoryEvictionConfiguration configuration) {
+    this.directoryEvictionConfiguration = configuration;
+    this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
+    return this;
+  }
+
+  public DirectoryEvictionConfiguration directoryEvictionConfiguration() {
+    return directoryEvictionConfiguration;
   }
 
   public Configuration usingMainProxyGeneratedClassesPath(final String path) {
@@ -238,7 +249,9 @@ public class Configuration {
             io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin::new,
             io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin::new,
             io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin::new,
-            io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin::new);
+            io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin::new,
+            io.vlingo.actors.plugin.eviction.DirectoryEvictionPlugin::new
+        );
 
     final List<Plugin> plugins = new ArrayList<>();
     for (final PluginFactory pluginFactory : pluginFactories) {
