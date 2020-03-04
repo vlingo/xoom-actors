@@ -8,23 +8,40 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Tuple2;
-import io.vlingo.common.compiler.DynaFile;
-import io.vlingo.common.compiler.DynaType;
+import static io.vlingo.common.compiler.DynaFile.GeneratedSources;
+import static io.vlingo.common.compiler.DynaFile.GeneratedTestSources;
+import static io.vlingo.common.compiler.DynaFile.RootOfMainClasses;
+import static io.vlingo.common.compiler.DynaFile.RootOfTestClasses;
+import static io.vlingo.common.compiler.DynaFile.toFullPath;
+import static io.vlingo.common.compiler.DynaFile.toPackagePath;
+import static io.vlingo.common.compiler.DynaNaming.classnameFor;
+import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
 import java.io.File;
-import java.lang.reflect.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.vlingo.common.compiler.DynaFile.*;
-import static io.vlingo.common.compiler.DynaNaming.classnameFor;
-import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
+import io.vlingo.common.Tuple2;
+import io.vlingo.common.compiler.DynaFile;
+import io.vlingo.common.compiler.DynaType;
 
 public class ProxyGenerator implements AutoCloseable {
 
@@ -200,7 +217,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String bindSelfStatement = MessageFormat.format("      ActorProxyBase<{0}> self = this;", protocolInterface.getSimpleName());
     final String consumerStatement = MessageFormat.format("      final SerializableConsumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = isACompletes ? MessageFormat.format("      final {0} returnValue = Completes.using(actor.scheduler());\n", signatureReturnType) : "";
-    final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new CompletableFuture<>();\n", signatureReturnType) : "";
+    final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new java.util.concurrent.CompletableFuture<>();\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, {1}, {2}{3}); '}'", protocolInterface.getSimpleName(), "consumer", hasResult ? "Returns.value(returnValue), ":"null, ", representationName);
     final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, {1}, {2}{3})); '}'", protocolInterface.getSimpleName(), "consumer", hasResult ? "Returns.value(returnValue), ":"", representationName);
