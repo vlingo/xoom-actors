@@ -13,21 +13,21 @@
     },
 
     "version": {
-        "name": "1.2.6",
+        "name": "1.2.7",
         "gpgSign": true
     },
 
     "files": [
         {
             "includePattern": "target/(.*).jar",
-            "uploadPattern": "/io/vlingo/vlingo-actors/1.2.6/$1.jar",
+            "uploadPattern": "/io/vlingo/vlingo-actors/1.2.7/$1.jar",
             "matrixParams": {
                 "override": 1
             }
         },
         {
             "includePattern": "pom.xml",
-            "uploadPattern": "/io/vlingo/vlingo-actors/1.2.6/vlingo-actors-1.2.6.pom",
+            "uploadPattern": "/io/vlingo/vlingo-actors/1.2.7/vlingo-actors-1.2.7.pom",
             "matrixParams": {
                 "override": 1
             }
