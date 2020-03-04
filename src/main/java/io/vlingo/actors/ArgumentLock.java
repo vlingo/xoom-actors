@@ -1,7 +1,5 @@
 package io.vlingo.actors;
 
-import io.vlingo.common.Tuple2;
-
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -9,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import io.vlingo.common.Tuple2;
 
 /**
  * based on the solution found on https://stackoverflow.com/a/28347825
@@ -40,6 +40,7 @@ public final class ArgumentLock implements Lock {
    * in locks stays in place for as long as the ParameterLock instance
    * is referenced by clients.
    */
+  @SuppressWarnings("unused")
   private final Object object;
   private final Lock lock;
 
