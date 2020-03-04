@@ -7,15 +7,18 @@
 
 package io.vlingo.actors;
 
-import java.lang.reflect.Constructor;
-import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
-
 import io.vlingo.actors.ProxyGenerator.Result;
 import io.vlingo.common.compiler.DynaClassLoader;
 import io.vlingo.common.compiler.DynaCompiler;
 import io.vlingo.common.compiler.DynaCompiler.Input;
 
+import java.lang.reflect.Constructor;
+import java.util.concurrent.locks.Lock;
+
+import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
+
 public final class ActorProxy {
+
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final T maybeCachedProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
 
@@ -23,18 +26,20 @@ public final class ActorProxy {
       return maybeCachedProxy;
     }
 
-    T newProxy;
+    T newProxy = null;
 
-    synchronized (protocol) {
-      final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
-
-      try {
-        newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
-      } catch (Exception e) {
-        newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
+    final String proxyClassname = fullyQualifiedClassnameFor(protocol, "__Proxy");
+    Lock lock = ArgumentLock.acquire(protocol);
+    lock.lock();
+    try {
+      newProxy = tryCreate(protocol, actor, mailbox, proxyClassname);
+    } catch (Exception e) {
+      newProxy = tryGenerateCreate(protocol, actor, mailbox, proxyClassname);
+    } finally {
+      if (newProxy != null) {
+        actor.lifeCycle.environment.cacheProxy(newProxy);
       }
-
-      actor.lifeCycle.environment.cacheProxy(newProxy);
+      lock.unlock();
     }
 
     return newProxy;

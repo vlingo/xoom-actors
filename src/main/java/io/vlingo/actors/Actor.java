@@ -168,7 +168,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answer my internal {@code Completes<R>} from {@code completes()} after preparing
    * for the {@code eventualOutcome} to be set in my {@code completesEventually()}.
    * @param eventualOutcome the {@code Completes<R>} the provides an eventual outcome
-   * @param <R> the type of the answer
+   * @param <R> the type of eventual outcome
    * @return {@code Completes<R>}
    */
   protected <R> Completes<R> answerFrom(final Completes<R> eventualOutcome) {
