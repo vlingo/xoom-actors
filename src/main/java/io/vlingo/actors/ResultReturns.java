@@ -136,6 +136,11 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
+  public void failed(final Exception exception) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public boolean hasOutcome() {
     throw new UnsupportedOperationException();
   }
