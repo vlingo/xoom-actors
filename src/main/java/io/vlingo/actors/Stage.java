@@ -7,7 +7,10 @@
 
 package io.vlingo.actors;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
@@ -572,7 +575,7 @@ public class Stage implements Stoppable {
   void startDirectoryScanner() {
     this.directoryScanner = actorFor(DirectoryScanner.class,
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
-        world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
+        addressFactory().uniqueWith("DirectoryScanner::"+name()));
 
     final DirectoryEvictionConfiguration evictionConfiguration =
         world.configuration().directoryEvictionConfiguration();
