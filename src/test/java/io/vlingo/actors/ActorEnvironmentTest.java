@@ -15,12 +15,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import io.vlingo.common.Completes;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.actors.testkit.TestState;
 import io.vlingo.actors.testkit.TestWorld;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 
 public class ActorEnvironmentTest extends ActorsTest {
@@ -30,6 +34,18 @@ public class ActorEnvironmentTest extends ActorsTest {
     final Definition definition = Definition.has(EnvironmentProviderActor.class, Definition.NoParameters, "test-env");
     
     final TestActor<EnvironmentProvider> env = testWorld.actorFor(EnvironmentProvider.class, definition);
+
+
+    CountDownLatch latch = new CountDownLatch(1);
+    env.actor().boom()
+        .recoverFrom(e -> 2) // hm
+        .otherwise(i -> 3) // what?
+        .andFinallyConsume(i -> { // not the finally we all know and love
+          System.out.println(i);
+          latch.countDown();
+        });
+
+    latch.await(1, TimeUnit.SECONDS);
 
     TestState state = env.viewTestState();
     
@@ -85,12 +101,26 @@ public class ActorEnvironmentTest extends ActorsTest {
     assertTrue(env.mailbox.isClosed());
   }
   
-  public static interface EnvironmentProvider { }
+  public static interface EnvironmentProvider {
+    Completes<Integer> boom();
+  }
   
   public static class EnvironmentProviderActor extends Actor implements EnvironmentProvider {
 
     public EnvironmentProviderActor() { }
-    
+
+    @Override
+    public Completes<Integer> boom() {
+      completesEventually().with("integer");
+      //or
+//      answerFrom(Completes.withSuccess("integer"));
+      return completes();
+
+      // The following WORKS!
+//      completes().with(1);
+//      return null;
+    }
+
     @Override
     public TestState viewTestState() {
       return new TestState()
@@ -104,7 +134,13 @@ public class ActorEnvironmentTest extends ActorsTest {
   public static class CannotProvideEnvironmentActor extends Actor implements EnvironmentProvider {
 
     public CannotProvideEnvironmentActor() { secure(); }
-    
+
+    @Override
+    public Completes<Integer> boom() {
+      completesEventually().with("hello integer");
+      return completes();
+    }
+
     @Override
     public TestState viewTestState() {
       TestState state = new TestState();
