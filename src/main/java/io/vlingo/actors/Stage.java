@@ -470,7 +470,6 @@ public class Stage implements Stoppable {
       final T protocolActor = actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
     } catch (Exception e) {
-      e.printStackTrace();
       world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
