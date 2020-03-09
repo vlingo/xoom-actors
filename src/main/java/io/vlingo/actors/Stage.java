@@ -580,8 +580,6 @@ public class Stage implements Stoppable {
     final DirectoryEvictionConfiguration evictionConfiguration =
         world.configuration().directoryEvictionConfiguration();
 
-    System.out.println(evictionConfiguration);
-
     if(evictionConfiguration != null && evictionConfiguration.isEnabled()) {
       world.defaultLogger().debug("Scheduling directory eviction for stage: {} with: {}", name(), evictionConfiguration);
       @SuppressWarnings("unchecked")
