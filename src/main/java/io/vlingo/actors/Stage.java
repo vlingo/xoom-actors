@@ -575,7 +575,7 @@ public class Stage implements Stoppable {
   void startDirectoryScanner() {
     this.directoryScanner = actorFor(DirectoryScanner.class,
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
-        addressFactory().uniqueWith("DirectoryScanner::"+name()));
+        world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
 
     final DirectoryEvictionConfiguration evictionConfiguration =
         world.configuration().directoryEvictionConfiguration();
