@@ -670,18 +670,15 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox of the Actor to create
    * @param maybeSupervisor the possible Supervisor of the Actor to create
    * @param logger the Logger of the Actor to create
-   * @param <T> the protocol type
    * @return Actor
-   * @throws Exception thrown if there is a problem with Actor creation
    */
-  private <T> Actor createRawActor(
+  private Actor createRawActor(
           final Definition definition,
           final Actor parent,
           final Address maybeAddress,
           final Mailbox maybeMailbox,
           final Supervisor maybeSupervisor,
-          final Logger logger)
-  throws Exception {
+          final Logger logger) {
 
     if (isStopped()) {
       throw new IllegalStateException("Actor stage has been stopped.");
