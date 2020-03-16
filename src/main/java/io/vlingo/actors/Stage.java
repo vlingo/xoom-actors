@@ -122,23 +122,6 @@ public class Stage implements Stoppable {
     return actor.protocolActor();
   }
 
-  public <T> T actorThunkFor(
-      final Class<T> protocol,
-      final Definition definition,
-      final Address address) {
-    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
-    final ActorProtocolActor<T> actor =
-        actorProtocolFor(
-            protocol,
-            definition,
-            definition.parentOr(world.defaultParent()),
-            address,
-            actorMailbox,
-            definition.supervisor(),
-            definition.loggerOr(world.defaultLogger()));
-    return actor.protocolActor();
-  }
-
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code logger}.
