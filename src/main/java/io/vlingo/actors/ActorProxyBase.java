@@ -1,6 +1,5 @@
 package io.vlingo.actors;
 
-import com.sun.deploy.security.BadCertificateDialog;
 import io.vlingo.actors.Definition.SerializationProxy;
 
 import java.io.Externalizable;
