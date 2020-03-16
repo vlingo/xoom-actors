@@ -725,7 +725,7 @@ public class Stage implements Stoppable {
       return actor;
     }
     try {
-      return createRawActor(definition, null, address, null, null, world.defaultLogger());
+      return createRawActor(definition, definition.parentOr(world.defaultParent()), address, null, definition.supervisor(), world.defaultLogger());
     } catch (Directory.ActorAddressAlreadyRegistered ignored) {
       return rawLookupOrStart(definition, address);
     }

@@ -7,11 +7,6 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -21,6 +16,8 @@ import io.vlingo.actors.WorldTest.SimpleActor;
 import io.vlingo.actors.WorldTest.TestResults;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.AccessSafely;
+
+import static org.junit.Assert.*;
 
 public class StageTest extends ActorsTest {
   @Test
@@ -194,6 +191,36 @@ public class StageTest extends ActorsTest {
   public void testThatProtocolsAreNotInterfaces() {
     world.stage().actorFor(new Class[] { NoProtocol.class, ParentInterfaceActor.class }, ParentInterfaceActor.class);
   }
+
+  @Test
+  public void testSingleThreadRawLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    Actor existing = world.stage().rawLookupOrStart(definition, address);
+    assertSame(address, existing.address());
+  }
+
+  @Test
+  public void testSingleThreadActorLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    Actor existing = world.stage().actorLookupOrStart(definition, address);
+    assertSame(address, existing.address());
+  }
+
+  @Test
+  public void testSingleThreadLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    assertNotNull(world.stage().lookupOrStart(NoProtocol.class, definition, address));
+  }
+
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
     public static ThreadLocal<ParentInterfaceActor> parent = new ThreadLocal<>();
