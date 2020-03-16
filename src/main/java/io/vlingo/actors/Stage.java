@@ -452,7 +452,11 @@ public class Stage implements Stoppable {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
       final T protocolActor = actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
-    } catch (Exception e) {
+    }
+    catch (Directory.ActorAddressAlreadyRegistered e) {
+      throw e;
+    }
+    catch (Exception e) {
       world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
@@ -671,7 +675,7 @@ public class Stage implements Stoppable {
             maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
-      throw new IllegalStateException("Address already exists: " + address);
+      throw new Directory.ActorAddressAlreadyRegistered(definition.type(), address);
     }
 
     final Mailbox mailbox = maybeMailbox != null ?
