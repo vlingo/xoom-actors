@@ -7,17 +7,17 @@
 
 package io.vlingo.actors;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduled;
 import io.vlingo.common.Scheduler;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
@@ -734,6 +734,38 @@ public class Stage implements Stoppable {
                             definition.actorName());
 
     return redefinition;
+  }
+
+  <T> Actor rawLookupOrStart(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    try {
+      return createRawActor(definition, null, address, null, null, world.defaultLogger());
+    } catch (Directory.ActorAddressAlreadyRegistered ignored) {
+      return rawLookupOrStart(definition, address);
+    }
+  }
+
+  <T> T lookupOrStart(Class<T> protocol, Definition definition, Address address) {
+    return actorAs(actorLookupOrStart(definition, address), protocol);
+  }
+
+  <T> Actor actorLookupOrStart(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    else {
+      try {
+        actorFor(Startable.class, definition, address);
+        return directory.actorOf(address);
+      }
+      catch (Directory.ActorAddressAlreadyRegistered ignored) {
+        return actorLookupOrStart(definition, address);
+      }
+    }
   }
 
   /**
