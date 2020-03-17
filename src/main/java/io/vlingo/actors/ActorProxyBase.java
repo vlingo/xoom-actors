@@ -20,16 +20,10 @@ public abstract class ActorProxyBase<T> implements Externalizable {
   public static <T> T thunk(Stage stage, T arg) {
     if (arg instanceof ActorProxyBase) {
       @SuppressWarnings("unchecked")
-      final ActorProxyBase<T> base = (ActorProxyBase<T>)arg;
-      final Actor argActor = stage.directory.actorOf(base.address);
-      if (argActor == null) {
-        return stage.actorThunkFor(base.protocol,
-            Definition.from(stage, base.definition, stage.world().defaultLogger()),
-            base.address);
-      }
-      else {
-        return stage.actorProxyFor(base.protocol, argActor, argActor.lifeCycle.environment.mailbox);
-      }
+      final ActorProxyBase<T> base = (ActorProxyBase<T>) arg;
+      return stage.lookupOrStartThunk(base.protocol,
+          Definition.from(stage, base.definition, stage.world().defaultLogger()),
+          base.address);
     }
     return arg;
   }

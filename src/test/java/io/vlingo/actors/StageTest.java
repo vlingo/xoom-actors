@@ -7,20 +7,22 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Test;
-
 import io.vlingo.actors.WorldTest.Simple;
 import io.vlingo.actors.WorldTest.SimpleActor;
 import io.vlingo.actors.WorldTest.TestResults;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.AccessSafely;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.Assert.*;
 
 public class StageTest extends ActorsTest {
   @Test
@@ -194,6 +196,130 @@ public class StageTest extends ActorsTest {
   public void testThatProtocolsAreNotInterfaces() {
     world.stage().actorFor(new Class[] { NoProtocol.class, ParentInterfaceActor.class }, ParentInterfaceActor.class);
   }
+
+  @Test
+  public void testSingleThreadRawLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    Actor existing = world.stage().rawLookupOrStart(definition, address);
+    assertSame(address, existing.address());
+  }
+
+  @Test
+  public void testSingleThreadRawLookupOrStartFindsActorPreviouslyStartedWithRawLookupOrStart() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    Actor started = world.stage().rawLookupOrStart(definition, address);
+    Actor found = world.stage().rawLookupOrStart(definition, address);
+    assertSame(started, found);
+  }
+
+  @Test
+  public void testSingleThreadActorLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    Actor existing = world.stage().actorLookupOrStart(definition, address);
+    assertSame(address, existing.address());
+  }
+
+  @Test
+  public void testSingleThreadActorLookupOrStartFindsActorPreviouslyStartedWithActorLookupOrStart() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    Actor started = world.stage().actorLookupOrStart(definition, address);
+    Actor found = world.stage().actorLookupOrStart(definition, address);
+    assertSame(started, found);
+  }
+
+  @Test
+  public void testSingleThreadLookupOrStartFindsActorPreviouslyStartedWithActorFor() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    world.stage().actorFor(NoProtocol.class, definition, address);
+    assertNotNull(world.stage().lookupOrStart(NoProtocol.class, definition, address));
+  }
+
+  @Test
+  public void testSingleThreadLookupOrStartFindsActorPreviouslyStartedWithLookupOrStart() {
+    Address address = world.addressFactory().unique();
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+    assertNotNull(world.stage().lookupOrStart(NoProtocol.class, definition, address));
+    assertNotNull(world.stage().lookupOrStart(NoProtocol.class, definition, address));
+  }
+
+  private static final ExecutorService exec = Executors.newFixedThreadPool(32);
+
+  @Test
+  public void testMultiThreadRawLookupOrStartFindsActorPreviouslyStartedWIthRawLookupOrStart() {
+    final int size = 1000;
+
+    List<Address> addresses = IntStream.range(0, size)
+        .mapToObj((ignored) -> world.addressFactory().unique())
+        .collect(Collectors.toList());
+
+    CompletionService<Actor> completionService =
+        new ExecutorCompletionService<>(exec);
+
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+
+    multithreadedLookupOrStartTest(index ->
+            completionService.submit(() ->
+                world.stage()
+                    .rawLookupOrStart(definition, addresses.get(index)))
+        , size);
+  }
+
+  @Test
+  public void testMultiThreadActorLookupOrStartFindsActorPreviouslyStartedWIthActorLookupOrStart() {
+    final int size = 1000;
+
+    List<Address> addresses = IntStream.range(0, size)
+        .mapToObj((ignored) -> world.addressFactory().unique())
+        .collect(Collectors.toList());
+
+    CompletionService<Actor> completionService =
+        new ExecutorCompletionService<>(exec);
+
+    final Definition definition = Definition.has(ParentInterfaceActor.class,
+        ParentInterfaceActor::new);
+
+    multithreadedLookupOrStartTest(index ->
+            completionService.submit(() ->
+                world.stage()
+                    .actorLookupOrStart(definition, addresses.get(index)))
+        , size);
+  }
+
+  private void multithreadedLookupOrStartTest(final Function<Integer, Future<Actor>> work, final int size) {
+    List<Future<Actor>> futures = IntStream.range(0, size)
+        .flatMap(i -> IntStream.of(i, i))
+        .mapToObj(work::apply)
+        .collect(Collectors.toList());
+
+    List<Actor> results = new ArrayList<>(futures.size());
+    for (Future<Actor> future : futures) {
+      try {
+        final Actor actor = future.get();
+        if (!results.isEmpty() && results.size() % 2 != 0) {
+          final Actor expected = results.get(results.size() - 1);
+          assertSame(expected.address(), actor.address());
+        }
+        results.add(actor);
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
     public static ThreadLocal<ParentInterfaceActor> parent = new ThreadLocal<>();

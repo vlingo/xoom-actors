@@ -79,7 +79,7 @@ final class Directory {
 
   void register(final Address address, final Actor actor) {
     if (isRegistered(address)) {
-      throw new IllegalArgumentException("The actor address is already registered: " + address);
+      throw new ActorAddressAlreadyRegistered(actor.getClass(), address);
     }
     this.maps[mapIndex(address)].put(address, actor);
   }
@@ -115,5 +115,14 @@ final class Directory {
 
   private int mapIndex(final Address address) {
     return Math.abs(address.hashCode() % maps.length);
+  }
+
+
+  public static final class ActorAddressAlreadyRegistered extends IllegalArgumentException {
+    public ActorAddressAlreadyRegistered(Class<?> type, Address address) {
+      super(String.format("Failed to register Actor of type %s. Address is already registered: %s",
+          type,
+          address));
+    }
   }
 }
