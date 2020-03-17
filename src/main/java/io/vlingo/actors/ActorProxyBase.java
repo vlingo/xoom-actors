@@ -21,7 +21,7 @@ public abstract class ActorProxyBase<T> implements Externalizable {
     if (arg instanceof ActorProxyBase) {
       @SuppressWarnings("unchecked")
       final ActorProxyBase<T> base = (ActorProxyBase<T>) arg;
-      return stage.lookupOrStart(base.protocol,
+      return stage.lookupOrStartThunk(base.protocol,
           Definition.from(stage, base.definition, stage.world().defaultLogger()),
           base.address);
     }
