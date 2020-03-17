@@ -770,26 +770,6 @@ public class Stage implements Stoppable {
     }
   }
 
-  <T> T lookupOrStartThunk(Class<T> protocol, Definition definition, Address address) {
-    return actorAs(actorLookupOrStartThunk(definition, address), protocol);
-  }
-
-  Actor actorLookupOrStartThunk(Definition definition, Address address) {
-    Actor actor = directory.actorOf(address);
-    if (actor != null) {
-      return actor;
-    }
-    else {
-      try {
-        actorThunkFor(Startable.class, definition, address);
-        return directory.actorOf(address);
-      }
-      catch (Directory.ActorAddressAlreadyRegistered ignored) {
-        return actorLookupOrStartThunk(definition, address);
-      }
-    }
-  }
-
   /**
    * Internal type used to manage Actor proxy creation. (INTERNAL ONLY)
    * @param <T> the protocol type
