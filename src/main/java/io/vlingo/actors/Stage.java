@@ -122,6 +122,21 @@ public class Stage implements Stoppable {
     return actor.protocolActor();
   }
 
+  <T> T actorThunkFor(Class<T> protocol, Definition definition, Address address) {
+    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
+    final ActorProtocolActor<T> actor =
+        actorProtocolFor(
+            protocol,
+            definition,
+            definition.parentOr(world.defaultParent()),
+            address,
+            actorMailbox,
+            definition.supervisor(),
+            definition.loggerOr(world.defaultLogger()));
+
+    return actor.protocolActor();
+  }
+
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code logger}.
@@ -751,6 +766,26 @@ public class Stage implements Stoppable {
       }
       catch (Directory.ActorAddressAlreadyRegistered ignored) {
         return actorLookupOrStart(definition, address);
+      }
+    }
+  }
+
+  <T> T lookupOrStartThunk(Class<T> protocol, Definition definition, Address address) {
+    return actorAs(actorLookupOrStartThunk(definition, address), protocol);
+  }
+
+  Actor actorLookupOrStartThunk(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    else {
+      try {
+        actorThunkFor(Startable.class, definition, address);
+        return directory.actorOf(address);
+      }
+      catch (Directory.ActorAddressAlreadyRegistered ignored) {
+        return actorLookupOrStartThunk(definition, address);
       }
     }
   }
