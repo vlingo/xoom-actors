@@ -7,8 +7,10 @@
 
 package io.vlingo.actors;
 
+import java.io.Serializable;
+
 @FunctionalInterface
-public interface ActorInstantiator<A extends Actor> {
+public interface ActorInstantiator<A extends Actor> extends Serializable {
   A instantiate();
 
   default void set(final String name, final Object value) { }

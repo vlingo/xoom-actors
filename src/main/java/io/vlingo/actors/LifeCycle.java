@@ -7,13 +7,15 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 final class LifeCycle {
   final Environment environment;
+  final Evictable evictable;
 
-  LifeCycle(final Environment environment) {
+  LifeCycle(final Environment environment, Evictable evictable) {
     this.environment = environment;
+    this.evictable = evictable;
   }
 
   @Override
@@ -105,7 +107,7 @@ final class LifeCycle {
 
   void sendStart(final Actor targetActor) {
     try {
-      final Consumer<Startable> consumer = (actor) -> actor.start();
+      final SerializableConsumer<Startable> consumer = (actor) -> actor.start();
       if (!environment.mailbox.isPreallocated()) {
         final Message message = new LocalMessage<Startable>(targetActor, Startable.class, consumer, "start()");
         environment.mailbox.send(message);

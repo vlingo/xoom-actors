@@ -7,17 +7,17 @@
 
 package io.vlingo.actors.plugin.mailbox.testkit;
 
+import io.vlingo.actors.Actor;
+import io.vlingo.actors.Mailbox;
+import io.vlingo.actors.Message;
+import io.vlingo.actors.testkit.TestWorld;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.vlingo.actors.Actor;
-import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.testkit.TestWorld;
 
 public class TestMailbox implements Mailbox {
   public static final String Name = "testerMailbox";
@@ -98,6 +98,11 @@ public class TestMailbox implements Mailbox {
   @Override
   public boolean isSuspended() {
     return !suspendedOverrides.get().empty();
+  }
+
+  @Override
+  public boolean isSuspendedFor(String name) {
+    return isSuspended();
   }
 
   @Override

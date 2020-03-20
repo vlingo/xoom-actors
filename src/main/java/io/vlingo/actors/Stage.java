@@ -10,6 +10,7 @@ package io.vlingo.actors;
 import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
 import io.vlingo.actors.testkit.TestActor;
 import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduled;
 import io.vlingo.common.Scheduler;
 
 import java.util.Arrays;
@@ -21,12 +22,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
   private final Map<Class<?>, Supervisor> commonSupervisors;
-  private final Directory directory;
+  protected final Directory directory;
   private DirectoryScanner directoryScanner;
   private final String name;
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
-  private final World world;
+  protected final World world;
 
   /**
    * Initializes the new {@code Stage} of the world and with name.
@@ -117,6 +118,21 @@ public class Stage implements Stoppable {
               actorMailbox,
               definition.supervisor(),
               definition.loggerOr(world.defaultLogger()));
+
+    return actor.protocolActor();
+  }
+
+  <T> T actorThunkFor(Class<T> protocol, Definition definition, Address address) {
+    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
+    final ActorProtocolActor<T> actor =
+        actorProtocolFor(
+            protocol,
+            definition,
+            definition.parentOr(world.defaultParent()),
+            address,
+            actorMailbox,
+            definition.supervisor(),
+            definition.loggerOr(world.defaultLogger()));
 
     return actor.protocolActor();
   }
@@ -252,7 +268,7 @@ public class Stage implements Stoppable {
   }
 
   public final <T> TestActor<T> testActorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
-    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, world.addressFactory().unique().name()));
+    return testActorFor(protocol, Definition.has(type, Arrays.asList(parameters), TestMailbox.Name, this.addressFactory().unique().name()));
   }
 
   /**
@@ -451,8 +467,11 @@ public class Stage implements Stoppable {
       final Actor actor = createRawActor(definition, parent, maybeAddress, maybeMailbox, maybeSupervisor, logger);
       final T protocolActor = actorProxyFor(protocol, actor, actor.lifeCycle.environment.mailbox);
       return new ActorProtocolActor<T>(actor, protocolActor);
-    } catch (Exception e) {
-      e.printStackTrace();
+    }
+    catch (Directory.ActorAddressAlreadyRegistered e) {
+      throw e;
+    }
+    catch (Exception e) {
       world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
       return null;
     }
@@ -507,11 +526,11 @@ public class Stage implements Stoppable {
    * @param mailbox the Mailbox instance of this Actor
    * @return Object[]
    */
-  final Object[] actorProxyFor(final Class<?>[] protocol, final Actor actor, final Mailbox mailbox) {
-    final Object[] proxies = new Object[protocol.length];
+  final Object[] actorProxyFor(final Class<?>[] protocols, final Actor actor, final Mailbox mailbox) {
+    final Object[] proxies = new Object[protocols.length];
 
-    for (int idx = 0; idx < protocol.length; ++idx) {
-      proxies[idx] = actorProxyFor(protocol[idx], actor, mailbox);
+    for (int idx = 0; idx < protocols.length; ++idx) {
+      proxies[idx] = actorProxyFor(protocols[idx], actor, mailbox);
     }
 
     return proxies;
@@ -555,7 +574,26 @@ public class Stage implements Stoppable {
    * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
    */
   void startDirectoryScanner() {
-    this.directoryScanner = actorFor(DirectoryScanner.class, Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)));
+    this.directoryScanner = actorFor(DirectoryScanner.class,
+        Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
+        world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
+
+    final DirectoryEvictionConfiguration evictionConfiguration =
+        world.configuration().directoryEvictionConfiguration();
+
+    if(evictionConfiguration != null && evictionConfiguration.isEnabled()) {
+      world.defaultLogger().debug("Scheduling directory eviction for stage: {} with: {}", name(), evictionConfiguration);
+      @SuppressWarnings("unchecked")
+      final Scheduled<Object> evictorActor = actorFor(Scheduled.class,
+          Definition.has(DirectoryEvictor.class, () -> new DirectoryEvictor(evictionConfiguration, directory)),
+          world().addressFactory().uniqueWith("EvictorActor::"+name()));
+
+      final long evictorActorInterval = Properties.getLong(
+          "stage.evictor.interval", Math.min(15_000L, evictionConfiguration.lruThresholdMillis()));
+
+      this.scheduler().schedule(
+          evictorActor, null, evictorActorInterval, evictorActorInterval);
+    }
   }
 
   /**
@@ -584,7 +622,7 @@ public class Stage implements Stoppable {
    */
   private Address allocateAddress(final Definition definition, final Address maybeAddress) {
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
     return address;
   }
 
@@ -596,10 +634,14 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox
    * @return Mailbox
    */
-  private Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
+  protected Mailbox allocateMailbox(final Definition definition, final Address address, final Mailbox maybeMailbox) {
     final Mailbox mailbox = maybeMailbox != null ?
-            maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
+            maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
     return mailbox;
+  }
+
+  protected ActorFactory.MailboxWrapper mailboxWrapper() {
+    return ActorFactory.MailboxWrapper.Identity;
   }
 
   /**
@@ -630,32 +672,29 @@ public class Stage implements Stoppable {
    * @param maybeMailbox the possible Mailbox of the Actor to create
    * @param maybeSupervisor the possible Supervisor of the Actor to create
    * @param logger the Logger of the Actor to create
-   * @param <T> the protocol type
    * @return Actor
-   * @throws Exception thrown if there is a problem with Actor creation
    */
-  private <T> Actor createRawActor(
+  private Actor createRawActor(
           final Definition definition,
           final Actor parent,
           final Address maybeAddress,
           final Mailbox maybeMailbox,
           final Supervisor maybeSupervisor,
-          final Logger logger)
-  throws Exception {
+          final Logger logger) {
 
     if (isStopped()) {
       throw new IllegalStateException("Actor stage has been stopped.");
     }
 
     final Address address = maybeAddress != null ?
-            maybeAddress : world.addressFactory().uniqueWith(definition.actorName());
+            maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
 
     if (directory.isRegistered(address)) {
-      throw new IllegalStateException("Address already exists: " + address);
+      throw new Directory.ActorAddressAlreadyRegistered(definition.type(), address);
     }
 
     final Mailbox mailbox = maybeMailbox != null ?
-            maybeMailbox : ActorFactory.actorMailbox(this, address, definition);
+            maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
 
     final Actor actor;
 
@@ -697,6 +736,58 @@ public class Stage implements Stoppable {
                             definition.actorName());
 
     return redefinition;
+  }
+
+  <T> Actor rawLookupOrStart(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    try {
+      return createRawActor(definition, definition.parentOr(world.defaultParent()), address, null, definition.supervisor(), world.defaultLogger());
+    } catch (Directory.ActorAddressAlreadyRegistered ignored) {
+      return rawLookupOrStart(definition, address);
+    }
+  }
+
+  <T> T lookupOrStart(Class<T> protocol, Definition definition, Address address) {
+    return actorAs(actorLookupOrStart(definition, address), protocol);
+  }
+
+  <T> Actor actorLookupOrStart(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    else {
+      try {
+        actorFor(Startable.class, definition, address);
+        return directory.actorOf(address);
+      }
+      catch (Directory.ActorAddressAlreadyRegistered ignored) {
+        return actorLookupOrStart(definition, address);
+      }
+    }
+  }
+
+  <T> T lookupOrStartThunk(Class<T> protocol, Definition definition, Address address) {
+    return actorAs(actorLookupOrStartThunk(definition, address), protocol);
+  }
+
+  Actor actorLookupOrStartThunk(Definition definition, Address address) {
+    Actor actor = directory.actorOf(address);
+    if (actor != null) {
+      return actor;
+    }
+    else {
+      try {
+        actorThunkFor(Startable.class, definition, address);
+        return directory.actorOf(address);
+      }
+      catch (Directory.ActorAddressAlreadyRegistered ignored) {
+        return actorLookupOrStartThunk(definition, address);
+      }
+    }
   }
 
   /**

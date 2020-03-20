@@ -7,8 +7,9 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import io.vlingo.common.Completes;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,10 +18,8 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import io.vlingo.common.Completes;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ProxyGeneratorTest {
     private ProxyGenerator proxyGenerator;
@@ -58,7 +57,8 @@ public class ProxyGeneratorTest {
     public void testThatProxyGeneratesValidClassDefinitionForGenericProtocol() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
-        assertTrue("Proxy class has invalid generic signature", result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> implements io.vlingo.actors.ProtocolWithGenerics<A, B>"));
+        assertTrue("Proxy class has invalid generic signature",
+            result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> extends ActorProxyBase<io.vlingo.actors.ProtocolWithGenerics> implements io.vlingo.actors.ProtocolWithGenerics<A, B>"));
     }
 
     @Test

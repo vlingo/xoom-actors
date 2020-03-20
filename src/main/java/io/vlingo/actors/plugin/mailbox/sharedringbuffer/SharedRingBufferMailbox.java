@@ -7,16 +7,11 @@
 
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
+import io.vlingo.actors.*;
+import io.vlingo.common.SerializableConsumer;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-
-import io.vlingo.actors.Actor;
-import io.vlingo.actors.Dispatcher;
-import io.vlingo.actors.LocalMessage;
-import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.Message;
-import io.vlingo.actors.Returns;
 
 public class SharedRingBufferMailbox implements Mailbox {
   private final AtomicBoolean closed;
@@ -79,7 +74,7 @@ public class SharedRingBufferMailbox implements Mailbox {
   }
 
   @Override
-  public void send(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation) {
+  public void send(final Actor actor, final Class<?> protocol, final SerializableConsumer<?> consumer, final Returns<?> returns, final String representation) {
     final long messageIndex = sendIndex.incrementAndGet();
     final int ringSendIndex = (int) (messageIndex % mailboxSize);
 

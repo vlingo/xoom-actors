@@ -7,10 +7,10 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class StowedLocalMessage<T> extends LocalMessage<T> {
-  public StowedLocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Returns<?> completes, final String representation) {
+  public StowedLocalMessage(final Actor actor, final Class<T> protocol, final SerializableConsumer<T> consumer, final Returns<?> completes, final String representation) {
     super(actor, protocol, consumer, completes, representation);
   }
 

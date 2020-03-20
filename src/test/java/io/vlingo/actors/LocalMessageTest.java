@@ -7,15 +7,14 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
-import org.junit.Test;
-
 import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.common.SerializableConsumer;
+import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 public class LocalMessageTest extends ActorsTest {
   @Test
@@ -25,7 +24,7 @@ public class LocalMessageTest extends ActorsTest {
     final TestActor<Simple> testActor = testWorld.actorFor(Simple.class,
             Definition.has(SimpleActor.class, Definition.parameters(testResults), "test1-actor"));
 
-    final Consumer<Simple> consumer = (actor) -> actor.simple();
+    final SerializableConsumer<Simple> consumer = (actor) -> actor.simple();
     final LocalMessage<Simple> message = new LocalMessage<Simple>(testActor.actorInside(), Simple.class, consumer, "simple()");
 
     message.deliver();
@@ -42,7 +41,7 @@ public class LocalMessageTest extends ActorsTest {
 
     testActor.actorInside().stop();
         
-    final Consumer<Simple> consumer = actor -> actor.simple();
+    final SerializableConsumer<Simple> consumer = actor -> actor.simple();
     final LocalMessage<Simple> message = new LocalMessage<Simple>(testActor.actorInside(), Simple.class, consumer, "simple()");
     
     message.deliver();
@@ -57,7 +56,7 @@ public class LocalMessageTest extends ActorsTest {
     final TestActor<Simple> testActor = testWorld.actorFor(Simple.class,
             Definition.has(SimpleActor.class, Definition.parameters(testResults), "test3-actor"));
 
-    final Consumer<Simple> consumer = (actor) -> actor.simple2(2);
+    final SerializableConsumer<Simple> consumer = (actor) -> actor.simple2(2);
     final LocalMessage<Simple> message = new LocalMessage<Simple>(testActor.actorInside(), Simple.class, consumer, "simple2(int)");
     
     message.deliver();

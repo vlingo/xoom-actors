@@ -38,6 +38,8 @@ public class ActorInstantiatorTest extends ActorsTest {
   }
 
   public static class ProtocolInstantiator implements ActorInstantiator<ProtocolActor> {
+    private static final long serialVersionUID = 3927990694137293588L;
+
     private final AtomicInteger holder;
     private final int value;
 

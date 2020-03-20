@@ -159,9 +159,21 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    */
   protected Actor() {
     final Environment maybeEnvironment = ActorFactory.threadLocalEnvironment.get();
-    this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment());
+    this.lifeCycle = new LifeCycle(maybeEnvironment != null ? maybeEnvironment : new TestEnvironment(), new Evictable(this));
     ActorFactory.threadLocalEnvironment.set(null);
     this.returns = new ResultReturns();
+  }
+
+  /**
+   * Answer my internal {@code Completes<R>} from {@code completes()} after preparing
+   * for the {@code eventualOutcome} to be set in my {@code completesEventually()}.
+   * @param eventualOutcome the {@code Completes<R>} the provides an eventual outcome
+   * @param <R> the type of eventual outcome
+   * @return {@code Completes<R>}
+   */
+  protected <R> Completes<R> answerFrom(final Completes<R> eventualOutcome) {
+    eventualOutcome.andFinallyConsume((R value) -> completesEventually().with(value));
+    return completes();
   }
 
   /**
@@ -266,7 +278,7 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
    * Answers the {@code Definition} of this {@code Actor}.
    * @return Definition
    */
-  protected Definition definition() {
+  public Definition definition() {
     return lifeCycle.definition();
   }
 

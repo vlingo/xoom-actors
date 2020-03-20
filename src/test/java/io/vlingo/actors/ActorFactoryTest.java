@@ -51,20 +51,20 @@ public class ActorFactoryTest extends ActorsTest {
   @Test
   public void testActorForWithParameters() throws Exception {
     world.actorFor(ParentInterface.class, Definition.has(ParentInterfaceActor.class, Definition.NoParameters));
-    
+
     final String actorName = "test-child";
-    
+
     final Definition definition =
             Definition.has(
                     TestInterfaceWithParamsActor.class,
                     Definition.parameters("test-text", 100),
                     ParentInterfaceActor.instance.get(),
                     actorName);
-    
+
     final Address address = world.addressFactory().uniqueWith(actorName);
-    
+
     final Mailbox mailbox = new TestMailbox();
-    
+
     final Actor actor =
             ActorFactory.actorFor(
                     world.stage(),
@@ -74,7 +74,7 @@ public class ActorFactoryTest extends ActorsTest {
                     mailbox,
                     null,
                     world.defaultLogger());
-    
+
     assertNotNull(actor);
     assertNotNull(actor.stage());
     assertEquals(world.stage(), actor.stage());
@@ -128,7 +128,7 @@ public class ActorFactoryTest extends ActorsTest {
   
   public static class TestInterfaceWithParamsActor extends Actor implements TestInterface {
     public TestInterfaceWithParamsActor(final String text, final int val) {
-      
+
     }
   }
   

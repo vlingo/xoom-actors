@@ -7,6 +7,9 @@
 
 package io.vlingo.actors;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 public class Properties {
   public static final java.util.Properties properties;
 
@@ -21,4 +24,26 @@ public class Properties {
       // fall through
     }
   }
+
+  public static long getLong(String key, long defaultValue) {
+    return get(key, Long::parseLong, defaultValue);
+  }
+
+  public static float getFloat(String key, float defaultValue) {
+    return get(key, Float::parseFloat, defaultValue);
+  }
+
+  private static <T> T get(String key, Function<String, T> parse, T defaultValue) {
+    return Optional.ofNullable(properties.getProperty(key))
+        .flatMap(value -> {
+          try {
+            return Optional.of(parse.apply(value));
+          }
+          catch (Exception e) {
+            return Optional.empty();
+          }
+        })
+        .orElse(defaultValue);
+  }
+
 }

@@ -134,8 +134,26 @@ public class ProxyGenerator implements AutoCloseable {
 
     builder
       .append(signature).append("{\n")
+      .append("    super(")
+        .append(protocolInterface.getCanonicalName()).append(".class")
+        .append(", SerializationProxy.from(actor.definition()), actor.address());").append("\n")
       .append("    this.actor = actor;").append("\n")
       .append("    this.mailbox = mailbox;").append("\n")
+      .append("  }\n");
+
+    return builder.toString();
+  }
+
+  private String emptyConstructor(final Class<?> protocolInterface) {
+    final StringBuilder builder = new StringBuilder();
+
+    final String signature = MessageFormat.format("  public {0}()", classnameFor(protocolInterface, "__Proxy"));
+
+    builder
+      .append(signature).append("{\n")
+      .append("    super();").append("\n")
+      .append("    this.actor = null;").append("\n")
+      .append("    this.mailbox = null;").append("\n")
       .append("  }\n");
 
     return builder.toString();
@@ -146,11 +164,14 @@ public class ProxyGenerator implements AutoCloseable {
 
     builder
       .append("import io.vlingo.actors.Actor;").append("\n")
+      .append("import io.vlingo.actors.Definition.SerializationProxy;").append("\n")
+      .append("import io.vlingo.actors.ActorProxyBase;").append("\n")
       .append("import io.vlingo.actors.DeadLetter;").append("\n")
       .append("import io.vlingo.actors.LocalMessage;").append("\n")
       .append("import io.vlingo.actors.Mailbox;").append("\n")
       .append("import io.vlingo.actors.Returns;").append("\n")
       .append("import io.vlingo.common.Completes;").append("\n")
+      .append("import io.vlingo.common.SerializableConsumer;").append("\n")
       .append("import ").append(protocolInterface.getCanonicalName()).append(";\n");
 
     GenericParser.dependenciesOf(protocolInterface)
@@ -193,9 +214,10 @@ public class ProxyGenerator implements AutoCloseable {
     final String methodSignature = MessageFormat.format("  public {0}{1} {2}{3}", genericTemplate, signatureReturnType, method.getName(), parameterTemplate);
     final String throwsExceptions = throwsExceptions(method);
     final String ifNotStopped = "    if (!actor.isStopped()) {";
-    final String consumerStatement = MessageFormat.format("      final java.util.function.Consumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
+    final String bindSelfStatement = MessageFormat.format("      ActorProxyBase<{0}> self = this;", protocolInterface.getSimpleName());
+    final String consumerStatement = MessageFormat.format("      final SerializableConsumer<{0}> consumer = (actor) -> actor.{1}{2};", protocolInterface.getSimpleName(), method.getName(), parameterNamesFor(method));
     final String completesStatement = isACompletes ? MessageFormat.format("      final {0} returnValue = Completes.using(actor.scheduler());\n", signatureReturnType) : "";
-    final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new CompletableFuture<>();\n", signatureReturnType) : "";
+    final String futureStatement = isAFuture ? MessageFormat.format("      final {0} returnValue = new java.util.concurrent.CompletableFuture<>();\n", signatureReturnType) : "";
     final String representationName = MessageFormat.format("{0}Representation{1}", method.getName(), count);
     final String preallocatedMailbox =  MessageFormat.format("      if (mailbox.isPreallocated()) '{' mailbox.send(actor, {0}.class, {1}, {2}{3}); '}'", protocolInterface.getSimpleName(), "consumer", hasResult ? "Returns.value(returnValue), ":"null, ", representationName);
     final String mailboxSendStatement = MessageFormat.format("      else '{' mailbox.send(new LocalMessage<{0}>(actor, {0}.class, {1}, {2}{3})); '}'", protocolInterface.getSimpleName(), "consumer", hasResult ? "Returns.value(returnValue), ":"", representationName);
@@ -220,6 +242,7 @@ public class ProxyGenerator implements AutoCloseable {
     builder
       .append(methodSignature).append(throwsExceptions).append(" {\n")
       .append(ifNotStopped).append("\n")
+      .append(bindSelfStatement).append("\n")
       .append(consumerStatement).append("\n")
       .append(completesStatement)
       .append(futureStatement)
@@ -264,7 +287,10 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String parameterNamesFor(final Method method) {
-    return Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", ", "(", ")"));
+    return Arrays.stream(method.getParameters())
+        .map(p -> "ActorProxyBase.thunk(self, (Actor)actor, "+p.getName()+")")
+        .collect(Collectors
+            .joining(", ", "(", ")"));
   }
 
   private String parameterTypesFor(final Method method) {
@@ -310,6 +336,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(representationStatements(methods)).append("\n")
       .append(instanceVariables(protocolInterface)).append("\n")
       .append(constructor(protocolInterface)).append("\n")
+      .append(emptyConstructor(protocolInterface)).append("\n")
       .append(methodDefs._2)
       .append("}").append("\n");
 
@@ -493,6 +520,8 @@ public class ProxyGenerator implements AutoCloseable {
                         .collect(Collectors.joining(", ", "<", ">"))
                         .replace("<>", "")
         );
+
+        template.append(" extends ActorProxyBase<").append(classToExtend.getCanonicalName()).append(">");
 
         template.append(" implements ").append(classToExtend.getCanonicalName());
 

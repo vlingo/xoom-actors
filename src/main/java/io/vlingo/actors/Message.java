@@ -7,7 +7,7 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public interface Message {
   Actor actor();
@@ -15,5 +15,5 @@ public interface Message {
   Class<?> protocol();
   String representation();
   boolean isStowed();
-  void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation);
+  void set(final Actor actor, final Class<?> protocol, final SerializableConsumer<?> consumer, final Returns<?> returns, final String representation);
 }

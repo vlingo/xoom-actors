@@ -7,17 +7,17 @@
 
 package io.vlingo.actors;
 
-import java.util.function.Consumer;
+import io.vlingo.common.SerializableConsumer;
 
 public class LocalMessage<T> implements Message {
   Actor actor;
   Returns<Object> returns;
-  Consumer<T> consumer;
+  SerializableConsumer<T> consumer;
   Class<T> protocol;
   String representation;
 
   @SuppressWarnings("unchecked")
-  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final Returns<?> returns, final String representation) {
+  public LocalMessage(final Actor actor, final Class<T> protocol, final SerializableConsumer<T> consumer, final Returns<?> returns, final String representation) {
     this.actor = actor;
     this.consumer = consumer;
     this.protocol = protocol;
@@ -25,7 +25,7 @@ public class LocalMessage<T> implements Message {
     this.returns = (Returns<Object>) returns;
   }
 
-  public LocalMessage(final Actor actor, final Class<T> protocol, final Consumer<T> consumer, final String representation) {
+  public LocalMessage(final Actor actor, final Class<T> protocol, final SerializableConsumer<T> consumer, final String representation) {
     this(actor, protocol, consumer, null, representation);
   }
 
@@ -41,6 +41,12 @@ public class LocalMessage<T> implements Message {
   public Actor actor() {
     return actor;
   }
+
+  public SerializableConsumer<T> consumer() {
+    return consumer;
+  }
+
+  public Returns<?> returns() { return returns; }
 
   @Override
   public void deliver() {
@@ -78,9 +84,9 @@ public class LocalMessage<T> implements Message {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void set(final Actor actor, final Class<?> protocol, final Consumer<?> consumer, final Returns<?> returns, final String representation) {
+  public void set(final Actor actor, final Class<?> protocol, final SerializableConsumer<?> consumer, final Returns<?> returns, final String representation) {
     this.actor = actor;
-    this.consumer = (Consumer<T>) consumer;
+    this.consumer = (SerializableConsumer<T>) consumer;
     this.protocol = (Class<T>) protocol;
     this.representation = representation;
     this.returns = (Returns<Object>) returns;
@@ -113,6 +119,7 @@ public class LocalMessage<T> implements Message {
       try {
         actor.returns.reset(returns);
         consumer.accept((T) actor);
+        actor.lifeCycle.evictable.receivedMessage();
         if (actor.returns.__internal__outcomeSet) {
           // USE THE FOLLOWING. this forces the same ce actor to be used for
           // all completes outcomes such that completes outcomes cannot be
