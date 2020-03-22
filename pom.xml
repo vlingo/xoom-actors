@@ -12,20 +12,6 @@
       <url>https://mozilla.org/MPL/2.0/</url>
     </license>
   </licenses>
-  <developers>
-    <developer>
-      <name>Vaughn Vernon</name>
-      <email>vaughn@kalele.io</email>
-      <organization>Kalele</organization>
-      <organizationUrl>http://kalele.io</organizationUrl>
-    </developer>
-    <developer>
-      <name>Dmitry Ledentsov</name>
-      <email>dmlled@yahoo.com</email>
-      <organization>Dmitry Ledentsov</organization>
-      <organizationUrl>https://github.com/d-led</organizationUrl>
-    </developer>
-  </developers>
   <scm>
     <connection>scm:git:git://github.com/vlingo/vlingo-actors.git</connection>
     <developerConnection>scm:git:ssh://github.com/vlingo/vlingo-actors.git</developerConnection>
