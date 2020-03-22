@@ -119,6 +119,8 @@ final class Directory {
 
 
   public static final class ActorAddressAlreadyRegistered extends IllegalArgumentException {
+    private static final long serialVersionUID = 1L;
+
     public ActorAddressAlreadyRegistered(Class<?> type, Address address) {
       super(String.format("Failed to register Actor of type %s. Address is already registered: %s",
           type,

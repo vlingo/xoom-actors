@@ -7,9 +7,8 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Completes;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,15 +17,17 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
+import io.vlingo.common.Completes;
 
 public class ProxyGeneratorTest {
     private ProxyGenerator proxyGenerator;
 
     @Before
     public void setUp() throws Exception {
-        proxyGenerator = ProxyGenerator.forTest(false, Logger.basicLogger());
+        proxyGenerator = ProxyGenerator.forTest(ProxyGeneratorTest.class.getClassLoader(), false, Logger.basicLogger());
     }
 
     @Test
