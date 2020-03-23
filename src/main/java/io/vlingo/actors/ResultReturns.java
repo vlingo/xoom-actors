@@ -168,6 +168,16 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
+  public Completes<Object> timeoutWithin(long timeout) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <F> Completes<Object> useFailedOutcomeOf(F failedOutcomeValue) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Completes<Object> with(final Object outcome) {
     this.__internal__outcomeSet = true;
     this.__internal__outcome = outcome;
