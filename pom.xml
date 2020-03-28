@@ -108,6 +108,12 @@
       <version>1.0.13</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.vlingo</groupId>
+      <artifactId>vlingo-telemetry</artifactId>
+      <version>1.2.9</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   <distributionManagement>
     <repository>
