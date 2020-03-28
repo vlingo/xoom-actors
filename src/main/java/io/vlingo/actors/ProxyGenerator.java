@@ -67,22 +67,22 @@ public class ProxyGenerator implements AutoCloseable {
   private final DynaType type;
   private final URLClassLoader urlClassLoader;
 
-  public static ProxyGenerator forClasspath(final List<File> classPath, final File destinationDirectory, final DynaType type, final boolean persist, final Logger logger) throws Exception {
-    return new ProxyGenerator(classPath, destinationDirectory, type, persist, logger);
+  public static ProxyGenerator forClasspath(final ClassLoader classLoader, final List<File> classPath, final File destinationDirectory, final DynaType type, final boolean persist, final Logger logger) throws Exception {
+    return new ProxyGenerator(classLoader, classPath, destinationDirectory, type, persist, logger);
   }
 
-  public static ProxyGenerator forMain(final boolean persist, final Logger logger) throws Exception {
+  public static ProxyGenerator forMain(final ClassLoader classLoader, final boolean persist, final Logger logger) throws Exception {
     final DynaType type = DynaType.Main;
     final List<File> classPath = Collections.singletonList(new File(Properties.properties.getProperty("proxy.generated.classes.main", RootOfMainClasses)));
     final File rootOfGenerated = rootOfGeneratedSources(type);
-    return new ProxyGenerator(classPath, rootOfGenerated, type, persist, logger);
+    return new ProxyGenerator(classLoader, classPath, rootOfGenerated, type, persist, logger);
   }
 
-  public static ProxyGenerator forTest(final boolean persist, final Logger logger) throws Exception {
+  public static ProxyGenerator forTest(final ClassLoader classLoader, final boolean persist, final Logger logger) throws Exception {
     DynaType type = DynaType.Test;
     final List<File> classPath = Collections.singletonList(new File(Properties.properties.getProperty("proxy.generated.classes.test", RootOfTestClasses)));
     final File rootOfGenerated = rootOfGeneratedSources(type);
-    return new ProxyGenerator(classPath, rootOfGenerated, type, persist, logger);
+    return new ProxyGenerator(classLoader, classPath, rootOfGenerated, type, persist, logger);
   }
 
   @Override
@@ -115,12 +115,12 @@ public class ProxyGenerator implements AutoCloseable {
     return urlClassLoader;
   }
 
-  private ProxyGenerator(final List<File> rootOfClasses, final File rootOfGenerated, final DynaType type, final boolean persist, final Logger logger) throws Exception {
+  private ProxyGenerator(final ClassLoader classLoader, final List<File> rootOfClasses, final File rootOfGenerated, final DynaType type, final boolean persist, final Logger logger) throws Exception {
     this.rootOfGenerated = rootOfGenerated;
     this.type = type;
     this.persist = persist;
     this.logger = logger;
-    this.urlClassLoader = initializeClassLoader(rootOfClasses);
+    this.urlClassLoader = initializeClassLoader(classLoader, rootOfClasses);
   }
 
   private String classStatement(final Class<?> protocolInterface) {
@@ -182,12 +182,12 @@ public class ProxyGenerator implements AutoCloseable {
     return builder.toString();
   }
 
-  private URLClassLoader initializeClassLoader(final List<File> targetClassPath) throws MalformedURLException {
+  private URLClassLoader initializeClassLoader(final ClassLoader classLoader, final List<File> targetClassPath) throws MalformedURLException {
     final URL[] classPathURLs = new URL[targetClassPath.size()];
     for (int idx = 0; idx < targetClassPath.size(); idx++) {
       classPathURLs[idx] = targetClassPath.get(idx).toURI().toURL();
     }
-    final URLClassLoader urlClassLoader = new URLClassLoader(classPathURLs);
+    final URLClassLoader urlClassLoader = new URLClassLoader(classPathURLs, classLoader);
     return urlClassLoader;
   }
 

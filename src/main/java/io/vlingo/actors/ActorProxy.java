@@ -7,15 +7,15 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.ProxyGenerator.Result;
-import io.vlingo.common.compiler.DynaClassLoader;
-import io.vlingo.common.compiler.DynaCompiler;
-import io.vlingo.common.compiler.DynaCompiler.Input;
+import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.locks.Lock;
 
-import static io.vlingo.common.compiler.DynaNaming.fullyQualifiedClassnameFor;
+import io.vlingo.actors.ProxyGenerator.Result;
+import io.vlingo.common.compiler.DynaClassLoader;
+import io.vlingo.common.compiler.DynaCompiler;
+import io.vlingo.common.compiler.DynaCompiler.Input;
 
 public final class ActorProxy {
 
@@ -84,10 +84,12 @@ public final class ActorProxy {
           final Actor actor,
           final Mailbox mailbox,
           final String targetClassname) {
-    try (final ProxyGenerator generator = ProxyGenerator.forMain(true, actor.logger())) {
+
+    final ClassLoader classLoader = classLoaderFor(actor);
+    try (final ProxyGenerator generator = ProxyGenerator.forMain(classLoader, true, actor.logger())) {
       return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
     } catch (Exception emain) {
-      try (final ProxyGenerator generator = ProxyGenerator.forTest(true, actor.logger())) {
+      try (final ProxyGenerator generator = ProxyGenerator.forTest(classLoader, true, actor.logger())) {
         return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
       } catch (Exception etest) {
         throw new IllegalArgumentException("Actor proxy " + protocol.getName() + " not created for main or test: " + etest.getMessage(), etest);
