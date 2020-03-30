@@ -17,10 +17,12 @@ cache:
 deploy:
   - provider: script
     script: "mvn deploy -DskipTests"
+    skip_cleanup: true
     on:
       tags: true
   - provider: script
     script: "mvn deploy -DskipTests"
+    skip_cleanup: true
     on:
       branch: master
 
