@@ -15,8 +15,8 @@ cache:
     - $HOME/.m2/repository
 
 deploy:
-  provider: .travis/bintray
-  file: bintray.json
+  provider: bintray
+  file: .travis/bintray.json
   skip_cleanup: true
   user: d-led
   on:
