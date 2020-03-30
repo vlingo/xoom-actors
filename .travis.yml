@@ -1,14 +1,21 @@
 language: java
 dist: trusty
+
 before_install:
-- cd ${TRAVIS_BUILD_DIR}/..
-- git clone --depth=50 --branch=master https://github.com/vlingo/vlingo-common.git
-- cd vlingo-common && mvn install -DskipTests=true
-- cd ${TRAVIS_BUILD_DIR}
+  - rm -rf $HOME/.m2/repository/io/vlingo
+  - cp .travis/settings.xml $HOME/.m2/settings.xml
+
 script:
-- mvn install
+  - mvn install
+
+before_cache:
+  - rm -rf $HOME/.m2/repository/io/vlingo
+cache:
+  directories:
+    - $HOME/.m2/repository
+
 deploy:
-  provider: bintray
+  provider: .travis/bintray
   file: bintray.json
   skip_cleanup: true
   user: d-led
