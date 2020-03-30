@@ -6,99 +6,173 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.simple.SimpleConfig;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.vlingo.actors.testkit.AccessSafely;
+import io.vlingo.common.Completes;
+import io.vlingo.telemetry.MicrometerTelemetry;
+import io.vlingo.telemetry.plugin.mailbox.DefaultMailboxTelemetry;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import static io.vlingo.telemetry.plugin.mailbox.DefaultMailboxTelemetry.PREFIX;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
-import io.vlingo.actors.testkit.AccessSafely;
-import io.vlingo.common.Completes;
 /**
- * RoundRobinRouterTest
+ * SmallestMailboxRouterTest tests {@link SmallestMailboxRouter}.
  */
 public class RoundRobinRouterTest extends ActorsTest {
+  private static int messageCount = 0;
+  private MeterRegistry registry;
+  private static DefaultMailboxTelemetry telemetry;
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    registry = new SimpleMeterRegistry(SimpleConfig.DEFAULT, Clock.SYSTEM);
+    telemetry = new DefaultMailboxTelemetry(new MicrometerTelemetry(registry));
+  }
 
   @Test
-  public void testTwoArgConsumerProtocol() throws Exception {
-    final int poolSize = 4;
-    final int rounds = 2;
-    final int messagesToSend = poolSize * rounds;
+  public void testTwoArgConsumerProtocol() {
+    final int messagesToSend = 3;
 
     final Results results = new Results(messagesToSend);
 
-    final TwoArgSupplierProtocol router = world.actorFor(
-            TwoArgSupplierProtocol.class,
-            Definition.has(TestRouterActor.class, Definition.parameters(poolSize)));
-    
+    final SubscriptionProtocol router = world.actorFor(
+            SubscriptionProtocol.class,
+            Definition.has(TestRouterActor.class, Definition.NoParameters));
+
+    final String FirstWorkerAddress = "1f7b13b6-3631-415e-88f2-ea3496f1a70d";
+    SubscriptionProtocol FirstWorker = world.actorFor(
+            SubscriptionProtocol.class,
+            Definition.has(TestRouteeActor.class, Definition.NoParameters, FirstWorkerAddress));
+
+    final String SecondWorkerAddress = "761b8c2e-0cfc-40c8-af97-50eff09fb850";
+    SubscriptionProtocol SecondWorker = world.actorFor(
+            SubscriptionProtocol.class,
+            Definition.has(TestRouteeActor.class, Definition.NoParameters, SecondWorkerAddress));
+
+    final String ThirdWorkerAddress = "2f6d29ca-0313-4e75-86a2-876bbfb6fd29";
+    SubscriptionProtocol ThirdWorker = world.actorFor(
+            SubscriptionProtocol.class,
+            Definition.has(TestRouteeActor.class, Definition.NoParameters, ThirdWorkerAddress));
+
+    router.subscribe(FirstWorker);
+    router.subscribe(SecondWorker);
+    router.subscribe(ThirdWorker);
+
+    assertPendingMessagesNumberIs(1, FirstWorkerAddress);
+    assertPendingMessagesNumberIs(2, SecondWorkerAddress);
+    assertPendingMessagesNumberIs(3, ThirdWorkerAddress);
+
+    messageCount = 0;
     for (int i = 0; i < messagesToSend; i++) {
-      final int round = i;
+      messageCount++;
       router
-        .productOf(round, round)
-        .andFinallyConsume(answer -> results.access.writeUsing("answers", answer));
+              .getWorkerName()
+              .andFinallyConsume(answer -> results.access.writeUsing("answers", answer));
     }
-    
-    final List<Integer> allExpected = new ArrayList<>();
+
+    final List<String> allExpected = new ArrayList<>();
+    allExpected.add("1f7b13b6-3631-415e-88f2-ea3496f1a70d");
+    allExpected.add("761b8c2e-0cfc-40c8-af97-50eff09fb850");
+    allExpected.add("2f6d29ca-0313-4e75-86a2-876bbfb6fd29");
 
     for (int round = 0; round < messagesToSend; round++) {
-      int expected = round * round;
-      allExpected.add(expected);
-    }
-    for (int round = 0; round < messagesToSend; round++) {
-      int actual = results.access.readFrom("answers", round);
-      assertTrue(allExpected.remove(new Integer(actual)));
+      String actual = results.access.readFrom("answers", round);
+      assertTrue(allExpected.remove(actual));
     }
     assertEquals(0, allExpected.size());
-    
-//    for (int round = 0; round < messagesToSend; round++) {
-//      int expected = round * round;
-//      int actual = answers[round];
-//      assertEquals("Completes.outcoume for round " + round, expected, actual);
-//    }
   }
-  
-  public static interface TwoArgSupplierProtocol {
-    Completes<Integer> productOf(int arg1, int arg2);
-  }
-  
-  public static class TestRouterActor extends RoundRobinRouter<TwoArgSupplierProtocol> implements TwoArgSupplierProtocol {
-    
-    public TestRouterActor(final int poolSize) {
-      super(
-        new RouterSpecification<TwoArgSupplierProtocol>(
-          poolSize,
-          Definition.has(TestRouteeActor.class, Definition.NoParameters),
-          TwoArgSupplierProtocol.class
-        )
-      );
-    }
-    
-    @Override
-    public Completes<Integer> productOf(int arg1, int arg2) {
-      return dispatchQuery(TwoArgSupplierProtocol::productOf, arg1, arg2);
-    }
-  }
-  
-  public static class TestRouteeActor extends Actor implements TwoArgSupplierProtocol {
-    
-    public TestRouteeActor() { }
 
-    /* @see io.vlingo.actors.RoundRobinRouterTest.TwoArgSupplierProtocol#productOf(int, int) */
-    @Override
-    public Completes<Integer> productOf(int arg1, int arg2) {
-      return completes().with(arg1 * arg2);
+  public interface SubscriptionProtocol {
+    void subscribe(SubscriptionProtocol routeeActor);
+
+    void unsubscribe(SubscriptionProtocol routeeActor);
+
+    Completes<String> getWorkerName();
+  }
+
+  public static class TestRouterActor extends RoundRobinRouter<SubscriptionProtocol>
+          implements SubscriptionProtocol {
+
+    public TestRouterActor() {
+      super(new RouterSpecification<>(
+              0,
+              Definition.has(TestRouteeActor.class, Definition.NoParameters),
+              SubscriptionProtocol.class
+      ));
     }
+
+    @Override
+    public void subscribe(SubscriptionProtocol routeeActor) {
+      subscribe(Routee.of(routeeActor));
+    }
+
+    @Override
+    public void unsubscribe(SubscriptionProtocol routeeActor) {
+      unsubscribe(Routee.of(routeeActor));
+    }
+
+    @Override
+    public Completes<String> getWorkerName() {
+      return dispatchQuery((subscriptionProtocol, a1) -> subscriptionProtocol.getWorkerName(), null);
+    }
+  }
+
+  public static class TestRouteeActor extends Actor implements SubscriptionProtocol {
+    TestRouteeActor() {
+      Message message;
+      final Actor receiver = this;
+
+      message = mock(Message.class);
+      doReturn(receiver).when(message).actor();
+
+      messageCount++;
+      for (int i = 0; i < messageCount; i++) {
+        telemetry.onSendMessage(message.actor());
+      }
+    }
+
+    @Override
+    public void subscribe(SubscriptionProtocol routeeActor) {
+    }
+
+    @Override
+    public void unsubscribe(SubscriptionProtocol routeeActor) {
+    }
+
+    @Override
+    public Completes<String> getWorkerName() {
+      return completes().with(this.lifeCycle.environment.address.name());
+    }
+  }
+
+  private void assertPendingMessagesNumberIs(final int expectedMessageCount, String addressOfActor) {
+    Gauge byActorPending = registry.get(PREFIX + "TestRouteeActor.pending").tags(singletonList(Tag.of("Address", addressOfActor))).gauge();
+    assertEquals(expectedMessageCount, byActorPending.value(), 0);
   }
 
   public static class Results {
     public AccessSafely access;
-    private final int[] answers;
+    private final String[] answers;
     private int index;
 
-    public Results(final int totalAnswers) {
-      this.answers = new int[totalAnswers];
+    Results(final int totalAnswers) {
+      this.answers = new String[totalAnswers];
       this.index = 0;
       this.access = afterCompleting(totalAnswers);
     }
@@ -106,7 +180,7 @@ public class RoundRobinRouterTest extends ActorsTest {
     private AccessSafely afterCompleting(final int steps) {
       access = AccessSafely
               .afterCompleting(steps)
-              .writingWith("answers", (Integer answer) -> answers[index++] = answer)
+              .writingWith("answers", (String answer) -> answers[index++] = answer)
               .readingWith("answers", (Integer index) -> answers[index]);
       return access;
     }
