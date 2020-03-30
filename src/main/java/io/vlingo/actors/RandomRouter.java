@@ -15,8 +15,7 @@ public class RandomRouter<P> extends Router<P> {
   private final Random random;
   
   public RandomRouter(final RouterSpecification<P> specification) {
-    super(specification);
-    this.random = new Random(System.currentTimeMillis());
+    this(specification, new Random(System.currentTimeMillis()));
   }
 
   RandomRouter(final RouterSpecification<P> specification, final Random seededRandom) {
