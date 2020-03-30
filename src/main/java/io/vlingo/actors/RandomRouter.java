@@ -18,7 +18,12 @@ public class RandomRouter<P> extends Router<P> {
     super(specification);
     this.random = new Random(System.currentTimeMillis());
   }
-  
+
+  RandomRouter(final RouterSpecification<P> specification, final Random seededRandom) {
+    super(specification);
+    this.random = seededRandom;
+  }
+
   /* @see io.vlingo.actors.Router#computeRouting() */
   @Override
   protected Routing<P> computeRouting() {
