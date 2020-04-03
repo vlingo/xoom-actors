@@ -26,6 +26,10 @@ deploy:
     on:
       branch: master
 
+after_deploy:
+  - chmod u+x .travis/trigger_deps.sh
+  - if [ -n "$TRAVIS_TAG" ]; then .travis/trigger_deps.sh; fi
+
 notifications:
   slack:
     secure: JMB8CNKmQqVpOJrzDUmj+k9EE2rEnGboc0EgQ7dVIXvsN6fJ5VMZcpPilYBn9az8afl8M1GL7UedCIXDwrIVVT8ah3AOwGjP3BxvMYVw+0gRuZTGPitBeMFLbgAZG+gYZUJeIu7QLqB4y6y7RQ/TJ6NlaqQQ5rxT2o2UW3ZzBBv9Z7zOs4mRL+DT92tq4ayHbEya7gURogpCykEtKCBVcnmA0587zhUdQkxLq8PSI5WmWx7RuqVpbfnk76Zp1O7mYnlKJHxurlbAiuL3fFAjjRsBwsdFjya/fTOTKMo8OHIaUacFJfmxEysit/+z55x/dE2yK3Qi+p7KsDULptv9n7peJz8CySrSjj5pZgVeGgagGI58eB5pkKMlhXgoAShyMCKji5CO1WGIKJ37VdCC9p1ECz2E1r8cGyzxvGvxcwQ5uPfjd3iiDgKK89v9w/hITetEcSPJgSix4LwJ/ddPnuVEiESBv8zFC3x0SLZYGMleDosml/Bw3abBpoym8bMk6KOxISw8eRrnYwgY3q9/P64FXRKZSxFLyJ5fuqfBeh4xQ/jk5m9Sh2ZY44D7eeNAG4Di0HpspYmzlcquA6be2nLWiNbqJuoyns3o+dcGBMWPpS953M8P+wRwh+3E/7NUkYX2cDqfHs3ZgPJM30V4YuyXlOjYqCQoX3Rf86qpd5I=
