@@ -4,6 +4,8 @@ dist: trusty
 before_install:
   - rm -rf $HOME/.m2/repository/io/vlingo
   - cp .travis/settings.xml $HOME/.m2/settings.xml
+  # Force caching of maven plugins used during deploy phase
+  - mvn deploy:help versions:help help:help
 
 script:
   - mvn install
