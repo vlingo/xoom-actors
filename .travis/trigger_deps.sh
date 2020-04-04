@@ -13,8 +13,8 @@ trigger_dependency()
     cd $1
 
     # Update project version and all io.vlingo dependencies
-    mvn versions:set -DnewVersion=$VERSION
-    mvn versions:use-dep-version -Dincludes=io.vlingo -DdepVersion=$VERSION -DforceVersion=true
+    mvn versions:set -DnewVersion=$2
+    mvn versions:use-dep-version -Dincludes=io.vlingo -DdepVersion=$2 -DforceVersion=true
 
     git add pom.xml
     git commit -m "Release v$2"
