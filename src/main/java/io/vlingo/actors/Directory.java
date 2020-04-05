@@ -15,18 +15,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 final class Directory {
+  private static final int DefaultStageBuckets = 32;
+  private static final int DefaultStageInitialCapacity = 32;
 
   private final Address none;
 
-  // This particular tuning is based on relatively few actors being spread
+  // (1) Configuration: 32, 32; used in default Stage
+  // This default tuning manages relatively few actors well, being spread
   // across 32 buckets with only 32 pre-allocated elements, for a total of
   // 1024 actors. This hard-coded configuration will have good performance
   // up to around 75% of 1024 actors, but very average if not poor performance
   // following that.
   //
-  // TODO: Change to configuration-based values to enable the
-  // application to estimate how many actors are likely to exist at
-  // any one time. For example, there will be very few actors in some
+  // (2) Configuration: 128, 16,384; used by Grid
+  // This tuning enables millions of actors at any one time.
+  // For example, there will be very few actors in some
   // "applications" such as vlingo/cluster, but then the application
   // running on the cluster itself may have many, many actors. These
   // run on a different stage, and thus should be tuned separately.
@@ -35,8 +38,8 @@ final class Directory {
   // This will support 2 million actors with an average of a few hundred
   // less than 16K actors in each bucket.
 
-  private final int buckets = 32;
-  private final int initialCapacity = 32;
+  private final int buckets;
+  private final int initialCapacity;
   private final float loadFactor = 0.75f;
 
   // TODO: base this on scheduler/dispatcher
@@ -45,7 +48,13 @@ final class Directory {
   private final Map<Address, Actor>[] maps;
 
   Directory(final Address none) {
+    this(none, DefaultStageBuckets, DefaultStageInitialCapacity);
+  }
+
+  Directory(final Address none, final int buckets, final int initialCapacity) {
     this.none = none;
+    this.buckets = buckets;
+    this.initialCapacity = initialCapacity;
     this.maps = build();
   }
 

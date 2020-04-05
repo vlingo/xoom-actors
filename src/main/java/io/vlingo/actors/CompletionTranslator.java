@@ -9,8 +9,6 @@ package io.vlingo.actors;
 
 import java.util.function.Function;
 
-import io.vlingo.actors.CompletesEventually;
-
 /**
  * Supports providing a latent {@code Completes<T>} outcome by way of {@code CompletesEventually}.
  * Used by {@code StateObjectQueryActor} to provide answers from queries that complete asynchronously
