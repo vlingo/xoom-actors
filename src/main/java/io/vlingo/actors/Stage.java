@@ -7,17 +7,17 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
-import io.vlingo.actors.testkit.TestActor;
-import io.vlingo.common.Completes;
-import io.vlingo.common.Scheduled;
-import io.vlingo.common.Scheduler;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
+import io.vlingo.actors.testkit.TestActor;
+import io.vlingo.common.Completes;
+import io.vlingo.common.Scheduled;
+import io.vlingo.common.Scheduler;
 
 public class Stage implements Stoppable {
   private final AddressFactory addressFactory;
@@ -30,16 +30,30 @@ public class Stage implements Stoppable {
   protected final World world;
 
   /**
-   * Initializes the new {@code Stage} of the world and with name.
+   * Initializes the new {@code Stage} of the{@code world}, {@code addressFactory}, and with {@code name}.
+   * Uses default {@code Directory} capacity of 32x32.
    * @param world the {@code World} parent of this {@code Stage}
    * @param addressFactory the AddressFactory to be used
    * @param name the {@code String} name of this {@code Stage}
    */
   public Stage(final World world, final AddressFactory addressFactory, final String name) {
+    this(world, addressFactory, name, 32, 32);
+  }
+
+  /**
+   * Initializes the new {@code Stage} of the{@code world}, {@code addressFactory}, {@code name},
+   * and {@code Directory} capacity of {@code directoryBuckets} and {@code directoryInitialCapacity}.
+   * @param world the {@code World} parent of this {@code Stage}
+   * @param addressFactory the AddressFactory to be used
+   * @param name the {@code String} name of this {@code Stage}
+   * @param directoryBuckets the int number of buckets
+   * @param directoryInitialCapacity the int initial number of elements in each bucket
+   */
+  public Stage(final World world, final AddressFactory addressFactory, final String name, final int directoryBuckets, final int directoryInitialCapacity) {
     this.world = world;
     this.addressFactory = addressFactory;
     this.name = name;
-    this.directory = new Directory(addressFactory.none());
+    this.directory = new Directory(addressFactory.none(), directoryBuckets, directoryInitialCapacity);
     this.commonSupervisors = new HashMap<>();
     this.scheduler = new Scheduler();
     this.stopped = new AtomicBoolean(false);
