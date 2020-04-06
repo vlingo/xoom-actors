@@ -44,9 +44,9 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
     dispatcher.close();
 
-    final int neverReviewed = mailboxSize * 2;
+    final int neverReceived = mailboxSize * 2;
 
-    for (int count = mailboxSize + 1; count <= neverReviewed; ++count) {
+    for (int count = mailboxSize + 1; count <= neverReceived; ++count) {
       final int countParam = count;
       final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
 
