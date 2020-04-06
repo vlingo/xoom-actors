@@ -83,13 +83,11 @@ public class RingBufferDispatcherTest extends ActorsTest {
   public void testOverflowDispatch() throws Exception {
     final int mailboxSize = 64;
     final int overflowSize = mailboxSize * 2;
-    final TestResults testResults = new TestResults(overflowSize);
+    final TestResults testResults = new TestResults(mailboxSize);
 
     final RingBufferDispatcher dispatcher = new RingBufferDispatcher(mailboxSize, 2, false, 4);
 
     final Mailbox mailbox = dispatcher.mailbox();
-    dispatcher.start();
-    dispatcher.close();
 
     final CountTakerActor actor = new CountTakerActor(testResults);
 
