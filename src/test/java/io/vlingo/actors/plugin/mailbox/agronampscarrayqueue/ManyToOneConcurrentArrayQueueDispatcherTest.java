@@ -11,7 +11,7 @@ import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.LocalMessage;
 import io.vlingo.actors.Mailbox;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.common.SerializableConsumer;
 import org.junit.Test;
 
@@ -24,6 +24,8 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
   @Test
   public void testClose() throws Exception {
+    final TestResults testResults = new TestResults(MailboxSize);
+
     final ManyToOneConcurrentArrayQueueDispatcher dispatcher =
             new ManyToOneConcurrentArrayQueueDispatcher(MailboxSize, 2, false, 4, 10);
 
@@ -31,40 +33,37 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     final Mailbox mailbox = dispatcher.mailbox();
 
-    final CountTakerActor actor = new CountTakerActor();
-
-    actor.until = until(MailboxSize);
+    final CountTakerActor actor = new CountTakerActor(testResults);
 
     for (int count = 1; count <= MailboxSize; ++count) {
       final int countParam = count;
       final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
     }
 
-    actor.until.completes();
+    assertEquals(MailboxSize, testResults.getHighest());
 
     dispatcher.close();
 
-    final int neverRevieved = MailboxSize * 2;
+    final int neverReceived = MailboxSize * 2;
 
-    for (int count = MailboxSize + 1; count <= neverRevieved; ++count) {
+    for (int count = MailboxSize + 1; count <= neverReceived; ++count) {
       final int countParam = count;
       final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
     }
 
-    until(0).completes();
-
-    assertEquals(MailboxSize, actor.highest.get());
+    assertEquals(MailboxSize, testResults.getHighest());
   }
 
   @Test
-  public void testBasicDispatch() throws Exception {
+  public void testBasicDispatch() {
     final int mailboxSize = 64;
+    final TestResults testResults = new TestResults(MailboxSize);
 
     final ManyToOneConcurrentArrayQueueDispatcher dispatcher =
             new ManyToOneConcurrentArrayQueueDispatcher(mailboxSize, 2, false, 4, 10);
@@ -73,26 +72,23 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     final Mailbox mailbox = dispatcher.mailbox();
 
-    final CountTakerActor actor = new CountTakerActor();
-
-    actor.until = until(MailboxSize);
+    final CountTakerActor actor = new CountTakerActor(testResults);
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<>(actor, CountTaker.class, consumer, "take(int)");
 
       mailbox.send(message);
     }
 
-    actor.until.completes();
-
-    assertEquals(mailboxSize, actor.highest.get());
+    assertEquals(mailboxSize, testResults.getHighest());
   }
 
   @Test
   public void testNotifyOnSendDispatch() throws Exception {
     final int mailboxSize = 64;
+    final TestResults testResults = new TestResults(mailboxSize);
 
     final ManyToOneConcurrentArrayQueueDispatcher dispatcher =
             new ManyToOneConcurrentArrayQueueDispatcher(mailboxSize, 1000, true, 4, 10);
@@ -101,14 +97,12 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
 
     final Mailbox mailbox = dispatcher.mailbox();
 
-    final CountTakerActor actor = new CountTakerActor();
-
-    actor.until = until(MailboxSize);
+    final CountTakerActor actor = new CountTakerActor(testResults);
 
     for (int count = 1; count <= mailboxSize; ++count) {
       final int countParam = count;
       final SerializableConsumer<CountTaker> consumer = (consumerActor) -> consumerActor.take(countParam);
-      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
+      final LocalMessage<CountTaker> message = new LocalMessage<>(actor, CountTaker.class, consumer, "take(int)");
 
       // notify if in back off
       mailbox.send(message);
@@ -119,9 +113,7 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
       }
     }
 
-    actor.until.completes();
-
-    assertEquals(mailboxSize, actor.highest.get());
+    assertEquals(mailboxSize, testResults.getHighest());
   }
 
   public static interface CountTaker {
@@ -129,17 +121,44 @@ public class ManyToOneConcurrentArrayQueueDispatcherTest extends ActorsTest {
   }
 
   public static class CountTakerActor extends Actor implements CountTaker {
-    public AtomicInteger highest = new AtomicInteger(0);
-    public TestUntil until = TestUntil.happenings(0);
+    private final TestResults testResults;
+    private final CountTaker self;
 
-    public CountTakerActor() { }
+    public CountTakerActor(final TestResults testResults) {
+      this.testResults = testResults;
+      this.self = selfAs(CountTaker.class);
+    }
 
     @Override
     public void take(final int count) {
-      if (count > highest.get()) {
-        highest.set(count);
+      if (testResults.isHighest(count)) {
+        testResults.setHighest(count);
       }
-      until.happened();
+    }
+  }
+
+  private static class TestResults {
+    private final AccessSafely accessSafely;
+
+    private TestResults(final int happenings) {
+      final AtomicInteger highest = new AtomicInteger(0);
+      this.accessSafely = AccessSafely
+              .afterCompleting(happenings)
+              .writingWith("highest", highest::set)
+              .readingWith("highest", highest::get)
+              .readingWith("isHighest", (Integer count) -> count > highest.get());
+    }
+
+    void setHighest(Integer value){
+      this.accessSafely.writeUsing("highest", value);
+    }
+
+    int getHighest(){
+      return this.accessSafely.readFrom("highest");
+    }
+
+    boolean isHighest(Integer value){
+      return this.accessSafely.readFromNow("isHighest", value);
     }
   }
 }
