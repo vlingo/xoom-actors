@@ -12,6 +12,15 @@
       <url>https://mozilla.org/MPL/2.0/</url>
     </license>
   </licenses>
+  <developers>
+    <developer>
+      <id>vlingo</id>
+      <name>vlingo/PLATFORM Team</name>
+      <email>info@vlingo.io</email>
+      <organization>vlingo</organization>
+      <organizationUrl>https://vlingo.io/contributors/</organizationUrl>
+    </developer>
+  </developers>
   <scm>
     <connection>scm:git:git://github.com/vlingo/vlingo-actors.git</connection>
     <developerConnection>scm:git:ssh://github.com/vlingo/vlingo-actors.git</developerConnection>
@@ -109,6 +118,9 @@
     <repository>
       <id>jcenter</id>
       <url>https://jcenter.bintray.com/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
 
     <repository>
@@ -117,9 +129,6 @@
       <releases>
         <enabled>false</enabled>
       </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
     </repository>
   </repositories>
 
