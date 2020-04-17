@@ -7,16 +7,17 @@
 
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
+
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.testkit.AccessSafely;
 import io.vlingo.common.SerializableConsumer;
-import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
 
 public class RingBufferDispatcherTest extends ActorsTest {
 
@@ -139,6 +140,7 @@ public class RingBufferDispatcherTest extends ActorsTest {
 
   public static class CountTakerActor extends Actor implements CountTaker {
     private final TestResults testResults;
+    @SuppressWarnings("unused")
     private final CountTaker self;
 
     public CountTakerActor(final TestResults testResults) {
