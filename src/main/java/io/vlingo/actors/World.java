@@ -7,13 +7,13 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
-import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
-import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
-
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.vlingo.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
+import io.vlingo.actors.plugin.logging.DefaultLoggerProviderKeeper;
+import io.vlingo.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
 
 /**
  * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
@@ -622,7 +622,7 @@ public final class World implements Registrar {
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
-    this.addressFactory = new BasicAddressFactory();
+    this.addressFactory = configuration.addressFactoryOr(BasicAddressFactory::new);
     this.completesProviderKeeper = new DefaultCompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new DefaultLoggerProviderKeeper();
     this.mailboxProviderKeeper = new DefaultMailboxProviderKeeper();
