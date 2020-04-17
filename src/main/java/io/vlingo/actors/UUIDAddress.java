@@ -51,7 +51,7 @@ public class UUIDAddress implements Address {
 
   @Override
   public boolean equals(final Object other) {
-    if (other == null || other.getClass() != UUIDAddress.class) {
+    if (other == null || other.getClass() != this.getClass()) {
       return false;
     }
     return id.equals(((UUIDAddress) other).id);
