@@ -30,7 +30,7 @@ public final class BasicAddress implements Address {
 
   @Override
   public String idString() {
-    return ""+id;
+    return String.valueOf(id);
   }
 
   @Override
@@ -67,6 +67,7 @@ public final class BasicAddress implements Address {
     return "Address[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
   }
 
+  @Override
   public int compareTo(final Address other) {
     return Long.compare(id, ((BasicAddress) other).id);
   }
