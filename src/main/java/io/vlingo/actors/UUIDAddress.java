@@ -64,7 +64,7 @@ public class UUIDAddress implements Address {
 
   @Override
   public String toString() {
-    return "GridAddress[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
+    return "UUIDAddress[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
   }
 
   @Override
