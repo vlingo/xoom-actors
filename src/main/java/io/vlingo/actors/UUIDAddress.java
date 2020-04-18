@@ -64,7 +64,7 @@ public class UUIDAddress implements Address {
 
   @Override
   public String toString() {
-    return "UUIDAddress[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
+    return this.getClass().getSimpleName() + "[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
   }
 
   @Override
