@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.logging.LogEvent;
 import io.vlingo.common.SerializableConsumer;
 
 public class Logger__Proxy implements Logger {
@@ -17,18 +18,23 @@ public class Logger__Proxy implements Logger {
   private static final String traceRepresentation1 = "trace(java.lang.String)";
   private static final String traceRepresentation2 = "trace(java.lang.String, java.lang.Object... args)";
   private static final String traceRepresentation3 = "trace(java.lang.String, java.lang.Throwable)";
+  private static final String traceRepresentation4 = "trace(io.vlingo.actors.logging.LogEvent)";
   private static final String debugRepresentation1 = "debug(java.lang.String)";
   private static final String debugRepresentation2 = "debug(java.lang.String, java.lang.Object... args)";
   private static final String debugRepresentation3 = "debug(java.lang.String, java.lang.Throwable)";
+  private static final String debugRepresentation4 = "debug(io.vlingo.actors.logging.LogEvent)";
   private static final String infoRepresentation1 = "info(java.lang.String)";
   private static final String infoRepresentation2 = "info(java.lang.String, java.lang.Object... args)";
   private static final String infoRepresentation3 = "info(java.lang.String, java.lang.Throwable)";
+  private static final String infoRepresentation4 = "info(io.vlingo.actors.logging.LogEvent)";
   private static final String warnRepresentation1 = "warn(java.lang.String)";
   private static final String warnRepresentation2 = "warn(java.lang.String, java.lang.Object... args)";
   private static final String warnRepresentation3 = "warn(java.lang.String, java.lang.Throwable)";
+  private static final String warnRepresentation4 = "warn(io.vlingo.actors.logging.LogEvent)";
   private static final String errorRepresentation1 = "error(java.lang.String)";
   private static final String errorRepresentation2 = "error(java.lang.String, java.lang.Object... args)";
   private static final String errorRepresentation3 = "error(java.lang.String, java.lang.Throwable)";
+  private static final String errorRepresentation4 = "error(io.vlingo.actors.logging.LogEvent)";
 
   private final Actor actor;
   private final Mailbox mailbox;
@@ -132,6 +138,36 @@ public class Logger__Proxy implements Logger {
   public void error(String message, Throwable throwable) {
     final SerializableConsumer<Logger> consumer = (actor) -> actor.error(message, throwable);
     send(consumer, errorRepresentation3);
+  }
+
+  @Override
+  public void trace(final LogEvent logEvent) {
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.trace(logEvent);
+    send(consumer, traceRepresentation4);
+  }
+
+  @Override
+  public void debug(final LogEvent logEvent) {
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.debug(logEvent);
+    send(consumer, debugRepresentation4);
+  }
+
+  @Override
+  public void info(final LogEvent logEvent) {
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.info(logEvent);
+    send(consumer, infoRepresentation4);
+  }
+
+  @Override
+  public void warn(final LogEvent logEvent) {
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.warn(logEvent);
+    send(consumer, warnRepresentation4);
+  }
+
+  @Override
+  public void error(final LogEvent logEvent) {
+    final SerializableConsumer<Logger> consumer = (actor) -> actor.error(logEvent);
+    send(consumer, errorRepresentation4);
   }
 
   public void close() {

@@ -82,7 +82,7 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
       pass = 2;
     } else if (pass == 2 && registrar.world() != null) { // if this is a test there may not be a World
       logger = registrar.world()
-              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, () -> new Slf4jLoggerActor(logger), logger));
+              .actorFor(Logger.class, Definition.has(Slf4jLoggerActor.class, Slf4jLoggerActor::new));
       registrar.register(this.pluginConfiguration.name(), this.pluginConfiguration.isDefaultLogger(), this);
     }
   }

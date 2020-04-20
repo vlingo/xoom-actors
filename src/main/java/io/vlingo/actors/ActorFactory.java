@@ -61,7 +61,7 @@ public class ActorFactory {
                     parent,
                     mailbox,
                     supervisor,
-                    new ActorLoggerAdapter(logger, definition.type().getName()));
+                    new ActorLoggerAdapter(logger, address, definition.type()));
 
     threadLocalEnvironment.set(environment);
 
