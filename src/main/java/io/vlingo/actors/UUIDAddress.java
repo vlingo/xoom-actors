@@ -7,41 +7,41 @@
 
 package io.vlingo.actors;
 
-public final class BasicAddress implements Address {
-  final static Address None = new BasicAddress(0, "None");
+import java.util.UUID;
 
-  private final long id;
+public class UUIDAddress implements Address {
+  private final UUID id;
   private final String name;
 
   @Override
   public long id() {
-    return id;
+    return id.getLeastSignificantBits();
   }
 
   @Override
   public long idSequence() {
-    return id();
+    return id.timestamp();
   }
 
   @Override
   public String idSequenceString() {
-    return idString();
+    return "" + id.timestamp();
   }
 
   @Override
   public String idString() {
-    return String.valueOf(id);
+    return id.toString();
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> T idTyped() {
-    return (T) idString(); // you can have it typed as long as it's a String
+  public UUID idTyped() {
+    return id;
   }
 
   @Override
-  public final String name() {
-    return name == null ? Long.toString(id) : name;
+  public String name() {
+    return name == null ? idString() :  name;
   }
 
   @Override
@@ -51,36 +51,36 @@ public final class BasicAddress implements Address {
 
   @Override
   public boolean equals(final Object other) {
-    if (other == null || other.getClass() != BasicAddress.class) {
+    if (other == null || other.getClass() != this.getClass()) {
       return false;
     }
-    return id == ((BasicAddress) other).id;
+    return id.equals(((UUIDAddress) other).id);
   }
 
   @Override
   public int hashCode() {
-    return Long.hashCode(id);
+    return id.hashCode();
   }
 
   @Override
   public String toString() {
-    return "Address[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
+    return this.getClass().getSimpleName() + "[id=" + id + ", name=" + (name == null ? "(none)" : name) + "]";
   }
 
   @Override
   public int compareTo(final Address other) {
-    return Long.compare(id, ((BasicAddress) other).id);
+    return id.compareTo(((UUIDAddress) other).id);
   }
 
-  BasicAddress(final long reservedId) {
-    this(reservedId, null);
+  UUIDAddress(final UUID reservedId) {
+    this(reservedId, null, false);
   }
 
-  BasicAddress(final long reservedId, final String name) {
+  UUIDAddress(final UUID reservedId, final String name) {
     this(reservedId, name, false);
   }
 
-  BasicAddress(final long reservedId, final String name, final boolean prefixName) {
+  UUIDAddress(final UUID reservedId, final String name, final boolean prefixName) {
     this.id = reservedId;
     this.name = name == null ? null : prefixName ? (name + id) : name;
   }

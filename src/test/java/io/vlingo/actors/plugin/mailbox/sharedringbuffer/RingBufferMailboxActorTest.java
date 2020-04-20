@@ -10,7 +10,9 @@ package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.actors.Actor;
@@ -18,12 +20,12 @@ import io.vlingo.actors.ActorsTest;
 import io.vlingo.actors.Definition;
 import io.vlingo.actors.plugin.PluginProperties;
 import io.vlingo.actors.plugin.completes.PooledCompletesPlugin;
-import io.vlingo.actors.testkit.TestUntil;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class RingBufferMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
-  
+
   private static final int ThroughputMailboxSize = 1048576;
   private static final int ThroughputMaxCount = 4194304; // 104857600;
   private static final int ThroughputWarmUpCount = 4194304;
@@ -32,53 +34,49 @@ public class RingBufferMailboxActorTest extends ActorsTest {
   public void testBasicDispatch() throws Exception {
     init(MailboxSize);
 
-    final TestResults testResults = new TestResults();
-    
+    final TestResults testResults = new TestResults(MaxCount);
+
     final CountTaker countTaker =
             world.actorFor(
                     CountTaker.class,
                     Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-1"));
-    
-    final int totalCount = MailboxSize / 2;
-    
-    testResults.until = until(MaxCount);
-    testResults.maximum = MaxCount;
-    
-    for (int count = 1; count <= totalCount; ++count) {
+
+    testResults.setMaximum(MaxCount);
+
+    for (int count = 1; count <= MaxCount; ++count) {
       countTaker.take(count);
     }
-    
-    testResults.until.completes();
-    
-    assertEquals(MaxCount, testResults.highest);
+
+    assertEquals(MaxCount, testResults.getHighest());
   }
 
+  @Ignore
   @Test
   public void testThroughput() throws Exception {
     System.out.println("WARMING UP...");
 
     init(ThroughputMailboxSize);
 
-    final TestResults testResults = new TestResults();
+    final TestResults testResults = new TestResults(ThroughputMailboxSize);
 
     final CountTaker countTaker =
             world.actorFor(
                     CountTaker.class,
                     Definition.has(ThroughputCountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-2"));
 
-    testResults.maximum = ThroughputWarmUpCount;
+    testResults.setMaximum(ThroughputWarmUpCount);
 
     for (int count = 1; count <= ThroughputWarmUpCount; ++count) {
       countTaker.take(count);
     }
 
-    while (testResults.highest < ThroughputWarmUpCount)
+    while (testResults.getHighest() < ThroughputWarmUpCount)
       ;
 
     System.out.println("STARTING TEST...");
 
-    testResults.highest = 0;
-    testResults.maximum = ThroughputMaxCount;
+    testResults.setHighest(0);
+    testResults.setMaximum(ThroughputMaxCount);
 
     final long startTime = System.currentTimeMillis();
 
@@ -86,14 +84,14 @@ public class RingBufferMailboxActorTest extends ActorsTest {
       countTaker.take(count);
     }
 
-    while (testResults.highest < ThroughputMaxCount)
+    while (testResults.getHighest() < ThroughputMaxCount)
       ;
 
     final long ticks = System.currentTimeMillis() - startTime;
 
     System.out.println("TICKS: " + ticks + " FOR " + ThroughputMaxCount + " MESSAGES IS " + (ThroughputMaxCount / ticks * 1000) + " PER SECOND");
 
-    assertEquals(ThroughputMaxCount, testResults.highest);
+    assertEquals(ThroughputMaxCount, testResults.getHighest());
   }
 
   private void init(final int mailboxSize) {
@@ -105,7 +103,7 @@ public class RingBufferMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testRingMailbox.fixedBackoff", "2");
     properties.setProperty("plugin.testRingMailbox.numberOfDispatchersFactor", "1.0");
     properties.setProperty("plugin.testRingMailbox.dispatcherThrottlingCount", "20");
-    
+
     SharedRingBufferMailboxPlugin provider = new SharedRingBufferMailboxPlugin();
     final PluginProperties pluginProperties = new PluginProperties("testRingMailbox", properties);
     final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
@@ -113,50 +111,75 @@ public class RingBufferMailboxActorTest extends ActorsTest {
 
     provider.start(world);
   }
-  
+
   public static interface CountTaker {
     void take(final int count);
   }
-  
+
   public static class CountTakerActor extends Actor implements CountTaker {
+    @SuppressWarnings("unused")
     private CountTaker self;
     private final TestResults testResults;
-    
+
     public CountTakerActor(final TestResults testResults) {
       this.testResults = testResults;
       self = selfAs(CountTaker.class);
     }
-    
+
     @Override
     public void take(final int count) {
-      if (count > testResults.highest) {
-        testResults.highest = count;
-        testResults.until.happened();
-      }
-      if (count < testResults.maximum) {
-        self.take(count + 1);
-      } else {
-        testResults.until.completeNow();
+      if (testResults.isHighest(count)) {
+        testResults.setHighest(count);
       }
     }
   }
-  
+
   public static class ThroughputCountTakerActor extends Actor implements CountTaker {
     private final TestResults testResults;
-    
+
     public ThroughputCountTakerActor(final TestResults testResults) {
       this.testResults = testResults;
     }
-    
+
     @Override
     public void take(final int count) {
-      testResults.highest = count;
+      testResults.setHighest(count);
     }
   }
 
   private static class TestResults {
-    public volatile int highest = 0;
-    public int maximum = 0;
-    public TestUntil until = TestUntil.happenings(0);
+    private final AccessSafely accessSafely;
+
+    private TestResults(final int happenings) {
+      final AtomicInteger highest = new AtomicInteger(0);
+      final AtomicInteger maximum = new AtomicInteger(0);
+      this.accessSafely = AccessSafely
+              .afterCompleting(happenings)
+              .writingWith("highest", highest::set)
+              .readingWith("highest", highest::get)
+              .writingWith("maximum", maximum::set)
+              .readingWith("maximum", maximum::get)
+              .readingWith("isHighest", (Integer count) -> count > highest.get());
+    }
+
+    void setHighest(Integer value) {
+      this.accessSafely.writeUsing("highest", value);
+    }
+    void setMaximum(Integer value) {
+      this.accessSafely.writeUsing("maximum", value);
+    }
+
+    int getHighest(){
+      return this.accessSafely.readFrom("highest");
+    }
+    @SuppressWarnings("unused")
+    int getMaximum(){
+      return this.accessSafely.readFrom("maximum");
+    }
+
+    boolean isHighest(Integer value){
+      return this.accessSafely.readFromNow("isHighest", value);
+    }
   }
+
 }

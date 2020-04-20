@@ -7,15 +7,6 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.plugin.*;
-import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
-import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
-import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
-import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
-import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
-import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
-import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +17,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import io.vlingo.actors.plugin.Plugin;
+import io.vlingo.actors.plugin.PluginConfiguration;
+import io.vlingo.actors.plugin.PluginFactory;
+import io.vlingo.actors.plugin.PluginLoader;
+import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
+import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
+import io.vlingo.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
+import io.vlingo.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
+import io.vlingo.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
+import io.vlingo.actors.plugin.supervision.CommonSupervisorsPlugin.CommonSupervisorsPluginConfiguration;
+import io.vlingo.actors.plugin.supervision.DefaultSupervisorOverridePlugin.DefaultSupervisorOverridePluginConfiguration;
 
 public class Configuration {
   private ConcurrentQueueMailboxPluginConfiguration concurrentQueueMailboxPluginConfiguration;
@@ -47,6 +52,8 @@ public class Configuration {
   private final List<Plugin> plugins;
   private final Properties properties;
 
+  private AddressFactory addressFactory;
+
   public static Configuration define() {
     return new Configuration();
   }
@@ -61,6 +68,15 @@ public class Configuration {
 
   public Collection<Plugin> allPlugins() {
     return Collections.unmodifiableCollection(plugins);
+  }
+
+  public Configuration with(final AddressFactory addressFactory) {
+    this.addressFactory = addressFactory;
+    return this;
+  }
+
+  public AddressFactory addressFactoryOr(final Supplier<AddressFactory> addressFactorySupplier) {
+    return addressFactory == null ? addressFactorySupplier.get() : addressFactory;
   }
 
   public Configuration with(final CommonSupervisorsPluginConfiguration configuration) {
