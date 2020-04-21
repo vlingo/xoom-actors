@@ -8,6 +8,12 @@
 package io.vlingo.actors.plugin.logging.slf4j;
 
 import io.vlingo.actors.ActorsTest;
+import io.vlingo.actors.Configuration;
+import io.vlingo.actors.Logger;
+import io.vlingo.actors.LoggerProvider;
+import io.vlingo.actors.Registrar;
+import io.vlingo.actors.plugin.PluginProperties;
+import io.vlingo.actors.plugin.completes.MockRegistrar;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -15,13 +21,6 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import io.vlingo.actors.Configuration;
-import io.vlingo.actors.Logger;
-import io.vlingo.actors.LoggerProvider;
-import io.vlingo.actors.Registrar;
-import io.vlingo.actors.plugin.PluginProperties;
-import io.vlingo.actors.plugin.completes.MockRegistrar;
 
 public class Slf4jLoggerPluginTest extends ActorsTest {
   private boolean registered;
@@ -42,24 +41,29 @@ public class Slf4jLoggerPluginTest extends ActorsTest {
     assertEquals("testStandardLogger", logger.name());
 
     logger.trace("TRACE message");
-    logger.trace("TRACE message with parameters {0}", "1");
+    logger.trace("TRACE message with parameters {}", "1");
     logger.trace("TRACE message with exception", new Exception("test trace exception"));
+    logger.trace("TRACE message with parameter {} and exception", 1, new Exception("test trace exception"));
 
     logger.debug("DEBUG message");
-    logger.debug("DEBUG message with parameters {0}", "2");
+    logger.debug("DEBUG message with parameters {}", "2");
     logger.debug("DEBUG message with exception", new Exception("test debug exception"));
+    logger.debug("DEBUG message with parameter {} and exception", 2, new Exception("test debug exception"));
 
     logger.info("INFO message");
-    logger.info("INFO message with parameters {0}", "3");
+    logger.info("INFO message with parameters {}", "3");
     logger.info("INFO message with exception", new Exception("test info exception"));
+    logger.info("INFO message with parameter {} and exception", 3, new Exception("test info exception"));
 
     logger.warn("WARN message");
-    logger.warn("WARN message with parameters {0}", "4");
+    logger.warn("WARN message with parameters {}", "4");
     logger.warn("WARN message with exception", new Exception("test warn exception"));
+    logger.warn("WARN message with parameter {} and exception", 4, new Exception("test warn exception"));
 
     logger.error("ERROR message");
-    logger.error("ERROR message with parameters {0}", "4");
+    logger.error("ERROR message with parameters {}", "5");
     logger.error("ERROR message with exception", new Exception("test error exception"));
+    logger.error("ERROR message with parameter {} and exception", 5, new Exception("test error exception"));
   }
 
   @Test
