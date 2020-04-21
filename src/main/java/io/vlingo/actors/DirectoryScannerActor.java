@@ -7,9 +7,9 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.common.Completes;
-
 import java.util.Optional;
+
+import io.vlingo.common.Completes;
 
 public class DirectoryScannerActor extends Actor implements DirectoryScanner {
   private final Directory directory;
@@ -24,6 +24,17 @@ public class DirectoryScannerActor extends Actor implements DirectoryScanner {
   @Override
   public <T> Completes<T> actorOf(final Class<T> protocol, final Address address) {
     return completes().with(internalActorOf(protocol, address));
+  }
+
+  @Override
+  public <T> Completes<T> actorOf(Class<T> protocol, Address address, Definition definition) {
+    T typed = internalActorOf(protocol, address);
+
+    if (typed == null) {
+      typed = stage().actorFor(protocol, definition, address);
+    }
+
+    return completes().with(typed);
   }
 
   /*

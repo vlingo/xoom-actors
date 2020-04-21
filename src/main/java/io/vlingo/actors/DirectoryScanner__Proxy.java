@@ -7,15 +7,16 @@
 
 package io.vlingo.actors;
 
+import java.util.Optional;
+
 import io.vlingo.common.Completes;
 import io.vlingo.common.SerializableConsumer;
-
-import java.util.Optional;
 
 public class DirectoryScanner__Proxy implements DirectoryScanner {
 
   private static final String actorOfRepresentation1 = "actorOf(io.vlingo.actors.Address, java.lang.Class<T>)";
-  private static final String actorOfRepresentation2 = "maybeActorOf(io.vlingo.actors.Address, java.lang.Class<T>)";
+  private static final String actorOfRepresentation2 = "actorOf(io.vlingo.actors.Address, java.lang.Class<T>, io.vlingo.actors.Definition)";
+  private static final String maybeActorOfRepresentation3 = "maybeActorOf(io.vlingo.actors.Address, java.lang.Class<T>)";
 
   private final Actor actor;
   private final Mailbox mailbox;
@@ -40,15 +41,29 @@ public class DirectoryScanner__Proxy implements DirectoryScanner {
   }
 
   @Override
-  public <T> Completes<Optional<T>> maybeActorOf(final Class<T> arg0, final Address arg1) {
+  public <T> Completes<T> actorOf(final java.lang.Class<T> arg0, final io.vlingo.actors.Address arg1, final io.vlingo.actors.Definition arg2) {
     if (!actor.isStopped()) {
-      final SerializableConsumer<DirectoryScanner> consumer = (actor) -> actor.maybeActorOf(arg0, arg1);
-      final Completes<Optional<T>> completes = Completes.using(actor.scheduler());
+      final SerializableConsumer<DirectoryScanner> consumer = (actor) -> actor.actorOf(arg0, arg1, arg2);
+      final Completes<T> completes = Completes.using(actor.scheduler());
       if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2); }
       else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), actorOfRepresentation2)); }
       return completes;
     } else {
       actor.deadLetters().failedDelivery(new DeadLetter(actor, actorOfRepresentation2));
+    }
+    return null;
+  }
+
+  @Override
+  public <T> Completes<Optional<T>> maybeActorOf(final Class<T> arg0, final Address arg1) {
+    if (!actor.isStopped()) {
+      final SerializableConsumer<DirectoryScanner> consumer = (actor) -> actor.maybeActorOf(arg0, arg1);
+      final Completes<Optional<T>> completes = Completes.using(actor.scheduler());
+      if (mailbox.isPreallocated()) { mailbox.send(actor, DirectoryScanner.class, consumer, Returns.value(completes), maybeActorOfRepresentation3); }
+      else { mailbox.send(new LocalMessage<DirectoryScanner>(actor, DirectoryScanner.class, consumer, Returns.value(completes), maybeActorOfRepresentation3)); }
+      return completes;
+    } else {
+      actor.deadLetters().failedDelivery(new DeadLetter(actor, maybeActorOfRepresentation3));
     }
     return null;
   }
