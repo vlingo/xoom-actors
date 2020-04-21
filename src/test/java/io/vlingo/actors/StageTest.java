@@ -7,22 +7,33 @@
 
 package io.vlingo.actors;
 
-import io.vlingo.actors.WorldTest.Simple;
-import io.vlingo.actors.WorldTest.SimpleActor;
-import io.vlingo.actors.WorldTest.TestResults;
-import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
-import io.vlingo.actors.testkit.AccessSafely;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import org.junit.Assert;
+import org.junit.Test;
+
+import io.vlingo.actors.WorldTest.Simple;
+import io.vlingo.actors.WorldTest.SimpleActor;
+import io.vlingo.actors.WorldTest.TestResults;
+import io.vlingo.actors.plugin.mailbox.testkit.TestMailbox;
+import io.vlingo.actors.testkit.AccessSafely;
 
 public class StageTest extends ActorsTest {
   @Test
@@ -299,6 +310,58 @@ public class StageTest extends ActorsTest {
         , size);
   }
 
+  @Test
+  public void testThatNonExistingActorCreates() {
+    final Address address = world.addressFactory().unique();
+
+    final AtomicInteger valueHolder = new AtomicInteger(0);
+    final AccessSafely access = AccessSafely.afterCompleting(1);
+    access.writingWith("value", (Integer value) -> valueHolder.set(value));
+    access.readingWith("value", () -> valueHolder.get());
+
+    final NoProtocol proxy1 = world.stage().actorOf(NoProtocol.class, address).await();
+
+    Assert.assertNull(proxy1);
+    Assert.assertEquals(0, valueHolder.get());
+
+    final NoProtocol proxy2 = world.stage().actorOf(NoProtocol.class, address, NoExistingActor.class, 1, access).await();
+
+    final int value = access.readFrom("value");
+
+    Assert.assertNotNull(proxy2);
+    Assert.assertEquals(1, value);
+    Assert.assertEquals(value, valueHolder.get());
+  }
+
+  @Test
+  public void testThatActorOfAddressIsPingedByThreeClients() {
+    final Address address = world.addressFactory().unique();
+
+    final AtomicInteger valueHolder = new AtomicInteger(0);
+
+    final AccessSafely access = AccessSafely.afterCompleting(3);
+
+    access.writingWith("value", (Integer value) -> valueHolder.set(value));
+    access.readingWith("value", () -> valueHolder.get());
+
+    final RingDing proxy1 = world.stage().actorOf(RingDing.class, address, RingDingActor.class, access).await();
+    Assert.assertNotNull(proxy1);
+    proxy1.ringDing();
+
+    final RingDing proxy2 = world.stage().actorOf(RingDing.class, address, RingDingActor.class, access).await();
+    Assert.assertNotNull(proxy2);
+    proxy2.ringDing();
+
+    final RingDing proxy3 = world.stage().actorOf(RingDing.class, address, RingDingActor.class, access).await();
+    Assert.assertNotNull(proxy3);
+    proxy3.ringDing();
+
+    final int value = access.readFrom("value");
+
+    Assert.assertEquals(3, value);
+    Assert.assertEquals(value, valueHolder.get());
+  }
+
   private void multithreadedLookupOrStartTest(final Function<Integer, Future<Actor>> work, final int size) {
     List<Future<Actor>> futures = IntStream.range(0, size)
         .flatMap(i -> IntStream.of(i, i))
@@ -320,6 +383,31 @@ public class StageTest extends ActorsTest {
     }
   }
 
+
+  public static interface RingDing {
+    void ringDing();
+  }
+
+  public static class RingDingActor extends Actor implements RingDing {
+    private final AccessSafely access;
+    private int value;
+
+    public RingDingActor(final AccessSafely access) {
+      this.access = access;
+      this.value = 0;
+    }
+
+    @Override
+    public void ringDing() {
+      access.writeUsing("value", ++value);
+    }
+  }
+
+  public static class NoExistingActor extends Actor implements NoProtocol {
+    public NoExistingActor(final int value, final AccessSafely access) {
+      access.writeUsing("value", value);
+    }
+  }
 
   public static class ParentInterfaceActor extends Actor implements NoProtocol {
     public static ThreadLocal<ParentInterfaceActor> parent = new ThreadLocal<>();

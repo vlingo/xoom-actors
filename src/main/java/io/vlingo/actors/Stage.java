@@ -261,6 +261,52 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * Answers the {@code Completes<T>} that will eventually complete with the {@code T} protocol
+   * of the backing {@code Actor} of the given {@code address}, or the {#code T} instance of
+   * the new {@code Actor} created for {@code type} by the {@code instantiator}.
+   * @param protocol the {@code Class<T>} protocol
+   * @param address the {@code Address} of the {@code Actor} to find or to create the new Actor with if not found
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param instantiator the {@code ActorInstantiator<A>} used to instantiate the Actor
+   * @param <T> the protocol type
+   * @param <A> the Actor type
+   * @return T
+   */
+  public <T,A extends Actor> Completes<T> actorOf(final Class<T> protocol, final Address address, final Class<? extends Actor> type, final ActorInstantiator<A> instantiator) {
+    return actorOf(protocol, address, Definition.has(type, instantiator));
+  }
+
+  /**
+   * Answers the {@code Completes<T>} that will eventually complete with the {@code T} protocol
+   * of the backing {@code Actor} of the given {@code address}, or the {@code T} instance of
+   * the new {@code Actor} created for {@code type} with the {@code parameters}.
+   * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
+   * @param address the {@code Address} of the {@code Actor} to find or to create the new Actor with if not found
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param parameters the {@code Object[]} of constructor parameters
+   * @return {@code Completes<T>}
+   */
+  public <T> Completes<T> actorOf(final Class<T> protocol, final Address address, final Class<? extends Actor> type, Object...parameters) {
+    return actorOf(protocol, address, Definition.has(type, Arrays.asList(parameters)));
+  }
+
+  /**
+   * Answers the {@code Completes<T>} that will eventually complete with the {@code T} protocol
+   * of the backing {@code Actor} of the given {@code address}, or a new {@code Actor} instance
+   * of the {@code type} and {@code definition}.
+   * @param <T> the protocol type
+   * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
+   * @param address the {@code Address} of the {@code Actor} to find and to create the new Actor with if not found
+   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
+   * @param definition the {@code Definition} providing parameters to the {@code Actor}
+   * @return {@code Completes<T>}
+   */
+  public <T> Completes<T> actorOf(final Class<T> protocol, final Address address, final Definition definition) {
+    return directoryScanner.actorOf(protocol, address, definition);
+  }
+
+  /**
    * Answer my {@code addressFactory}.
    * @return AddressFactory
    */
