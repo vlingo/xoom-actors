@@ -10,7 +10,12 @@ package io.vlingo.actors.logging;
 import io.vlingo.actors.Address;
 
 import java.time.Instant;
+import java.util.Optional;
 
+/**
+ * Represents a log event to be sent to a logging Actor asynchronously.<br/>
+ * Upon it's creation, using the {@link LogEvent.Builder}, the builder will gather as much context information as possible in order to enrich the logs.
+ */
 public class LogEvent {
   private final Class<?> source;
   private final String message;
@@ -49,16 +54,16 @@ public class LogEvent {
     return throwable;
   }
 
-  public String getSourceThread() {
-    return sourceThread;
+  public Optional<String> getSourceThread() {
+    return Optional.ofNullable(sourceThread);
   }
 
-  public Instant getEventTimestamp() {
-    return eventTimestamp;
+  public Optional<Instant> getEventTimestamp() {
+    return Optional.ofNullable(eventTimestamp);
   }
 
-  public Address getSourceActorAddress() {
-    return sourceActorAddress;
+  public Optional<Address> getSourceActorAddress() {
+    return Optional.ofNullable(sourceActorAddress);
   }
 
   public static class Builder {

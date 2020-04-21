@@ -8,7 +8,6 @@
 package io.vlingo.actors.plugin.logging.slf4j;
 
 import io.vlingo.actors.Actor;
-import io.vlingo.actors.Address;
 import io.vlingo.actors.Logger;
 import io.vlingo.actors.logging.LogEvent;
 import org.slf4j.LoggerFactory;
@@ -89,19 +88,24 @@ public class Slf4jLoggerActor extends Actor implements Logger {
     return loggerMap.computeIfAbsent(logEvent.getSource(), LoggerFactory::getLogger);
   }
 
+  /**
+   * Run the code with configure SLF4J <a href="http://www.slf4j.org/manual.html#mdc">MDC</a>.<br/>
+   * <p>
+   * In order to log the MDC field, the underlying SLF4J library has to be configured.<br/>
+   * Example of a Logback configuration:<br/>
+   * <code>
+   * <pattern>%d{HH:mm:ss.SSS}[%thread][%X{eventTimestamp}][%X{sourceThread}][%X{sourceAddress}] %-5level %logger{36} - %msg%n</pattern>
+   * </code>
+   *
+   * @param logEvent   the log event
+   * @param runWithMdc the code that will run with configured MDC
+   */
   private static void withMcd(final LogEvent logEvent, Runnable runWithMdc) {
     try {
-      //Populate the MDC http://www.slf4j.org/manual.html#mdc
-      final Address sourceActorAddress = logEvent.getSourceActorAddress();
-      if (sourceActorAddress != null) {
-        MDC.put(MDC_KEY_SOURCE_ADDRESS, sourceActorAddress.name());
-      }
-      if (logEvent.getSourceThread() != null) {
-        MDC.put(MDC_KEY_SOURCE_THREAD, logEvent.getSourceThread());
-      }
-      if (logEvent.getEventTimestamp() != null) {
-        MDC.put(MDC_KEY_EVENT_TIMESTAMP, logEvent.getEventTimestamp().toString());
-      }
+      //Populate the MDC
+      logEvent.getSourceActorAddress().ifPresent(address -> MDC.put(MDC_KEY_SOURCE_ADDRESS, address.name()));
+      logEvent.getSourceThread().ifPresent(sourceThread -> MDC.put(MDC_KEY_SOURCE_THREAD, sourceThread));
+      logEvent.getEventTimestamp().ifPresent(instant -> MDC.put(MDC_KEY_EVENT_TIMESTAMP, instant.toString()));
 
       //Run
       runWithMdc.run();
