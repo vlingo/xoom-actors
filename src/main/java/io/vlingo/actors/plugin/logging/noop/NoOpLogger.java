@@ -8,6 +8,7 @@
 package io.vlingo.actors.plugin.logging.noop;
 
 import io.vlingo.actors.Logger;
+import io.vlingo.actors.logging.LogEvent;
 
 public class NoOpLogger implements Logger {
 
@@ -21,67 +22,32 @@ public class NoOpLogger implements Logger {
   }
 
   @Override
-  public void trace(String message) {
-  }
-
-  @Override
-  public void trace(String message, Object... args) {
-  }
-
-  @Override
-  public void trace(String message, Throwable throwable) {
-  }
-
-  @Override
-  public void debug(String message) {
-  }
-
-  @Override
-  public void debug(String message, Object... args) {
-  }
-
-  @Override
-  public void debug(String message, Throwable throwable) {
-  }
-
-  @Override
-  public void info(String message) {
-  }
-
-  @Override
-  public void info(String message, Object... args) {
-  }
-
-  @Override
-  public void info(String message, Throwable throwable) {
-  }
-
-  @Override
-  public void warn(String message) {
-  }
-
-  @Override
-  public void warn(String message, Object... args) {
-  }
-
-  @Override
-  public void warn(String message, Throwable throwable) {
-  }
-
-  @Override
-  public void error(String message) {
-  }
-
-  @Override
-  public void error(String message, Object... args) {
-  }
-
-  @Override
-  public void error(String message, Throwable throwable) {
-  }
-
-  @Override
   public String name() {
     return "no-op";
+  }
+
+  @Override
+  public void trace(final LogEvent logEvent) {
+
+  }
+
+  @Override
+  public void debug(final LogEvent logEvent) {
+
+  }
+
+  @Override
+  public void info(final LogEvent logEvent) {
+
+  }
+
+  @Override
+  public void warn(final LogEvent logEvent) {
+
+  }
+
+  @Override
+  public void error(final LogEvent logEvent) {
+
   }
 }

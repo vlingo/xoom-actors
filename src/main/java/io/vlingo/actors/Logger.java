@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import io.vlingo.actors.logging.LogEvent;
 import io.vlingo.actors.plugin.logging.noop.NoOpLogger;
 import io.vlingo.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 
@@ -20,27 +21,93 @@ public interface Logger {
   }
 
   String name();
+
   void close();
+
   boolean isEnabled();
 
-  void trace(final String message);
-  void trace(final String message, final Object... args);
-  void trace(final String message, final Throwable throwable);
+  default void trace(final String message) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).build();
+    trace(logEvent);
+  }
 
-  void debug(final String message);
-  void debug(final String message, final Object... args);
-  void debug(final String message, final Throwable throwable);
+  default void trace(final String message, final Object... args) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withArgs(args).build();
+    trace(logEvent);
+  }
 
-  void info(final String message);
-  void info(final String message, final Object... args);
-  void info(final String message, final Throwable throwable);
+  default void trace(final String message, final Throwable throwable) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withThrowable(throwable).build();
+    trace(logEvent);
+  }
 
-  void warn(final String message);
-  void warn(final String message, final Object... args);
-  void warn(final String message, final Throwable throwable);
+  default void debug(final String message) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).build();
+    debug(logEvent);
+  }
 
-  void error(final String message);
-  void error(final String message, final Object... args);
-  void error(final String message, final Throwable throwable);
+  default void debug(final String message, final Object... args) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withArgs(args).build();
+    debug(logEvent);
+  }
 
+  default void debug(final String message, final Throwable throwable) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withThrowable(throwable).build();
+    debug(logEvent);
+  }
+
+  default void info(final String message) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).build();
+    info(logEvent);
+  }
+
+  default void info(final String message, final Object... args) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withArgs(args).build();
+    info(logEvent);
+  }
+
+  default void info(final String message, final Throwable throwable) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withThrowable(throwable).build();
+    info(logEvent);
+  }
+
+  default void warn(final String message) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).build();
+    warn(logEvent);
+  }
+
+  default void warn(final String message, final Object... args) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withArgs(args).build();
+    warn(logEvent);
+  }
+
+  default void warn(final String message, final Throwable throwable) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withThrowable(throwable).build();
+    warn(logEvent);
+  }
+
+  default void error(final String message) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).build();
+    error(logEvent);
+  }
+
+  default void error(final String message, final Object... args) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withArgs(args).build();
+    error(logEvent);
+  }
+
+  default void error(final String message, final Throwable throwable) {
+    final LogEvent logEvent = new LogEvent.Builder(Logger.class, message).withThrowable(throwable).build();
+    error(logEvent);
+  }
+
+  void trace(final LogEvent logEvent);
+
+  void debug(final LogEvent logEvent);
+
+  void info(final LogEvent logEvent);
+
+  void warn(final LogEvent logEvent);
+
+  void error(final LogEvent logEvent);
 }

@@ -8,13 +8,15 @@
 package io.vlingo.actors.plugin.logging.slf4j;
 
 import io.vlingo.actors.Logger;
+import io.vlingo.actors.logging.LogEvent;
 import org.slf4j.LoggerFactory;
 
 public class Slf4jLogger implements Logger {
+
   private final org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.class);
   private final String name;
-  
-  Slf4jLogger(final String name){
+
+  Slf4jLogger(final String name) {
     this.name = name;
   }
 
@@ -106,5 +108,30 @@ public class Slf4jLogger implements Logger {
   @Override
   public void error(String message, Throwable throwable) {
     this.logger.error(message, throwable);
+  }
+
+  @Override
+  public void trace(final LogEvent logEvent) {
+    this.logger.trace(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+  }
+
+  @Override
+  public void debug(final LogEvent logEvent) {
+    this.logger.debug(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+  }
+
+  @Override
+  public void info(final LogEvent logEvent) {
+    this.logger.info(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+  }
+
+  @Override
+  public void warn(final LogEvent logEvent) {
+    this.logger.warn(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+  }
+
+  @Override
+  public void error(final LogEvent logEvent) {
+    this.logger.error(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
   }
 }

@@ -9,12 +9,23 @@ package io.vlingo.actors.plugin.logging.slf4j;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Logger;
+import io.vlingo.actors.logging.LogEvent;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Slf4jLoggerActor extends Actor implements Logger {
-  private final Logger logger;
+  private static final String LOGGER_NAME = "Slf4jLogger";
 
-  public Slf4jLoggerActor(Logger logger) {
-    this.logger = logger;
+  private static final String MDC_KEY_SOURCE_THREAD = "sourceThread";
+  private static final String MDC_KEY_SOURCE_ADDRESS = "sourceAddress";
+  private static final String MDC_KEY_EVENT_TIMESTAMP = "eventTimestamp";
+
+  private final Map<Class<?>, org.slf4j.Logger> loggerMap = new HashMap<>();
+
+  public Slf4jLoggerActor() {
   }
 
   @Override
@@ -25,91 +36,86 @@ public class Slf4jLoggerActor extends Actor implements Logger {
 
   @Override
   public String name() {
-    return this.logger.name();
+    return LOGGER_NAME;
   }
 
   @Override
   public void close() {
-    this.logger.close();
+    this.loggerMap.clear();
   }
 
   @Override
   public boolean isEnabled() {
-    return this.logger.isEnabled();
+    return true;
   }
 
   @Override
-  public void trace(String message) {
-    this.logger.trace(message);
+  public void trace(final LogEvent logEvent) {
+    withMcd(logEvent, () -> {
+      getSlf4jLogger(logEvent).trace(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+    });
   }
 
   @Override
-  public void trace(String message, Object... args) {
-    this.logger.trace(message, args);
+  public void debug(final LogEvent logEvent) {
+    withMcd(logEvent, () -> {
+      getSlf4jLogger(logEvent).debug(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+    });
   }
 
   @Override
-  public void trace(String message, Throwable throwable) {
-    this.logger.trace(message, throwable);
+  public void info(final LogEvent logEvent) {
+    withMcd(logEvent, () -> {
+      getSlf4jLogger(logEvent).info(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+    });
   }
 
   @Override
-  public void debug(String message) {
-    this.logger.debug(message);
+  public void warn(final LogEvent logEvent) {
+    withMcd(logEvent, () -> {
+      getSlf4jLogger(logEvent).warn(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+    });
   }
 
   @Override
-  public void debug(String message, Object... args) {
-    this.logger.debug(message, args);
+  public void error(final LogEvent logEvent) {
+    withMcd(logEvent, () -> {
+      getSlf4jLogger(logEvent).error(logEvent.getMessage(), logEvent.getArgs(), logEvent.getThrowable());
+    });
   }
 
-  @Override
-  public void debug(String message, Throwable throwable) {
-    this.logger.debug(message, throwable);
+  private org.slf4j.Logger getSlf4jLogger(final LogEvent logEvent) {
+    return loggerMap.computeIfAbsent(logEvent.getSource(), LoggerFactory::getLogger);
   }
 
-  @Override
-  public void info(String message) {
-    this.logger.info(message);
+  /**
+   * Run the code with configure SLF4J <a href="http://www.slf4j.org/manual.html#mdc">MDC</a>.
+   * <p>
+   * In order to log the MDC field, the underlying SLF4J library has to be configured.
+   * Example of a Logback configuration:
+   * <code>
+   * <pattern>%d{HH:mm:ss.SSS}[%thread][%X{eventTimestamp}][%X{sourceThread}][%X{sourceAddress}] %-5level %logger{36} - %msg%n</pattern>
+   * </code>
+   *
+   * @param logEvent   the log event
+   * @param runWithMdc the code that will run with configured MDC
+   */
+  private static void withMcd(final LogEvent logEvent, Runnable runWithMdc) {
+    try {
+      //Populate the MDC
+      logEvent.getSourceActorAddress().ifPresent(address -> MDC.put(MDC_KEY_SOURCE_ADDRESS, address.name()));
+      logEvent.getSourceThread().ifPresent(sourceThread -> MDC.put(MDC_KEY_SOURCE_THREAD, sourceThread));
+      logEvent.getEventTimestamp().ifPresent(instant -> MDC.put(MDC_KEY_EVENT_TIMESTAMP, instant.toString()));
+
+      //Run
+      runWithMdc.run();
+
+    } finally {
+      //Clear the known keys from MDC
+      MDC.remove(MDC_KEY_SOURCE_THREAD);
+      MDC.remove(MDC_KEY_EVENT_TIMESTAMP);
+      MDC.remove(MDC_KEY_SOURCE_ADDRESS);
+    }
   }
 
-  @Override
-  public void info(String message, Object... args) {
-    this.logger.info(message, args);
-  }
-
-  @Override
-  public void info(String message, Throwable throwable) {
-    this.logger.info(message, throwable);
-  }
-
-  @Override
-  public void warn(String message) {
-    this.logger.warn(message);
-  }
-
-  @Override
-  public void warn(String message, Object... args) {
-    this.logger.warn(message, args);
-  }
-
-  @Override
-  public void warn(String message, Throwable throwable) {
-    this.logger.warn(message, throwable);
-  }
-
-  @Override
-  public void error(String message) {
-    this.logger.error(message);
-  }
-
-  @Override
-  public void error(String message, Object... args) {
-    this.logger.error(message, args);
-  }
-
-  @Override
-  public void error(String message, Throwable throwable) {
-    this.logger.error(message, throwable);
-  }
 }
