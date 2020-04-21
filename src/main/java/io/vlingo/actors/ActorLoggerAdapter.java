@@ -14,9 +14,17 @@ public class ActorLoggerAdapter implements Logger {
   private final Address sourceActorAddress;
   private final Class<?> sourceActorType;
 
-  ActorLoggerAdapter(final Logger logger, final Address address, final Class<? extends Actor> sourceActorType) {
+  public static ActorLoggerAdapter from(final Class<? extends Actor> sourceActorType, final Logger logger) {
+    return new ActorLoggerAdapter(sourceActorType, null, logger);
+  }
+
+  static ActorLoggerAdapter from(final Class<? extends Actor> sourceActorType, final Address sourceActorAddress, final Logger logger) {
+    return new ActorLoggerAdapter(sourceActorType, sourceActorAddress, logger);
+  }
+
+  private ActorLoggerAdapter(final Class<? extends Actor> sourceActorType, final Address sourceActorAddress, final Logger logger) {
     this.logger = logger;
-    this.sourceActorAddress = address;
+    this.sourceActorAddress = sourceActorAddress;
     this.sourceActorType = sourceActorType;
   }
 
