@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 /**
- * Represents a log event to be sent to a logging Actor asynchronously.<br/>
+ * Represents a log event to be sent to a logging Actor asynchronously.
  * Upon it's creation, using the {@link LogEvent.Builder}, the builder will gather as much context information as possible in order to enrich the logs.
  */
 public class LogEvent {

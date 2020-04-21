@@ -89,10 +89,10 @@ public class Slf4jLoggerActor extends Actor implements Logger {
   }
 
   /**
-   * Run the code with configure SLF4J <a href="http://www.slf4j.org/manual.html#mdc">MDC</a>.<br/>
+   * Run the code with configure SLF4J <a href="http://www.slf4j.org/manual.html#mdc">MDC</a>.
    * <p>
-   * In order to log the MDC field, the underlying SLF4J library has to be configured.<br/>
-   * Example of a Logback configuration:<br/>
+   * In order to log the MDC field, the underlying SLF4J library has to be configured.
+   * Example of a Logback configuration:
    * <code>
    * <pattern>%d{HH:mm:ss.SSS}[%thread][%X{eventTimestamp}][%X{sourceThread}][%X{sourceAddress}] %-5level %logger{36} - %msg%n</pattern>
    * </code>
