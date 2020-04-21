@@ -298,7 +298,6 @@ public class Stage implements Stoppable {
    * @param <T> the protocol type
    * @param protocol the {@code Class<T>} protocol supported by the backing {@code Actor}
    * @param address the {@code Address} of the {@code Actor} to find and to create the new Actor with if not found
-   * @param type the {@code Class<? extends Actor>} of the {@code Actor} to create
    * @param definition the {@code Definition} providing parameters to the {@code Actor}
    * @return {@code Completes<T>}
    */
