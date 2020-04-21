@@ -7,7 +7,6 @@
 
 package io.vlingo.actors;
 
-import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -23,9 +22,7 @@ import io.vlingo.common.Scheduler;
  * The abstract base class of all concrete {@code Actor} types. This base provides common
  * facilities and life cycle processing for all {@code Actor} types.
  */
-public abstract class Actor implements Startable, Stoppable, Relocatable, Serializable, TestStateView {
-  private static final long serialVersionUID = 1L;
-
+public abstract class Actor implements Startable, Stoppable, Relocatable, TestStateView {
   final ResultReturns returns;
   final LifeCycle lifeCycle;
 
