@@ -7,6 +7,7 @@
 
 package io.vlingo.actors;
 
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -22,7 +23,8 @@ import io.vlingo.common.Scheduler;
  * The abstract base class of all concrete {@code Actor} types. This base provides common
  * facilities and life cycle processing for all {@code Actor} types.
  */
-public abstract class Actor implements Startable, Stoppable, TestStateView {
+public abstract class Actor implements Startable, Stoppable, Relocatable, Serializable, TestStateView {
+  private static final long serialVersionUID = 1L;
 
   final ResultReturns returns;
   final LifeCycle lifeCycle;
@@ -60,7 +62,25 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   }
 
   /**
+   * @see io.vlingo.actors.Relocatable#stateSnapshot(java.lang.Object)
+   */
+  @Override
+  public <S> void stateSnapshot(final S stateSnapshot) {
+    // no-op
+  }
+
+  /**
+   * @see io.vlingo.actors.Relocatable#stateSnapshot()
+   */
+  @Override
+  public <S> S stateSnapshot() {
+    return null; // no-op
+  }
+
+  /**
    * The default implementation of {@code start()}, which is a no-op. Override if needed.
+   *
+   * @see io.vlingo.actors.Startable#start()
    */
   @Override
   public void start() {
@@ -69,6 +89,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
   /**
    * Answers whether or not this {@code Actor} has been stopped or is in the process or stopping.
    * @return boolean
+   *
+   * @see io.vlingo.actors.Stoppable#isStopped()
    */
   @Override
   public boolean isStopped() {
@@ -77,6 +99,8 @@ public abstract class Actor implements Startable, Stoppable, TestStateView {
 
   /**
    * Initiates the process of stopping this {@code Actor} and all of its children.
+   *
+   * @see io.vlingo.actors.Stoppable#stop()
    */
   @Override
   public void stop() {
