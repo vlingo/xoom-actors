@@ -44,6 +44,7 @@ public class Logger__Proxy implements Logger {
     this.mailbox = mailbox;
   }
 
+  @Override
   public String name() {
     final SerializableConsumer<Logger> consumer = (actor) -> actor.name();
     send(consumer, nameRepresentation1);
@@ -170,15 +171,23 @@ public class Logger__Proxy implements Logger {
     send(consumer, errorRepresentation4);
   }
 
+  @Override
   public void close() {
     final SerializableConsumer<Logger> consumer = (actor) -> actor.close();
     send(consumer, closeRepresentation4);
   }
 
+  @Override
   public boolean isEnabled() {
     final SerializableConsumer<Logger> consumer = (actor) -> actor.isEnabled();
     send(consumer, isEnabledRepresentation5);
     return false;
+  }
+
+  void flush() {
+    while (mailbox.pendingMessages() > 0) {
+      mailbox.receive().deliver();
+    }
   }
 
   private void send(final SerializableConsumer<Logger> consumer, String representation) {

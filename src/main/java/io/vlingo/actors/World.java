@@ -477,6 +477,8 @@ public final class World implements Registrar {
    */
   public void terminate() {
     if (!isTerminated()) {
+      syncFlushLogger();
+
       for (final Stage stage : stages.values()) {
         stage.stop();
       }
@@ -656,5 +658,13 @@ public final class World implements Registrar {
         null,
         null,
         logger);
+  }
+
+  private void syncFlushLogger() {
+    try {
+      ((Logger__Proxy) defaultLogger()).flush();
+    } catch (Exception e) {
+      // ignore
+    }
   }
 }
