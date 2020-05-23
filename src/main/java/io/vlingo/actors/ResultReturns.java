@@ -79,7 +79,7 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
-  public Completes<Object> otherwise(final Function<Object,Object> function) {
+  public <E> Completes<Object> otherwise(final Function<E,Object> function) {
     throw new UnsupportedOperationException();
   }
 
