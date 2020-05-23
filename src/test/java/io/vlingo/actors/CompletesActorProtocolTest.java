@@ -85,7 +85,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     final Completes<Hello> helloCompletes =
             uc.getHello()
               .andThenConsume(2, new Hello(HelloNot), (hello) -> greetingsTestResult.setGreeting(hello.greeting))
-              .otherwise((failedHello) -> { greetingsTestResult.setGreeting(failedHello.greeting); return failedHello; });
+              .otherwise((Hello failedHello) -> { greetingsTestResult.setGreeting(failedHello.greeting); return failedHello; });
 
     assertNotEquals(Hello, greetingsTestResult.getGreeting());
     assertEquals(HelloNot, helloCompletes.outcome().greeting);
