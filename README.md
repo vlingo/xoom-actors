@@ -2,9 +2,10 @@
 
 [![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
 
-The vlingo/PLATFORM type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.
+The VLINGO/PLATFORM type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.
 
-A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-tutorial-1/
+Docs: https://docs.vlingo.io/vlingo-actors
+
 
 ### Bintray
 
@@ -19,7 +20,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
     <dependency>
       <groupId>io.vlingo</groupId>
       <artifactId>vlingo-actors</artifactId>
-      <version>1.2.9</version>
+      <version>1.3.0</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -27,7 +28,7 @@ A brief tutorial can be found here: https://kalele.io/blog-posts/vlingo-actors-t
 
 ```gradle
 dependencies {
-    compile 'io.vlingo:vlingo-actors:1.2.9'
+    compile 'io.vlingo:vlingo-actors:1.3.0'
 }
 
 repositories {
