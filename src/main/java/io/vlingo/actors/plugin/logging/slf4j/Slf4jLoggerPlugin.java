@@ -6,13 +6,17 @@
 // one at https://mozilla.org/MPL/2.0/.
 package io.vlingo.actors.plugin.logging.slf4j;
 
-import io.vlingo.actors.*;
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
+import io.vlingo.actors.Definition;
+import io.vlingo.actors.Logger;
+import io.vlingo.actors.LoggerProvider;
+import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.AbstractPlugin;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
 import io.vlingo.actors.plugin.PluginProperties;
-
-import java.util.Properties;
 
 public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerProvider {
   private final Slf4jLoggerPluginConfiguration pluginConfiguration;
@@ -93,6 +97,11 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
       return this;
     }
     return new Slf4jLoggerPlugin(overrideConfiguration);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    pluginConfiguration.name = name;
   }
 
   public static class Slf4jLoggerPluginConfiguration implements PluginConfiguration {

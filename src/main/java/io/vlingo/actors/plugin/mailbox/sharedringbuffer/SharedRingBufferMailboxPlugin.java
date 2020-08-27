@@ -8,6 +8,7 @@
 package io.vlingo.actors.plugin.mailbox.sharedringbuffer;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.vlingo.actors.Configuration;
@@ -100,6 +101,11 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
     }
 
     return maybeDispatcher.mailbox();
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 
   public static class SharedRingBufferMailboxPluginConfiguration implements PluginConfiguration {

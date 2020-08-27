@@ -7,6 +7,9 @@
 
 package io.vlingo.actors.plugin;
 
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
 
 public interface Plugin {
@@ -16,4 +19,5 @@ public interface Plugin {
   int pass();
   void start(final Registrar registrar);
   Plugin with(final PluginConfiguration overrideConfiguration);
+  void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties);
 }

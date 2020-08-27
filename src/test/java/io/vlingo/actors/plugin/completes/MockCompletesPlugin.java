@@ -7,6 +7,9 @@
 
 package io.vlingo.actors.plugin.completes;
 
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
 import io.vlingo.actors.plugin.PluginConfiguration;
@@ -19,7 +22,7 @@ public class MockCompletesPlugin implements Plugin {
   public MockCompletesPlugin(final CompletesResults completesResults) {
     this.completesResults = completesResults;
   }
-  
+
   @Override
   public void close() {
   }
@@ -48,5 +51,10 @@ public class MockCompletesPlugin implements Plugin {
   @Override
   public Plugin with(final PluginConfiguration overrideConfiguration) {
     return null;
+  }
+
+  @Override
+  public void __internal_Only_Init(String name, Configuration configuration, Properties properties) {
+    // no-op
   }
 }

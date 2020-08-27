@@ -7,6 +7,8 @@
 
 package io.vlingo.actors.plugin.mailbox.concurrentqueue;
 
+import java.util.Properties;
+
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
@@ -80,6 +82,11 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
     }
 
     return new ConcurrentQueueMailbox(dispatcher, configuration.dispatcherThrottlingCount());
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    this.configuration.name = name;
   }
 
   public static class ConcurrentQueueMailboxPluginConfiguration implements PluginConfiguration {

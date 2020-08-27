@@ -1,5 +1,8 @@
 package io.vlingo.actors.plugin.eviction;
 
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.DirectoryEvictionConfiguration;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.AbstractPlugin;
@@ -47,5 +50,10 @@ public class DirectoryEvictionPlugin extends AbstractPlugin {
     }
     return new DirectoryEvictionPlugin(
         (DirectoryEvictionConfiguration)overrideConfiguration);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 }

@@ -7,9 +7,15 @@
 
 package io.vlingo.actors.plugin;
 
-import io.vlingo.actors.Configuration;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import java.util.*;
+import io.vlingo.actors.Configuration;
 
 public class PluginLoader {
   private static final String pluginNamePrefix = "plugin.name.";
@@ -47,13 +53,15 @@ public class PluginLoader {
     final String pluginName = enabledPlugin.substring(pluginNamePrefix.length());
     final String classnameKey = "plugin." + pluginName + ".classname";
     final String classname = properties.getProperty(classnameKey);
+    final String pluginUniqueName = pluginName + ":" + classname;
 
     try {
-      final Plugin maybePlugin = plugins.get(classname);
+      final Plugin maybePlugin = plugins.get(pluginUniqueName);
       if (maybePlugin == null) {
         final Class<?> pluginClass = Class.forName(classname);
         final Plugin plugin = (Plugin) pluginClass.newInstance();
-        plugins.put(classname, plugin);
+        plugin.__internal_Only_Init(pluginName, configuration, properties);
+        plugins.put(pluginUniqueName, plugin);
       }
     } catch (Exception e) {
       e.printStackTrace();

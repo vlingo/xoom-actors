@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.supervision;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Configuration;
@@ -57,6 +58,11 @@ public class CommonSupervisorsPlugin extends AbstractPlugin implements Plugin {
       return this;
     }
     return new CommonSupervisorsPlugin(overrideConfiguration);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 
   private CommonSupervisorsPlugin(final PluginConfiguration configuration) {
@@ -111,7 +117,7 @@ public class CommonSupervisorsPlugin extends AbstractPlugin implements Plugin {
 
         if (supervisors.contains(supervisor)) {
           supervisors.remove(supervisor);
-        } 
+        }
         supervisors.add(supervisor);
       }
       configuration.with(this);

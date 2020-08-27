@@ -9,6 +9,7 @@ package io.vlingo.actors.plugin.supervision;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import io.vlingo.actors.Actor;
 import io.vlingo.actors.Configuration;
@@ -57,6 +58,11 @@ public class DefaultSupervisorOverridePlugin extends AbstractPlugin implements P
       return this;
     }
     return new DefaultSupervisorOverridePlugin(overrideConfiguration);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 
   private DefaultSupervisorOverridePlugin(final PluginConfiguration configuration) {

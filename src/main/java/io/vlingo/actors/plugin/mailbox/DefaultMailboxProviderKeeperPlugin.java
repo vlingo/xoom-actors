@@ -7,6 +7,9 @@
 
 package io.vlingo.actors.plugin.mailbox;
 
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.MailboxProviderKeeper;
 import io.vlingo.actors.Registrar;
 import io.vlingo.actors.plugin.Plugin;
@@ -55,6 +58,11 @@ public class DefaultMailboxProviderKeeperPlugin implements Plugin {
       return this;
     }
     return new DefaultMailboxProviderKeeperPlugin(overrideConfiguration, this);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 
   private DefaultMailboxProviderKeeperPlugin(final PluginConfiguration configuration, final DefaultMailboxProviderKeeperPlugin plugin) {

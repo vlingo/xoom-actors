@@ -7,6 +7,9 @@
 
 package io.vlingo.actors.plugin.mailbox.testkit;
 
+import java.util.Properties;
+
+import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Dispatcher;
 import io.vlingo.actors.Mailbox;
 import io.vlingo.actors.MailboxProvider;
@@ -19,7 +22,7 @@ public class TestMailboxPlugin extends AbstractPlugin implements Plugin, Mailbox
   public TestMailboxPlugin(final Registrar registrar) {
     this.start(registrar);
   }
-  
+
   @Override
   public void close() { }
 
@@ -56,5 +59,10 @@ public class TestMailboxPlugin extends AbstractPlugin implements Plugin, Mailbox
   @Override
   public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
     return new TestMailbox();
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    // no-op
   }
 }

@@ -7,6 +7,8 @@
 
 package io.vlingo.actors.plugin.completes;
 
+import java.util.Properties;
+
 import io.vlingo.actors.CompletesEventuallyProvider;
 import io.vlingo.actors.Configuration;
 import io.vlingo.actors.Registrar;
@@ -55,6 +57,11 @@ public class PooledCompletesPlugin extends AbstractPlugin implements Plugin {
       return this;
     }
     return new PooledCompletesPlugin(overrideConfiguration);
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    this.pooledCompletesPluginConfiguration.name = name;
   }
 
   private PooledCompletesPlugin(final PluginConfiguration configuration) {

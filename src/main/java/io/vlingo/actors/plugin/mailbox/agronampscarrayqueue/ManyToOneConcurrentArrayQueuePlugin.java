@@ -8,6 +8,7 @@
 package io.vlingo.actors.plugin.mailbox.agronampscarrayqueue;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.vlingo.actors.Configuration;
@@ -101,6 +102,11 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     }
 
     return maybeDispatcher.mailbox();
+  }
+
+  @Override
+  public void __internal_Only_Init(final String name, final Configuration configuration, final Properties properties) {
+    this.configuration.name = name;
   }
 
   public static class ManyToOneConcurrentArrayQueuePluginConfiguration implements PluginConfiguration {
