@@ -69,6 +69,10 @@ public class Environment {
     children = children.plus(child);
   }
 
+  void removeChild(final Actor child) {
+    children = children.minus(child);
+  }
+
   CompletesEventually completesEventually(final ResultReturns result) {
     if (completesEventuallyAddress == null) {
       final CompletesEventually completesEventually = stage.world().completesFor(result.clientReturns());
@@ -97,6 +101,12 @@ public class Environment {
 
   boolean isStopped() {
     return stopped.get();
+  }
+
+  void removeFromParent(Actor actor) {
+    if (parent != null) {
+      parent.lifeCycle.environment.removeChild(actor);
+    }
   }
 
   void stop() {
