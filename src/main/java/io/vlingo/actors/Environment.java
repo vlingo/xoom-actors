@@ -69,7 +69,7 @@ public class Environment {
     children = children.plus(child);
   }
 
-  void removeChild(final Actor child) {
+  synchronized void removeChild(final Actor child) {
     children = children.minus(child);
   }
 
