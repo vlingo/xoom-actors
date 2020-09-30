@@ -9,14 +9,12 @@ package io.vlingo.actors;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.pcollections.PVector;
-import org.pcollections.TreePVector;
 
 public class Environment {
   final Address address;
-  PVector<Actor> children;
+  final ConcurrentLinkedQueue<Actor> children;
   Address completesEventuallyAddress;
   final Definition definition;
   final FailureMark failureMark;
@@ -48,14 +46,14 @@ public class Environment {
     this.address = address;
     assert(definition != null);
     this.definition = definition;
-    if (address.id() != World.PRIVATE_ROOT_ID) assert(parent != null);
+    assert address.id() == World.PRIVATE_ROOT_ID || (parent != null);
     this.parent = parent;
     assert(mailbox != null);
     this.mailbox = mailbox;
     this.maybeSupervisor = maybeSupervisor;
     this.failureMark = new FailureMark();
     this.logger = logger;
-    this.children = TreePVector.empty();
+    this.children = new ConcurrentLinkedQueue<>();
     this.proxyCache = new HashMap<>(1);
 //    this.stowage = new Stowage();
     this.stowageOverrides = null;
@@ -66,11 +64,11 @@ public class Environment {
   }
 
   void addChild(final Actor child) {
-    children = children.plus(child);
+    children.add(child);
   }
 
-  synchronized void removeChild(final Actor child) {
-    children = children.minus(child);
+  void removeChild(final Actor child) {
+    children.remove(child);
   }
 
   CompletesEventually completesEventually(final ResultReturns result) {
@@ -138,7 +136,7 @@ public class Environment {
 
   private void stopChildren() {
     // TODO: re-implement as: children.forEach(child -> selfAs(Stoppable.class).stop());
-    children.forEach(child -> child.stop());
-    children = TreePVector.empty();
+    children.forEach(Actor::stop);
+    children.clear();
   }
 }
