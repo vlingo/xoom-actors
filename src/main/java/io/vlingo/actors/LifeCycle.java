@@ -52,6 +52,7 @@ final class LifeCycle {
 
   void stop(final Actor actor) {
     environment.stop();
+    environment.removeFromParent(actor);
 
     afterStop(actor);
   }
