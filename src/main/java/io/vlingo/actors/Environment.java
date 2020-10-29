@@ -32,6 +32,14 @@ public class Environment {
 
   private Class<?>[] stowageOverrides;
 
+  public static Environment environmentOf(final Actor actor) {
+    return actor.lifeCycle.environment;
+  }
+
+  public int pendingMessages() {
+    return mailbox.pendingMessages();
+  }
+
   protected Environment(
           final Stage stage,
           final Address address,
