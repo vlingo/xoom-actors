@@ -32,7 +32,7 @@ public class Environment {
 
   private Class<?>[] stowageOverrides;
 
-  public static Environment environmentOf(final Actor actor) {
+  public static Environment of(final Actor actor) {
     return actor.lifeCycle.environment;
   }
 
