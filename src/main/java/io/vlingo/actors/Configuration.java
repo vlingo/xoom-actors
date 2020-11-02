@@ -80,7 +80,9 @@ public class Configuration {
   }
 
   public Configuration with(final CommonSupervisorsPluginConfiguration configuration) {
-    this.commonSupervisorsPluginConfiguration = configuration;
+    if (this.commonSupervisorsPluginConfiguration == null) {
+      this.commonSupervisorsPluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -90,7 +92,9 @@ public class Configuration {
   }
 
   public Configuration with(final ConcurrentQueueMailboxPluginConfiguration configuration) {
-    concurrentQueueMailboxPluginConfiguration = configuration;
+    if (this.concurrentQueueMailboxPluginConfiguration == null) {
+      this.concurrentQueueMailboxPluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -100,7 +104,9 @@ public class Configuration {
   }
 
   public Configuration with(final DefaultSupervisorOverridePluginConfiguration configuration) {
-    this.defaultSupervisorOverridePluginConfiguration = configuration;
+    if (this.defaultSupervisorOverridePluginConfiguration == null) {
+      this.defaultSupervisorOverridePluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -110,9 +116,7 @@ public class Configuration {
   }
 
   public Configuration with(final Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration configuration) {
-    if (this.slf4jPluginConfiguration != null) {
-
-    }
+    // NOTE: There may be only one registered Slf4jLoggerPluginConfiguration
     this.slf4jPluginConfiguration = configuration;
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
@@ -123,7 +127,9 @@ public class Configuration {
   }
 
   public Configuration with(final ManyToOneConcurrentArrayQueuePluginConfiguration configuration) {
-    this.manyToOneConcurrentArrayQueuePluginConfiguration = configuration;
+    if (this.manyToOneConcurrentArrayQueuePluginConfiguration == null) {
+      this.manyToOneConcurrentArrayQueuePluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -133,7 +139,9 @@ public class Configuration {
   }
 
   public Configuration with(final PooledCompletesPluginConfiguration configuration) {
-    pooledCompletesPluginConfiguration = configuration;
+    if (this.pooledCompletesPluginConfiguration == null) {
+      this.pooledCompletesPluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -143,7 +151,9 @@ public class Configuration {
   }
 
   public Configuration with(final SharedRingBufferMailboxPluginConfiguration configuration) {
-    this.sharedRingBufferMailboxPluginConfiguration = configuration;
+    if (this.sharedRingBufferMailboxPluginConfiguration == null) {
+      this.sharedRingBufferMailboxPluginConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
@@ -153,7 +163,9 @@ public class Configuration {
   }
 
   public Configuration with(final DirectoryEvictionConfiguration configuration) {
-    this.directoryEvictionConfiguration = configuration;
+    if (this.directoryEvictionConfiguration == null) {
+      this.directoryEvictionConfiguration = configuration;
+    }
     this.configurationOverrides.put(configuration.getClass().getSimpleName(), configuration);
     return this;
   }
