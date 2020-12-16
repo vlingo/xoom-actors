@@ -1,6 +1,6 @@
 # vlingo-actors
 
-[![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build Status](https://travis-ci.org/vlingo/vlingo-actors.svg?branch=master)](https://travis-ci.org/vlingo/vlingo-actors) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
+[![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build](https://github.com/vlingo/vlingo-actors/workflows/Build/badge.svg)](https://github.com/vlingo/vlingo-actors/actions?query=workflow%3ABuild) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
 
 The VLINGO/PLATFORM type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.
 
