@@ -8,8 +8,8 @@ trigger_dependency()
 {
     echo "Triggering $1 v$2. Next development version $3"
 
-    cd $TRAVIS_BUILD_DIR/..
-    git clone --depth=50 --branch=master https://${GITHUB_TOKEN}@github.com/vlingo/$1.git
+    cd $GITHUB_WORKSPACE/..
+    git clone --depth=50 --branch=master https://${RELEASE_GITHUB_TOKEN}@github.com/vlingo/$1.git
     cd $1
 
     # Update project version and all io.vlingo dependencies
