@@ -11,11 +11,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.vlingo.actors.testkit.AccessSafely;
-import io.vlingo.common.BasicCompletes;
 import io.vlingo.common.Completes;
 import io.vlingo.common.Scheduler;
+import io.vlingo.common.completes.FutureCompletes;
 
-public class MockCompletes<T> extends BasicCompletes<T> {
+public class MockCompletes<T> extends FutureCompletes<T> {
   private final AtomicReference<T> outcome = new AtomicReference<>(null);
   private final AtomicInteger withCount = new AtomicInteger(0);
   private final AccessSafely safely;
