@@ -79,6 +79,11 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
+  public CompletesId id() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public <E> Completes<Object> otherwise(final Function<E,Object> function) {
     throw new UnsupportedOperationException();
   }
@@ -89,7 +94,7 @@ class ResultReturns implements Completes<Object> {
   }
 
   @Override
-  public Completes<Object> recoverFrom(final Function<Exception,Object> function) {
+  public Completes<Object> recoverFrom(final Function<Throwable, Object> function) {
     throw new UnsupportedOperationException();
   }
 

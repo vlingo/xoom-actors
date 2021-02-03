@@ -7,25 +7,23 @@
 
 package io.vlingo.actors;
 
-import static org.junit.Assert.assertEquals;
-
+import io.vlingo.common.Completes;
 import org.junit.Test;
 
-import io.vlingo.common.Completes;
-import io.vlingo.common.RepeatableCompletes;
+import static org.junit.Assert.assertEquals;
 
 public class RepeatableCompletesTest {
   private Integer andThenValue;
 
   @Test
   public void testThatCompletesRepeats() {
-    final Completes<Integer> completes = new RepeatableCompletes<>(0);
+    final Completes<Integer> completes = Completes.asTyped();
 
     completes
       .andThen((value) -> value * 2)
       .andThen((Integer value) -> andThenValue = value)
       .repeat();
-    
+
     completes.with(5);
     assertEquals(new Integer(10), andThenValue);
     completes.with(10);
