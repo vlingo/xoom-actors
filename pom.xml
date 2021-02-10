@@ -119,11 +119,10 @@
     </repository>
 
     <repository>
-      <id>oss-jfrog-snapshot</id>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
     </repository>
   </repositories>
 
@@ -142,11 +141,6 @@
           <name>vlingo-vlingo-platform-java</name>
           <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
         </repository>
-
-        <snapshotRepository>
-          <id>oss-jfrog-snapshot-deploy</id>
-          <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </snapshotRepository>
       </distributionManagement>
     </profile>
     <profile>

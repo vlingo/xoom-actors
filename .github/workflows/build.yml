@@ -39,7 +39,7 @@ jobs:
           path: target/*.jar
 
       - name: Deploy
-        if: (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && github.repository_owner == 'vlingo'
+        if: startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'vlingo'
         run: mvn --batch-mode -DskipTests -DuseJFrogBintray=true deploy
         env:
           BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
