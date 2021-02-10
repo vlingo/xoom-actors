@@ -127,16 +127,43 @@
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>bintray-deploy</id>
-      <name>vlingo-vlingo-platform-java</name>
-      <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
-    </repository>
+  <profiles>
+    <profile>
+      <id>jfrog</id>
+      <activation>
+        <property>
+          <name>useJFrogBintray</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <distributionManagement>
+        <repository>
+          <id>bintray-deploy</id>
+          <name>vlingo-vlingo-platform-java</name>
+          <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
+        </repository>
 
-    <snapshotRepository>
-      <id>oss-jfrog-snapshot-deploy</id>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </snapshotRepository>
-  </distributionManagement>
+        <snapshotRepository>
+          <id>oss-jfrog-snapshot-deploy</id>
+          <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>github</id>
+      <activation>
+        <property>
+          <name>useGitHubPackages</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>
