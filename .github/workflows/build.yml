@@ -28,6 +28,8 @@ jobs:
 
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
