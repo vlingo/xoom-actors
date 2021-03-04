@@ -15,7 +15,7 @@ trigger_dependency()
     # Update project version and all io.vlingo dependencies
     mvn versions:set -DnewVersion=$2
     mvn versions:use-dep-version -Dincludes=io.vlingo -DdepVersion=$2 -DforceVersion=true
-    sed -i'.bkp' -e '/<artifactId>'$1'<\/artifactId>/{' -e 'n;s/\(<version>\)[0-9\.]*\(<\/version>\)/\1'$2'\2/' -e '}' -e 's/\(io.vlingo:'$1'\):[0-9\.]*/\1:'$2'/' README.md
+    sed -i'.bkp' -e '/<artifactId>vlingo-[a-z\-]*<\/artifactId>/{' -e 'n;s/\(<version>\)[0-9\.]*\(<\/version>\)/\1'$2'\2/' -e '}' -e 's/\(io.vlingo:vlingo-[a-z\-]*\):[0-9\.]*/\1:'$2'/' README.md
 
     git add pom.xml README.md
     git commit -m "Release v$2"
