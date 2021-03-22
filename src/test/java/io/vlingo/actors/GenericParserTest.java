@@ -7,11 +7,16 @@
 
 package io.vlingo.actors;
 
-import static io.vlingo.actors.ProxyGenerator.GenericParser.*;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.dependenciesOf;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.genericReferencesOf;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.genericTemplateOf;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.implementsInterfaceTemplateOf;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.parametersTemplateOf;
+import static io.vlingo.actors.ProxyGenerator.GenericParser.returnTypeOf;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
