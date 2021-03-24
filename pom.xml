@@ -111,14 +111,6 @@
 
   <repositories>
     <repository>
-      <id>jcenter</id>
-      <url>https://jcenter.bintray.com/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <repository>
       <id>github</id>
       <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
       <releases><enabled>true</enabled></releases>
@@ -161,18 +153,18 @@
       </build>
     </profile>
     <profile>
-      <id>jfrog</id>
+      <id>sonatype</id>
       <activation>
         <property>
-          <name>useJFrogBintray</name>
+          <name>useSonatype</name>
           <value>true</value>
         </property>
       </activation>
       <distributionManagement>
         <repository>
-          <id>bintray-deploy</id>
-          <name>vlingo-vlingo-platform-java</name>
-          <url>https://api.bintray.com/maven/vlingo/vlingo-platform-java/vlingo-actors/;publish=1</url>
+          <id>central-repository-ossrh</id>
+          <name>Central Repository OSSRH</name>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
       </distributionManagement>
     </profile>
