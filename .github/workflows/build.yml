@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      vlingo_version: ${{ steps.version.outputs.vlingo_version }}
 
     steps:
       - uses: actions/checkout@v2
@@ -25,6 +27,10 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-repository
+
+      - name: Determine version
+        id: version
+        run: echo "::set-output name=vlingo_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
 
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots install
@@ -46,7 +52,7 @@ jobs:
           SLACK_CHANNEL: ci-cd
           SLACK_USERNAME: Bob the Builder
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
-          SLACK_FOOTER: '${{ github.repository }}'
+          SLACK_FOOTER: '${{ github.repository }}:${{ steps.version.outputs.vlingo_version }}'
 
   deploy-github:
     name: Deploy to GitHub
@@ -61,6 +67,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -70,9 +78,10 @@ jobs:
           restore-keys: ${{ runner.os }}-m2-repository
 
       - name: Deploy
-        run: mvn --batch-mode -DskipTests -DuseGitHubPackages=true deploy
+        run: mvn --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts deploy
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Notify slack
         if: failure()
@@ -84,8 +93,8 @@ jobs:
           SLACK_USERNAME: Suzi the Publisher
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
           SLACK_FOOTER: '${{ github.repository }}'
-          SLACK_TITLE: 'Deployment'
-          SLACK_MESSAGE: 'GitHub :rocket:'
+          SLACK_TITLE: 'GitHub Deployment'
+          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.vlingo_version }}'
 
   deploy-bintray:
     name: Deploy to BinTray
@@ -100,6 +109,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -112,10 +123,11 @@ jobs:
         run: cp .github/settings.xml ~/.m2/settings.xml
 
       - name: Deploy
-        run: mvn --batch-mode -DskipTests -DuseJFrogBintray=true deploy
+        run: mvn --batch-mode -DskipTests -DuseJFrogBintray=true -DsignArtifacts deploy
         env:
           BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
           BINTRAY_PASSWORD: ${{ secrets.BINTRAY_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Trigger downstream builds
         run: .github/trigger_deps.sh
@@ -132,5 +144,5 @@ jobs:
           SLACK_USERNAME: Suzi the Publisher
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
           SLACK_FOOTER: '${{ github.repository }}'
-          SLACK_TITLE: 'Deployment'
-          SLACK_MESSAGE: 'BinTray :rocket:'
+          SLACK_TITLE: 'BinTray Deployment'
+          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.vlingo_version }}'
