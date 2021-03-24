@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build & Deploy
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -37,28 +37,6 @@ jobs:
           name: JARs
           path: target/*.jar
 
-      - name: Deploy to GitHub
-        if: (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && github.repository_owner == 'vlingo'
-        run: mvn --batch-mode -DskipTests -DuseGitHubPackages=true deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-
-      - name: Configure Maven for BinTray
-        run: cp .github/settings.xml ~/.m2/settings.xml
-
-      - name: Deploy
-        if: startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'vlingo'
-        run: mvn --batch-mode -DskipTests -DuseJFrogBintray=true deploy
-        env:
-          BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
-          BINTRAY_PASSWORD: ${{ secrets.BINTRAY_PASSWORD }}
-
-      - name: Trigger downstream builds
-        if: startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'vlingo'
-        run: .github/trigger_deps.sh
-        env:
-          RELEASE_GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-
       - name: Notify slack
         if: always() && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) && github.repository_owner == 'vlingo'
         uses: rtCamp/action-slack-notify@v2
@@ -70,5 +48,89 @@ jobs:
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
           SLACK_FOOTER: '${{ github.repository }}'
 
-      - name: Cleanup
-        run: rm -rf ~/.m2/repository/io/vlingo
+  deploy-github:
+    name: Deploy to GitHub
+    runs-on: ubuntu-latest
+    needs: build
+    if: (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master') && github.repository_owner == 'vlingo'
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-repository
+
+      - name: Deploy
+        run: mvn --batch-mode -DskipTests -DuseGitHubPackages=true deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+
+      - name: Notify slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: "${{ job.status == 'success' && 'good' || 'danger' }}"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ci-cd
+          SLACK_USERNAME: Suzi the Publisher
+          SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
+          SLACK_FOOTER: '${{ github.repository }}'
+          SLACK_TITLE: 'Deployment'
+          SLACK_MESSAGE: 'GitHub :rocket:'
+
+  deploy-bintray:
+    name: Deploy to BinTray
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'vlingo'
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-repository
+
+      - name: Configure Maven for BinTray
+        run: cp .github/settings.xml ~/.m2/settings.xml
+
+      - name: Deploy
+        run: mvn --batch-mode -DskipTests -DuseJFrogBintray=true deploy
+        env:
+          BINTRAY_USERNAME: ${{ secrets.BINTRAY_USERNAME }}
+          BINTRAY_PASSWORD: ${{ secrets.BINTRAY_PASSWORD }}
+
+      - name: Trigger downstream builds
+        run: .github/trigger_deps.sh
+        env:
+          RELEASE_GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+
+      - name: Notify slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: "${{ job.status == 'success' && 'good' || 'danger' }}"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ci-cd
+          SLACK_USERNAME: Suzi the Publisher
+          SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
+          SLACK_FOOTER: '${{ github.repository }}'
+          SLACK_TITLE: 'Deployment'
+          SLACK_MESSAGE: 'BinTray :rocket:'
