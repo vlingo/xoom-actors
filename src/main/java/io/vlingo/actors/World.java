@@ -393,12 +393,14 @@ public final class World implements Registrar {
   }
 
   /**
-   * Registers the dynamic dependencies by {@code name}.
+   * Registers the dynamic {@code value} with the {@code name} key. The
+   * {@code value} cannot not be replaced by a subsequent registration
+   * using the same {@code name}.
    * @param name the {@code String} name of the dynamic dependencies
-   * @param dep the {@code Object} to register
+   * @param value the {@code Object} to register
    */
-  public void registerDynamic(final String name, final Object dep) {
-    this.dynamicDependencies.put(name, dep);
+  public void registerDynamic(final String name, final Object value) {
+    this.dynamicDependencies.putIfAbsent(name, value);
   }
 
   /**
