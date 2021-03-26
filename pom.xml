@@ -111,9 +111,9 @@
 
   <repositories>
     <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
-      <releases><enabled>true</enabled></releases>
+      <id>ossrh-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
   </repositories>
