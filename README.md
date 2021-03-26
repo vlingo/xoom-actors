@@ -1,6 +1,6 @@
 # vlingo-actors
 
-[![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build](https://github.com/vlingo/vlingo-actors/workflows/Build/badge.svg)](https://github.com/vlingo/vlingo-actors/actions?query=workflow%3ABuild) [ ![Download](https://api.bintray.com/packages/vlingo/vlingo-platform-java/vlingo-actors/images/download.svg) ](https://bintray.com/vlingo/vlingo-platform-java/vlingo-actors/_latestVersion) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
+[![Javadocs](http://javadoc.io/badge/io.vlingo/vlingo-actors.svg?color=brightgreen)](http://javadoc.io/doc/io.vlingo/vlingo-actors) [![Build](https://github.com/vlingo/vlingo-actors/workflows/Build/badge.svg)](https://github.com/vlingo/vlingo-actors/actions?query=workflow%3ABuild) [![Download](https://img.shields.io/maven-central/v/io.vlingo/vlingo-actors?label=maven)](https://search.maven.org/artifact/io.vlingo/vlingo-actors) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/vlingo-platform-java/actors)
 
 The VLINGO XOOM platform SDK for the type-safe Actor Model, delivering Reactive concurrency, high scalability, high-throughput, and resiliency using Java and other JVM languages.
 
