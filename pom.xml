@@ -199,5 +199,16 @@
         </repository>
       </distributionManagement>
     </profile>
+    <profile>
+      <!-- We only need GitHub packages during releases as syncing to central is too slow. -->
+      <id>github-releases</id>
+      <repositories>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
+        </repository>
+      </repositories>
+    </profile>
   </profiles>
 </project>

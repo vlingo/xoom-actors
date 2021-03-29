@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '30 1 * * *'
 
+env:
+  GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+
 jobs:
   build:
     name: Build
@@ -33,9 +36,7 @@ jobs:
         run: echo "::set-output name=vlingo_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
 
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots install
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn --batch-mode --update-snapshots -Pgithub-releases install
 
       - name: Publish artifacts
         uses: actions/upload-artifact@v2
@@ -78,9 +79,8 @@ jobs:
           restore-keys: ${{ runner.os }}-m2-repository
 
       - name: Deploy
-        run: mvn --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts deploy
+        run: mvn --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Notify slack
@@ -123,7 +123,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2-repository
 
       - name: Deploy
-        run: mvn --batch-mode -DskipTests -DuseSonatype -DsignArtifacts deploy
+        run: mvn --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
