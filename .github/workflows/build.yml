@@ -7,7 +7,7 @@ on:
     - cron: '30 1 * * *'
 
 env:
-  GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
@@ -81,6 +81,7 @@ jobs:
       - name: Deploy
         run: mvn --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases deploy
         env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Notify slack
