@@ -34,7 +34,7 @@
   <distributionManagement>
     <relocation>
       <groupId>io.vlingo.xoom</groupId>
-      <artifactId>xoom-common</artifactId>
+      <artifactId>xoom-actors</artifactId>
     </relocation>
   </distributionManagement>
   <build>
@@ -169,7 +169,7 @@
       <distributionManagement>
         <relocation>
           <groupId>io.vlingo.xoom</groupId>
-          <artifactId>xoom-common</artifactId>
+          <artifactId>xoom-actors</artifactId>
         </relocation>
         <snapshotRepository>
           <id>central-repository-ossrh</id>
@@ -204,7 +204,7 @@
       <distributionManagement>
         <relocation>
           <groupId>io.vlingo.xoom</groupId>
-          <artifactId>xoom-common</artifactId>
+          <artifactId>xoom-actors</artifactId>
         </relocation>
         <repository>
           <id>github</id>
