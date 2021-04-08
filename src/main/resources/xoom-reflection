@@ -1,0 +1,5 @@
+io.vlingo.xoom.actors.plugin.supervision.DefaultSupervisorOverride
+io.vlingo.xoom.actors.CompletesEventually__Proxy
+io.vlingo.xoom.actors.Logger__Proxy
+io.vlingo.xoom.actors.DirectoryScanner
+io.vlingo.xoom.actors.DirectoryScanner__Proxy

@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.vlingo</groupId>
-  <artifactId>vlingo-actors</artifactId>
+  <groupId>io.vlingo.xoom</groupId>
+  <artifactId>xoom-actors</artifactId>
   <version>1.6.1-SNAPSHOT</version>
-  <name>vlingo-actors</name>
+  <name>xoom-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
-  <url>https://github.com/vlingo/vlingo-actors</url>
+  <url>https://github.com/vlingo/xoom-actors</url>
   <licenses>
     <license>
       <name>Mozilla Public License 2.0</name>
@@ -22,9 +22,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git://github.com/vlingo/vlingo-actors.git</connection>
-    <developerConnection>scm:git:ssh://github.com/vlingo/vlingo-actors.git</developerConnection>
-    <url>http://github.com/vlingo/vlingo-actors/tree/master</url>
+    <connection>scm:git:git://github.com/vlingo/xoom-actors.git</connection>
+    <developerConnection>scm:git:ssh://github.com/vlingo/xoom-actors.git</developerConnection>
+    <url>http://github.com/vlingo/xoom-actors/tree/master</url>
   </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -97,8 +97,8 @@
       <version>1.0.2</version>
     </dependency>
     <dependency>
-      <groupId>io.vlingo</groupId>
-      <artifactId>vlingo-common</artifactId>
+      <groupId>io.vlingo.xoom</groupId>
+      <artifactId>xoom-common</artifactId>
       <version>1.6.1-SNAPSHOT</version>
     </dependency>
     <dependency>
@@ -195,7 +195,7 @@
         <repository>
           <id>github</id>
           <name>GitHub Packages</name>
-          <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
+          <url>https://maven.pkg.github.com/vlingo/xoom-platform</url>
         </repository>
       </distributionManagement>
     </profile>
@@ -206,7 +206,7 @@
         <repository>
           <id>github</id>
           <name>GitHub Packages</name>
-          <url>https://maven.pkg.github.com/vlingo/vlingo-platform</url>
+          <url>https://maven.pkg.github.com/vlingo/xoom-platform</url>
         </repository>
       </repositories>
     </profile>

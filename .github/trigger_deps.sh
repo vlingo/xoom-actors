@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Params:
-#   - Downstream module name (e.g. vlingo-actors)
+#   - Downstream module name (e.g. xoom-actors)
 #   - Release version (e.g. 1.0.4)
 #   - Next development version (e.g. 1.0.5-SNAPSHOT)
 trigger_dependency()
@@ -12,10 +12,10 @@ trigger_dependency()
     git clone --depth=50 --branch=master https://${RELEASE_GITHUB_TOKEN}@github.com/vlingo/$1.git
     cd $1
 
-    # Update project version and all io.vlingo dependencies
+    # Update project version and all io.vlingo.xoom dependencies
     mvn versions:set -DnewVersion=$2
-    mvn versions:use-dep-version -Dincludes=io.vlingo -DdepVersion=$2 -DforceVersion=true
-    sed -i'.bkp' -e '/<artifactId>vlingo-[a-z\-]*<\/artifactId>/{' -e 'n;s/\(<version>\)[0-9\.]*\(<\/version>\)/\1'$2'\2/' -e '}' -e 's/\(io.vlingo:vlingo-[a-z\-]*\):[0-9\.]*/\1:'$2'/' README.md
+    mvn versions:use-dep-version -Dincludes=io.vlingo.xoom -DdepVersion=$2 -DforceVersion=true
+    sed -i'.bkp' -e '/<artifactId>xoom-[a-z\-]*<\/artifactId>/{' -e 'n;s/\(<version>\)[0-9\.]*\(<\/version>\)/\1'$2'\2/' -e '}' -e 's/\(io.vlingo.xoom:xoom-[a-z\-]*\):[0-9\.]*/\1:'$2'/' README.md
 
     git add pom.xml README.md
     git commit -m "Release v$2"
@@ -23,7 +23,7 @@ trigger_dependency()
 
     # Prepare for next development version
     mvn versions:set -DnewVersion=$3
-    mvn versions:use-dep-version -Dincludes=io.vlingo -DdepVersion=$3 -DforceVersion=true
+    mvn versions:use-dep-version -Dincludes=io.vlingo.xoom -DdepVersion=$3 -DforceVersion=true
     git add pom.xml
     git commit -m "Next development version $3"
 
@@ -42,7 +42,7 @@ MINOR=$(echo $VERSION | cut -f 2 -d '.')
 PATCH=$(echo $VERSION | cut -f 3 -d '.')
 NEW_VERSION=$MAJOR.$MINOR.$(($PATCH + 1))-SNAPSHOT
 
-for dependency in "vlingo-wire" "vlingo-build-plugins" "vlingo-telemetry";
+for dependency in "xoom-wire" "xoom-build-plugins" "xoom-telemetry";
 do
     trigger_dependency $dependency $VERSION $NEW_VERSION
 done

@@ -14,7 +14,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      vlingo_version: ${{ steps.version.outputs.vlingo_version }}
+      xoom_version: ${{ steps.version.outputs.xoom_version }}
 
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
 
       - name: Determine version
         id: version
-        run: echo "::set-output name=vlingo_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        run: echo "::set-output name=xoom_version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
 
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots -Pgithub-releases install
@@ -53,7 +53,7 @@ jobs:
           SLACK_CHANNEL: ci-cd
           SLACK_USERNAME: Bob the Builder
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
-          SLACK_FOOTER: '${{ github.repository }}:${{ steps.version.outputs.vlingo_version }}'
+          SLACK_FOOTER: '${{ github.repository }}:${{ steps.version.outputs.xoom_version }}'
 
   deploy-github:
     name: Deploy to GitHub
@@ -84,6 +84,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
+      - name: Deploy
+        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
       - name: Notify slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -95,7 +101,7 @@ jobs:
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
           SLACK_FOOTER: '${{ github.repository }}'
           SLACK_TITLE: 'GitHub Deployment'
-          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.vlingo_version }}'
+          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.xoom_version }}'
 
   deploy-central:
     name: Deploy to Maven Central
@@ -130,6 +136,13 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
+      - name: Deploy
+        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
       - name: Trigger downstream builds
         if: startsWith(github.ref, 'refs/tags/')
         run: .github/trigger_deps.sh
@@ -147,4 +160,4 @@ jobs:
           SLACK_ICON: 'https://vlingo.io/wp-content/uploads/cropped-vlingo-favicon-180x180.png'
           SLACK_FOOTER: '${{ github.repository }}'
           SLACK_TITLE: 'Sonatype Deployment'
-          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.vlingo_version }}'
+          SLACK_MESSAGE: ':rocket: ${{ needs.build.outputs.xoom_version }}'

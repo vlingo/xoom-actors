@@ -4,7 +4,7 @@
             <pattern>%d{HH:mm:ss.SSS}[%thread][%X{eventTimestamp}][%X{sourceThread}][%X{sourceAddress}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="io.vlingo" level="DEBUG"/>
+    <logger name="io.vlingo.xoom" level="DEBUG"/>
     
     <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
