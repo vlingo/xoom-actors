@@ -1,4 +1,4 @@
-## How to contribute to the vlingo/actors
+## How to contribute to the VLINGO XOOM Actors
 
 #### **Did you find a bug?**
 
@@ -34,4 +34,4 @@
 
 Thanks for your kind assistence! :smile:
 
-Vaughn Vernon and the vlingo/platform team
+Vaughn Vernon and the VLINGO XOOM Team

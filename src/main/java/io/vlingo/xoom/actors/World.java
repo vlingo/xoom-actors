@@ -104,7 +104,7 @@ public final class World implements Registrar {
    */
   public <T,A extends Actor> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final ActorInstantiator<A> instantiator) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return stage().actorFor(protocol, type, instantiator);
@@ -120,7 +120,7 @@ public final class World implements Registrar {
    */
   public <T> T actorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return stage().actorFor(protocol, type, parameters);
@@ -136,7 +136,7 @@ public final class World implements Registrar {
    */
   public <T> T actorFor(final Class<T> protocol, final Definition definition) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return stage().actorFor(protocol, definition);
@@ -152,7 +152,7 @@ public final class World implements Registrar {
    */
   public Protocols actorFor(final Class<?>[] protocols, final Class<? extends Actor> type, final Object...parameters) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return stage().actorFor(protocols, type, parameters);
@@ -167,7 +167,7 @@ public final class World implements Registrar {
    */
   public Protocols actorFor(final Class<?>[] protocols, final Definition definition) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return stage().actorFor(protocols, definition);
@@ -334,7 +334,7 @@ public final class World implements Registrar {
       final Supervisor common = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
       stage.registerCommonSupervisor(supervisedProtocol, common);
     } catch (Exception e) {
-      defaultLogger().error("vlingo/actors: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
+      defaultLogger().error("XOOM: World cannot register common supervisor: " + supervisedProtocol.getName(), e);
     }
   }
 
@@ -352,7 +352,7 @@ public final class World implements Registrar {
       final Stage stage = stageNamed(actualStageName);
       defaultSupervisor = stage.actorFor(Supervisor.class, Definition.has(supervisorClass, Definition.NoParameters, name));
     } catch (Exception e) {
-      defaultLogger().error("vlingo/actors: World cannot register default supervisor override: " + supervisorClass.getName(), e);
+      defaultLogger().error("XOOM: World cannot register default supervisor override: " + supervisorClass.getName(), e);
     }
   }
 

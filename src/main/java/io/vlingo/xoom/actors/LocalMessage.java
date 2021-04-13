@@ -103,7 +103,7 @@ public class LocalMessage<T> implements Message {
     if (deadLetters != null) {
       deadLetters.failedDelivery(deadLetter);
     } else {
-      actor.logger().warn("vlingo/actors: MISSING DEAD LETTERS FOR: " + deadLetter);
+      actor.logger().warn("XOOM: MISSING DEAD LETTERS FOR: " + deadLetter);
     }
   }
 

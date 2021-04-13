@@ -60,7 +60,7 @@ public class ConfigurationTest {
               .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration
                       .define()
                       .defaultLogger()
-                      .name("vlingo/actors(test)"))
+                      .name("XOOM(test)"))
               .with(CommonSupervisorsPluginConfiguration
                       .define()
                       .supervisor("default", "pingSupervisor", Ping.class, PingSupervisorActor.class)
@@ -103,7 +103,7 @@ public class ConfigurationTest {
 
     assertNotNull(configuration.slf4jPluginConfiguration());
     assertTrue(configuration.slf4jPluginConfiguration().isDefaultLogger());
-    assertEquals("vlingo/actors(test)", configuration.slf4jPluginConfiguration().name());
+    assertEquals("XOOM(test)", configuration.slf4jPluginConfiguration().name());
 
     assertNotNull(configuration.commonSupervisorsPluginConfiguration());
     assertEquals(2, configuration.commonSupervisorsPluginConfiguration().count());
@@ -165,7 +165,7 @@ public class ConfigurationTest {
 
     assertNotNull(configuration.slf4jPluginConfiguration());
     assertTrue(configuration.slf4jPluginConfiguration().isDefaultLogger());
-    assertEquals("vlingo/actors", configuration.slf4jPluginConfiguration().name());
+    assertEquals("XOOM", configuration.slf4jPluginConfiguration().name());
 
     assertNotNull(configuration.defaultSupervisorOverridePluginConfiguration());
     assertEquals(1, configuration.defaultSupervisorOverridePluginConfiguration().count());

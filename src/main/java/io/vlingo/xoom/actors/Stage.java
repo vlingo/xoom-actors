@@ -354,7 +354,7 @@ public class Stage implements Stoppable {
               ).toTestActor();
 
     } catch (Exception e) {
-      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("XOOM: FAILED: " + e.getMessage(), e);
       e.printStackTrace();
       return null;
     }
@@ -531,7 +531,7 @@ public class Stage implements Stoppable {
       throw e;
     }
     catch (Exception e) {
-      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("XOOM: FAILED: " + e.getMessage(), e);
       return null;
     }
   }
@@ -561,7 +561,7 @@ public class Stage implements Stoppable {
       final Object[] protocolActors = actorProxyFor(protocols, actor, actor.lifeCycle.environment.mailbox);
       return ActorProtocolActor.allOf(protocolActors, actor);
     } catch (Exception e) {
-      world.defaultLogger().error("vlingo/actors: FAILED: " + e.getMessage(), e);
+      world.defaultLogger().error("XOOM: FAILED: " + e.getMessage(), e);
       return null;
     }
   }

@@ -61,7 +61,7 @@ public class TestWorld implements AutoCloseable {
 
   public <T> TestActor<T> actorFor(final Class<T> protocol, final Class<? extends Actor> type, final Object...parameters) {
     if (isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: Stopped.");
+      throw new IllegalStateException("XOOM: Stopped.");
     }
 
     return world.stage().testActorFor(protocol, type, parameters);
@@ -69,7 +69,7 @@ public class TestWorld implements AutoCloseable {
 
   public <T> TestActor<T> actorFor(final Class<T> protocol, final Definition definition) {
     if (world.isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
+      throw new IllegalStateException("XOOM: TestWorld has stopped.");
     }
 
     return world.stage().testActorFor(protocol, definition);
@@ -77,7 +77,7 @@ public class TestWorld implements AutoCloseable {
 
   public Protocols actorFor(final Class<?>[] protocols, final Definition definition) {
     if (world.isTerminated()) {
-      throw new IllegalStateException("vlingo/actors: TestWorld has stopped.");
+      throw new IllegalStateException("XOOM: TestWorld has stopped.");
     }
 
     return world.stage().testActorFor(protocols, definition);

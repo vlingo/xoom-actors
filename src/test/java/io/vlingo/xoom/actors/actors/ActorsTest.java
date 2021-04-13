@@ -35,7 +35,7 @@ public abstract class ActorsTest {
                       .Slf4jLoggerPluginConfiguration
                       .define()
                       .defaultLogger()
-                      .name("vlingo/actors"));
+                      .name("XOOM"));
 
       testWorld = TestWorld.start("test", configuration);
       world = testWorld.world();

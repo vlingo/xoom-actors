@@ -30,7 +30,7 @@ final class Directory {
   // (2) Configuration: 128, 16,384; used by Grid
   // This tuning enables millions of actors at any one time.
   // For example, there will be very few actors in some
-  // "applications" such as vlingo/cluster, but then the application
+  // "applications" such as VLINGO XOOM Cluster, but then the application
   // running on the cluster itself may have many, many actors. These
   // run on a different stage, and thus should be tuned separately.
   // For example, preallocate 128 buckets that each have a Map of 16K

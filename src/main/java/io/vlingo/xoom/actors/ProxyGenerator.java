@@ -91,7 +91,7 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   public Result generateFor(final String actorProtocol) {
-    logger.debug("vlingo/actors: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
+    logger.debug("XOOM: Generating proxy for " + (type == DynaType.Main ? "main":"test") + ": " + actorProtocol);
 
     try {
       final Class<?> protocolInterface = readProtocolInterface(actorProtocol);

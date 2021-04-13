@@ -119,7 +119,7 @@ public class Slf4jLoggerPlugin extends AbstractPlugin implements Plugin, LoggerP
 
     @Override
     public void build(Configuration configuration) {
-      configuration.with(defaultLogger().name("vlingo/actors"));
+      configuration.with(defaultLogger().name("XOOM"));
     }
 
     @Override
