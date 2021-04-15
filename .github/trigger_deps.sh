@@ -15,8 +15,8 @@ trigger_dependency()
     # Update project version and all io.vlingo.xoom dependencies
     mvn versions:set -DnewVersion=$2
     mvn versions:use-dep-version -Dincludes=io.vlingo.xoom -DdepVersion=$2 -DforceVersion=true
-    mvn -f pom-relocation.xml versions:set -DnewVersion=$2
-    mvn -f pom-relocation.xml versions:use-dep-version -Dincludes=io.vlingo.xoom -DdepVersion=$2 -DforceVersion=true
+    [ -f pom-relocation.xml ] && mvn -f pom-relocation.xml versions:set -DnewVersion=$2
+    [ -f pom-relocation.xml ] && mvn -f pom-relocation.xml versions:use-dep-version -Dincludes=io.vlingo.xoom -DdepVersion=$2 -DforceVersion=true
     sed -i'.bkp' -e '/<artifactId>xoom-[a-z\-]*<\/artifactId>/{' -e 'n;s/\(<version>\)[0-9\.]*\(<\/version>\)/\1'$2'\2/' -e '}' -e 's/\(io.vlingo.xoom:xoom-[a-z\-]*\):[0-9\.]*/\1:'$2'/' README.md
 
     git add pom.xml README.md
