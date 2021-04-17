@@ -72,15 +72,15 @@ public class UUIDAddress implements Address {
     return id.compareTo(((UUIDAddress) other).id);
   }
 
-  UUIDAddress(final UUID reservedId) {
+  protected UUIDAddress(final UUID reservedId) {
     this(reservedId, null, false);
   }
 
-  UUIDAddress(final UUID reservedId, final String name) {
+  protected UUIDAddress(final UUID reservedId, final String name) {
     this(reservedId, name, false);
   }
 
-  UUIDAddress(final UUID reservedId, final String name, final boolean prefixName) {
+  protected UUIDAddress(final UUID reservedId, final String name, final boolean prefixName) {
     this.id = reservedId;
     this.name = name == null ? null : prefixName ? (name + id) : name;
   }
