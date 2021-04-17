@@ -136,21 +136,6 @@ public class Stage implements Stoppable {
     return actor.protocolActor();
   }
 
-  <T> T actorThunkFor(Class<T> protocol, Definition definition, Address address) {
-    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
-    final ActorProtocolActor<T> actor =
-        actorProtocolFor(
-            protocol,
-            definition,
-            definition.parentOr(world.defaultParent()),
-            address,
-            actorMailbox,
-            definition.supervisor(),
-            definition.loggerOr(world.defaultLogger()));
-
-    return actor.protocolActor();
-  }
-
   /**
    * Answers the {@code T} protocol of the newly created {@code Actor} that implements the {@code protocol} and
    * that will be assigned the specific {@code logger}.
@@ -480,7 +465,7 @@ public class Stage implements Stoppable {
    * @param logger the Logger of this Actor
    * @return T
    */
-  <T> T actorFor(final Class<T> protocol, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+  protected <T> T actorFor(final Class<T> protocol, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
     ActorProtocolActor<T> actor = actorProtocolFor(protocol, definition, parent, null, null, maybeSupervisor, logger);
     return actor.protocolActor();
   }
@@ -494,7 +479,7 @@ public class Stage implements Stoppable {
    * @param logger the Logger of this Actor
    * @return ActorProtocolActor[]
    */
-  ActorProtocolActor<Object>[] actorProtocolFor(final Class<?>[] protocols, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
+  protected ActorProtocolActor<Object>[] actorProtocolFor(final Class<?>[] protocols, final Definition definition, final Actor parent, final Supervisor maybeSupervisor, final Logger logger) {
     assertProtocolCompliance(protocols);
     return actorProtocolFor(protocols, definition, parent, null, null, maybeSupervisor, logger);
   }
@@ -511,7 +496,7 @@ public class Stage implements Stoppable {
    * @param logger the Logger of this Actor
    * @return ActorProtocolActor
    */
-  <T> ActorProtocolActor<T> actorProtocolFor(
+  protected <T> ActorProtocolActor<T> actorProtocolFor(
           final Class<T> protocol,
           final Definition definition,
           final Actor parent,
@@ -547,7 +532,7 @@ public class Stage implements Stoppable {
    * @param logger the Logger of this Actor
    * @return ActorProtocolActor[]
    */
-  ActorProtocolActor<Object>[] actorProtocolFor(
+  protected ActorProtocolActor<Object>[] actorProtocolFor(
           final Class<?>[] protocols,
           final Definition definition,
           final Actor parent,
@@ -613,14 +598,6 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers my Directory instance. (INTERNAL ONLY)
-   * @return Directory
-   */
-  Directory directory() {
-    return directory; // FOR TESTING ONLY
-  }
-
-  /**
    * Handles a failure by suspending the Actor and dispatching to the Supervisor. (INTERNAL ONLY)
    * @param supervised the Supervised instance, which is an Actor
    */
@@ -668,6 +645,21 @@ public class Stage implements Stoppable {
     }
   }
 
+  protected <T> T actorThunkFor(Class<T> protocol, Definition definition, Address address) {
+    final Mailbox actorMailbox = this.allocateMailbox(definition, address, null);
+    final ActorProtocolActor<T> actor =
+        actorProtocolFor(
+            protocol,
+            definition,
+            definition.parentOr(world.defaultParent()),
+            address,
+            actorMailbox,
+            definition.supervisor(),
+            definition.loggerOr(world.defaultLogger()));
+
+    return actor.protocolActor();
+  }
+
   protected void extenderStartDirectoryScanner() {
     startDirectoryScanner();
   }
@@ -679,7 +671,7 @@ public class Stage implements Stoppable {
    * @param maybeAddress the possible Address
    * @return Address
    */
-  private Address allocateAddress(final Definition definition, final Address maybeAddress) {
+  protected Address allocateAddress(final Definition definition, final Address maybeAddress) {
     final Address address = maybeAddress != null ?
             maybeAddress : this.addressFactory().uniqueWith(definition.actorName());
     return address;
@@ -697,6 +689,14 @@ public class Stage implements Stoppable {
     final Mailbox mailbox = maybeMailbox != null ?
             maybeMailbox : ActorFactory.actorMailbox(this, address, definition, mailboxWrapper());
     return mailbox;
+  }
+
+  /**
+   * Answers my Directory instance.
+   * @return Directory
+   */
+  protected Directory directory() {
+    return directory;
   }
 
   protected ActorFactory.MailboxWrapper mailboxWrapper() {
@@ -797,7 +797,7 @@ public class Stage implements Stoppable {
     return redefinition;
   }
 
-  <T> Actor rawLookupOrStart(Definition definition, Address address) {
+  Actor rawLookupOrStart(Definition definition, Address address) {
     Actor actor = directory.actorOf(address);
     if (actor != null) {
       return actor;
@@ -853,12 +853,12 @@ public class Stage implements Stoppable {
    * Internal type used to manage Actor proxy creation. (INTERNAL ONLY)
    * @param <T> the protocol type
    */
-  static class ActorProtocolActor<T> {
+  protected static class ActorProtocolActor<T> {
     private final Actor actor;
     private final T protocolActor;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    static ActorProtocolActor<Object>[] allOf(Object[] protocolActors, final Actor actor) {
+    public static ActorProtocolActor<Object>[] allOf(Object[] protocolActors, final Actor actor) {
       final ActorProtocolActor<Object>[] all = new ActorProtocolActor[protocolActors.length];
       for (int idx = 0; idx < protocolActors.length; ++idx) {
         all[idx] = new ActorProtocolActor(actor, protocolActors[idx]);
@@ -866,7 +866,7 @@ public class Stage implements Stoppable {
       return all;
     }
 
-    static Object[] toActors(final ActorProtocolActor<Object>[] all) {
+    public static Object[] toActors(final ActorProtocolActor<Object>[] all) {
       final Object[] actors = new Object[all.length];
       for (int idx = 0; idx < all.length; ++idx) {
         actors[idx] = all[idx].protocolActor();
@@ -874,7 +874,7 @@ public class Stage implements Stoppable {
       return actors;
     }
 
-    static TestActor<?>[] toTestActors(final ActorProtocolActor<Object>[] all) {
+    public static TestActor<?>[] toTestActors(final ActorProtocolActor<Object>[] all) {
       final TestActor<?>[] testActors = new TestActor[all.length];
       for (int idx = 0; idx < all.length; ++idx) {
         testActors[idx] = all[idx].toTestActor();
@@ -882,16 +882,16 @@ public class Stage implements Stoppable {
       return testActors;
     }
 
-    ActorProtocolActor(final Actor actor, final T protocol) {
+    public ActorProtocolActor(final Actor actor, final T protocol) {
       this.actor = actor;
       this.protocolActor = protocol;
     }
 
-    T protocolActor() {
+    public T protocolActor() {
       return protocolActor;
     }
 
-    TestActor<T> toTestActor() {
+    public TestActor<T> toTestActor() {
       return new TestActor<T>(actor, protocolActor, actor.address());
     }
   }
