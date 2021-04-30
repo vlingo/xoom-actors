@@ -85,7 +85,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Deploy
-        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases deploy
+        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases clean deploy
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
@@ -122,6 +122,9 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+      - name: Configure an additional Maven repository
+        run: sed -i'.bkp' -e 's/\(<\/servers>\)/  <server><id>github<\/id><username>\${env.GITHUB_ACTOR}<\/username><password>\${env.GITHUB_TOKEN}<\/password><\/server>\n\1/g' ~/.m2/settings.xml
+
       - name: Cache Maven packages
         uses: actions/cache@v2
         with:
@@ -137,7 +140,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Deploy
-        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases deploy
+        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases clean deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}

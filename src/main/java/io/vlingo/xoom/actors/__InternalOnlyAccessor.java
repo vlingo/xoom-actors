@@ -15,7 +15,7 @@ public class __InternalOnlyAccessor {
   }
 
   public static Actor actorLookupOrStartThunk(final Stage stage, Definition definition, Address address) {
-    return stage.actorLookupOrStart(definition, address);
+    return stage.actorLookupOrStartThunk(definition, address);
   }
 
   public static Actor actorOf(final Stage stage, final Address address) {
