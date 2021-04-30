@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo</groupId>
   <artifactId>vlingo-actors</artifactId>
-  <version>1.7.5</version>
+  <version>1.7.6-SNAPSHOT</version>
   <name>vlingo-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
   <url>https://github.com/vlingo/xoom-actors</url>
