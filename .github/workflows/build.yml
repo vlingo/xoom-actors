@@ -84,12 +84,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
-      - name: Deploy
-        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseGitHubPackages -DsignArtifacts -Pgithub-releases clean deploy
-        env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
       - name: Notify slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -134,13 +128,6 @@ jobs:
 
       - name: Deploy
         run: mvn --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases deploy
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
-      - name: Deploy
-        run: mvn -f pom-relocation.xml --batch-mode -DskipTests -DuseSonatype -DsignArtifacts -Pgithub-releases clean deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
