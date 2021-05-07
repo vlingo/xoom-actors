@@ -30,6 +30,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <graalvm.version>21.1.0</graalvm.version>
   </properties>
   <build>
     <plugins>
@@ -107,6 +108,12 @@
       <version>1.2.3</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+      <version>${graalvm.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -119,6 +126,35 @@
   </repositories>
 
   <profiles>
+    <profile>
+      <id>native-image</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.nativeimage</groupId>
+            <artifactId>native-image-maven-plugin</artifactId>
+            <version>${graalvm.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>native-image</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <imageName>${project.name}</imageName>
+              <buildArgs>
+                --shared
+                -H:DashboardDump=${project.name} -H:+DashboardAll
+                -H:+DashboardJson -H:+DashboardPretty
+                --allow-incomplete-classpath
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>sign-artifacts</id>
       <activation>

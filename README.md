@@ -24,7 +24,12 @@ dependencies {
     compile 'io.vlingo.xoom:xoom-actors:1.7.6'
 }
 ```
+### GraalVM native image build
 
+```bash
+mvn clean install -Pmodules -Pnative-image
+```
+More Details [GraalVM](GraalVM.md)
 License (See LICENSE file for full license)
 -------------------------------------------
 Copyright © 2012-2021 VLINGO LABS. All rights reserved.
