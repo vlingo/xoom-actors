@@ -33,8 +33,8 @@ trigger_dependency()
 VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 echo "Detected version $VERSION"
 
-git config --global user.email "VaughnVernon"
-git config --global user.name "vaughn@forcomprehension.com"
+git config --global user.email "vaughn@kalele.io"
+git config --global user.name "Vaughn Vernon"
 
 # New version
 MAJOR=$(echo $VERSION | cut -f 1 -d '.')
