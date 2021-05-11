@@ -8,13 +8,13 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 public final class NativeImpl {
-    @CEntryPoint(name = "Java_io_vlingo_xoom_actorsnative_Native_start")
-    public static int start(@CEntryPoint.IsolateThreadContext long isolateId, CCharPointer name) {
-        final String nameString = CTypeConversion.toJavaString(name);
+  @CEntryPoint(name = "Java_io_vlingo_xoom_actorsnative_Native_start")
+  public static int start(@CEntryPoint.IsolateThreadContext long isolateId, CCharPointer name) {
+    final String nameString = CTypeConversion.toJavaString(name);
 
-        Configuration configuration = Configuration.define()
-                .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration.define().defaultLogger().name("XOOM"));
-        World.start(nameString, configuration);
-        return 0;
-    }
+    Configuration configuration = Configuration.define()
+        .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration.define().defaultLogger().name("XOOM"));
+    World.start(nameString, configuration);
+    return 0;
+  }
 }
