@@ -7,7 +7,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
-public final class NativeImpl {
+public final class NativeBuildEntryPoint {
   @CEntryPoint(name = "Java_io_vlingo_xoom_actorsnative_Native_start")
   public static int start(@CEntryPoint.IsolateThreadContext long isolateId, CCharPointer name) {
     final String nameString = CTypeConversion.toJavaString(name);
