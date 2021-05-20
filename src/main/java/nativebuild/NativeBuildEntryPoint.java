@@ -1,5 +1,6 @@
 package nativebuild;
 
+import io.vlingo.xoom.actors.ActorFactory;
 import io.vlingo.xoom.actors.Configuration;
 import io.vlingo.xoom.actors.World;
 import io.vlingo.xoom.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
@@ -15,6 +16,8 @@ public final class NativeBuildEntryPoint {
     Configuration configuration = Configuration.define()
         .with(Slf4jLoggerPlugin.Slf4jLoggerPluginConfiguration.define().defaultLogger().name("XOOM"));
     World.start(nameString, configuration);
+
+    ActorFactory.actorClassWithProtocol(NativeBuildEntryPoint.class.getName(), NativeBuildEntryPoint.class);
     return 0;
   }
 }
