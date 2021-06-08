@@ -46,6 +46,7 @@ import io.vlingo.xoom.common.compiler.DynaType;
 public class ProxyGenerator implements AutoCloseable {
 
   private static final String GENERICS_WILDCARD = "?";
+  private static final String PROXY_POSTFIX = "__Proxy";
 
   public static class Result {
     public final String classname;
@@ -96,7 +97,7 @@ public class ProxyGenerator implements AutoCloseable {
     try {
       final Class<?> protocolInterface = readProtocolInterface(actorProtocol);
       final String proxyClassSource = proxyClassSource(protocolInterface);
-      final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, "__Proxy");
+      final String fullyQualifiedClassname = fullyQualifiedClassnameFor(protocolInterface, PROXY_POSTFIX);
       final String relativeTargetFile = toFullPath(fullyQualifiedClassname);
       final File sourceFile = persist ? persistProxyClassSource(actorProtocol, relativeTargetFile, proxyClassSource) : new File(relativeTargetFile);
       return new Result(fullyQualifiedClassname, classnameFor(protocolInterface, "__Proxy"), proxyClassSource, sourceFile);
@@ -124,7 +125,15 @@ public class ProxyGenerator implements AutoCloseable {
   }
 
   private String classStatement(final Class<?> protocolInterface) {
-    return GenericParser.implementsInterfaceTemplateOf(classnameFor(protocolInterface, "__Proxy"), protocolInterface) + " {\n";
+    final StringBuilder builder = new StringBuilder();
+
+    builder
+      .append(GenericParser.implementsInterfaceTemplateOf(classnameFor(protocolInterface, "__Proxy"), protocolInterface))
+      .append(", ")
+      .append(Proxy.class.getSimpleName())
+      .append(" {\n");
+
+    return builder.toString();
   }
 
   private String constructor(final Class<?> protocolInterface) {
@@ -133,7 +142,7 @@ public class ProxyGenerator implements AutoCloseable {
     final String signature = MessageFormat.format("  public {0}(final Actor actor, final Mailbox mailbox)", classnameFor(protocolInterface, "__Proxy"));
 
     builder
-      .append(signature).append("{\n")
+      .append(signature).append(" {\n")
       .append("    super(")
         .append(protocolInterface.getCanonicalName()).append(".class")
         .append(", SerializationProxy.from(actor.definition()), actor.address());").append("\n")
@@ -144,13 +153,55 @@ public class ProxyGenerator implements AutoCloseable {
     return builder.toString();
   }
 
+  private void defineAddress(final StringBuilder builder) {
+    builder
+      .append("\n  public Address address() {")
+      .append("\n    return actor.address();")
+      .append("\n  }\n");
+  }
+
+  private void defineEquals(final String protocolInterface, final StringBuilder builder) {
+    builder
+      .append("\n  public boolean equals(final Object other) {")
+      .append("\n    if (this == other) return true;")
+      .append("\n    if (other == null) return false;")
+      .append("\n    if (other.getClass() != getClass()) return false;")
+      .append("\n    return address().equals(Proxy.from(other).address());")
+      .append("\n  }\n");
+  }
+
+  private void defineHashCode(final StringBuilder builder) {
+    builder
+      .append("\n  public int hashCode() {")
+      .append("\n    return 31 + getClass().hashCode() + actor.address().hashCode();")
+      .append("\n  }\n");
+  }
+
+  private String defineObjectInterface(final String protocolInterface) {
+    final StringBuilder builder = new StringBuilder();
+
+    defineAddress(builder);
+    defineEquals(protocolInterface, builder);
+    defineHashCode(builder);
+    defineToString(protocolInterface, builder);
+
+    return builder.toString();
+  }
+
+  private void defineToString(final String protocolInterface, final StringBuilder builder) {
+    builder
+      .append("\n  public String toString() {")
+      .append("\n    return ").append("\"").append(protocolInterface).append("[address=\"").append(" + actor.address() + ").append("\"]\";")
+      .append("\n  }\n");
+  }
+
   private String emptyConstructor(final Class<?> protocolInterface) {
     final StringBuilder builder = new StringBuilder();
 
     final String signature = MessageFormat.format("  public {0}()", classnameFor(protocolInterface, "__Proxy"));
 
     builder
-      .append(signature).append("{\n")
+      .append(signature).append(" {\n")
       .append("    super();").append("\n")
       .append("    this.actor = null;").append("\n")
       .append("    this.mailbox = null;").append("\n")
@@ -164,11 +215,13 @@ public class ProxyGenerator implements AutoCloseable {
 
     builder
       .append("import io.vlingo.xoom.actors.Actor;").append("\n")
-      .append("import io.vlingo.xoom.actors.Definition.SerializationProxy;").append("\n")
       .append("import io.vlingo.xoom.actors.ActorProxyBase;").append("\n")
+      .append("import io.vlingo.xoom.actors.Address;").append("\n")
       .append("import io.vlingo.xoom.actors.DeadLetter;").append("\n")
+      .append("import io.vlingo.xoom.actors.Definition.SerializationProxy;").append("\n")
       .append("import io.vlingo.xoom.actors.LocalMessage;").append("\n")
       .append("import io.vlingo.xoom.actors.Mailbox;").append("\n")
+      .append("import io.vlingo.xoom.actors.Proxy;").append("\n")
       .append("import io.vlingo.xoom.actors.Returns;").append("\n")
       .append("import io.vlingo.xoom.common.Completes;").append("\n")
       .append("import io.vlingo.xoom.common.SerializableConsumer;").append("\n")
@@ -240,6 +293,7 @@ public class ProxyGenerator implements AutoCloseable {
         );
     }
     builder
+      .append("\n")
       .append(methodSignature).append(throwsExceptions).append(" {\n")
       .append(ifNotStopped).append("\n")
       .append(bindSelfStatement).append("\n")
@@ -324,12 +378,12 @@ public class ProxyGenerator implements AutoCloseable {
 
     final StringBuilder builder = new StringBuilder();
 
-      final Tuple2<List<InvalidProtocolException.Failure>, String> methodDefs = methodDefinitions(protocolInterface, methods);
-      if (methodDefs._1 != null) {
-          throw new InvalidProtocolException(protocolInterface.getCanonicalName(), methodDefs._1);
-      }
+    final Tuple2<List<InvalidProtocolException.Failure>, String> methodDefs = methodDefinitions(protocolInterface, methods);
+    if (methodDefs._1 != null) {
+        throw new InvalidProtocolException(protocolInterface.getCanonicalName(), methodDefs._1);
+    }
 
-      builder
+    builder
       .append(packageStatement(protocolInterface)).append("\n\n")
       .append(importStatements(protocolInterface)).append("\n")
       .append(classStatement(protocolInterface)).append("\n")
@@ -337,6 +391,7 @@ public class ProxyGenerator implements AutoCloseable {
       .append(instanceVariables(protocolInterface)).append("\n")
       .append(constructor(protocolInterface)).append("\n")
       .append(emptyConstructor(protocolInterface)).append("\n")
+      .append(defineObjectInterface(protocolInterface.getSimpleName())).append("\n")
       .append(methodDefs._2)
       .append("}").append("\n");
 

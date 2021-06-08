@@ -1,11 +1,18 @@
-package io.vlingo.xoom.actors;
+// Copyright © 2012-2021 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
 
-import io.vlingo.xoom.actors.Definition.SerializationProxy;
+package io.vlingo.xoom.actors;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+
+import io.vlingo.xoom.actors.Definition.SerializationProxy;
 
 public abstract class ActorProxyBase<T> implements Externalizable {
 

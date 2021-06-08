@@ -59,7 +59,7 @@ public class ProxyGeneratorTest {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
 
         assertTrue("Proxy class has invalid generic signature",
-            result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> extends ActorProxyBase<io.vlingo.xoom.actors.ProtocolWithGenerics> implements io.vlingo.xoom.actors.ProtocolWithGenerics<A, B>"));
+            result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> extends ActorProxyBase<io.vlingo.xoom.actors.ProtocolWithGenerics> implements io.vlingo.xoom.actors.ProtocolWithGenerics<A, B>, Proxy"));
     }
 
     @Test
@@ -112,6 +112,16 @@ public class ProxyGeneratorTest {
     @Test
     public void testThatCustomInterfaceWithExtensionDoesCompile() {
         proxyGenerator.generateFor(ProtocolUsingAnnotationDirectly.class.getCanonicalName());
+    }
+
+    @Test
+    public void testThatProxyImplementsProxy() {
+      ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenerics.class.getCanonicalName());
+
+      assertTrue("Proxy is not imported", result.source.contains("import io.vlingo.xoom.actors.Proxy;"));
+
+      assertTrue("Proxy class has invalid generic signature",
+          result.source.contains("public class ProtocolWithGenerics__Proxy<A extends java.lang.RuntimeException, B extends java.util.Queue<java.io.IOException>> extends ActorProxyBase<io.vlingo.xoom.actors.ProtocolWithGenerics> implements io.vlingo.xoom.actors.ProtocolWithGenerics<A, B>, Proxy"));
     }
 }
 
