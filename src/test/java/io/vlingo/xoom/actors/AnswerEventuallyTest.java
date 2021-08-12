@@ -35,6 +35,20 @@ public class AnswerEventuallyTest {
     Assert.assertEquals(50, answer);
   }
 
+  @Test
+  public void testThatActorAnswersToFailureEventually() {
+    final AccessSafely access = AccessSafely.afterCompleting(1);
+    access.writingWith("answer", (Integer answer) -> value.set(answer));
+    access.readingWith("answer", () -> value.get());
+
+    answerGiver.divide(5, "0")
+            .andThenConsume((Integer answer) -> access.writeUsing("answer", answer));
+
+    final int answer = access.readFrom("answer");
+
+    Assert.assertEquals(0, answer);
+  }
+
   @Before
   public void setUp() {
     world = World.startWithDefaults("test-answer-eventually");
@@ -48,6 +62,7 @@ public class AnswerEventuallyTest {
 
   public static interface AnswerGiver {
     Completes<Integer> calculate(final String text, final int multiplier);
+    Completes<Integer> divide(final int dividend, final String divisor);
   }
 
   public static class AnswerGiverActor extends Actor implements AnswerGiver {
@@ -61,6 +76,11 @@ public class AnswerEventuallyTest {
     @Override
     public Completes<Integer> calculate(final String text, final int multiplier) {
       return answerFrom(textToInteger.convertFrom(text).andThen(number -> number * multiplier));
+    }
+
+    @Override
+    public Completes<Integer> divide(final int dividend, final String divisor) {
+      return answerFrom(textToInteger.convertFrom(divisor).useFailedOutcomeOf(0).andThen(number -> dividend / number));
     }
   }
 
