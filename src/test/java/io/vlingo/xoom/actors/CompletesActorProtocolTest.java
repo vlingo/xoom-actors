@@ -77,8 +77,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
   }
 
   @Test
-  @Ignore("Need explanation of why it should timeout")
-  public void testThatTimeOutOccursForSideEffects() {
+  public void testThatTimeOutOccursForSideEffects() throws InterruptedException {
     final TestResults greetingsTestResult = TestResults.afterCompleting(1);
     final UsesCompletes uc = world.actorFor(UsesCompletes.class, UsesCompletesCausesTimeoutActor.class, greetingsTestResult);
 
@@ -96,8 +95,10 @@ public class CompletesActorProtocolTest extends ActorsTest {
             uc.getOne()
               .andThenConsume(2, 0, (Integer value) -> valueTestResult.setValue(value))
               .otherwise((Integer value) -> { valueTestResult.setValue(value); return 0; });
-    try { Thread.sleep(100); } catch (Exception e) { }
-    oneCompletes.with(1);
+
+    Thread.sleep(120); // need to sleep for a bit longer then UsesCompletesCausesTimeoutActor.getOne()
+    oneCompletes.with(1);    // as otherwise this outcome might occasionally win over the timeout
+
     assertNotEquals(1, valueTestResult.getValue().intValue());
     assertEquals(new Integer(0), oneCompletes.outcome());
   }
