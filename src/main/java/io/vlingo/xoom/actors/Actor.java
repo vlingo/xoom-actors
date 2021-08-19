@@ -195,6 +195,11 @@ public abstract class Actor implements Startable, Stoppable, Relocatable, TestSt
   protected <R> Completes<R> answerFrom(final Completes<R> eventualOutcome) {
     final CompletesEventually completes = completesEventually();
     eventualOutcome
+            .recoverFrom(e -> {
+              logger().error(e.getMessage());
+              e.printStackTrace();
+              throw new RuntimeException(e);
+            })
             .otherwiseConsume((R value) -> completes.with(value))
             .andFinallyConsume((R value) -> completes.with(value));
     return completes();
