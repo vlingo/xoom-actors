@@ -65,6 +65,23 @@ public class AnswerEventuallyTest {
     Assert.assertEquals(-2, answer);
   }
 
+  @Test
+  public void testThatActorRecoversFailureEventually() {
+    final AccessSafely access = AccessSafely.afterCompleting(1);
+    access.writingWith("answer", (Integer answer) -> value.set(answer));
+    access.readingWith("answer", () -> value.get());
+
+    answerGiver.blowUp("100")
+            .timeoutWithin(500)
+            .recoverFrom(e -> -2)
+            .andThenConsume((Integer answer) -> access.writeUsing("answer", answer))
+            .otherwiseConsume((Integer answer) -> access.writeUsing("answer", answer));
+
+    final int answer = access.readFrom("answer");
+
+    Assert.assertEquals(-2, answer);
+  }
+
   @Before
   public void setUp() {
     world = World.startWithDefaults("test-answer-eventually");
@@ -79,6 +96,7 @@ public class AnswerEventuallyTest {
   public static interface AnswerGiver {
     Completes<Integer> calculate(final String text, final int multiplier);
     Completes<Integer> divide(final int dividend, final String divisor);
+    Completes<Integer> blowUp(final String text);
   }
 
   public static class AnswerGiverActor extends Actor implements AnswerGiver {
@@ -97,6 +115,13 @@ public class AnswerEventuallyTest {
     @Override
     public Completes<Integer> divide(final int dividend, final String divisor) {
       return answerFrom(textToInteger.convertFrom(divisor).useFailedOutcomeOf(0).andThen(number -> dividend / number));
+    }
+
+    @Override
+    public Completes<Integer> blowUp(String text) {
+      return answerFrom(textToInteger.convertFrom(text).andThen(number -> {
+        throw new RuntimeException(number.toString());
+      }));
     }
   }
 
