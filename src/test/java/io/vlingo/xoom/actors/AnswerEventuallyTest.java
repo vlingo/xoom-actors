@@ -49,6 +49,22 @@ public class AnswerEventuallyTest {
     Assert.assertEquals(0, answer);
   }
 
+  @Test
+  public void testThatActorRecoversFromFailureEventually() {
+    final AccessSafely access = AccessSafely.afterCompleting(1);
+    access.writingWith("answer", (Integer answer) -> value.set(answer));
+    access.readingWith("answer", () -> value.get());
+
+    answerGiver.divide(5, "abc")
+            .timeoutWithin(500)
+            .recoverFrom(e -> -2)
+            .andThenConsume((Integer answer) -> access.writeUsing("answer", answer));
+
+    final int answer = access.readFrom("answer");
+
+    Assert.assertEquals(-2, answer);
+  }
+
   @Before
   public void setUp() {
     world = World.startWithDefaults("test-answer-eventually");
