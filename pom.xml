@@ -24,7 +24,7 @@
   <scm>
     <connection>scm:git:git://github.com/vlingo/xoom-actors.git</connection>
     <developerConnection>scm:git:ssh://github.com/vlingo/xoom-actors.git</developerConnection>
-    <url>http://github.com/vlingo/xoom-actors/tree/master</url>
+    <url>https://github.com/vlingo/xoom-actors/tree/master</url>
   </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
