@@ -13,7 +13,7 @@ Docs: https://docs.vlingo.io/xoom-actors
     <dependency>
       <groupId>io.vlingo.xoom</groupId>
       <artifactId>xoom-actors</artifactId>
-      <version>1.8.6</version>
+      <version>1.8.7</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -21,7 +21,7 @@ Docs: https://docs.vlingo.io/xoom-actors
 
 ```gradle
 dependencies {
-    compile 'io.vlingo.xoom:xoom-actors:1.8.6'
+    compile 'io.vlingo.xoom:xoom-actors:1.8.7'
 }
 ```
 ### GraalVM native image build
