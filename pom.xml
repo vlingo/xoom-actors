@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.vlingo.xoom</groupId>
   <artifactId>xoom-actors</artifactId>
-  <version>1.8.8-SNAPSHOT</version>
+  <version>1.8.8</version>
   <name>xoom-actors</name>
   <description>Type safe Actor Model toolkit for reactive concurrency and resiliency using Java and other JVM languages.</description>
   <url>https://github.com/vlingo/xoom-actors</url>
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>io.vlingo.xoom</groupId>
       <artifactId>xoom-common</artifactId>
-      <version>1.8.8-SNAPSHOT</version>
+      <version>1.8.8</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
