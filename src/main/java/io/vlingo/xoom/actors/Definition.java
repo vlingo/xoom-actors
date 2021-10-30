@@ -9,6 +9,7 @@ package io.vlingo.xoom.actors;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Definition {
   public static final List<Object> NoParameters = Collections.emptyList();
@@ -24,10 +25,15 @@ public final class Definition {
           return stage.directory.actorOf(proxy.parent.address);
         }).orElse(null);
 
+    // thunk actor proxies params if necessary; see also Start grid message
+    List<Object> thunkParams = proxy.parameters.stream()
+            .map(p -> ActorProxyBase.thunk(stage, p))
+            .collect(Collectors.toList());
+
     return new Definition(
         proxy.type,
         proxy.instantiator,
-        proxy.parameters,
+        thunkParams,
         parent,
         proxy.mailboxName,
         proxy.actorName,
