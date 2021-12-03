@@ -41,6 +41,30 @@ public class ProxyGeneratorTest {
     }
 
     @Test
+    public void testThatGenericsWithUpperBoundsAreImported() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithUpperBoundsInGenerics.class.getCanonicalName());
+
+        assertTrue("Completes is not imported", result.source.contains("import io.vlingo.xoom.common.Completes;"));
+        assertTrue("List is not imported", result.source.contains("import java.util.List;"));
+        assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
+        assertTrue("Queue is not imported", result.source.contains("import java.util.Queue;"));
+        assertFalse("A generic type is imported", result.source.contains("import A;"));
+        assertFalse("B generic type is imported", result.source.contains("import B;"));
+    }
+
+    @Test
+    public void testThatGenericsWithLowerBoundsAreImported() {
+        ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithLowerBoundsInGenerics.class.getCanonicalName());
+
+        assertTrue("Completes is not imported", result.source.contains("import io.vlingo.xoom.common.Completes;"));
+        assertTrue("List is not imported", result.source.contains("import java.util.List;"));
+        assertTrue("RuntimeException is not imported", result.source.contains("import java.lang.RuntimeException;"));
+        assertTrue("Queue is not imported", result.source.contains("import java.util.Queue;"));
+        assertFalse("A generic type is imported", result.source.contains("import A;"));
+        assertFalse("B generic type is imported", result.source.contains("import B;"));
+    }
+
+    @Test
     public void testThatMethodDefinitionIsValid() {
         ProxyGenerator.Result result = proxyGenerator.generateFor(ProtocolWithGenericMethods.class.getCanonicalName());
 
@@ -137,6 +161,16 @@ interface ProtocolWithWildcardGenericMethods {
 interface ProtocolWithGenerics<A extends RuntimeException, B extends Queue<IOException>> {
   Completes<Queue<List<A>>> someMethod();
   Completes<Queue<List<B>>> otherMethod();
+}
+
+interface ProtocolWithUpperBoundsInGenerics<A extends RuntimeException, B extends Queue<IOException>> {
+    void someMethod(List<? extends Queue<A>> queues);
+    void otherMethod(List<? extends Queue<B>> queues);
+}
+
+interface ProtocolWithLowerBoundsInGenerics<A extends RuntimeException, B extends Queue<IOException>> {
+    void someMethod(List<? super Queue<A>> queues);
+    void otherMethod(List<? super Queue<B>> queues);
 }
 
 interface ProtocolWithWilcardGenerics<A extends RuntimeException, B extends Queue<?>> {
