@@ -50,11 +50,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
 
   @Override
   public void send(final Message message) {
-    if (isSuspendedExceptFor(message)) {
-      suspendedDeliveryQueue.get().add(message);
-    } else {
-      queue.add(message);
-    }
+    queue(message);
     if (!isDelivering()) {
       dispatcher.execute(this);
     }
@@ -82,7 +78,11 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
 
   @Override
   public Message receive() {
-    return queue.poll();
+    if (!isSuspended()) {
+      return queue.poll();
+    } else {
+      return suspendedDeliveryQueue.get().poll();
+    }
   }
 
   @Override
@@ -95,24 +95,15 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     if (delivering.compareAndSet(false, true)) {
       final int total = throttlingCount;
       for (int count = 0; count < total; ++count) {
-        if (isSuspended()) {
-          Message message = suspendedDeliveryQueue.get().poll();
-          if (message != null) {
-            message.deliver();
-          } else {
-            break;
-          }
+        final Message message = receive();
+        if (message != null) {
+          message.deliver();
         } else {
-          final Message message = receive();
-          if (message != null) {
-            message.deliver();
-          } else {
-            break;
-          }
+          break;
         }
       }
       delivering.set(false);
-      if (!queue.isEmpty() || !suspendedDeliveryQueue.get().isEmpty()) {
+      if (!isQueueEmpty()) {
         dispatcher.execute(this);
       }
     }
@@ -122,6 +113,18 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public int pendingMessages() {
     return queue.size();
+  }
+
+  private void queue(final Message message) {
+    if (isSuspendedExceptFor(message)) {
+      suspendedDeliveryQueue.get().add(message);
+    } else {
+      queue.add(message);
+    }
+  }
+
+  private boolean isQueueEmpty() {
+    return queue.isEmpty() && suspendedDeliveryQueue.get().isEmpty();
   }
 
   protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
