@@ -31,8 +31,8 @@ public class PluginScanner {
 
   private static final String PROPERTIES_EXTENSION = ".properties";
   private static final String JAR_EXTENSION = ".jar";
-  private static final String PLUGIN_FOLDER = System.getProperty("java.io.tmpdir") + "xoom"
-      + System.getProperty("file.separator") + "plugins";
+  private static final String XOOM_SYSTEM_PLUGINS_FOLDER = "/opt/xoom/plugins/";
+  private static final String XOOM_USER_PLUGINS_FOLDER_KEY = "actors.pluginsFolder";
 
   private final Configuration configuration;
   private final Registrar registrar;
@@ -70,14 +70,21 @@ public class PluginScanner {
   }
 
   private void scan() {
-    Path pluginPath = Paths.get(PLUGIN_FOLDER);
-    if (Files.exists(pluginPath) && Files.isDirectory(pluginPath)) {
-      try (Stream<Path> fileStream = Files.walk(pluginPath)) {
-        fileStream.filter(path -> Files.isRegularFile(path) && Files.isReadable(path) && path.toFile().getName().endsWith(JAR_EXTENSION))
-            .filter(path -> !jarPathNames.contains(path.toFile().getPath()))
-            .forEach(this::loadAndStartPlugins);
-      } catch (Throwable t) {
-        logger.warn("Plugin scanner failed because of " + t.getMessage(), t);
+    Path systemPluginsPath = Paths.get(XOOM_SYSTEM_PLUGINS_FOLDER);
+    String userPluginsFolder = configuration.getProperty(XOOM_USER_PLUGINS_FOLDER_KEY);
+    List<Path> pluginsPaths = userPluginsFolder == null
+        ? Arrays.asList(systemPluginsPath)
+        : Arrays.asList(systemPluginsPath, Paths.get(userPluginsFolder));
+
+    for (Path pluginsPath : pluginsPaths) {
+      if (Files.exists(pluginsPath) && Files.isDirectory(pluginsPath)) {
+        try (Stream<Path> fileStream = Files.walk(pluginsPath)) {
+          fileStream.filter(path -> Files.isRegularFile(path) && Files.isReadable(path) && path.toFile().getName().endsWith(JAR_EXTENSION))
+              .filter(path -> !jarPathNames.contains(path.toFile().getPath()))
+              .forEach(this::loadAndStartPlugins);
+        } catch (Throwable t) {
+          logger.warn("Plugins scanner of path " + pluginsPath.toFile().getPath() + " failed because of " + t.getMessage(), t);
+        }
       }
     }
   }
@@ -90,15 +97,15 @@ public class PluginScanner {
       PluginClassLoader pluginClassLoader = PluginClassLoader.dynamicClassLoader(new URL[]{jarPath.toUri().toURL()});
       String propertiesFileName = jarFileName.substring(0, jarFileName.length() - JAR_EXTENSION.length()) + PROPERTIES_EXTENSION;
       Properties pluginProperties = new Properties();
-      InputStream propertiesInStream = pluginClassLoader.loadResource(propertiesFileName);
+      InputStream propertiesStream = pluginClassLoader.loadResource(propertiesFileName);
 
-      if (propertiesInStream == null) {
+      if (propertiesStream == null) {
         // properties file must have the same name as the jar name
         logger.warn("Configuration properties file is missing from plugin jar " + jarPathName);
         return;
       }
 
-      pluginProperties.load(propertiesInStream);
+      pluginProperties.load(propertiesStream);
       configuration.loadAndStartDynamicPlugins(registrar, pluginClassLoader, pluginProperties);
       jarPathNames.add(jarPathName);
     } catch (Exception e) {

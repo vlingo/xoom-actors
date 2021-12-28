@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.vlingo.xoom.actors.plugin.*;
 import io.vlingo.xoom.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
@@ -64,7 +66,8 @@ public class Configuration {
   }
 
   public Collection<Plugin> allPlugins() {
-    return Collections.unmodifiableCollection(plugins);
+    return Stream.concat(plugins.stream(), dynamicPlugins.stream())
+        .collect(Collectors.toCollection(() -> new ArrayList<>(plugins.size() + dynamicPlugins.size())));
   }
 
   public Configuration with(final AddressFactory addressFactory) {
@@ -74,6 +77,18 @@ public class Configuration {
 
   public AddressFactory addressFactoryOr(final Supplier<AddressFactory> addressFactorySupplier) {
     return addressFactory == null ? addressFactorySupplier.get() : addressFactory;
+  }
+
+  public String getProperty(final String key) {
+    return properties == null
+        ? null
+        : properties.getProperty(key);
+  }
+
+  public String getProperty(final String key, final String defaultValue) {
+    return properties == null
+        ? defaultValue
+        : properties.getProperty(key, defaultValue);
   }
 
   public Configuration with(final CommonSupervisorsPluginConfiguration configuration) {
