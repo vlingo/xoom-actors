@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.vlingo.xoom.actors.plugin.PluginScanner;
 import io.vlingo.xoom.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.xoom.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.xoom.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
@@ -32,6 +33,7 @@ public final class World implements Registrar {
 
   private final AddressFactory addressFactory;
   private final Configuration configuration;
+  private final PluginScanner pluginScanner;
   private final String name;
   private final Map<String, Stage> stages;
   private final Map<String, Object> dynamicDependencies;
@@ -608,7 +610,7 @@ public final class World implements Registrar {
 
   /**
    * Sets the {@code PublicRootActor} instances as a {@code Stoppable}. (INTERNAL ONLY)
-   * @param privateRoot the {@code Stoppable} protocol backed by the {@code PrivateRootActor}
+   * @param publicRoot the {@code Stoppable} protocol backed by the {@code PrivateRootActor}
    */
   synchronized void setPublicRoot(final Stoppable publicRoot) {
     if (publicRoot != null && this.publicRoot != null) {
@@ -626,6 +628,7 @@ public final class World implements Registrar {
   private World(final String name, final Configuration configuration) {
     this.name = name;
     this.configuration = configuration;
+    this.pluginScanner = new PluginScanner(configuration, this);
     this.addressFactory = configuration.addressFactoryOr(BasicAddressFactory::new);
     this.completesProviderKeeper = new DefaultCompletesEventuallyProviderKeeper();
     this.loggerProviderKeeper = new DefaultLoggerProviderKeeper();
@@ -635,14 +638,15 @@ public final class World implements Registrar {
 
     final Stage defaultStage = stageNamed(DEFAULT_STAGE);
 
-    configuration.startPlugins(this, 0);
-    configuration.startPlugins(this, 1);
+    this.configuration.startPlugins(this, 0);
+    this.configuration.startPlugins(this, 1);
 
     startRootFor(defaultStage, defaultLogger());
 
-    configuration.startPlugins(this, 2);
+    this.configuration.startPlugins(this, 2);
 
     defaultStage.startDirectoryScanner();
+    this.pluginScanner.startScan();
   }
 
   /**

@@ -20,16 +20,20 @@ import io.vlingo.xoom.actors.Configuration;
 public class PluginLoader {
   private static final String pluginNamePrefix = "plugin.name.";
 
-  private final Map<String,Plugin> plugins;
+  private final Map<String, Plugin> plugins;
 
   public PluginLoader() {
     this.plugins = new HashMap<>();
   }
 
   public Collection<Plugin> loadEnabledPlugins(final Configuration configuration, final Properties properties) {
+    return loadEnabledPlugins(configuration, properties, PluginClassLoader.staticClassLoader());
+  }
+
+  public Collection<Plugin> loadEnabledPlugins(final Configuration configuration, final Properties properties, final PluginClassLoader loader) {
     if (!properties.isEmpty()) {
       for (String enabledPlugin : findEnabledPlugins(properties)) {
-        loadPlugin(configuration, properties, enabledPlugin);
+        loadPlugin(configuration, properties, enabledPlugin, loader);
       }
     }
     return plugins.values();
@@ -49,7 +53,7 @@ public class PluginLoader {
     return enabledPlugins;
   }
 
-  private void loadPlugin(final Configuration configuration, final Properties properties, final String enabledPlugin) {
+  private void loadPlugin(final Configuration configuration, final Properties properties, final String enabledPlugin, final PluginClassLoader loader) {
     final String pluginName = enabledPlugin.substring(pluginNamePrefix.length());
     final String classnameKey = "plugin." + pluginName + ".classname";
     final String classname = properties.getProperty(classnameKey);
@@ -58,7 +62,7 @@ public class PluginLoader {
     try {
       final Plugin maybePlugin = plugins.get(pluginUniqueName);
       if (maybePlugin == null) {
-        final Class<?> pluginClass = Class.forName(classname);
+        final Class<?> pluginClass = loader.loadClass(classname);
         final Plugin plugin = (Plugin) pluginClass.newInstance();
         plugin.__internal_Only_Init(pluginName, configuration, properties);
         plugins.put(pluginUniqueName, plugin);

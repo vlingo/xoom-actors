@@ -18,12 +18,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import io.vlingo.xoom.actors.plugin.Plugin;
-import io.vlingo.xoom.actors.plugin.PluginConfiguration;
-import io.vlingo.xoom.actors.plugin.PluginFactory;
-import io.vlingo.xoom.actors.plugin.PluginLoader;
-import io.vlingo.xoom.actors.plugin.PluginProperties;
+import io.vlingo.xoom.actors.plugin.*;
 import io.vlingo.xoom.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
 import io.vlingo.xoom.actors.plugin.logging.slf4j.Slf4jLoggerPlugin;
 import io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
@@ -50,6 +48,7 @@ public class Configuration {
   private final Map<String,PluginConfiguration> configurationOverrides;
   private final boolean mergeProperties;
   private final List<Plugin> plugins;
+  private final List<Plugin> dynamicPlugins;
   private final Properties properties;
 
   private AddressFactory addressFactory;
@@ -67,7 +66,8 @@ public class Configuration {
   }
 
   public Collection<Plugin> allPlugins() {
-    return Collections.unmodifiableCollection(plugins);
+    return Stream.concat(plugins.stream(), dynamicPlugins.stream())
+        .collect(Collectors.toCollection(() -> new ArrayList<>(plugins.size() + dynamicPlugins.size())));
   }
 
   public Configuration with(final AddressFactory addressFactory) {
@@ -77,6 +77,18 @@ public class Configuration {
 
   public AddressFactory addressFactoryOr(final Supplier<AddressFactory> addressFactorySupplier) {
     return addressFactory == null ? addressFactorySupplier.get() : addressFactory;
+  }
+
+  public String getProperty(final String key) {
+    return properties == null
+        ? null
+        : properties.getProperty(key);
+  }
+
+  public String getProperty(final String key, final String defaultValue) {
+    return properties == null
+        ? defaultValue
+        : properties.getProperty(key, defaultValue);
   }
 
   public Configuration with(final CommonSupervisorsPluginConfiguration configuration) {
@@ -210,7 +222,7 @@ public class Configuration {
     return testProxyGeneratedSourcesPath;
   }
 
-  public void startPlugins(final World world, final int pass) {
+  public void startPlugins(final Registrar registrar, final int pass) {
     load(pass);
 
     for (final Plugin plugin : plugins) {
@@ -218,7 +230,7 @@ public class Configuration {
 //        System.out.println("PASS: " + pass + " LOOKS LIKE: " + plugin.toString());
 //      }
       if (plugin.pass() == pass) {
-        plugin.start(world);
+        plugin.start(registrar);
       }
     }
   }
@@ -239,6 +251,14 @@ public class Configuration {
     }
   }
 
+  public void loadAndStartDynamicPlugins(final Registrar registrar, final PluginClassLoader pluginClassLoader, final Properties pluginsProperties) {
+    Collection<Plugin> dynamicPlugins = (new PluginLoader()).loadEnabledPlugins(this, pluginsProperties, pluginClassLoader);
+    dynamicPlugins.forEach(plugin -> plugin.configuration().buildWith(this, new PluginProperties(plugin.name(), pluginsProperties)));
+
+    dynamicPlugins.forEach(plugin -> plugin.start(registrar));
+    this.dynamicPlugins.addAll(dynamicPlugins);
+  }
+
   private PluginConfiguration overrideConfiguration(final Plugin plugin) {
     return configurationOverrides.get(plugin.configuration().getClass().getSimpleName());
   }
@@ -250,6 +270,7 @@ public class Configuration {
   private Configuration(final Properties properties, final boolean includeBaseLoad) {
     this.configurationOverrides = new HashMap<>();
     this.plugins = new ArrayList<>();
+    this.dynamicPlugins = new ArrayList<>();
     this.properties = properties;
     this.mergeProperties = includeBaseLoad;
 
