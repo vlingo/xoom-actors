@@ -10,25 +10,26 @@ package io.vlingo.xoom.actors.plugin.mailbox.concurrentqueue;
 import io.vlingo.xoom.actors.Dispatcher;
 import io.vlingo.xoom.actors.Mailbox;
 import io.vlingo.xoom.actors.Message;
-import io.vlingo.xoom.actors.ResumingMailbox;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
   private final Dispatcher dispatcher;
-  private AtomicReference<SuspendedDeliveryOverrides> suspendedDeliveryOverrides;
-  private AtomicReference<SuspendedDeliveryQueue> suspendedDeliveryQueue;
+  private final AtomicReference<SuspendedDeliveryOverrides> suspendedDeliveryOverrides;
+  private final AtomicReference<SuspendedDeliveryQueue> suspendedDeliveryQueue;
   private final Queue<Message> queue;
   private final byte throttlingCount;
 
   @Override
   public void close() {
     queue.clear();
+    suspendedDeliveryQueue.get().clear();
   }
 
   @Override
@@ -44,6 +45,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public void resume(final String name) {
     if (suspendedDeliveryOverrides.get().pop(name)) {
+      suspendedDeliveryQueue.get().putBack(this::queue);
       dispatcher.execute(this);
     }
   }
@@ -112,7 +114,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   /* @see io.vlingo.xoom.actors.Mailbox#pendingMessages() */
   @Override
   public int pendingMessages() {
-    return queue.size();
+    return queue.size() + suspendedDeliveryQueue.get().size();
   }
 
   private void queue(final Message message) {
@@ -279,7 +281,6 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
           break;
         }
       }
-
     }
 
     public Message poll() {
@@ -295,8 +296,32 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
       }
     }
 
+    public void putBack(final Consumer<Message> consumer) {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          queue.forEach(consumer);
+          queue.clear();
+          accessible.set(false);
+          break;
+        }
+      }
+    }
+
+    public void clear() {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          queue.clear();
+          break;
+        }
+      }
+    }
+
     public boolean isEmpty() {
       return queue.isEmpty();
+    }
+
+    public int size() {
+      return queue.size();
     }
   }
 }

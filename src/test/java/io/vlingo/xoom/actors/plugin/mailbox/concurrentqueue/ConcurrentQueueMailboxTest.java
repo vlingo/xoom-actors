@@ -113,6 +113,33 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     assertEquals(Arrays.asList(0, 1, 2), actor.testResults.getCounts());
   }
 
+  @Test
+  public void testThatSuspendedButNotHandledMessagesAreQueued() {
+
+    final Dispatcher dispatcher = new ExecutorDispatcher(2, 0, 1.0f);
+    final Mailbox mailbox = new ConcurrentQueueMailbox(dispatcher, 1);
+
+    final TestResults testResults = new TestResults(3);
+    final CountTakerActor actor = new CountTakerActor(testResults);
+
+    mailbox.suspendExceptFor("paused#", CountTaker.class);
+
+    for (int count = 0; count < 3; ++count) {
+      final int countParam = count;
+      final SerializableConsumer<CountTaker> consumer = (consumerActor) -> {
+        // Give longer Delay to messages that come first
+        delay(20 - (countParam * 10));
+        consumerActor.take(countParam);
+      };
+      final LocalMessage<CountTaker> message = new LocalMessage<CountTaker>(actor, CountTaker.class, consumer, "take(int)");
+      mailbox.send(message);
+    }
+
+    mailbox.resume("paused#");
+
+    assertEquals(Arrays.asList(0, 1, 2), actor.testResults.getCounts());
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
