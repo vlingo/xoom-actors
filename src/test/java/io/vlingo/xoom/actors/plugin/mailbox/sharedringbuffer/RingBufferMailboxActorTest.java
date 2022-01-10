@@ -31,10 +31,10 @@ public class RingBufferMailboxActorTest extends ActorsTest {
   private static final int ThroughputWarmUpCount = 4194304;
 
   @Test
-  public void testBasicDispatch() throws Exception {
+  public void testBasicDispatch() {
     init(MailboxSize);
 
-    final TestResults testResults = new TestResults(MaxCount);
+    final TestResults testResults = new TestResults(MaxCount + 1);
 
     final CountTaker countTaker =
             world.actorFor(
