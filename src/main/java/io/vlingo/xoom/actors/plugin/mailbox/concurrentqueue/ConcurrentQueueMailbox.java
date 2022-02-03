@@ -10,27 +10,26 @@ package io.vlingo.xoom.actors.plugin.mailbox.concurrentqueue;
 import io.vlingo.xoom.actors.Dispatcher;
 import io.vlingo.xoom.actors.Mailbox;
 import io.vlingo.xoom.actors.Message;
-import io.vlingo.xoom.actors.ResumingMailbox;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   private AtomicBoolean delivering;
   private final Dispatcher dispatcher;
-  private AtomicReference<SuspendedDeliveryOverrides> suspendedDeliveryOverrides;
+  private final AtomicReference<SuspendedDeliveryOverrides> suspendedDeliveryOverrides;
+  private final AtomicReference<SuspendedDeliveryQueue> suspendedDeliveryQueue;
   private final Queue<Message> queue;
   private final byte throttlingCount;
 
   @Override
   public void close() {
     queue.clear();
+    suspendedDeliveryQueue.get().clear();
   }
 
   @Override
@@ -46,26 +45,16 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   @Override
   public void resume(final String name) {
     if (suspendedDeliveryOverrides.get().pop(name)) {
+      suspendedDeliveryQueue.get().putBack(this::queue);
       dispatcher.execute(this);
     }
   }
 
   @Override
   public void send(final Message message) {
-    if (isSuspended()) {
-      if (suspendedDeliveryOverrides.get().matchesTop(message.protocol())) {
-        dispatcher.execute(new ResumingMailbox(message));
-        if (!queue.isEmpty()) {
-          dispatcher.execute(this);
-        }
-        return;
-      }
-      queue.add(message);
-    } else {
-      queue.add(message);
-      if (!isDelivering()) {
-        dispatcher.execute(this);
-      }
+    queue(message);
+    if (!isDelivering()) {
+      dispatcher.execute(this);
     }
   }
 
@@ -85,9 +74,17 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
         .find(name).isEmpty();
   }
 
+  private boolean isSuspendedExceptFor(final Message override) {
+    return isSuspended() && suspendedDeliveryOverrides.get().matchesTop(override.protocol());
+  }
+
   @Override
   public Message receive() {
-    return queue.poll();
+    if (!isSuspended()) {
+      return queue.poll();
+    } else {
+      return suspendedDeliveryQueue.get().poll();
+    }
   }
 
   @Override
@@ -100,9 +97,6 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
     if (delivering.compareAndSet(false, true)) {
       final int total = throttlingCount;
       for (int count = 0; count < total; ++count) {
-        if (isSuspended()) {
-          break;
-        }
         final Message message = receive();
         if (message != null) {
           message.deliver();
@@ -111,7 +105,7 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
         }
       }
       delivering.set(false);
-      if (!queue.isEmpty()) {
+      if (!isQueueEmpty()) {
         dispatcher.execute(this);
       }
     }
@@ -120,13 +114,26 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
   /* @see io.vlingo.xoom.actors.Mailbox#pendingMessages() */
   @Override
   public int pendingMessages() {
-    return queue.size();
+    return queue.size() + suspendedDeliveryQueue.get().size();
+  }
+
+  private void queue(final Message message) {
+    if (isSuspendedExceptFor(message)) {
+      suspendedDeliveryQueue.get().add(message);
+    } else {
+      queue.add(message);
+    }
+  }
+
+  private boolean isQueueEmpty() {
+    return queue.isEmpty() && suspendedDeliveryQueue.get().isEmpty();
   }
 
   protected ConcurrentQueueMailbox(final Dispatcher dispatcher, final int throttlingCount) {
     this.dispatcher = dispatcher;
     this.delivering = new AtomicBoolean(false);
     this.suspendedDeliveryOverrides = new AtomicReference<>(new SuspendedDeliveryOverrides());
+    this.suspendedDeliveryQueue = new AtomicReference<>(new SuspendedDeliveryQueue());
     this.queue = new ConcurrentLinkedQueue<Message>();
     this.throttlingCount = (byte) throttlingCount;
   }
@@ -259,6 +266,62 @@ public class ConcurrentQueueMailbox implements Mailbox, Runnable {
       this.name = name;
       this.types = types;
       this.obsolete = false;
+    }
+  }
+
+  private static class SuspendedDeliveryQueue {
+    private final AtomicBoolean accessible = new AtomicBoolean(false);
+    private final LinkedList<Message> queue = new LinkedList<>();
+
+    public void add(final Message message) {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          queue.add(message);
+          accessible.set(false);
+          break;
+        }
+      }
+    }
+
+    public Message poll() {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          Message message = null;
+          if (!queue.isEmpty()) {
+            message = queue.pop();
+          }
+          accessible.set(false);
+          return message;
+        }
+      }
+    }
+
+    public void putBack(final Consumer<Message> consumer) {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          queue.forEach(consumer);
+          queue.clear();
+          accessible.set(false);
+          break;
+        }
+      }
+    }
+
+    public void clear() {
+      while(true) {
+        if (accessible.compareAndSet(false, true)) {
+          queue.clear();
+          break;
+        }
+      }
+    }
+
+    public boolean isEmpty() {
+      return queue.isEmpty();
+    }
+
+    public int size() {
+      return queue.size();
     }
   }
 }
