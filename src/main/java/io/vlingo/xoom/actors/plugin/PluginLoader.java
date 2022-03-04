@@ -63,7 +63,7 @@ public class PluginLoader {
       final Plugin maybePlugin = plugins.get(pluginUniqueName);
       if (maybePlugin == null) {
         final Class<?> pluginClass = loader.loadClass(classname);
-        final Plugin plugin = (Plugin) pluginClass.newInstance();
+        final Plugin plugin = (Plugin) pluginClass.getDeclaredConstructor().newInstance();
         plugin.__internal_Only_Init(pluginName, configuration, properties);
         plugins.put(pluginUniqueName, plugin);
       }

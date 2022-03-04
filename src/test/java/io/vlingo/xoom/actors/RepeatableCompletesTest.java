@@ -25,10 +25,10 @@ public class RepeatableCompletesTest {
       .repeat();
 
     completes.with(5);
-    assertEquals(new Integer(10), andThenValue);
+    assertEquals(Integer.valueOf(10), andThenValue);
     completes.with(10);
-    assertEquals(new Integer(20), andThenValue);
+    assertEquals(Integer.valueOf(20), andThenValue);
     completes.with(20);
-    assertEquals(new Integer(40), andThenValue);
+    assertEquals(Integer.valueOf(40), andThenValue);
   }
 }

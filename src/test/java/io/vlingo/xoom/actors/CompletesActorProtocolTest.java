@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.xoom.actors.testkit.AccessSafely;
@@ -60,9 +59,9 @@ public class CompletesActorProtocolTest extends ActorsTest {
             .andFinallyConsume(valueTestResult::setValue);
 
     assertNotEquals(1, valueTestResult.getValue().intValue());
-    assertNotEquals(new Integer(1), one.outcome());
+    assertNotEquals(Integer.valueOf(1), one.outcome());
     assertEquals(2, valueTestResult.getValue().intValue());
-    assertEquals(new Integer(2), one.outcome());
+    assertEquals(Integer.valueOf(2), one.outcome());
   }
 
   @Test
@@ -100,7 +99,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
     oneCompletes.with(1);    // as otherwise this outcome might occasionally win over the timeout
 
     assertNotEquals(1, valueTestResult.getValue().intValue());
-    assertEquals(new Integer(0), oneCompletes.outcome());
+    assertEquals(Integer.valueOf(0), oneCompletes.outcome());
   }
 
   public static class Hello {
@@ -136,7 +135,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
 
     @Override
     public Completes<Integer> getOne() {
-      return completes().with(new Integer(1));
+      return completes().with(Integer.valueOf(1));
     }
 
     @Override
@@ -174,7 +173,7 @@ public class CompletesActorProtocolTest extends ActorsTest {
       } catch (InterruptedException e) {
         // ignore
       }
-      return completes().with(new Integer(1));
+      return completes().with(Integer.valueOf(1));
     }
 
     @Override
