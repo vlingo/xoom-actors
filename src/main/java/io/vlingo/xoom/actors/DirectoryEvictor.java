@@ -1,3 +1,10 @@
+// Copyright © 2012-2021 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.xoom.actors;
 
 import io.vlingo.xoom.common.Scheduled;
@@ -28,11 +35,11 @@ public class DirectoryEvictor extends Actor implements Scheduled<Object> {
     logger().debug("Started eviction routine");
 
     float fillRatio = Runtime.getRuntime().freeMemory() / (float) Runtime.getRuntime().totalMemory();
-    if (fillRatio >= config.fillRatioHigh()) {
-      logger().debug("Memory fill ratio {} exceeding watermark ({})", fillRatio, config.fillRatioHigh());
-      Collection<Address> evicted = directory.evictionCandidates(config.lruThresholdMillis()).stream()
+    if (fillRatio >= config.fullRatioHighMark()) {
+      logger().debug("Memory fill ratio {} exceeding watermark ({})", fillRatio, config.fullRatioHighMark());
+      Collection<Address> evicted = directory.evictionCandidates(config.lruThreshold()).stream()
           .flatMap(actor -> {
-            if(actor.lifeCycle.evictable.stop(config.lruThresholdMillis())) {
+            if(actor.lifeCycle.evictable.stop(config.lruThreshold())) {
               return Stream.of(actor.address());
             }
             else {
@@ -43,7 +50,7 @@ public class DirectoryEvictor extends Actor implements Scheduled<Object> {
       logger().debug("Evicted {} actors :: {}", evicted.size(), evicted);
     }
     else {
-      logger().debug("Memory fill ratio {} was below watermark ({})", fillRatio, config.fillRatioHigh());
+      logger().debug("Memory fill ratio {} was below watermark ({})", fillRatio, config.fullRatioHighMark());
     }
   }
 

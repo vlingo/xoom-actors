@@ -1,3 +1,10 @@
+// Copyright © 2012-2021 VLINGO LABS. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL
+// was not distributed with this file, You can obtain
+// one at https://mozilla.org/MPL/2.0/.
+
 package io.vlingo.xoom.actors;
 
 import io.vlingo.xoom.actors.plugin.PluginConfiguration;
@@ -5,8 +12,10 @@ import io.vlingo.xoom.actors.plugin.PluginProperties;
 
 public class DirectoryEvictionConfiguration implements PluginConfiguration {
 
-  public static final long DEFAULT_LRU_MILLIS = 10 * 60 * 1_000L;
-  public static final float DEFAULT_FILL_RATIO_HIGH = 0.8F;
+  
+  public static final long DefaultLRUProbeInterval = 30 * 1_000L;   // 30 seconds
+  public static final long DefaultLRUThreshold = 2 * 60 * 1_000;    // 2 minutes
+  public static final float DefaultFullRatioHighMark = 0.8F;        // 80%
 
 
   public static DirectoryEvictionConfiguration define() {
@@ -16,18 +25,20 @@ public class DirectoryEvictionConfiguration implements PluginConfiguration {
 
   private String name = "directoryEviction";
   private boolean enabled;
-  private long lruThresholdMillis;
-  private float fillRatioHigh;
+  private long lruProbeInterval;
+  private long lruThreshold;
+  private float fullRatioHighMark;
 
 
   public DirectoryEvictionConfiguration() {
-    this(false, DEFAULT_LRU_MILLIS, DEFAULT_FILL_RATIO_HIGH);
+    this(false, DefaultLRUProbeInterval, DefaultLRUThreshold, DefaultFullRatioHighMark);
   }
 
-  public DirectoryEvictionConfiguration(boolean enabled, long lruThresholdMillis, float fillRatioHigh) {
+  public DirectoryEvictionConfiguration(boolean enabled, long lruProbeInterval, long lruThreshold, float fullRatioHighMark) {
     this.enabled = enabled;
-    this.lruThresholdMillis = lruThresholdMillis;
-    this.fillRatioHigh = fillRatioHigh;
+    this.lruProbeInterval = lruProbeInterval;
+    this.lruThreshold = lruThreshold;
+    this.fullRatioHighMark = fullRatioHighMark;
   }
 
 
@@ -40,35 +51,46 @@ public class DirectoryEvictionConfiguration implements PluginConfiguration {
     return enabled;
   }
 
-  public DirectoryEvictionConfiguration lruThresholdMillis(final long millis) {
-    this.lruThresholdMillis = millis;
+  public DirectoryEvictionConfiguration lruProbeInterval(final long millis) {
+    this.lruProbeInterval = millis;
     return this;
   }
 
-  public long lruThresholdMillis() {
-    return lruThresholdMillis;
+  public long lruProbeInterval() {
+    return lruProbeInterval;
   }
 
-  public DirectoryEvictionConfiguration fillRatioHigh(final float ratio) {
-    this.fillRatioHigh = ratio;
+  public DirectoryEvictionConfiguration lruThreshold(final long millis) {
+    this.lruThreshold = millis;
     return this;
   }
 
-  public float fillRatioHigh() {
-    return fillRatioHigh;
+  public long lruThreshold() {
+    return lruThreshold;
+  }
+
+  public DirectoryEvictionConfiguration fullRatioHighMark(final float ratio) {
+    this.fullRatioHighMark = ratio;
+    return this;
+  }
+
+  public float fullRatioHighMark() {
+    return fullRatioHighMark;
   }
 
   @Override
   public void build(Configuration configuration) {
-    configuration.with(lruThresholdMillis(DEFAULT_LRU_MILLIS)
-        .fillRatioHigh(DEFAULT_FILL_RATIO_HIGH));
+    configuration
+        .with(lruProbeInterval(DefaultLRUProbeInterval)
+        .fullRatioHighMark(DefaultFullRatioHighMark));
   }
 
   @Override
   public void buildWith(Configuration configuration, PluginProperties properties) {
     this.name = properties.name;
-    this.lruThresholdMillis = properties.getLong("lruThresholdMillis", DEFAULT_LRU_MILLIS);
-    this.fillRatioHigh = properties.getFloat("fillRatioHigh", DEFAULT_FILL_RATIO_HIGH);
+    this.lruProbeInterval = properties.getLong("lruProbeInterval", DefaultLRUProbeInterval);
+    this.lruThreshold = properties.getLong("lruThreshold", DefaultLRUThreshold);
+    this.fullRatioHighMark = properties.getFloat("fullRatioHighMark", DefaultFullRatioHighMark);
     configuration.with(this);
   }
 
@@ -81,7 +103,7 @@ public class DirectoryEvictionConfiguration implements PluginConfiguration {
   @Override
   public String toString() {
     return String.format(
-        "DirectoryEvictionConfiguration(name='%s', enabled='%b', lruThresholdMillis='%s', fillRatioHigh='%.2f')",
-        name, enabled, lruThresholdMillis, fillRatioHigh);
+        "DirectoryEvictionConfiguration(name='%s', enabled='%b', lruProbeInterval='%s', lruThreshold='%s', fullRatioHighMark='%.2f')",
+        name, enabled, lruProbeInterval, lruThreshold, fullRatioHighMark);
   }
 }

@@ -70,8 +70,9 @@ public class ConfigurationTest {
                       .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class))
               .with(DirectoryEvictionConfiguration
                   .define()
-                  .fillRatioHigh(0.75F)
-                  .lruThresholdMillis(10000))
+                  .fullRatioHighMark(0.75F)
+                  .lruProbeInterval(3000)
+                  .lruThreshold(10000))
               .usingMainProxyGeneratedClassesPath("target/classes/")
               .usingMainProxyGeneratedSourcesPath("target/generated-sources/")
               .usingTestProxyGeneratedClassesPath("target/test-classes/")
@@ -125,8 +126,9 @@ public class ConfigurationTest {
     assertNotNull(configuration.directoryEvictionConfiguration());
     assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
     assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
-    assertEquals(10000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
-    assertEquals(0.75F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
+    assertEquals(3000, configuration.directoryEvictionConfiguration().lruProbeInterval());
+    assertEquals(10000, configuration.directoryEvictionConfiguration().lruThreshold());
+    assertEquals(0.75F, configuration.directoryEvictionConfiguration().fullRatioHighMark(), 0);
 
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());
@@ -176,8 +178,9 @@ public class ConfigurationTest {
     assertNotNull(configuration.directoryEvictionConfiguration());
     assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
     assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
-    assertEquals(600000, configuration.directoryEvictionConfiguration().lruThresholdMillis());
-    assertEquals(0.8F, configuration.directoryEvictionConfiguration().fillRatioHigh(), 0);
+    assertEquals(DirectoryEvictionConfiguration.DefaultLRUProbeInterval, configuration.directoryEvictionConfiguration().lruProbeInterval());
+    assertEquals(DirectoryEvictionConfiguration.DefaultLRUThreshold, configuration.directoryEvictionConfiguration().lruThreshold());
+    assertEquals(DirectoryEvictionConfiguration.DefaultFullRatioHighMark, configuration.directoryEvictionConfiguration().fullRatioHighMark(), 0);
 
     assertEquals("target/classes/", configuration.mainProxyGeneratedClassesPath());
     assertEquals("target/generated-sources/", configuration.mainProxyGeneratedSourcesPath());

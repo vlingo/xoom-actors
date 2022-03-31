@@ -607,28 +607,47 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Start the directory scan process in search for a given Actor instance. (INTERNAL ONLY)
+   * Starts the {@code DirectoryScanner} and possibly the {@code DirectoryEvictor} depending
+   * on the possibly registered {@code DirectoryEvictionConfiguration}.
+   * <p>
+   * FOR INTERNAL USE ONLY.
    */
   void startDirectoryScanner() {
+    startDirectoryScanner(false);
+  }
+
+  /**
+   * Starts the {@code DirectoryScanner} and possibly the {@code DirectoryEvictor} depending
+   * on the possibly registered {@code DirectoryEvictionConfiguration} or the value of
+   * {@code forceEvictionEnabled}.
+   * <p>
+   * FOR INTERNAL USE ONLY.
+   *
+   * @param forceEvictionEnabled the boolean that if true forces the DirectoryEvictor into action
+   */
+  void startDirectoryScanner(final boolean forceEvictionEnabled) {
     this.directoryScanner = actorFor(DirectoryScanner.class,
         Definition.has(DirectoryScannerActor.class, () -> new DirectoryScannerActor(directory)),
         world().addressFactory().uniqueWith("DirectoryScanner::"+name()));
 
     final DirectoryEvictionConfiguration evictionConfiguration =
-        world.configuration().directoryEvictionConfiguration();
+        evictionConfiguration(world.configuration().directoryEvictionConfiguration(), forceEvictionEnabled);
 
-    if(evictionConfiguration != null && evictionConfiguration.isEnabled()) {
+    if (evictionConfiguration != null && evictionConfiguration.isEnabled()) {
       world.defaultLogger().debug("Scheduling directory eviction for stage: {} with: {}", name(), evictionConfiguration);
+
       @SuppressWarnings("unchecked")
-      final Scheduled<Object> evictorActor = actorFor(Scheduled.class,
+      final Scheduled<Object> directoryEvictor =
+          actorFor(Scheduled.class,
           Definition.has(DirectoryEvictor.class, () -> new DirectoryEvictor(evictionConfiguration, directory)),
           world().addressFactory().uniqueWith("EvictorActor::"+name()));
 
-      final long evictorActorInterval = Properties.getLong(
-          "stage.evictor.interval", Math.min(15_000L, evictionConfiguration.lruThresholdMillis()));
-
-      this.scheduler().schedule(
-          evictorActor, null, evictorActorInterval, evictorActorInterval);
+      this.scheduler()
+          .schedule(
+              directoryEvictor,
+              null,
+              evictionConfiguration.lruProbeInterval(),
+              evictionConfiguration.lruProbeInterval());
     }
   }
 
@@ -660,8 +679,28 @@ public class Stage implements Stoppable {
     return actor.protocolActor();
   }
 
+  /**
+   * Starts the {@code DirectoryScanner}, and optionally starts the {@code DirectoryEvictor}
+   * depending on a registered {@code DirectoryEvictionConfiguration} on behalf of this for this
+   * {@code Stage} extender.
+   * <p>
+   * FOR INTERNAL EXTENDER USE ONLY.
+   */
   protected void extenderStartDirectoryScanner() {
     startDirectoryScanner();
+  }
+
+  /**
+   * Starts the {@code DirectoryScanner}, and optionally starts the {@code DirectoryEvictor} 
+   * depending on either the registered {@code DirectoryEvictionConfiguration} or
+   * {@code forceEvictionEnabled}, on behalf of this for this {@code Stage} extender.
+   * <p>
+   * FOR INTERNAL EXTENDER USE ONLY.
+   * 
+   * @param forceEvictionEnabled the boolean that if true forces DirectoryEvictor into action
+   */
+  protected void extenderStartDirectoryScanner(final boolean forceEvictionEnabled) {
+    startDirectoryScanner(forceEvictionEnabled);
   }
 
   /**
@@ -769,6 +808,48 @@ public class Stage implements Stoppable {
     actor.lifeCycle.beforeStart(actor);
 
     return actor;
+  }
+
+  /**
+   * Answers a new instance of {@code DirectoryEvictionConfiguration} or {@code null}.
+   * <p>
+   * When {@code evictionConfiguration} is {@code null} and {@code forceEvictionEnabled}
+   * is {@code false}, answers {@code null}.
+   * <p>
+   * When {@code evictionConfiguration} is {@code null} and {@code forceEvictionEnabled}
+   * is {@code true}, answers a new, enabled {@code DirectoryEvictionConfiguration} with default settings.
+   * <p>
+   * When {@code evictionConfiguration} is <i>not</i> {@code null}, its values are used to instantiate
+   * a new {@code DirectoryEvictionConfiguration}. The new instance is enabled if either the
+   * {@code evictionConfiguration} is enabled or if {@code forceEvictionEnabled} is {@code true}.
+   * 
+   * @param evictionConfiguration
+   * @param forceEvictionEnabled
+   * @return {@code DirectoryEvictionConfiguration}
+   */
+  private DirectoryEvictionConfiguration evictionConfiguration(
+        DirectoryEvictionConfiguration evictionConfiguration,
+        final boolean forceEvictionEnabled) {
+
+    final DirectoryEvictionConfiguration maybeEvictionConfiguration;
+
+    if (evictionConfiguration == null) {
+      if (forceEvictionEnabled) {
+        maybeEvictionConfiguration = new DirectoryEvictionConfiguration(); // default
+        maybeEvictionConfiguration.enabled(forceEvictionEnabled);
+      } else {
+        maybeEvictionConfiguration = null;
+      }
+    } else {
+      maybeEvictionConfiguration =
+        new DirectoryEvictionConfiguration(
+          evictionConfiguration.isEnabled() || forceEvictionEnabled,
+          evictionConfiguration.lruProbeInterval(),
+          evictionConfiguration.lruThreshold(),
+          evictionConfiguration.fullRatioHighMark());
+    }
+
+    return maybeEvictionConfiguration;
   }
 
   /**
