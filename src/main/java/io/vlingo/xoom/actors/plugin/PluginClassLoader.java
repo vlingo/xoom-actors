@@ -29,6 +29,7 @@ public interface PluginClassLoader {
     };
   }
 
+  @SuppressWarnings("resource")
   static PluginClassLoader dynamicClassLoader(URL[] jarUrls) {
     final URLClassLoader classLoader = new URLClassLoader(jarUrls, PluginClassLoader.class.getClassLoader());
 
