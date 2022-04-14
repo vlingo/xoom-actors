@@ -12,6 +12,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import io.vlingo.xoom.actors.plugin.completes.PooledCompletesPlugin.PooledCompletesPluginConfiguration;
@@ -28,9 +30,10 @@ import io.vlingo.xoom.actors.supervision.Pong;
 import io.vlingo.xoom.actors.supervision.PongSupervisorActor;
 
 public class ConfigurationTest {
-
   @Test
   public void testThatConfigurationConfirgures() {
+    final World world = World.startWithDefaults("testing-config");
+
     final Configuration configuration =
             Configuration
               .define()
@@ -70,6 +73,7 @@ public class ConfigurationTest {
                       .supervisor("default", "overrideSupervisor", DefaultSupervisorOverride.class))
               .with(DirectoryEvictionConfiguration
                   .define()
+                  .exclude(Arrays.asList(World.DEFAULT_STAGE))
                   .fullRatioHighMark(0.75F)
                   .lruProbeInterval(3000)
                   .lruThreshold(10000))
@@ -126,6 +130,7 @@ public class ConfigurationTest {
     assertNotNull(configuration.directoryEvictionConfiguration());
     assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
     assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertTrue(configuration.directoryEvictionConfiguration().isExcluded(world.stage()));
     assertEquals(3000, configuration.directoryEvictionConfiguration().lruProbeInterval());
     assertEquals(10000, configuration.directoryEvictionConfiguration().lruThreshold());
     assertEquals(0.75F, configuration.directoryEvictionConfiguration().fullRatioHighMark(), 0);
@@ -138,6 +143,8 @@ public class ConfigurationTest {
 
   @Test
   public void testThatConfigurationDefaults() {
+    final World world = World.startWithDefaults("testing-config");
+
     final Configuration configuration = Configuration.define();
     configuration.load(0);
 
@@ -178,6 +185,7 @@ public class ConfigurationTest {
     assertNotNull(configuration.directoryEvictionConfiguration());
     assertEquals("directoryEviction", configuration.directoryEvictionConfiguration().name());
     assertFalse(configuration.directoryEvictionConfiguration().isEnabled());
+    assertTrue(configuration.directoryEvictionConfiguration().isExcluded(world.stage()));
     assertEquals(DirectoryEvictionConfiguration.DefaultLRUProbeInterval, configuration.directoryEvictionConfiguration().lruProbeInterval());
     assertEquals(DirectoryEvictionConfiguration.DefaultLRUThreshold, configuration.directoryEvictionConfiguration().lruThreshold());
     assertEquals(DirectoryEvictionConfiguration.DefaultFullRatioHighMark, configuration.directoryEvictionConfiguration().fullRatioHighMark(), 0);

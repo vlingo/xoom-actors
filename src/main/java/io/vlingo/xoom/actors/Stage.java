@@ -27,8 +27,9 @@ public class Stage implements Stoppable {
   private final String name;
   private final Scheduler scheduler;
   private AtomicBoolean stopped;
+  private boolean supportsEvictions;
   protected final World world;
-
+ 
   /**
    * Initializes the new {@code Stage} of the{@code world}, {@code addressFactory}, and with {@code name}.
    * Uses default {@code Directory} capacity of 32x32.
@@ -448,6 +449,14 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * Answers whether this {@code Stage} support evictions.
+   * @return boolean
+   */
+  public boolean supportsEvictions() {
+    return supportsEvictions;
+  }
+
+  /**
    * Answers the {@code World} instance of this {@code Stage}.
    * @return World
    */
@@ -633,7 +642,7 @@ public class Stage implements Stoppable {
     final DirectoryEvictionConfiguration evictionConfiguration =
         evictionConfiguration(world.configuration().directoryEvictionConfiguration(), forceEvictionEnabled);
 
-    if (evictionConfiguration != null && evictionConfiguration.isEnabled()) {
+    if (supportsEvictions(evictionConfiguration)) {
       world.defaultLogger().debug("Scheduling directory eviction for stage: {} with: {}", name(), evictionConfiguration);
 
       @SuppressWarnings("unchecked")
@@ -648,6 +657,8 @@ public class Stage implements Stoppable {
               null,
               evictionConfiguration.lruProbeInterval(),
               evictionConfiguration.lruProbeInterval());
+      
+      this.supportsEvictions = true;
     }
   }
 
@@ -844,12 +855,23 @@ public class Stage implements Stoppable {
       maybeEvictionConfiguration =
         new DirectoryEvictionConfiguration(
           evictionConfiguration.isEnabled() || forceEvictionEnabled,
+          evictionConfiguration.excludedStageNames(),
           evictionConfiguration.lruProbeInterval(),
           evictionConfiguration.lruThreshold(),
           evictionConfiguration.fullRatioHighMark());
     }
 
     return maybeEvictionConfiguration;
+  }
+
+  private boolean supportsEvictions(final DirectoryEvictionConfiguration evictionConfiguration) {
+    if (evictionConfiguration == null) {
+      return false;
+    }
+    if (evictionConfiguration.isExcluded(this)) {
+      return false;
+    }
+    return evictionConfiguration.isEnabled();
   }
 
   /**
