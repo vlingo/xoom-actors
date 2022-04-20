@@ -377,9 +377,9 @@ public abstract class Actor implements Startable, Stoppable, Relocatable, TestSt
   }
 
   /**
-   * Starts the process of stowing messages for this {@code Actor}, and registers {@code stowageOverrides} as
-   * the protocol that will trigger dispersal.
-   * @param stowageOverrides the {@code Class<T>} protocol that will trigger dispersal
+   * Starts the process of stowing messages for this {@code Actor} and registers
+   * {@code stowageOverrides} as the protocols that will trigger dispersal.
+   * @param stowageOverrides the {@code Class<T>} array of protocols that will trigger dispersal
    */
   protected void stowMessages(final Class<?>... stowageOverrides) {
     lifeCycle.environment.mailbox.suspendExceptFor(Mailbox.Paused, stowageOverrides);
