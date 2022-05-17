@@ -7,10 +7,15 @@
 
 package io.vlingo.xoom.actors.testkit;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.LongStream;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import io.vlingo.xoom.actors.Actor;
@@ -83,6 +88,27 @@ public class TestkitTest extends ActorsTest {
     assertTrue(until.completesWithin(500));
   }
 
+  @Ignore
+  @Test
+  public void testTestWorldActorUsedInParallelFails() {
+      TestWorld world = TestWorld.startWithDefaults("Test Parallel Actor Entry Fails");
+
+      TestActor<ParallelTestProtocol> actor =
+              world.actorFor(
+                      ParallelTestProtocol.class,
+                      Definition.has(ParallelTestProtocolActor.class, Definition.NoParameters));
+
+      long size = 100000L;
+      LongStream.range(0, size)
+              .parallel()
+              .forEach(
+                      value -> {
+                          actor.actor().put(value);
+                      });
+
+      world.terminate();
+  }
+
   public static interface PingCounter {
     void ping();
   }
@@ -143,5 +169,19 @@ public class TestkitTest extends ActorsTest {
     public TestState viewTestState() {
       return new TestState().putValue("count", count);
     }
+  }
+
+
+  public interface ParallelTestProtocol {
+      void put(long value);
+  }
+
+  public class ParallelTestProtocolActor extends Actor implements ParallelTestProtocol {
+      private List<Long> shouldBeSafeIfSingleThreadedMessages = new ArrayList<>();
+
+      @Override
+      public void put(long value) {
+        shouldBeSafeIfSingleThreadedMessages.add(value);
+      }
   }
 }
