@@ -8,7 +8,7 @@
 package io.vlingo.xoom.actors.testkit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -143,7 +143,7 @@ public class TestWorld implements AutoCloseable {
   private TestWorld(final World world, final String name) {
     Instance.set(this);
     this.world = world;
-    this.actorMessages = new HashMap<>();
+    this.actorMessages = new ConcurrentHashMap<>();
     this.mailboxProvider = new TestMailboxPlugin(this.world);
   }
 }
