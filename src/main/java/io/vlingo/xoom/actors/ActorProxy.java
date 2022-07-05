@@ -18,6 +18,11 @@ import io.vlingo.xoom.common.compiler.DynaCompiler;
 import io.vlingo.xoom.common.compiler.DynaCompiler.Input;
 
 public final class ActorProxy {
+  private static boolean forMain = true;
+
+  public static void forTest() {
+    forMain = false;
+  }
 
   public static <T> T createFor(final Class<T> protocol, final Actor actor, final Mailbox mailbox) {
     final T maybeCachedProxy = actor.lifeCycle.environment.lookUpProxy(protocol);
@@ -72,7 +77,7 @@ public final class ActorProxy {
     final Class<?> proxyClass = loadProxyClassFor(targetClassname, actor);
     return (T) tryCreateWithProxyClass(proxyClass, actor, mailbox);
   }
-
+ 
   @SuppressWarnings("unchecked")
   private static <T> T tryCreateWithProxyClass(final Class<T> proxyClass, final Actor actor, final Mailbox mailbox) throws Exception {
     Constructor<?> ctor = proxyClass.getConstructor(new Class<?>[] {Actor.class, Mailbox.class});
@@ -86,14 +91,14 @@ public final class ActorProxy {
           final String targetClassname) {
 
     final ClassLoader classLoader = classLoaderFor(actor);
-    try (final ProxyGenerator generator = ProxyGenerator.forMain(classLoader, true, actor.logger())) {
+    try (final ProxyGenerator generator = forMain ?
+            ProxyGenerator.forMain(classLoader, true, actor.logger()) :
+            ProxyGenerator.forTest(classLoader, true, actor.logger())) {
+
       return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
-    } catch (Exception emain) {
-      try (final ProxyGenerator generator = ProxyGenerator.forTest(classLoader, true, actor.logger())) {
-        return tryGenerateCreate(protocol, actor, mailbox, generator, targetClassname);
-      } catch (Exception etest) {
-        throw new IllegalArgumentException("Actor proxy " + protocol.getName() + " not created for main or test: " + etest.getMessage(), etest);
-      }
+
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Actor proxy " + protocol.getName() + " not created for main or test: " + e.getMessage(), e);
     }
   }
 
