@@ -15,6 +15,8 @@ import io.vlingo.xoom.actors.plugin.PluginScanner;
 import io.vlingo.xoom.actors.plugin.completes.DefaultCompletesEventuallyProviderKeeper;
 import io.vlingo.xoom.actors.plugin.logging.DefaultLoggerProviderKeeper;
 import io.vlingo.xoom.actors.plugin.mailbox.DefaultMailboxProviderKeeper;
+import io.vlingo.xoom.actors.testkit.TestRuntimeDiscoverer;
+import io.vlingo.xoom.actors.testkit.TestWorld;
 
 /**
  * The {@code World} of the actor runtime through which all Stage and Actor instances are created and run.
@@ -80,6 +82,12 @@ public final class World implements Registrar {
   public static World start(final String name, final Configuration configuration) {
     if (name == null) {
       throw new IllegalArgumentException("The world name must not be null.");
+    }
+
+    if (TestRuntimeDiscoverer.isUnderTest()) {
+      ActorProxy.forTest();
+      final TestWorld testWorld = TestWorld.start(name, configuration);
+      return testWorld.world();
     }
 
     return new World(name, configuration);
