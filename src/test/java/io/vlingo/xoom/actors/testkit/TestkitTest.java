@@ -7,13 +7,15 @@
 
 package io.vlingo.xoom.actors.testkit;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.LongStream;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.LongStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -107,6 +109,35 @@ public class TestkitTest extends ActorsTest {
                       });
 
       world.terminate();
+  }
+
+  @Test
+  public void testThatTestRuntimeDiscovererDiscoversTest() {
+    assertTrue(TestRuntimeDiscoverer.isUnderTest());
+  }
+
+  private final AtomicReference<String> underTest = new AtomicReference<>("UNKNOWN");
+  private final CountDownLatch latch = new CountDownLatch(1);
+  private final Thread runtimeTestDiscovererThread =
+          new Thread() {
+            @Override
+            public void run() {
+              underTest.set(TestRuntimeDiscoverer.isUnderTest() ? "TRUE" : "FALSE");
+              latch.countDown();
+            }
+          };
+
+  @Test
+  public void testThatTestRuntimeDiscovererDiscoversNoTest() throws Exception {
+    // use a separate Thread since it will not be on this stack
+    runtimeTestDiscovererThread.start();
+
+    latch.await();
+
+    // set a String value to ensure thread memory is sync'd.
+    // this is distinguishable compared to setting true/false,
+    // which could mistakenly be the expected value
+    assertEquals("FALSE", underTest.get());
   }
 
   public static interface PingCounter {
