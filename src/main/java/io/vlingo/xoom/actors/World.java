@@ -84,8 +84,8 @@ public final class World implements Registrar {
       throw new IllegalArgumentException("The world name must not be null.");
     }
 
-    if (TestRuntimeDiscoverer.isUnderTest()) {
-      ActorProxy.forTest();
+    if (!ActorProxy.__internal__isInitializingForTest() && TestRuntimeDiscoverer.isUnderTest()) {
+      ActorProxy.__internal__initializeForTest();
       final TestWorld testWorld = TestWorld.start(name, configuration);
       return testWorld.world();
     }
@@ -655,6 +655,8 @@ public final class World implements Registrar {
 
     defaultStage.startDirectoryScanner();
     this.pluginScanner.startScan();
+
+    ActorProxy.__internal__setProxyTypeTo(this);
   }
 
   /**
