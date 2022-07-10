@@ -26,6 +26,10 @@ public abstract class Actor implements Startable, Stoppable, Relocatable, TestSt
   final ResultReturns returns;
   final LifeCycle lifeCycle;
 
+  // hack to run test
+  public Class getMailboxClass() {
+    return lifeCycle.environment.mailbox.getClass();
+  }
   /**
    * Answers the {@code address} of this {@code Actor}.
    * @return Address

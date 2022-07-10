@@ -11,7 +11,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import io.vlingo.xoom.actors.Protocols;
+import io.vlingo.xoom.actors.testkit.TestUntil;
+import io.vlingo.xoom.common.Completes;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,6 +67,23 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     assertEquals(MaxCount, testResults.getHighest());
   }
 
+  @Test
+  public void testMessageQueue() {
+    final TestResults testResults = new TestResults(1);
+
+    CountTaker countTaker =
+            world.actorFor(
+                    CountTaker.class,
+                    Definition.has(CountTakerActor.class,
+                            Definition.parameters(testResults),
+                            "testArrayQueueMailbox",
+                            "countTaker-2"));
+
+    countTaker.getMailboxClassName().andFinallyConsume(testResults::setMailboxName);
+
+    assertEquals("ManyToOneConcurrentArrayQueueMailbox", testResults.getMailboxName());
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
@@ -77,16 +98,21 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testArrayQueueMailbox.dispatcherThrottlingCount", "1");
     properties.setProperty("plugin.testArrayQueueMailbox.sendRetires", "10");
 
-    ManyToOneConcurrentArrayQueuePlugin provider = new ManyToOneConcurrentArrayQueuePlugin();
-    final PluginProperties pluginProperties = new PluginProperties("testArrayQueueMailbox", properties);
-    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
-    plugin.configuration().buildWith(world.configuration(), pluginProperties);
 
-    provider.start(world);
+    ManyToOneConcurrentArrayQueuePlugin manyToOneConcurrentArrayQueuePlugin = new ManyToOneConcurrentArrayQueuePlugin();
+    final PluginProperties pluginProperties = new PluginProperties("testArrayQueueMailbox", properties);
+    final PooledCompletesPlugin pooledCompletesPlugin = new PooledCompletesPlugin();
+
+    pooledCompletesPlugin.configuration().buildWith(world.configuration(), pluginProperties);
+    pooledCompletesPlugin.start(world);
+
+    manyToOneConcurrentArrayQueuePlugin.configuration().buildWith(world.configuration(), pluginProperties);
+    manyToOneConcurrentArrayQueuePlugin.start(world);
   }
 
-  public static interface CountTaker {
+  public interface CountTaker {
     void take(final int count);
+    Completes<String> getMailboxClassName();
   }
 
   public static class CountTakerActor extends Actor implements CountTaker {
@@ -107,6 +133,11 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
         self.take(count + 1);
       }
     }
+
+    @Override
+    public Completes<String> getMailboxClassName() {
+      return completes().with(getMailboxClass().getSimpleName());
+    }
   }
 
   private static class TestResults {
@@ -114,12 +145,26 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
 
     private TestResults(final int happenings) {
       final AtomicInteger highest = new AtomicInteger(0);
+      final AtomicReference<String> mailbox = new AtomicReference<>();
+
       this.accessSafely = AccessSafely
               .afterCompleting(happenings)
+              .writingWith("name", mailbox::set)
+              .readingWith("name", mailbox::get)
               .writingWith("highest", highest::set)
               .readingWith("highest", highest::get)
               .readingWith("isHighest", (Integer count) -> count > highest.get());
     }
+
+
+    void setMailboxName(String name) {
+      this.accessSafely.writeUsing("name", name);
+    }
+
+    String getMailboxName() {
+      return this.accessSafely.readFrom("name");
+    }
+
 
     void setHighest(Integer value){
       this.accessSafely.writeUsing("highest", value);
