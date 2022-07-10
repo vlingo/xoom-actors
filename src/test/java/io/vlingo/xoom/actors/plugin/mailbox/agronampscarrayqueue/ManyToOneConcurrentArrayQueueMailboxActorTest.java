@@ -7,20 +7,21 @@
 
 package io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import io.vlingo.xoom.actors.Actor;
 import io.vlingo.xoom.actors.ActorsTest;
 import io.vlingo.xoom.actors.Definition;
 import io.vlingo.xoom.actors.plugin.PluginProperties;
 import io.vlingo.xoom.actors.plugin.completes.PooledCompletesPlugin;
 import io.vlingo.xoom.actors.testkit.AccessSafely;
+import io.vlingo.xoom.common.Completes;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.assertEquals;
 
 public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
@@ -63,6 +64,23 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     assertEquals(MaxCount, testResults.getHighest());
   }
 
+  @Test
+  public void testMailboxIsConfigured() {
+    final TestResults testResults = new TestResults(1);
+
+    CountTaker countTaker =
+            world.actorFor(
+                    CountTaker.class,
+                    Definition.has(CountTakerActor.class,
+                            Definition.parameters(testResults),
+                            "testArrayQueueMailbox",
+                            "countTaker"));
+
+    countTaker.getMailboxClassName().andFinallyConsume(testResults::setMailboxTypeName);
+
+    assertEquals("ManyToOneConcurrentArrayQueueMailbox", testResults.getMailboxTypeName());
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
@@ -77,16 +95,21 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     properties.setProperty("plugin.testArrayQueueMailbox.dispatcherThrottlingCount", "1");
     properties.setProperty("plugin.testArrayQueueMailbox.sendRetires", "10");
 
-    ManyToOneConcurrentArrayQueuePlugin provider = new ManyToOneConcurrentArrayQueuePlugin();
-    final PluginProperties pluginProperties = new PluginProperties("testArrayQueueMailbox", properties);
-    final PooledCompletesPlugin plugin = new PooledCompletesPlugin();
-    plugin.configuration().buildWith(world.configuration(), pluginProperties);
 
-    provider.start(world);
+    ManyToOneConcurrentArrayQueuePlugin manyToOneConcurrentArrayQueuePlugin = new ManyToOneConcurrentArrayQueuePlugin();
+    final PluginProperties pluginProperties = new PluginProperties("testArrayQueueMailbox", properties);
+    final PooledCompletesPlugin pooledCompletesPlugin = new PooledCompletesPlugin();
+
+    pooledCompletesPlugin.configuration().buildWith(world.configuration(), pluginProperties);
+    pooledCompletesPlugin.start(world);
+
+    manyToOneConcurrentArrayQueuePlugin.configuration().buildWith(world.configuration(), pluginProperties);
+    manyToOneConcurrentArrayQueuePlugin.start(world);
   }
 
-  public static interface CountTaker {
+  public interface CountTaker {
     void take(final int count);
+    Completes<String> getMailboxClassName();
   }
 
   public static class CountTakerActor extends Actor implements CountTaker {
@@ -107,6 +130,11 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
         self.take(count + 1);
       }
     }
+
+    @Override
+    public Completes<String> getMailboxClassName() {
+      return completes().with(getMailboxClass().getSimpleName());
+    }
   }
 
   private static class TestResults {
@@ -114,12 +142,26 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
 
     private TestResults(final int happenings) {
       final AtomicInteger highest = new AtomicInteger(0);
+      final AtomicReference<String> mailboxTypeName = new AtomicReference<>();
+
       this.accessSafely = AccessSafely
               .afterCompleting(happenings)
+              .writingWith("name", mailboxTypeName::set)
+              .readingWith("name", mailboxTypeName::get)
               .writingWith("highest", highest::set)
               .readingWith("highest", highest::get)
               .readingWith("isHighest", (Integer count) -> count > highest.get());
     }
+
+
+    void setMailboxTypeName(String name) {
+      this.accessSafely.writeUsing("name", name);
+    }
+
+    String getMailboxTypeName() {
+      return this.accessSafely.readFrom("name");
+    }
+
 
     void setHighest(Integer value){
       this.accessSafely.writeUsing("highest", value);
