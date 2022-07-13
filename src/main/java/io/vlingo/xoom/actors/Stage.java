@@ -379,6 +379,23 @@ public class Stage implements Stoppable {
   }
 
   /**
+   * Answers the {@code Mailbox} type of the specified proxy instance.
+   *
+   * @param proxy An actor proxy typically created with one of {@code #actorFor(...)} methods
+   * @return
+   */
+  public Class<? extends Mailbox> mailboxTypeOf(Object proxy) {
+    if (!(proxy instanceof Proxy)) {
+      throw new IllegalArgumentException("Invalid actor proxy instance: " + proxy.getClass());
+    }
+
+    Address actorAddress = ((Proxy) proxy).address();
+    Actor actor = directory.actorOf(actorAddress);
+
+    return actor.lifeCycle.environment.mailbox.getClass();
+  }
+
+  /**
    * A debugging tool used to print information about the {@code Actor} instances contained in this {@code Stage}.
    */
   public void dump() {
