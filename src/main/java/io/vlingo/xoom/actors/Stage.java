@@ -396,7 +396,7 @@ public class Stage implements Stoppable {
   }
 
   /**
-   * Answers the {@code Mailbox} type name of the specified proxy instance.
+   * Answers the {@code Mailbox} simple type name of the specified proxy instance.
    *
    * @param proxy An actor proxy typically created with one of {@code #actorFor(...)} methods
    * @return Mailbox type name
