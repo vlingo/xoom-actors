@@ -81,7 +81,7 @@ public class ConcurrentQueueMailboxTest extends ActorsTest {
     dispatcher.close();
   }
 
-  public static interface CountTaker {
+  public interface CountTaker {
     void take(final int count);
   }
 
