@@ -44,6 +44,7 @@ public class MailboxTypeTest extends ActorsTest {
             Definition.has(EmptyActor.class, new ArrayList<>(), "testArrayQueueMailbox", "empty"));
 
     Assert.assertEquals(ManyToOneConcurrentArrayQueueMailbox.class, world.stage().mailboxTypeOf(empty));
+    Assert.assertEquals("ManyToOneConcurrentArrayQueueMailbox", world.stage().mailboxTypeNameOf(empty));
   }
 
   @Test
@@ -66,6 +67,7 @@ public class MailboxTypeTest extends ActorsTest {
             Definition.has(EmptyActor.class, new ArrayList<>(), "testConcurrentQueueMailbox", "empty"));
 
     Assert.assertEquals(ConcurrentQueueMailbox.class, world.stage().mailboxTypeOf(empty));
+    Assert.assertEquals("ConcurrentQueueMailbox", world.stage().mailboxTypeNameOf(empty));
   }
 
   public interface Empty {

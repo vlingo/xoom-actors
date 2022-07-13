@@ -382,7 +382,7 @@ public class Stage implements Stoppable {
    * Answers the {@code Mailbox} type of the specified proxy instance.
    *
    * @param proxy An actor proxy typically created with one of {@code #actorFor(...)} methods
-   * @return
+   * @return Mailbox type
    */
   public Class<? extends Mailbox> mailboxTypeOf(Object proxy) {
     if (!(proxy instanceof Proxy)) {
@@ -393,6 +393,16 @@ public class Stage implements Stoppable {
     Actor actor = directory.actorOf(actorAddress);
 
     return actor.lifeCycle.environment.mailbox.getClass();
+  }
+
+  /**
+   * Answers the {@code Mailbox} type name of the specified proxy instance.
+   *
+   * @param proxy An actor proxy typically created with one of {@code #actorFor(...)} methods
+   * @return Mailbox type name
+   */
+  public String mailboxTypeNameOf(Object proxy) {
+    return mailboxTypeOf(proxy).getSimpleName();
   }
 
   /**
