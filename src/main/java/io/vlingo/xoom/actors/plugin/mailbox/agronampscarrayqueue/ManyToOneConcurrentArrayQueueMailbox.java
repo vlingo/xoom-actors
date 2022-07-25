@@ -53,14 +53,15 @@ public class ManyToOneConcurrentArrayQueueMailbox implements Mailbox {
 
   @Override
   public void send(final Message message) {
-    for (int tries = 0; tries < totalSendRetries; ++tries) {
+    // This code causes a deadlock when (1) the queue is full and (2) the actor tries to send a message to itself.
+    // To avoid this, any write to full queue needs to raise an exception.
+    for (int tries = 0; tries < totalSendRetries; tries++) {
       if (queue.offer(message)) {
         if (notifyOnSend) {
           dispatcher.execute(this);
         }
         return;
       }
-      while (pendingMessages() >= queue.capacity()) ;
     }
     throw new IllegalStateException("Count not enqueue message due to busy mailbox.");
   }
