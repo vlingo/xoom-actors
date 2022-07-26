@@ -23,16 +23,14 @@ import io.vlingo.xoom.actors.plugin.PluginProperties;
 
 public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implements Plugin, MailboxProvider {
   private final ManyToOneConcurrentArrayQueuePluginConfiguration configuration;
-  private final Map<Integer, ManyToOneConcurrentArrayQueueDispatcher> dispatchers;
 
   public ManyToOneConcurrentArrayQueuePlugin() {
     this.configuration = new ManyToOneConcurrentArrayQueuePluginConfiguration();
-    this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
   @Override
   public void close() {
-    dispatchers.values().stream().forEach(dispatcher -> dispatcher.close());
+    // mailbox closes its dispatcher
   }
 
   @Override
@@ -65,43 +63,26 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
 
   private ManyToOneConcurrentArrayQueuePlugin(final PluginConfiguration configuration) {
     this.configuration = (ManyToOneConcurrentArrayQueuePluginConfiguration) configuration;
-    this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
   @Override
   public Mailbox provideMailboxFor(final int hashCode) {
-    return provideMailboxFor(hashCode, null);
+    final ManyToOneConcurrentArrayQueueDispatcher newDispatcher =
+            new ManyToOneConcurrentArrayQueueDispatcher(
+                    configuration.ringSize(),
+                    configuration.fixedBackoff(),
+                    configuration.notifyOnSend(),
+                    configuration.dispatcherThrottlingCount(),
+                    configuration.sendRetires());
+
+    newDispatcher.start();
+
+    return newDispatcher.mailbox();
   }
 
   @Override
   public Mailbox provideMailboxFor(final int hashCode, final Dispatcher dispatcher) {
-    final ManyToOneConcurrentArrayQueueDispatcher maybeDispatcher =
-            dispatcher != null ?
-                    (ManyToOneConcurrentArrayQueueDispatcher) dispatcher :
-                    dispatchers.get(hashCode);
-
-    if (maybeDispatcher == null) {
-      final ManyToOneConcurrentArrayQueueDispatcher newDispatcher =
-              new ManyToOneConcurrentArrayQueueDispatcher(
-                      configuration.ringSize(),
-                      configuration.fixedBackoff(),
-                      configuration.notifyOnSend(),
-                      configuration.dispatcherThrottlingCount(),
-                      configuration.sendRetires());
-
-      final ManyToOneConcurrentArrayQueueDispatcher otherDispatcher =
-              dispatchers.putIfAbsent(hashCode, newDispatcher);
-
-      if (otherDispatcher != null) {
-        otherDispatcher.start();
-        return otherDispatcher.mailbox();
-      } else {
-        newDispatcher.start();
-        return newDispatcher.mailbox();
-      }
-    }
-
-    return maybeDispatcher.mailbox();
+    throw new UnsupportedOperationException("Does not support dispatcher reuse.");
   }
 
   @Override
