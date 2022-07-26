@@ -8,6 +8,7 @@
 package io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +18,13 @@ import org.junit.Test;
 
 import io.vlingo.xoom.actors.Actor;
 import io.vlingo.xoom.actors.ActorsTest;
+import io.vlingo.xoom.actors.Address;
+import io.vlingo.xoom.actors.Addressable;
+import io.vlingo.xoom.actors.Addressable__Proxy;
 import io.vlingo.xoom.actors.Definition;
+import io.vlingo.xoom.actors.Mailbox;
+import io.vlingo.xoom.actors.TestAddressableActor;
+import io.vlingo.xoom.actors.__InternalOnlyAccessor;
 import io.vlingo.xoom.actors.plugin.PluginProperties;
 import io.vlingo.xoom.actors.plugin.completes.PooledCompletesPlugin;
 import io.vlingo.xoom.actors.testkit.AccessSafely;
@@ -25,6 +32,29 @@ import io.vlingo.xoom.actors.testkit.AccessSafely;
 public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
   private static final int MailboxSize = 64;
   private static final int MaxCount = 1024;
+
+  @Test
+  public void testThatMailboxesAreDifferent() {
+    final Addressable addressable1 =
+            world.actorFor(
+                    Addressable.class,
+                    Definition.has(TestAddressableActor.class, Definition.NoParameters, "testArrayQueueMailbox", "addressable-1"));
+
+    final Address address1 = ((Addressable__Proxy) addressable1).address();
+    Actor actor1 = __InternalOnlyAccessor.actorOf(world.stage(), address1);
+    Mailbox mailbox1 = __InternalOnlyAccessor.actorMailbox(actor1);
+    
+    final Addressable addressable2 =
+            world.actorFor(
+                    Addressable.class,
+                    Definition.has(TestAddressableActor.class, Definition.NoParameters, "testArrayQueueMailbox", "addressable-1"));
+
+    final Address address2 = ((Addressable__Proxy) addressable2).address();
+    Actor actor2 = __InternalOnlyAccessor.actorOf(world.stage(), address2);
+    Mailbox mailbox2 = __InternalOnlyAccessor.actorMailbox(actor2);
+
+    assertNotEquals(mailbox1, mailbox2);
+  }
 
   @Test
   public void testBasicDispatch() {
