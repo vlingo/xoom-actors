@@ -7,9 +7,7 @@
 
 package io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue;
 
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.vlingo.xoom.actors.Configuration;
 import io.vlingo.xoom.actors.Dispatcher;
