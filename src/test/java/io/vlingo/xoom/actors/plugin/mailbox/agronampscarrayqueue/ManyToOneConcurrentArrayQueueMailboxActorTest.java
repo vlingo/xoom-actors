@@ -33,7 +33,7 @@ public class ManyToOneConcurrentArrayQueueMailboxActorTest extends ActorsTest {
     final CountTaker countTaker =
             world.actorFor(
                     CountTaker.class,
-                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testRingMailbox", "countTaker-1"));
+                    Definition.has(CountTakerActor.class, Definition.parameters(testResults), "testArrayQueueMailbox", "countTaker-1"));
 
     final int totalCount = MailboxSize / 2;
 
