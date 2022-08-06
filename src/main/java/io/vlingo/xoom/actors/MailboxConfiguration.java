@@ -18,26 +18,31 @@ import java.util.Properties;
  */
 public interface MailboxConfiguration<T> {
   /**
-   * Sets the name of the mailbox.
+   * Answer myself after setting my name of the mailbox.
    * @param name the String name of the mailbox
    * @return T
    */
-  T name(final String name);
+  T mailboxName(final String name);
 
   /**
-   * Sets the class name of the mailbox.
+   * Answer myself after setting my {@code mailboxImplementationClassname}.
    * @param classname the String fully-qualified class name
    * @return T
    */
-  T classname(final String classname);
+  T mailboxImplementationClassname(final String classname);
 
   /**
-   * Sets whether this is the default mailbox.
-   * @param flag the boolean indicating a default or non-default mailbox
+   * Answer myself after setting my defaultMailbox.
+   * @param defaultMailbox the boolean indicating a default or non-default mailbox
    * @return T
    */
-  T defaultMailbox(final boolean flag);
+  T defaultMailbox(final boolean defaultMailbox);
 
+  /**
+   * Answer the configuration as a Properties.
+   * @return Properties
+   */
+  Properties toProperties();
 
 
   /**
@@ -47,39 +52,39 @@ public interface MailboxConfiguration<T> {
    */
   static interface ArrayQueue extends MailboxConfiguration<ArrayQueue> {
     /**
-     * Sets the size of the array.
-     * @param size the int size of the array
+     * Answer myself after setting my size.
+     * @param size the int size of my internal array
      * @return ArrayQueue
      */
     ArrayQueue size(final int size);
 
     /**
-     * Sets the fixed back-off value.
-     * @param amount the int amount of fixed back-off
+     * Answer myself after setting fixedBackoff.
+     * @param fixedBackoff the int count of fixed back-off
      * @return ArrayQueue
      */
-    ArrayQueue fixedBackoff(final int amount);
+    ArrayQueue fixedBackoff(final int fixedBackoff);
 
     /**
-     * Sets the notify-on-send on or off. If not set the value is false.
-     * @param flag the boolean on or off
+     * Answer myself after setting my notifyOnSend. If not set the value is false.
+     * @param notifyOnSend the boolean on or off
      * @return ArrayQueue
      */
-    ArrayQueue notifyOnSend(final boolean flag);
+    ArrayQueue notifyOnSend(final boolean notifyOnSend);
 
     /**
-     * Sets the dispatcher throttling count.
-     * @param count the int count
+     * Answer myself after setting my dispatcherThrottlingCount.
+     * @param dispatcherThrottlingCount the int to set as my dispatcherThrottlingCount
      * @return ArrayQueue
      */
-    ArrayQueue dispatcherThrottlingCount(final int count);
+    ArrayQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount);
 
     /**
-     * Sets the send retries count.
-     * @param retries the int number of retries on send
+     * Answer myself after setting my sendRetires.
+     * @param sendRetires the int number of retries on send
      * @return ArrayQueue
      */
-    ArrayQueue sendRetires(final int retries);
+    ArrayQueue sendRetires(final int sendRetires);
   }
 
   /**
@@ -89,25 +94,25 @@ public interface MailboxConfiguration<T> {
    */
   static interface ConcurrentQueue extends MailboxConfiguration<ConcurrentQueue> {
     /**
-     * Sets the number of dispatchers factor.
-     * @param factor the double number of dispatchers factor
+     * Answer myself after setting my numberOfDispatchersFactor.
+     * @param numberOfDispatchersFactor the double number of dispatchers factor
      * @return ConcurrentQueue
      */
-    ConcurrentQueue numberOfDispatchersFactor(final double factor);
+    ConcurrentQueue numberOfDispatchersFactor(final double numberOfDispatchersFactor);
 
     /**
-     * Sets my number of dispatchers.
-     * @param dispatchers the int number of dispatchers
+     * Answer myself after setting my numberOfDispatchers.
+     * @param numberOfDispatchers the int number of dispatchers
      * @return ConcurrentQueue
      */
-    ConcurrentQueue numberOfDispatchers(final int dispatchers);
+    ConcurrentQueue numberOfDispatchers(final int numberOfDispatchers);
 
     /**
-     * Sets the dispatcher throttling count.
-     * @param count the int dispatcher throttling count
+     * Answer myself after setting my dispatcherThrottlingCount.
+     * @param dispatcherThrottlingCount the int dispatcher throttling count
      * @return ConcurrentQueue
      */
-    ConcurrentQueue dispatcherThrottlingCount(final int count);
+    ConcurrentQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount);
   }
 
   /**
@@ -117,32 +122,32 @@ public interface MailboxConfiguration<T> {
    */
   static interface SharedRingBuffer extends MailboxConfiguration<SharedRingBuffer> {
     /**
-     * Sets the size of the array.
-     * @param size the int size of the array
+     * Answer myself after setting my size.
+     * @param size the int size of my internal array
      * @return SharedRingBuffer
      */
     SharedRingBuffer size(final int size);
 
     /**
-     * Sets the fixed back-off value.
-     * @param amount the int amount of fixed back-off
+     * Answer myself after setting my fixedBackoff.
+     * @param fixedBackoff the int fixedBackoff
      * @return SharedRingBuffer
      */
-    SharedRingBuffer fixedBackoff(final int amount);
+    SharedRingBuffer fixedBackoff(final int fixedBackoff);
 
     /**
-     * Sets the notify-on-send on or off. If not set the value is false.
-     * @param flag the boolean on or off
+     * Answer myself after setting my notifyOnSend. If not set the value is false.
+     * @param notifyOnSend the boolean on or off
      * @return SharedRingBuffer
      */
-    SharedRingBuffer notifyOnSend(final boolean flag);
+    SharedRingBuffer notifyOnSend(final boolean notifyOnSend);
 
     /**
-     * Sets the dispatcher throttling count.
-     * @param count the int count
+     * Answer myself after setting my dispatcherThrottlingCount.
+     * @param dispatcherThrottlingCount the int dispatcherThrottlingCount
      * @return SharedRingBuffer
      */
-    SharedRingBuffer dispatcherThrottlingCount(final int count);
+    SharedRingBuffer dispatcherThrottlingCount(final int dispatcherThrottlingCount);
   }
 
   //=========================================
@@ -150,126 +155,194 @@ public interface MailboxConfiguration<T> {
   //=========================================
 
   static abstract class BaseMailboxConfiguration<T> implements MailboxConfiguration<T> {
-    protected String name;
-    protected Properties properties;
+	private boolean defaultMailbox;
+    private String mailboxImplementationClassname;
+    private String pluginName;
+
+	protected String mailboxName;
 
     @Override
     @SuppressWarnings("unchecked")
-    public T name(final String name) {
-      this.properties = new Properties();
-      this.name = "plugin.name." + name;
-      properties.setProperty(this.name, "true");
+    public T mailboxName(final String mailboxName) {
+      this.mailboxName = mailboxName;
+      
+      return (T) this;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T mailboxImplementationClassname(final String classname) {
+    	this.mailboxImplementationClassname = classname;
 
       return (T) this;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public T classname(final String classname) {
-      properties.setProperty(this.name + ".classname", "");
+    public T defaultMailbox(final boolean defaultMailbox) {
+      this.defaultMailbox = defaultMailbox;
 
       return (T) this;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public T defaultMailbox(final boolean flag) {
-      properties.setProperty(this.name + ".defaultMailbox", Boolean.toString(flag));
+    public Properties toProperties() {
+      final Properties properties = new Properties();
 
-      return (T) this;
+      properties.setProperty(pluginName(), "true");
+      properties.setProperty(pluginName() + ".classname", mailboxImplementationClassname);
+      properties.setProperty(pluginName() + ".defaultMailbox", Boolean.toString(defaultMailbox));
+
+      return properties;
+    }
+
+    protected String pluginName() {
+      if (pluginName == null) {
+        pluginName = "plugin.name." + this.mailboxName;
+      }
+
+      return pluginName;
     }
   }
 
   static final class ArrayQueueConfiguration extends BaseMailboxConfiguration<ArrayQueue> implements ArrayQueue {
+    private int fixedBackoff;
+    private boolean notifyOnSend;
+    private int sendRetires;
+    private int size;
+    private int dispatcherThrottlingCount;
 
     @Override
     public ArrayQueue size(final int size) {
-      properties.setProperty(this.name + ".size", Integer.toString(size));
+      this.size = size;
 
       return this;
     }
 
     @Override
-    public ArrayQueue fixedBackoff(final int amount) {
-      properties.setProperty(this.name + ".fixedBackoff", Integer.toString(amount));
+    public ArrayQueue fixedBackoff(final int fixedBackoff) {
+      this.fixedBackoff = fixedBackoff;
 
       return this;
     }
 
     @Override
-    public ArrayQueue notifyOnSend(final boolean flag) {
-      properties.setProperty(this.name + ".notifyOnSend", Boolean.toString(flag));
+    public ArrayQueue notifyOnSend(final boolean notifyOnSend) {
+      this.notifyOnSend = notifyOnSend;
 
       return this;
     }
 
     @Override
-    public ArrayQueue dispatcherThrottlingCount(final int count) {
-      properties.setProperty(this.name + ".dispatcherThrottlingCount", Integer.toString(count));
+    public ArrayQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
     }
 
     @Override
-    public ArrayQueue sendRetires(final int retries) {
-      properties.setProperty(this.name + ".sendRetires", Integer.toString(retries));
+    public ArrayQueue sendRetires(final int sendRetires) {
+      this.sendRetires = sendRetires;
 
       return this;
+    }
+
+    @Override
+    public Properties toProperties() {
+      final Properties properties = super.toProperties();
+
+      properties.setProperty(pluginName() + ".size", Integer.toString(size));
+      properties.setProperty(pluginName() + ".fixedBackoff", Integer.toString(fixedBackoff));
+      properties.setProperty(pluginName() + ".notifyOnSend", Boolean.toString(notifyOnSend));
+      properties.setProperty(pluginName() + ".dispatcherThrottlingCount", Integer.toString(dispatcherThrottlingCount));
+      properties.setProperty(pluginName() + ".sendRetires", Integer.toString(sendRetires));
+
+      return properties;
     }
   }
   
   static final class ConcurrentQueueConfiguration extends BaseMailboxConfiguration<ConcurrentQueue> implements ConcurrentQueue {
+    private int dispatcherThrottlingCount;
+    private int numberOfDispatchers;
+    private double numberOfDispatchersFactor;
 
     @Override
-    public ConcurrentQueue numberOfDispatchersFactor(final double factor) {
-      properties.setProperty(this.name + ".numberOfDispatchersFactor", Double.toString(factor));
+    public ConcurrentQueue numberOfDispatchersFactor(final double numberOfDispatchersFactor) {
+      this.numberOfDispatchersFactor = numberOfDispatchersFactor;
 
       return this;
     }
 
     @Override
-    public ConcurrentQueue numberOfDispatchers(final int dispatchers) {
-      properties.setProperty(this.name + ".numberOfDispatchers", Integer.toString(dispatchers));
+    public ConcurrentQueue numberOfDispatchers(final int numberOfDispatchers) {
+      this.numberOfDispatchers = numberOfDispatchers;
 
       return this;
     }
 
     @Override
-    public ConcurrentQueue dispatcherThrottlingCount(final int count) {
-      properties.setProperty(this.name + ".dispatcherThrottlingCount", Integer.toString(count));
+    public ConcurrentQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
+    }
+
+    @Override
+    public Properties toProperties() {
+      final Properties properties = super.toProperties();
+
+      properties.setProperty(pluginName() + ".numberOfDispatchersFactor", Double.toString(numberOfDispatchersFactor));
+      properties.setProperty(pluginName() + ".numberOfDispatchers", Integer.toString(numberOfDispatchers));
+      properties.setProperty(pluginName() + ".dispatcherThrottlingCount", Integer.toString(dispatcherThrottlingCount));
+
+      return properties;
     }
   }
 
   static final class SharedRingBufferConfiguration extends BaseMailboxConfiguration<SharedRingBuffer> implements SharedRingBuffer {
+    private int fixedBackoff;
+    private boolean notifyOnSend;
+    private int size;
+    private int dispatcherThrottlingCount;
 
     @Override
     public SharedRingBuffer size(final int size) {
-      properties.setProperty(this.name + ".size", Integer.toString(size));
+      this.size = size;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer fixedBackoff(final int amount) {
-      properties.setProperty(this.name + ".fixedBackoff", Integer.toString(amount));
+    public SharedRingBuffer fixedBackoff(final int fixedBackoff) {
+      this.fixedBackoff = fixedBackoff;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer notifyOnSend(final boolean flag) {
-      properties.setProperty(this.name + ".notifyOnSend", Boolean.toString(flag));
+    public SharedRingBuffer notifyOnSend(final boolean notifyOnSend) {
+      this.notifyOnSend = notifyOnSend;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer dispatcherThrottlingCount(final int count) {
-      properties.setProperty(this.name + ".dispatcherThrottlingCount", Integer.toString(count));
+    public SharedRingBuffer dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+      this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
+    }
+
+    @Override
+    public Properties toProperties() {
+      final Properties properties = super.toProperties();
+
+      properties.setProperty(pluginName() + ".size", Integer.toString(size));
+      properties.setProperty(pluginName() + ".fixedBackoff", Integer.toString(fixedBackoff));
+      properties.setProperty(pluginName() + ".notifyOnSend", Boolean.toString(notifyOnSend));
+      properties.setProperty(pluginName() + ".dispatcherThrottlingCount", Integer.toString(dispatcherThrottlingCount));
+
+      return properties;
     }
   }
 }
