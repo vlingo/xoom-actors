@@ -39,7 +39,7 @@ public interface MailboxConfiguration<T> {
   T defaultMailbox(final boolean defaultMailbox);
 
   /**
-   * Answer the configuration as a Properties.
+   * Answer my configuration as a Properties.
    * @return Properties
    */
   Properties toProperties();
@@ -50,41 +50,41 @@ public interface MailboxConfiguration<T> {
    * 
    * <p>See the <a href="https://docs.vlingo.io/xoom-actors#plugins">XOOM Actors Plugins</a> documentation.
    */
-  static interface ArrayQueue extends MailboxConfiguration<ArrayQueue> {
+  static interface ArrayQueueConfiguration extends MailboxConfiguration<ArrayQueueConfiguration> {
     /**
      * Answer myself after setting my size.
      * @param size the int size of my internal array
      * @return ArrayQueue
      */
-    ArrayQueue size(final int size);
+    ArrayQueueConfiguration size(final int size);
 
     /**
      * Answer myself after setting fixedBackoff.
      * @param fixedBackoff the int count of fixed back-off
      * @return ArrayQueue
      */
-    ArrayQueue fixedBackoff(final int fixedBackoff);
+    ArrayQueueConfiguration fixedBackoff(final int fixedBackoff);
 
     /**
      * Answer myself after setting my notifyOnSend. If not set the value is false.
      * @param notifyOnSend the boolean on or off
      * @return ArrayQueue
      */
-    ArrayQueue notifyOnSend(final boolean notifyOnSend);
+    ArrayQueueConfiguration notifyOnSend(final boolean notifyOnSend);
 
     /**
      * Answer myself after setting my dispatcherThrottlingCount.
      * @param dispatcherThrottlingCount the int to set as my dispatcherThrottlingCount
      * @return ArrayQueue
      */
-    ArrayQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount);
+    ArrayQueueConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount);
 
     /**
      * Answer myself after setting my sendRetires.
      * @param sendRetires the int number of retries on send
      * @return ArrayQueue
      */
-    ArrayQueue sendRetires(final int sendRetires);
+    ArrayQueueConfiguration sendRetires(final int sendRetires);
   }
 
   /**
@@ -92,27 +92,27 @@ public interface MailboxConfiguration<T> {
    * 
    * <p>See the <a href="https://docs.vlingo.io/xoom-actors#plugins">XOOM Actors Plugins</a> documentation.
    */
-  static interface ConcurrentQueue extends MailboxConfiguration<ConcurrentQueue> {
+  static interface ConcurrentQueueConfiguration extends MailboxConfiguration<ConcurrentQueueConfiguration> {
     /**
      * Answer myself after setting my numberOfDispatchersFactor.
      * @param numberOfDispatchersFactor the double number of dispatchers factor
      * @return ConcurrentQueue
      */
-    ConcurrentQueue numberOfDispatchersFactor(final double numberOfDispatchersFactor);
+    ConcurrentQueueConfiguration numberOfDispatchersFactor(final double numberOfDispatchersFactor);
 
     /**
      * Answer myself after setting my numberOfDispatchers.
      * @param numberOfDispatchers the int number of dispatchers
      * @return ConcurrentQueue
      */
-    ConcurrentQueue numberOfDispatchers(final int numberOfDispatchers);
+    ConcurrentQueueConfiguration numberOfDispatchers(final int numberOfDispatchers);
 
     /**
      * Answer myself after setting my dispatcherThrottlingCount.
      * @param dispatcherThrottlingCount the int dispatcher throttling count
      * @return ConcurrentQueue
      */
-    ConcurrentQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount);
+    ConcurrentQueueConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount);
   }
 
   /**
@@ -120,34 +120,34 @@ public interface MailboxConfiguration<T> {
    * 
    * <p>See the <a href="https://docs.vlingo.io/xoom-actors#plugins">XOOM Actors Plugins</a> documentation.
    */
-  static interface SharedRingBuffer extends MailboxConfiguration<SharedRingBuffer> {
+  static interface SharedRingBufferConfiguration extends MailboxConfiguration<SharedRingBufferConfiguration> {
     /**
      * Answer myself after setting my size.
      * @param size the int size of my internal array
      * @return SharedRingBuffer
      */
-    SharedRingBuffer size(final int size);
+    SharedRingBufferConfiguration size(final int size);
 
     /**
      * Answer myself after setting my fixedBackoff.
      * @param fixedBackoff the int fixedBackoff
      * @return SharedRingBuffer
      */
-    SharedRingBuffer fixedBackoff(final int fixedBackoff);
+    SharedRingBufferConfiguration fixedBackoff(final int fixedBackoff);
 
     /**
      * Answer myself after setting my notifyOnSend. If not set the value is false.
      * @param notifyOnSend the boolean on or off
      * @return SharedRingBuffer
      */
-    SharedRingBuffer notifyOnSend(final boolean notifyOnSend);
+    SharedRingBufferConfiguration notifyOnSend(final boolean notifyOnSend);
 
     /**
      * Answer myself after setting my dispatcherThrottlingCount.
      * @param dispatcherThrottlingCount the int dispatcherThrottlingCount
      * @return SharedRingBuffer
      */
-    SharedRingBuffer dispatcherThrottlingCount(final int dispatcherThrottlingCount);
+    SharedRingBufferConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount);
   }
 
   //=========================================
@@ -205,7 +205,7 @@ public interface MailboxConfiguration<T> {
     }
   }
 
-  static final class ArrayQueueConfiguration extends BaseMailboxConfiguration<ArrayQueue> implements ArrayQueue {
+  static final class BasicArrayQueueConfiguration extends BaseMailboxConfiguration<ArrayQueueConfiguration> implements ArrayQueueConfiguration {
     private int fixedBackoff;
     private boolean notifyOnSend;
     private int sendRetires;
@@ -213,35 +213,35 @@ public interface MailboxConfiguration<T> {
     private int dispatcherThrottlingCount;
 
     @Override
-    public ArrayQueue size(final int size) {
+    public ArrayQueueConfiguration size(final int size) {
       this.size = size;
 
       return this;
     }
 
     @Override
-    public ArrayQueue fixedBackoff(final int fixedBackoff) {
+    public ArrayQueueConfiguration fixedBackoff(final int fixedBackoff) {
       this.fixedBackoff = fixedBackoff;
 
       return this;
     }
 
     @Override
-    public ArrayQueue notifyOnSend(final boolean notifyOnSend) {
+    public ArrayQueueConfiguration notifyOnSend(final boolean notifyOnSend) {
       this.notifyOnSend = notifyOnSend;
 
       return this;
     }
 
     @Override
-    public ArrayQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+    public ArrayQueueConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
       this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
     }
 
     @Override
-    public ArrayQueue sendRetires(final int sendRetires) {
+    public ArrayQueueConfiguration sendRetires(final int sendRetires) {
       this.sendRetires = sendRetires;
 
       return this;
@@ -261,27 +261,27 @@ public interface MailboxConfiguration<T> {
     }
   }
   
-  static final class ConcurrentQueueConfiguration extends BaseMailboxConfiguration<ConcurrentQueue> implements ConcurrentQueue {
+  static final class BasicConcurrentQueueConfiguration extends BaseMailboxConfiguration<ConcurrentQueueConfiguration> implements ConcurrentQueueConfiguration {
     private int dispatcherThrottlingCount;
     private int numberOfDispatchers;
     private double numberOfDispatchersFactor;
 
     @Override
-    public ConcurrentQueue numberOfDispatchersFactor(final double numberOfDispatchersFactor) {
+    public ConcurrentQueueConfiguration numberOfDispatchersFactor(final double numberOfDispatchersFactor) {
       this.numberOfDispatchersFactor = numberOfDispatchersFactor;
 
       return this;
     }
 
     @Override
-    public ConcurrentQueue numberOfDispatchers(final int numberOfDispatchers) {
+    public ConcurrentQueueConfiguration numberOfDispatchers(final int numberOfDispatchers) {
       this.numberOfDispatchers = numberOfDispatchers;
 
       return this;
     }
 
     @Override
-    public ConcurrentQueue dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+    public ConcurrentQueueConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
       this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
@@ -299,35 +299,35 @@ public interface MailboxConfiguration<T> {
     }
   }
 
-  static final class SharedRingBufferConfiguration extends BaseMailboxConfiguration<SharedRingBuffer> implements SharedRingBuffer {
+  static final class BasicSharedRingBufferConfiguration extends BaseMailboxConfiguration<SharedRingBufferConfiguration> implements SharedRingBufferConfiguration {
     private int fixedBackoff;
     private boolean notifyOnSend;
     private int size;
     private int dispatcherThrottlingCount;
 
     @Override
-    public SharedRingBuffer size(final int size) {
+    public SharedRingBufferConfiguration size(final int size) {
       this.size = size;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer fixedBackoff(final int fixedBackoff) {
+    public SharedRingBufferConfiguration fixedBackoff(final int fixedBackoff) {
       this.fixedBackoff = fixedBackoff;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer notifyOnSend(final boolean notifyOnSend) {
+    public SharedRingBufferConfiguration notifyOnSend(final boolean notifyOnSend) {
       this.notifyOnSend = notifyOnSend;
 
       return this;
     }
 
     @Override
-    public SharedRingBuffer dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
+    public SharedRingBufferConfiguration dispatcherThrottlingCount(final int dispatcherThrottlingCount) {
       this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
