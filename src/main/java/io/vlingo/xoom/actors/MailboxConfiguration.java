@@ -14,9 +14,42 @@ import java.util.Properties;
  * 
  * <p>See the <a href="https://docs.vlingo.io/xoom-actors#plugins">XOOM Actors Plugins</a> documentation.
  * 
+ * <p>Usage:
+ * <ul>
+ *   <li>{@code ArrayQueueConfiguration configuration = MailboxConfiguration.arrayQueueConfiguration();}</li>
+ *   <li>{@code ConcurrentQueueConfiguration configuration = MailboxConfiguration.concurrentQueueConfiguration();}</li>
+ *   <li>{@code SharedRingBufferConfiguration configuration = MailboxConfiguration.sharedRingBufferConfiguration();}</li>
+ * </ul>
+ * 
  * @param <T> the T typed full configuration type
  */
 public interface MailboxConfiguration<T> {
+
+  /**
+   * Answer a new instance of {@code ArrayQueueConfiguration}.
+   * @return ArrayQueueConfiguration
+   */
+  static ArrayQueueConfiguration arrayQueueConfiguration() {
+    return new BasicArrayQueueConfiguration();
+  }
+
+  /**
+   * Answer a new instance of {@code ConcurrentQueueConfiguration}.
+   * @return ConcurrentQueueConfiguration
+   */
+  static ConcurrentQueueConfiguration concurrentQueueConfiguration() {
+    return new BasicConcurrentQueueConfiguration();
+  }
+
+  /**
+   * Answer a new instance of {@code SharedRingBufferConfiguration}.
+   * @return SharedRingBufferConfiguration
+   */
+  static SharedRingBufferConfiguration sharedRingBufferConfiguration() {
+    return new BasicSharedRingBufferConfiguration();
+  }
+
+
   /**
    * Answer myself after setting my name of the mailbox.
    * @param name the String name of the mailbox
