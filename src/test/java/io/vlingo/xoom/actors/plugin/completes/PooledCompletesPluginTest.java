@@ -29,7 +29,7 @@ public class PooledCompletesPluginTest {
     MockCompletesEventually completes =
             (MockCompletesEventually) plugin.completesEventuallyProvider.provideCompletesFor(null);
     
-    completes.with(new Integer(7));
+    completes.with(Integer.valueOf(7));
     
     assertEquals(1, registrar.registerCount);
     assertEquals(1, plugin.completesEventuallyProvider.initializeUsing);
