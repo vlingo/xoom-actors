@@ -9,6 +9,16 @@ package io.vlingo.xoom.actors;
 
 import java.util.Properties;
 
+import io.vlingo.xoom.actors.plugin.Plugin;
+import io.vlingo.xoom.actors.plugin.PluginConfiguration;
+import io.vlingo.xoom.actors.plugin.PluginProperties;
+import io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin;
+import io.vlingo.xoom.actors.plugin.mailbox.agronampscarrayqueue.ManyToOneConcurrentArrayQueuePlugin.ManyToOneConcurrentArrayQueuePluginConfiguration;
+import io.vlingo.xoom.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin;
+import io.vlingo.xoom.actors.plugin.mailbox.concurrentqueue.ConcurrentQueueMailboxPlugin.ConcurrentQueueMailboxPluginConfiguration;
+import io.vlingo.xoom.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin;
+import io.vlingo.xoom.actors.plugin.mailbox.sharedringbuffer.SharedRingBufferMailboxPlugin.SharedRingBufferMailboxPluginConfiguration;
+
 /**
  * Basic Mailbox configuration.
  * 
@@ -49,6 +59,17 @@ public interface MailboxConfiguration<T> {
     return new BasicSharedRingBufferConfiguration();
   }
 
+  /**
+   * Answer my {@code Configuration}, which is independent
+   * of the {@code World} registered {@code Configuration}.
+   * @return Configuration
+   */
+  Configuration configuration();
+
+  /** Answer my {@code mailboxName}.
+   * @return String
+   */
+  String mailboxName();
 
   /**
    * Answer myself after setting my name of the mailbox.
@@ -65,11 +86,41 @@ public interface MailboxConfiguration<T> {
   T mailboxImplementationClassname(final String classname);
 
   /**
+   * Answer my {@code defaultMailbox}.
+   * @return boolean
+   */
+  boolean isDefaultMailbox();
+
+  /**
    * Answer myself after setting my defaultMailbox.
    * @param defaultMailbox the boolean indicating a default or non-default mailbox
    * @return T
    */
   T defaultMailbox(final boolean defaultMailbox);
+
+  /**
+   * Answer my {@code MailboxProvider}.
+   * @return MailboxProvider
+   */
+  MailboxProvider mailboxProvider();
+
+  /**
+   * Answer my {@code Plugin}.
+   * @return Plugin
+   */
+  Plugin plugin();
+
+  /**
+   * Answer my {@code PluginConfiguration}.
+   * @return PluginConfiguration
+   */
+  PluginConfiguration pluginConfiguration();
+
+  /**
+   * Answer my {@code PluginConfiguration}.
+   * @return PluginConfiguration
+   */
+  PluginProperties pluginProperties();
 
   /**
    * Answer my configuration as a Properties.
@@ -188,11 +239,24 @@ public interface MailboxConfiguration<T> {
   //=========================================
 
   static abstract class BaseMailboxConfiguration<T> implements MailboxConfiguration<T> {
-	private boolean defaultMailbox;
+    private Configuration configuration;
+    private boolean defaultMailbox;
     private String mailboxImplementationClassname;
     private String pluginName;
 
-	protected String mailboxName;
+    protected String mailboxName;
+    protected Plugin plugin;
+    protected PluginConfiguration pluginConfiguration;
+    protected PluginProperties pluginProperties;
+
+    protected BaseMailboxConfiguration() {
+      this.configuration = Configuration.define();
+    }
+
+    @Override
+    public Configuration configuration() {
+      return configuration;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -211,6 +275,11 @@ public interface MailboxConfiguration<T> {
     }
 
     @Override
+    public boolean isDefaultMailbox() {
+      return defaultMailbox;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public T defaultMailbox(final boolean defaultMailbox) {
       this.defaultMailbox = defaultMailbox;
@@ -219,9 +288,30 @@ public interface MailboxConfiguration<T> {
     }
 
     @Override
+    public String mailboxName() {
+      return mailboxName;
+    }
+
+    @Override
+    public MailboxProvider mailboxProvider() {
+      return (MailboxProvider) plugin();
+    }
+
+    @Override
+    public PluginProperties pluginProperties() {
+      if (pluginProperties == null) {
+        pluginProperties = new PluginProperties(mailboxName, toProperties());
+      }
+
+      return pluginProperties;
+    }
+
+    @Override
     public Properties toProperties() {
       final Properties properties = new Properties();
 
+      properties.setProperty(pluginDeclaration(), "true");
+      properties.setProperty(mailboxName, mailboxImplementationClassname);
       properties.setProperty(pluginName(), "true");
       properties.setProperty(pluginName() + ".classname", mailboxImplementationClassname);
       properties.setProperty(pluginName() + ".defaultMailbox", Boolean.toString(defaultMailbox));
@@ -229,12 +319,21 @@ public interface MailboxConfiguration<T> {
       return properties;
     }
 
+    protected String pluginDeclaration() {
+      return "plugin.name." + this.mailboxName;
+    }
+
     protected String pluginName() {
       if (pluginName == null) {
-        pluginName = "plugin.name." + this.mailboxName;
+        pluginName = "plugin." + this.mailboxName;
       }
 
       return pluginName;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <PC> PC typedPluginConfiguration() {
+      return (PC) pluginConfiguration();
     }
   }
 
@@ -281,6 +380,25 @@ public interface MailboxConfiguration<T> {
     }
 
     @Override
+    public Plugin plugin() {
+      if (plugin == null) {
+        plugin = new ManyToOneConcurrentArrayQueuePlugin(typedPluginConfiguration());
+      }
+
+      return plugin;
+    }
+
+    @Override
+    public PluginConfiguration pluginConfiguration() {
+      if (pluginConfiguration == null) {
+        pluginConfiguration = ManyToOneConcurrentArrayQueuePluginConfiguration.define();
+        pluginConfiguration.buildWith(configuration(), pluginProperties());
+      }
+
+      return pluginConfiguration;
+    }
+
+    @Override
     public Properties toProperties() {
       final Properties properties = super.toProperties();
 
@@ -318,6 +436,25 @@ public interface MailboxConfiguration<T> {
       this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
+    }
+
+    @Override
+    public Plugin plugin() {
+      if (plugin == null) {
+        plugin = new ConcurrentQueueMailboxPlugin(typedPluginConfiguration());
+      }
+
+      return plugin;
+    }
+
+    @Override
+    public PluginConfiguration pluginConfiguration() {
+      if (pluginConfiguration == null) {
+        pluginConfiguration = ConcurrentQueueMailboxPluginConfiguration.define();
+        pluginConfiguration.buildWith(configuration(), pluginProperties());
+      }
+
+      return pluginConfiguration;
     }
 
     @Override
@@ -364,6 +501,25 @@ public interface MailboxConfiguration<T> {
       this.dispatcherThrottlingCount = dispatcherThrottlingCount;
 
       return this;
+    }
+
+    @Override
+    public Plugin plugin() {
+      if (plugin == null) {
+        plugin = new SharedRingBufferMailboxPlugin(typedPluginConfiguration());
+      }
+
+      return plugin;
+    }
+
+    @Override
+    public PluginConfiguration pluginConfiguration() {
+      if (pluginConfiguration == null) {
+        pluginConfiguration = SharedRingBufferMailboxPluginConfiguration.define();
+        pluginConfiguration.buildWith(configuration(), pluginProperties());
+      }
+
+      return pluginConfiguration;
     }
 
     @Override
