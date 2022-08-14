@@ -26,6 +26,10 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     this.configuration = new ManyToOneConcurrentArrayQueuePluginConfiguration();
   }
 
+  public ManyToOneConcurrentArrayQueuePlugin(PluginConfiguration configuration) {
+    this.configuration = (ManyToOneConcurrentArrayQueuePluginConfiguration) configuration;
+  }
+
   @Override
   public void close() {
     // mailbox closes its dispatcher
@@ -57,10 +61,6 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
       return this;
     }
     return new ManyToOneConcurrentArrayQueuePlugin(overrideConfiguration);
-  }
-
-  private ManyToOneConcurrentArrayQueuePlugin(final PluginConfiguration configuration) {
-    this.configuration = (ManyToOneConcurrentArrayQueuePluginConfiguration) configuration;
   }
 
   @Override
