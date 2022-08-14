@@ -403,6 +403,14 @@ public final class World implements Registrar {
   }
 
   /**
+   * Register a programmatically created {@code Mailbox} by its {@code MailboxConfiguration}.
+   * @param mailboxConfiguration the MailboxConfiguration<?> describing the mailbox type to register
+   */
+  public void registerMailboxType(final MailboxConfiguration<?> mailboxConfiguration) {
+    mailboxConfiguration.plugin().start(this);
+  }
+
+  /**
    * Registers the dynamic {@code value} with the {@code name} key. The
    * {@code value} cannot not be replaced by a subsequent registration
    * using the same {@code name}.
