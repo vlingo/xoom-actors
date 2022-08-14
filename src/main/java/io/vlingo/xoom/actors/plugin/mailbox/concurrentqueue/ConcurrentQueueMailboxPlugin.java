@@ -27,6 +27,10 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
     this.configuration = new ConcurrentQueueMailboxPluginConfiguration();
   }
 
+  public ConcurrentQueueMailboxPlugin(final PluginConfiguration configuration) {
+    this.configuration = (ConcurrentQueueMailboxPluginConfiguration) configuration;
+  }
+
   @Override
   public void close() {
     executorDispatcher.close();
@@ -69,10 +73,6 @@ public class ConcurrentQueueMailboxPlugin extends AbstractPlugin implements Plug
       return this;
     }
     return new ConcurrentQueueMailboxPlugin(overrideConfiguration);
-  }
-
-  private ConcurrentQueueMailboxPlugin(final PluginConfiguration configuration) {
-    this.configuration = (ConcurrentQueueMailboxPluginConfiguration) configuration;
   }
 
   @Override
