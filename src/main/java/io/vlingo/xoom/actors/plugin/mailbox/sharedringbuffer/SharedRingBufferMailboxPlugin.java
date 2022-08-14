@@ -30,6 +30,11 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
     this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
+  public SharedRingBufferMailboxPlugin(final PluginConfiguration configuration) {
+    this.configuration = (SharedRingBufferMailboxPluginConfiguration) configuration;
+    this.dispatchers = new ConcurrentHashMap<>(1);
+  }
+
   @Override
   public void close() {
     dispatchers.values().stream().forEach(dispatcher -> dispatcher.close());
@@ -61,11 +66,6 @@ public class SharedRingBufferMailboxPlugin extends AbstractPlugin implements Plu
       return this;
     }
     return new SharedRingBufferMailboxPlugin(overrideConfiguration);
-  }
-
-  private SharedRingBufferMailboxPlugin(final PluginConfiguration configuration) {
-    this.configuration = (SharedRingBufferMailboxPluginConfiguration) configuration;
-    this.dispatchers = new ConcurrentHashMap<>(1);
   }
 
   @Override
