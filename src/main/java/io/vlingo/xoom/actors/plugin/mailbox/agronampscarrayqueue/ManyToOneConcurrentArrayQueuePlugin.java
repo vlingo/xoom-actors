@@ -26,7 +26,7 @@ public class ManyToOneConcurrentArrayQueuePlugin extends AbstractPlugin implemen
     this.configuration = new ManyToOneConcurrentArrayQueuePluginConfiguration();
   }
 
-  public ManyToOneConcurrentArrayQueuePlugin(PluginConfiguration configuration) {
+  public ManyToOneConcurrentArrayQueuePlugin(final PluginConfiguration configuration) {
     this.configuration = (ManyToOneConcurrentArrayQueuePluginConfiguration) configuration;
   }
 
