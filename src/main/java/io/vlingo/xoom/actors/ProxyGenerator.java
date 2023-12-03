@@ -24,6 +24,7 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -666,6 +667,11 @@ public class ProxyGenerator implements AutoCloseable {
                     Arrays.stream(paramType.getActualTypeArguments()).flatMap(GenericParser::typeNameToTypeStream),
                     typeNameToTypeStream(paramType.getRawType())
             );
+        } else if (type instanceof WildcardType) {
+          return Stream.concat(
+              Arrays.stream(((WildcardType) type).getUpperBounds()),
+              Arrays.stream(((WildcardType) type).getLowerBounds())
+          ).flatMap(GenericParser::typeNameToTypeStream);
         }
 
         return Arrays.stream(type.getTypeName().replaceAll("[<>]", "==").split("=="));
